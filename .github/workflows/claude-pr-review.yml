@@ -1,0 +1,93 @@
+name: Claude Automated PR Review
+
+on:
+  # Using pull_request (not pull_request_target) for security:
+  # - pull_request_target exposes secrets to fork PRs, creating exfiltration risk
+  # - For fork PRs needing review, maintainers can manually @claude via claude.yml
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+# Cancel any in-progress review for the same PR when new commits are pushed
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    # Skip bots and draft PRs
+    if: |
+      github.actor != 'dependabot[bot]' &&
+      github.actor != 'claude[bot]' &&
+      github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: "20"
+
+      - name: Install markdownlint-cli
+        run: npm install -g markdownlint-cli
+
+      - name: Review PR with Claude
+        uses: anthropics/claude-code-action@6337623ebba10cf8c8214b507993f8062fd4ccfb # v1.0.22
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          mode: agent
+          track_progress: true
+          prompt: |
+            Review this pull request for the plugin-dev Claude Code plugin.
+
+            ## Context
+            - Repository: ${{ github.repository }}
+            - PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}
+            - Author: ${{ github.event.pull_request.user.login }}
+
+            ## Instructions
+            1. Get the PR diff to understand what changed
+            2. If any `.md` files were changed, run `markdownlint --config .markdownlint.json <files>` to check for style issues
+            3. Review the changes against the criteria below
+            4. Post a summary comment with your findings
+
+            ## Review Criteria
+
+            ### Plugin Components (if changed)
+            - **Commands** (`commands/*.md`): Verify YAML frontmatter has name, description, allowed-tools. Check for imperative voice ("Do X" not "You should do X").
+            - **Skills** (`skills/*/SKILL.md`): Check trigger phrases in description, version in frontmatter, progressive disclosure pattern.
+            - **Agents** (`agents/*.md`): Verify <example> blocks for triggering, appropriate tool restrictions.
+            - **Hooks** (`hooks/hooks.json`): Validate event types and matcher patterns.
+
+            ### Markdown Quality (run markdownlint)
+            Run `markdownlint --config .markdownlint.json` on changed `.md` files. Key rules enforced:
+            - ATX-style headers (`#` not underlines)
+            - Dash-style lists (`-` not `*` or `+`)
+            - 2-space indentation for nested lists
+            - Fenced code blocks (not indented)
+            Include any lint errors in your review under a "Markdown Linting" section.
+
+            ### Documentation
+            - README.md updates if user-facing changes
+            - CLAUDE.md updates if development process changes
+
+            ## Output Format
+            Post a PR comment with your review. Structure it as:
+            1. **Summary**: One-line assessment (looks good / needs changes / has concerns)
+            2. **What's Good**: Positive aspects of the PR
+            3. **Suggestions**: Improvements or issues found (if any)
+            4. **Checklist Verification**: Confirm key items are addressed
+
+            Be constructive and helpful. Focus on significant issues, not nitpicks.
+            If the PR looks good, say so briefly - don't invent problems.
+          claude_args: |
+            --allowedTools "Bash(gh pr:*),Bash(markdownlint:*),Read,Glob,Grep,mcp__github_inline_comment__create_inline_comment"

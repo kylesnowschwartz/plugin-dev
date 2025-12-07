@@ -1,0 +1,60 @@
+name: Question or Support
+description: Ask a question about using the plugin-dev plugin
+title: "[Question]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question about using the plugin? We're here to help!
+
+        **Before asking**: Please check the [README](https://github.com/sjnims/plugin-dev/blob/main/README.md) and [CLAUDE.md](https://github.com/sjnims/plugin-dev/blob/main/CLAUDE.md) first.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What would you like to know?
+      placeholder: How do I...? Why does...? Can I...?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Question Category
+      options:
+        - Installation and setup
+        - Using commands
+        - Understanding the workflow
+        - Troubleshooting
+        - Contributing
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you tried?
+      description: What steps have you already taken to solve this?
+      placeholder: "I've tried... I looked at..."
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other information that might help us answer your question
+      placeholder: "I'm trying to... My use case is..."
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission checklist
+      options:
+        - label: I've checked the README.md
+          required: true
+        - label: I've searched existing issues
+          required: true
+        - label: This is a question, not a bug report or feature request
+          required: true
