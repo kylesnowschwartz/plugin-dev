@@ -1,17 +1,12 @@
 name: Plugin Component Validation
 
 on:
-  pull_request:
-    types: [opened, synchronize, ready_for_review]
-    paths:
-      - "plugins/plugin-dev/commands/**"
-      - "plugins/plugin-dev/skills/**"
-      - "plugins/plugin-dev/agents/**"
-      - "plugins/plugin-dev/hooks/**"
+  # Reusable workflow - called by pr-checks.yml orchestrator
+  workflow_call:
 
 # Cancel any in-progress validation for the same PR when new commits are pushed
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -22,6 +17,7 @@ jobs:
       github.actor != 'claude[bot]' &&
       github.event.pull_request.draft == false
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       pull-requests: write
@@ -32,7 +28,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Get changed plugin component files
         id: changed-files

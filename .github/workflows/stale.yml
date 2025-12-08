@@ -2,7 +2,7 @@ name: Manage Stale Issues and PRs
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Daily at midnight UTC
+    - cron: '0 0 * * 1,3,5'  # Mon/Wed/Fri at midnight UTC
   workflow_dispatch:
 
 concurrency:

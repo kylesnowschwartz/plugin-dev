@@ -1,9 +1,9 @@
 name: Validate Workflows
 
 on:
-  pull_request:
-    paths:
-      - '.github/workflows/**'
+  # Reusable workflow - called by pr-checks.yml orchestrator
+  workflow_call:
+  # Standalone trigger for main branch pushes
   push:
     branches:
       - main
@@ -18,6 +18,7 @@ jobs:
   actionlint:
     name: Lint GitHub Actions Workflows
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout code
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1

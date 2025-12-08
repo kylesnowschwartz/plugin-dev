@@ -169,12 +169,28 @@ Use these agents proactively after creating components:
 
 ## CI/CD
 
-Key workflows in `.github/workflows/`:
+### PR Checks Orchestrator
 
-- `markdownlint.yml` - Lints all markdown on PR/push
-- `component-validation.yml` - Validates plugin components (agents, hooks, skills)
-- `version-check.yml` - Validates version consistency across plugin.json and marketplace.json
-- `links.yml` - Checks for broken links (uses lychee)
-- `claude-pr-review.yml` - AI-powered PR review
+The `pr-checks.yml` workflow orchestrates all PR validation:
 
-Additional workflows handle labeling, stale issues, and maintenance tasks.
+- Detects changed files and runs only relevant checks
+- Provides single `All Checks Pass` status for branch protection
+- Runs checks in parallel for efficiency
+
+### Reusable Workflows (called by orchestrator)
+
+| Workflow | Trigger Condition | Purpose |
+|----------|-------------------|---------|
+| `markdownlint.yml` | `**.md` changed | Lint markdown files |
+| `links.yml` | `**.md` changed | Check for broken links |
+| `component-validation.yml` | `plugins/plugin-dev/**` changed | Validate plugin components |
+| `version-check.yml` | Version files changed | Ensure version consistency |
+| `validate-workflows.yml` | `.github/workflows/**` changed | Lint GitHub Actions |
+| `claude-pr-review.yml` | Always (non-draft PRs) | AI-powered code review |
+
+### Other Workflows
+
+- `stale.yml` - Manages stale issues/PRs (Mon/Wed/Fri)
+- `semantic-labeler.yml` - Auto-labels issues/PRs
+- `ci-failure-analysis.yml` - Analyzes CI failures
+- `weekly-maintenance.yml` - Scheduled maintenance tasks
