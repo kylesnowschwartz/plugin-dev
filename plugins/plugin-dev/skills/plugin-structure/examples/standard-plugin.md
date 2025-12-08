@@ -225,9 +225,8 @@ Generated tests include:
 
 ```markdown
 ---
-name: Code Standards
+name: code-standards
 description: This skill should be used when reviewing code, enforcing style guidelines, checking naming conventions, or ensuring code quality standards. Provides project-specific coding standards and best practices.
-version: 1.0.0
 ---
 
 # Code Standards

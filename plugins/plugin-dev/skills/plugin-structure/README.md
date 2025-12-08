@@ -105,5 +105,4 @@ To update this skill:
 1. Keep SKILL.md lean and focused on core concepts
 2. Move detailed information to references/
 3. Add new examples/ for common patterns
-4. Update version in SKILL.md frontmatter
-5. Ensure all documentation uses imperative/infinitive form
+4. Ensure all documentation uses imperative/infinitive form

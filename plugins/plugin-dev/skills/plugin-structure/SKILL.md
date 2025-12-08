@@ -195,7 +195,6 @@ skills/
 ---
 name: Skill Name
 description: When to use this skill
-version: 1.0.0
 ---
 
 Skill instructions and guidance...

@@ -184,9 +184,8 @@ When creating or modifying skills:
 1. **YAML Frontmatter Required**:
    ```yaml
    ---
-   name: Skill Name
+   name: skill-name
    description: This skill should be used when the user asks to "trigger phrase 1"...
-   version: 0.1.0
    ---
    ```
 
