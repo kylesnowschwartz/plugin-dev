@@ -42,9 +42,19 @@ When testing locally, point to the plugin directory, not the root.
 Each skill follows progressive disclosure:
 
 - `SKILL.md` - Core content (1,500-2,000 words, lean)
-- `references/` - Detailed documentation (loaded as needed)
-- `examples/` - Working code examples
-- `scripts/` - Utility scripts
+- `references/` - Detailed documentation loaded into context as needed
+- `examples/` - Complete working examples and templates for copy-paste
+- `scripts/` - Utility scripts (executable without loading into context)
+
+**The 7 Skills:**
+
+1. `hook-development` - Event-driven automation with prompt-based hooks
+2. `mcp-integration` - Model Context Protocol server configuration
+3. `plugin-structure` - Directory layout and manifest configuration
+4. `plugin-settings` - Configuration via .claude/plugin-name.local.md files
+5. `command-development` - Slash commands with frontmatter
+6. `agent-development` - Autonomous agents with AI-assisted generation
+7. `skill-development` - Creating skills with progressive disclosure
 
 ### Writing Style
 
@@ -134,9 +144,19 @@ Skills require:
 
 Commands are markdown files with frontmatter:
 
-- `description`: Brief explanation
-- `argument-hint`: Optional argument placeholder
-- `allowed-tools`: Array of permitted tools
+- `description`: Brief explanation (required)
+- `argument-hint`: Optional argument placeholder text
+- `allowed-tools`: Optional array of permitted tools (restricts tool access)
+
+### Skills/Agents Optional Frontmatter
+
+Both skills and agents support `allowed-tools` to restrict tool access:
+
+```yaml
+allowed-tools: Read, Grep, Glob  # Read-only skill
+```
+
+Use for read-only workflows, security-sensitive tasks, or limited-scope operations.
 
 ### Hooks
 
