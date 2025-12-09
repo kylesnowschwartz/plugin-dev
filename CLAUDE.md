@@ -56,6 +56,8 @@ Each skill follows progressive disclosure:
 6. `agent-development` - Autonomous agents with AI-assisted generation
 7. `skill-development` - Creating skills with progressive disclosure
 
+**Note:** `mcp-integration`, `plugin-structure`, and `skill-development` have no utility scripts—they provide documentation and examples only.
+
 ### Writing Style
 
 - **Skill descriptions**: Third-person ("This skill should be used when...")
