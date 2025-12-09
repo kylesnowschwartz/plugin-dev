@@ -166,7 +166,7 @@ Use for read-only workflows, security-sensitive tasks, or limited-scope operatio
 
 Hooks defined in `hooks/hooks.json`:
 
-- Events: PreToolUse, PostToolUse, Stop, SubagentStop, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, Notification
+- Events: PreToolUse, PermissionRequest, PostToolUse, Stop, SubagentStop, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, Notification
 - Types: `prompt` (LLM-driven) or `command` (bash scripts)
 - Use matchers for tool filtering (e.g., "Write|Edit", "*")
 
