@@ -200,6 +200,18 @@ description: When to use this skill
 Skill instructions and guidance...
 ```
 
+**Tool restrictions** (optional): Skills can include `allowed-tools` in frontmatter to limit tool access:
+
+```yaml
+---
+name: safe-reader
+description: Read-only file access skill
+allowed-tools: Read, Grep, Glob  # Optional: restricts available tools
+---
+```
+
+Use for read-only workflows, security-sensitive tasks, or limited-scope operations.
+
 **Supporting files**: Skills can include scripts, references, examples, or assets in subdirectories
 
 **Usage**: Claude Code autonomously activates skills based on task context matching the description
