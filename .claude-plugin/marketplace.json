@@ -20,7 +20,12 @@
       },
       "homepage": "https://github.com/anthropics/claude-code/",
       "tags": [
-        "development"
+        "ai-tools",
+        "claude",
+        "claude-code",
+        "developer-tools",
+        "mcp",
+        "plugin-development"
       ],
       "source": "./plugins/plugin-dev"
     }

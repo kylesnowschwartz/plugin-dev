@@ -10,6 +10,11 @@
   "repository": "https://github.com/sjnims/plugin-dev",
   "license": "MIT",
   "keywords": [
-    "development"
+    "ai-tools",
+    "claude",
+    "claude-code",
+    "developer-tools",
+    "mcp",
+    "plugin-development"
   ]
 }

@@ -440,7 +440,7 @@ This repository ([sjnims/plugin-dev](https://github.com/sjnims/plugin-dev)) is a
 
 ## License
 
-MIT License - See [LICENSE.txt](LICENSE.txt) for details
+MIT License - See [LICENSE](LICENSE) for details
 
 ---
 
