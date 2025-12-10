@@ -4,7 +4,7 @@ A comprehensive toolkit for developing Claude Code plugins with expert guidance 
 
 ## Overview
 
-The plugin-dev toolkit provides seven specialized skills to help you build high-quality Claude Code plugins:
+The plugin-dev toolkit provides eight specialized skills to help you build high-quality Claude Code plugins:
 
 1. **Hook Development** - Advanced hooks API and event-driven automation
 2. **MCP Integration** - Model Context Protocol server integration
@@ -13,6 +13,7 @@ The plugin-dev toolkit provides seven specialized skills to help you build high-
 5. **Command Development** - Creating slash commands with frontmatter and arguments
 6. **Agent Development** - Creating autonomous agents with AI-assisted generation
 7. **Skill Development** - Creating skills with progressive disclosure and strong triggers
+8. **Marketplace Structure** - Plugin marketplace creation and distribution
 
 Each skill follows best practices with progressive disclosure: lean core documentation, detailed references, working examples, and utility scripts.
 
@@ -193,6 +194,25 @@ Use this workflow for structured, high-quality plugin development from concept t
 
 **Use when:** Creating new skills for plugins or improving existing skill quality.
 
+### 8. Marketplace Structure
+
+**Trigger phrases:** "create a marketplace", "set up marketplace.json", "organize multiple plugins", "distribute plugins", "host plugins", "marketplace schema", "plugin marketplace structure"
+
+**What it covers:**
+- Marketplace directory structure and manifest configuration
+- marketplace.json schema and all fields
+- Plugin source options (relative paths, GitHub repos, git URLs)
+- Team vs. community distribution patterns
+- Version management and update strategies
+- Installation and testing workflows
+
+**Resources:**
+- Core SKILL.md
+- 3 examples: minimal-marketplace, team-marketplace, community-marketplace
+- 2 reference docs: schema-reference, distribution-patterns
+
+**Use when:** Creating plugin marketplaces, distributing plugins to teams, or organizing multiple plugins for sharing.
+
 ## Installation
 
 Add this marketplace and install the plugin:
@@ -314,7 +334,7 @@ All skills follow consistent standards:
 
 ## Total Content
 
-- **Core Skills**: ~12,750 words across 7 SKILL.md files
+- **Core Skills**: ~12,750 words across 8 SKILL.md files
 - **Reference Docs**: ~10,000+ words of detailed guides
 - **Examples**: 20+ working examples (hook scripts, MCP configs, plugin layouts, settings files, commands, agents)
 - **Utilities**: 12 production-ready validation/testing/parsing scripts
@@ -416,7 +436,7 @@ This repository ([sjnims/plugin-dev](https://github.com/sjnims/plugin-dev)) is a
 
 ## Version
 
-0.1.0 - Initial release with seven comprehensive skills and three validation agents
+0.1.0 - Initial release with eight comprehensive skills and three validation agents
 
 ## License
 
