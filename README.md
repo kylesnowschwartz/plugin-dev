@@ -195,10 +195,11 @@ Use this workflow for structured, high-quality plugin development from concept t
 
 ## Installation
 
-Install from this repository:
+Add this marketplace and install the plugin:
 
 ```bash
-/plugin install sjnims/plugin-dev
+/plugin marketplace add sjnims/plugin-dev
+/plugin install plugin-dev@sjnims/plugin-dev
 ```
 
 Or for development, use directly:
