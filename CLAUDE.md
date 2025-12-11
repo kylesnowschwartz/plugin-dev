@@ -136,7 +136,8 @@ Agents require YAML frontmatter with:
 - `description`: Starts with "Use this agent when...", includes `<example>` blocks
 - `model`: inherit/sonnet/opus/haiku
 - `color`: blue/cyan/green/yellow/magenta/red
-- `tools`: Array of allowed tools (optional)
+- `tools`: Comma-separated list of allowed tools (optional)
+- `skills`: Comma-separated list of skills the agent can load (optional)
 
 ### Skills
 
@@ -153,7 +154,9 @@ Commands are markdown files with frontmatter:
 
 - `description`: Brief explanation (required)
 - `argument-hint`: Optional argument placeholder text
-- `allowed-tools`: Optional array of permitted tools (restricts tool access)
+- `allowed-tools`: Comma-separated list of permitted tools (restricts tool access)
+- `model`: Model to use for command execution (inherit/sonnet/opus/haiku)
+- `disable-model-invocation`: Set to `true` to prevent model invocation in subagents (for workflow commands that delegate to specialized agents)
 
 ### Skills/Agents Optional Frontmatter
 

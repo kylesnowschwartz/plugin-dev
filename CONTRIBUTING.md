@@ -47,15 +47,15 @@ Before contributing, ensure you have:
 2. **Explore the architecture**:
    ```
    plugins/plugin-dev/
-   ├── commands/      # 1 slash command
-   ├── skills/        # 7 methodology skills
+   ├── commands/      # 2 slash commands
+   ├── skills/        # 8 skills
    └── agents/        # 3 specialized agents
    ```
 
 3. **Understand the plugin components**:
-   - 7 skills for different plugin development aspects
+   - 8 skills for different plugin development aspects
    - 3 agents for validation and generation
-   - 1 guided workflow command (`/plugin-dev:create-plugin`)
+   - 2 guided workflow commands (`/plugin-dev:create-plugin`, `/plugin-dev:create-marketplace`)
 
 ## Development Setup
 
@@ -159,9 +159,9 @@ When creating or modifying commands:
 1. **YAML Frontmatter Required**:
    ```yaml
    ---
-   name: command-name
    description: Brief description
-   allowed-tools: [AskUserQuestion, Bash(gh:*), Read]
+   argument-hint: [optional-argument]
+   allowed-tools: AskUserQuestion, Bash(gh:*), Read
    ---
    ```
 
@@ -211,7 +211,8 @@ When creating or modifying agents:
    description: Use this agent when...
    model: inherit
    color: blue
-   tools: [Bash, AskUserQuestion]
+   tools: Bash, AskUserQuestion
+   skills: skill-name-1, skill-name-2
    ---
    ```
 
@@ -219,7 +220,7 @@ When creating or modifying agents:
 
 3. **Clear System Prompt**: Be specific about the agent's role and responsibilities
 
-4. **Minimal Tools**: Only include tools the agent actually needs
+4. **Minimal Tools/Skills**: Only include tools and skills the agent actually needs
 
 ### Hooks
 
@@ -352,7 +353,7 @@ See [pull_request_template.md](.github/pull_request_template.md) for the complet
 
 - Always include required fields (`name`, `description`)
 - Use consistent indentation (2 spaces)
-- Use arrays for lists: `[Tool1, Tool2]`
+- Use comma-separated lists for tools/skills: `Tool1, Tool2`
 
 ### Commands and Instructions
 
