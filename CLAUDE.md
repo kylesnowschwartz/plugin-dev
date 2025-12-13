@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This repository is a **plugin marketplace** containing the **plugin-dev** plugin - a comprehensive toolkit for developing Claude Code plugins. It provides 8 specialized skills, 3 agents, and 2 guided workflow commands for building high-quality plugins and marketplaces.
+This repository is a **plugin marketplace** containing the **plugin-dev** plugin - a comprehensive toolkit for developing Claude Code plugins. It provides 8 specialized skills, 3 agents, and 3 slash commands (1 entry point + 2 guided workflows) for building high-quality plugins and marketplaces.
 
 ## Quick Reference
 
@@ -41,7 +41,7 @@ When testing locally, point to the plugin directory, not the root.
 
 Each skill follows progressive disclosure:
 
-- `SKILL.md` - Core content (1,500-2,000 words, lean)
+- `SKILL.md` - Core content (1,000-2,200 words, lean)
 - `references/` - Detailed documentation loaded into context as needed
 - `examples/` - Complete working examples and templates for copy-paste
 - `scripts/` - Utility scripts (executable without loading into context)
@@ -91,6 +91,8 @@ Test the plugin locally:
 cc --plugin-dir plugins/plugin-dev
 ```
 
+**Tip**: Create a separate test repository to avoid polluting your development environment. See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed testing guidelines.
+
 Utility scripts (paths relative to `plugins/plugin-dev/`):
 
 ```bash
@@ -125,6 +127,14 @@ markdownlint '**/*.md' --ignore node_modules --fix
 # Lint shell scripts
 shellcheck plugins/plugin-dev/skills/*/scripts/*.sh
 ```
+
+**Markdownlint rules** (from `.markdownlint.json`):
+
+- ATX-style headers only (`#`, not underlines)
+- Dash-style lists (`-`, not `*` or `+`)
+- Fenced code blocks (not indented)
+- No line length limits
+- Allowed HTML: `<p>`, `<img>`, `<example>`, `<commentary>`
 
 ## Component Patterns
 
@@ -185,6 +195,8 @@ The primary entry point for plugin development. Presents users with a choice:
 1. **Create a plugin** (recommended for most users) - Routes to `/plugin-dev:create-plugin`
 2. **Create a marketplace** - Routes to `/plugin-dev:create-marketplace`
 
+This command uses `disable-model-invocation: true` to prevent subagent model invocation, ensuring it only routes to specialized workflows rather than handling the task itself. This pattern is useful for workflow commands that delegate to other commands.
+
 Use this command when starting fresh or when unsure which workflow to use.
 
 ### `/plugin-dev:create-plugin`
@@ -244,6 +256,32 @@ Use these agents proactively after creating components:
 - `dependabot-auto-merge.yml` - Auto-merges dependabot PRs
 - `sync-labels.yml` - Synchronizes repository labels
 - `greet.yml` - Greets new contributors
+
+## Labels
+
+Issues and PRs use a structured labeling system defined in `.github/labels.yml`:
+
+| Category | Format | Examples |
+|----------|--------|----------|
+| Component | `component:*` | `component:skill`, `component:agent`, `component:hook`, `component:command`, `component:docs` |
+| Priority | `priority:*` | `priority:critical`, `priority:high`, `priority:medium`, `priority:low` |
+| Status | `status:*` | `status:blocked`, `status:in-progress`, `status:needs-review` |
+| Effort | `effort:*` | `effort:small` (<1h), `effort:medium` (1-4h), `effort:large` (>4h) |
+
+The `semantic-labeler.yml` workflow auto-labels PRs based on file paths changed.
+
+## Issue & PR Templates
+
+The repository includes templates in `.github/`:
+
+**Issue Templates** (4 types):
+
+- `bug_report.yml` - Bug reports with reproduction steps
+- `feature_request.yml` - Feature requests with use cases
+- `documentation.yml` - Documentation improvements
+- `question.yml` - Questions and discussions
+
+**Pull Request Template**: Component-specific checklists with validation requirements. See [CONTRIBUTING.md](CONTRIBUTING.md) for PR guidelines.
 
 ## Publishing & Version Management
 

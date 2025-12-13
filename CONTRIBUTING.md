@@ -47,7 +47,7 @@ Before contributing, ensure you have:
 2. **Explore the architecture**:
    ```
    plugins/plugin-dev/
-   ├── commands/      # 2 slash commands
+   ├── commands/      # 3 slash commands
    ├── skills/        # 8 skills
    └── agents/        # 3 specialized agents
    ```
@@ -55,7 +55,7 @@ Before contributing, ensure you have:
 3. **Understand the plugin components**:
    - 8 skills for different plugin development aspects
    - 3 agents for validation and generation
-   - 2 guided workflow commands (`/plugin-dev:create-plugin`, `/plugin-dev:create-marketplace`)
+   - 3 slash commands: `/plugin-dev:start` (entry point), `/plugin-dev:create-plugin`, `/plugin-dev:create-marketplace`
 
 ## Development Setup
 
