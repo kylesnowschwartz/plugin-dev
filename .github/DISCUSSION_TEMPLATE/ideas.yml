@@ -1,10 +1,24 @@
-title: "[Idea]: "
+name: "💡 Feature Idea"
+description: "Suggest a new feature or enhancement"
+title: "[Idea]:"
 labels: ["enhancement", "idea"]
 body:
   - type: markdown
     attributes:
       value: |
         Thanks for sharing your idea! Help us understand what problem you're solving and your proposed solution.
+
+        **Before submitting**: Check [existing ideas](https://github.com/sjnims/plugin-dev/discussions/categories/ideas) and review our [contribution guidelines](https://github.com/sjnims/plugin-dev/blob/main/CONTRIBUTING.md).
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission checklist
+      options:
+        - label: I've searched existing ideas and discussions
+          required: true
+        - label: I've checked the README for related features
+          required: true
 
   - type: textarea
     id: problem

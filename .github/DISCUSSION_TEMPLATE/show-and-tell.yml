@@ -1,10 +1,27 @@
-title: "[Showcase]: "
+name: "🎉 Show and Tell"
+description: "Share what you've built with the community"
+title: "[Show & Tell]:"
 labels: ["showcase"]
 body:
   - type: markdown
     attributes:
       value: |
         Share how you're using plugin-dev! We'd love to hear about your projects and learnings.
+
+  - type: dropdown
+    id: component-type
+    attributes:
+      label: What type of component?
+      options:
+        - Complete plugin
+        - Skill
+        - Agent
+        - Hook
+        - Command
+        - Marketplace
+        - Other
+    validations:
+      required: true
 
   - type: textarea
     id: showcase
@@ -32,3 +49,11 @@ body:
       placeholder: "GitHub repo: ... Blog post: ..."
     validations:
       required: false
+
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Sharing preferences
+      options:
+        - label: I'm okay with this being featured in project documentation
+          required: false

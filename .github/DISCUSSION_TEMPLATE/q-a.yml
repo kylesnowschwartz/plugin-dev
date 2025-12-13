@@ -1,4 +1,6 @@
-title: "[Question]: "
+name: "❓ Question"
+description: "Ask a question about using the plugin"
+title: "[Question]:"
 labels: ["question"]
 body:
   - type: markdown
@@ -24,8 +26,13 @@ body:
       label: Question Category
       options:
         - Installation and setup
-        - Using commands
-        - Understanding the workflow
+        - Skills (creation, triggering)
+        - Agents (creation, AI generation)
+        - Hooks (events, prompt-based)
+        - Commands (slash commands)
+        - MCP integration
+        - Plugin structure
+        - Marketplace creation
         - Troubleshooting
         - Contributing
         - Other
@@ -47,5 +54,26 @@ body:
       label: Additional Context
       description: Any relevant details about your setup or use case
       placeholder: I'm trying to...
+    validations:
+      required: false
+
+  - type: input
+    id: claude-code-version
+    attributes:
+      label: Claude Code Version (for troubleshooting)
+      description: "Run `claude --version` to find this"
+      placeholder: "e.g., 1.0.0"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - macOS
+        - Windows
+        - Linux
+        - Other
     validations:
       required: false
