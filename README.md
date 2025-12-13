@@ -6,7 +6,7 @@
 
 [![CI](https://github.com/sjnims/plugin-dev/actions/workflows/component-validation.yml/badge.svg)](https://github.com/sjnims/plugin-dev/actions/workflows/component-validation.yml)
 [![Markdown](https://github.com/sjnims/plugin-dev/actions/workflows/markdownlint.yml/badge.svg)](https://github.com/sjnims/plugin-dev/actions/workflows/markdownlint.yml)
-[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/sjnims/plugin-dev/releases)
+[![Version](https://img.shields.io/badge/version-0.2.1-blue.svg)](https://github.com/sjnims/plugin-dev/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 A comprehensive toolkit for developing Claude Code plugins with expert guidance on hooks, MCP integration, plugin structure, and marketplace publishing.
