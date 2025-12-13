@@ -10,15 +10,33 @@ updates:
     labels:
       - "dependencies"
       - "github-actions"
+    assignees:
+      - "sjnims"
+    reviewers:
+      - "sjnims"
     commit-message:
       prefix: "chore"
       include: "scope"
-    # Group minor/patch updates together
+    # Group updates to reduce PR noise
     groups:
-      actions-minor:
+      # Anthropic's action - core dependency for this plugin repo, review carefully
+      claude-code-action:
         patterns:
-          - "*"
+          - "anthropics/*"
         update-types:
           - "minor"
           - "patch"
+      # All other minor/patch updates - safe for auto-merge
+      actions-minor-patch:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "anthropics/*"
+        update-types:
+          - "minor"
+          - "patch"
+    # Ignore ultra-stable actions that rarely have meaningful patch changes
+    ignore:
+      - dependency-name: "actions/checkout"
+        update-types: ["version-update:semver-patch"]
     open-pull-requests-limit: 5
