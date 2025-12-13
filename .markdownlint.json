@@ -26,7 +26,10 @@
       "p",
       "img",
       "example",
-      "commentary"
+      "commentary",
+      "details",
+      "summary",
+      "strong"
     ]
   },
   "MD034": true,
