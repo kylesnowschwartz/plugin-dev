@@ -44,7 +44,7 @@ Fixes # (issue)
 - Testing repository: <!-- public repo you tested with, if applicable -->
 
 **Test Steps**:
-1. <!-- e.g., Load plugin with `cc --plugin-dir plugins/plugin-dev` -->
+1. <!-- e.g., Load plugin with `claude --plugin-dir plugins/plugin-dev` -->
 2. <!-- e.g., Run command `/plugin-dev:create-plugin` -->
 3. <!-- e.g., Verify plugin created successfully -->
 4. <!-- etc. -->
@@ -97,7 +97,7 @@ Fixes # (issue)
 
 ### Testing
 
-- [ ] I have tested the plugin locally with `cc --plugin-dir plugins/plugin-dev`
+- [ ] I have tested the plugin locally with `claude --plugin-dir plugins/plugin-dev`
 - [ ] I have tested the full workflow (if applicable)
 - [ ] I have verified GitHub CLI integration works (if applicable)
 - [ ] I have tested in a clean repository (not my development repo)

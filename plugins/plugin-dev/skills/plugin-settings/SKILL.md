@@ -375,7 +375,7 @@ Document in the plugin README:
 After editing `.claude/my-plugin.local.md`:
 1. Save the file
 2. Exit Claude Code
-3. Restart: `claude` or `cc`
+3. Restart: `claude`
 4. New settings will be loaded
 ```
 

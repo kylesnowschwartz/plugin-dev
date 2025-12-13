@@ -293,7 +293,7 @@ git commit -m "feat: initial plugin structure"
 1. **Installation instructions**:
    - Show user how to test locally:
      ```bash
-     cc --plugin-dir /path/to/plugin-name
+     claude --plugin-dir /path/to/plugin-name
      ```
    - Or copy to `.claude-plugin/` for project testing
 

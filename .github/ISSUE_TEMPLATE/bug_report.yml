@@ -23,7 +23,7 @@ body:
       label: Steps to Reproduce
       description: Steps to reproduce the behavior
       placeholder: |
-        1. Load plugin with `cc --plugin-dir plugins/plugin-dev`
+        1. Load plugin with `claude --plugin-dir plugins/plugin-dev`
         2. Run command `/plugin-dev:create-plugin`
         3. See error...
     validations:

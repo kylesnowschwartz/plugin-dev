@@ -593,7 +593,7 @@ All matching hooks run **in parallel**:
 
 1. Edit hook configuration or scripts
 2. Exit Claude Code session
-3. Restart: `claude` or `cc`
+3. Restart: `claude`
 4. New hook configuration loads
 5. Test hooks with `claude --debug`
 

@@ -157,7 +157,7 @@ Test skills by installing plugin locally:
 
 ```bash
 # Test with --plugin-dir
-cc --plugin-dir /path/to/plugin
+claude --plugin-dir /path/to/plugin
 
 # Ask questions that should trigger the skill
 # Verify skill loads correctly

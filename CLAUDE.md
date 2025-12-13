@@ -88,7 +88,7 @@ Test the plugin locally:
 
 ```bash
 # From repository root
-cc --plugin-dir plugins/plugin-dev
+claude --plugin-dir plugins/plugin-dev
 ```
 
 **Tip**: Create a separate test repository to avoid polluting your development environment. See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed testing guidelines.
@@ -382,7 +382,7 @@ rg '"version"' plugins/plugin-dev/.claude-plugin/plugin.json .claude-plugin/mark
 rg 'Current Version.*v[0-9]' CLAUDE.md
 
 # Load plugin locally and test
-cc --plugin-dir plugins/plugin-dev
+claude --plugin-dir plugins/plugin-dev
 
 # Test skills load correctly by asking trigger questions
 # Test workflow commands: /plugin-dev:create-plugin, /plugin-dev:create-marketplace

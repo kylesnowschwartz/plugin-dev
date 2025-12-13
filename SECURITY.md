@@ -70,7 +70,7 @@ When a security vulnerability is confirmed:
 2. **Dependencies**: Keep dependencies minimal (this plugin has only GitHub CLI as external dependency)
 3. **Code Review**: All changes go through pull request review
 4. **Markdown Linting**: Run `markdownlint` before committing to catch potential issues
-5. **Test Locally**: Always test with `cc --plugin-dir plugins/plugin-dev` before pushing
+5. **Test Locally**: Always test with `claude --plugin-dir plugins/plugin-dev` before pushing
 
 ## Known Security Mitigations
 

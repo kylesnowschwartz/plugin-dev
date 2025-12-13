@@ -85,7 +85,7 @@ git checkout -b fix/issue-description
 
 ```bash
 # From repository root
-cc --plugin-dir plugins/plugin-dev
+claude --plugin-dir plugins/plugin-dev
 
 # Test command in Claude Code
 /plugin-dev:create-plugin
@@ -301,7 +301,7 @@ Use the built-in validation scripts before submitting (paths relative to `plugin
 
 ### Local Testing Checklist
 
-- [ ] Load plugin: `cc --plugin-dir plugins/plugin-dev`
+- [ ] Load plugin: `claude --plugin-dir plugins/plugin-dev`
 - [ ] Run validation scripts for changed components
 - [ ] Test affected commands
 - [ ] Verify GitHub CLI integration works
@@ -329,7 +329,7 @@ gh repo create test-requirements-repo --public --source=. --remote=origin
 git push -u origin main
 
 # Now test the plugin
-cc --plugin-dir /path/to/plugin-dev/plugins/plugin-dev
+claude --plugin-dir /path/to/plugin-dev/plugins/plugin-dev
 ```
 
 ## Submitting Changes
