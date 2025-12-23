@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Unofficial plugin-dev plugin marketplace for plugin-dev Claude Code plugin - the plugin itself was initially created by Daisy Hollman at Anthropic.",
-    "version": "0.2.1"
+    "version": "0.2.2"
   },
   "plugins": [
     {
