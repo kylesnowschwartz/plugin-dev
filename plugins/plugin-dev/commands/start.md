@@ -1,9 +1,6 @@
 ---
 description: Start plugin development - choose your path
 argument-hint: [description]
-allowed-tools: AskUserQuestion, SlashCommand, TodoWrite
-model: sonnet
-disable-model-invocation: true
 ---
 
 # Plugin Development Entry Point
