@@ -13,22 +13,22 @@ The plugin-dev toolkit provides 8 specialized skills for building Claude Code pl
 
 ### Skill Quick Reference
 
-| Skill | Purpose | Activate When User Says |
-|-------|---------|------------------------|
-| **plugin-structure** | Directory layout, manifest, component organization | "create a plugin", "scaffold plugin", "plugin.json" |
-| **command-development** | Slash commands with frontmatter | "create a command", "slash command", "command arguments" |
-| **agent-development** | Autonomous subagents | "create an agent", "subagent", "agent triggering" |
-| **skill-development** | Creating skills with progressive disclosure | "create a skill", "SKILL.md", "skill triggers" |
-| **hook-development** | Event-driven automation | "create a hook", "PreToolUse", "validate tool use" |
-| **mcp-integration** | Model Context Protocol servers | "add MCP server", "integrate external service" |
-| **plugin-settings** | User configuration via .local.md | "plugin configuration", "store settings" |
-| **marketplace-structure** | Plugin marketplace creation | "create a marketplace", "distribute plugins" |
+| Skill | Activate With | Purpose |
+|-------|---------------|---------|
+| **plugin-structure** | `/plugin-dev:plugin-structure` | Directory layout, manifest, component organization |
+| **command-development** | `/plugin-dev:command-development` | Slash commands with frontmatter |
+| **agent-development** | `/plugin-dev:agent-development` | Autonomous subagents |
+| **skill-development** | `/plugin-dev:skill-development` | Creating skills with progressive disclosure |
+| **hook-development** | `/plugin-dev:hook-development` | Event-driven automation |
+| **mcp-integration** | `/plugin-dev:mcp-integration` | Model Context Protocol servers |
+| **plugin-settings** | `/plugin-dev:plugin-settings` | User configuration via .local.md |
+| **marketplace-structure** | `/plugin-dev:marketplace-structure` | Plugin marketplace creation |
 
 ## When to Use Each Skill
 
 ### Starting a New Plugin
 
-**Activate: `plugin-structure`**
+**Run: `/plugin-dev:plugin-structure`**
 
 Use when the user needs to:
 - Create a new plugin from scratch
@@ -39,7 +39,7 @@ Use when the user needs to:
 
 ### Adding User-Facing Commands
 
-**Activate: `command-development`**
+**Run: `/plugin-dev:command-development`**
 
 Use when the user needs to:
 - Create slash commands (/command-name)
@@ -50,7 +50,7 @@ Use when the user needs to:
 
 ### Creating Autonomous Agents
 
-**Activate: `agent-development`**
+**Run: `/plugin-dev:agent-development`**
 
 Use when the user needs to:
 - Create subagents for complex tasks
@@ -61,7 +61,7 @@ Use when the user needs to:
 
 ### Building Skills
 
-**Activate: `skill-development`**
+**Run: `/plugin-dev:skill-development`**
 
 Use when the user needs to:
 - Create skills that extend Claude's capabilities
@@ -72,7 +72,7 @@ Use when the user needs to:
 
 ### Implementing Event Hooks
 
-**Activate: `hook-development`**
+**Run: `/plugin-dev:hook-development`**
 
 Use when the user needs to:
 - React to Claude Code events (PreToolUse, Stop, SessionStart, etc.)
@@ -83,7 +83,7 @@ Use when the user needs to:
 
 ### Integrating External Services
 
-**Activate: `mcp-integration`**
+**Run: `/plugin-dev:mcp-integration`**
 
 Use when the user needs to:
 - Add MCP servers to plugins
@@ -94,7 +94,7 @@ Use when the user needs to:
 
 ### Managing Plugin Configuration
 
-**Activate: `plugin-settings`**
+**Run: `/plugin-dev:plugin-settings`**
 
 Use when the user needs to:
 - Store user-configurable settings
@@ -105,7 +105,7 @@ Use when the user needs to:
 
 ### Creating Plugin Marketplaces
 
-**Activate: `marketplace-structure`**
+**Run: `/plugin-dev:marketplace-structure`**
 
 Use when the user needs to:
 - Create a marketplace for multiple plugins
@@ -118,37 +118,37 @@ Use when the user needs to:
 
 ```
 User wants to...
-├── Create/organize a plugin structure? → plugin-structure
-├── Add a slash command? → command-development
-├── Create an autonomous agent? → agent-development
-├── Add domain expertise/knowledge? → skill-development
-├── React to Claude Code events? → hook-development
-├── Integrate external service/API? → mcp-integration
-├── Make plugin configurable? → plugin-settings
-└── Distribute multiple plugins? → marketplace-structure
+├── Create/organize a plugin structure? → /plugin-dev:plugin-structure
+├── Add a slash command? → /plugin-dev:command-development
+├── Create an autonomous agent? → /plugin-dev:agent-development
+├── Add domain expertise/knowledge? → /plugin-dev:skill-development
+├── React to Claude Code events? → /plugin-dev:hook-development
+├── Integrate external service/API? → /plugin-dev:mcp-integration
+├── Make plugin configurable? → /plugin-dev:plugin-settings
+└── Distribute multiple plugins? → /plugin-dev:marketplace-structure
 ```
 
 ## Common Multi-Skill Workflows
 
 ### Building a Complete Plugin
 
-1. **Start**: Load `plugin-structure` to create directory layout
-2. **Add features**: Load `command-development` for user-facing commands
-3. **Automation**: Load `hook-development` for event-driven behavior
-4. **Configuration**: Load `plugin-settings` if user configuration needed
+1. **Start**: Run `/plugin-dev:plugin-structure` to create directory layout
+2. **Add features**: Run `/plugin-dev:command-development` for user-facing commands
+3. **Automation**: Run `/plugin-dev:hook-development` for event-driven behavior
+4. **Configuration**: Run `/plugin-dev:plugin-settings` if user configuration needed
 5. **Validation**: Use plugin-validator agent to validate structure
 
 ### Creating an MCP-Powered Plugin
 
-1. **Start**: Load `plugin-structure` for basic structure
-2. **Integration**: Load `mcp-integration` to configure MCP servers
-3. **Commands**: Load `command-development` to create commands that use MCP tools
-4. **Agents**: Load `agent-development` for autonomous MCP workflows
+1. **Start**: Run `/plugin-dev:plugin-structure` for basic structure
+2. **Integration**: Run `/plugin-dev:mcp-integration` to configure MCP servers
+3. **Commands**: Run `/plugin-dev:command-development` to create commands that use MCP tools
+4. **Agents**: Run `/plugin-dev:agent-development` for autonomous MCP workflows
 
 ### Building a Skill-Focused Plugin
 
-1. **Start**: Load `plugin-structure` for basic structure
-2. **Skills**: Load `skill-development` to create specialized skills
+1. **Start**: Run `/plugin-dev:plugin-structure` for basic structure
+2. **Skills**: Run `/plugin-dev:skill-development` to create specialized skills
 3. **Validation**: Use skill-reviewer agent to validate skill quality
 
 ## Plugin Components Summary
@@ -170,22 +170,22 @@ A Claude Code plugin can include:
 For users new to plugin development:
 
 1. **Read this overview** to understand available capabilities
-2. **Load `plugin-structure`** to create your first plugin
-3. **Add components** by loading relevant skills as needed
+2. **Run `/plugin-dev:plugin-structure`** to create your first plugin
+3. **Add components** by running relevant skills as needed
 4. **Use workflows** like `/plugin-dev:create-plugin` for guided development
 
 ## Skill Activation Instructions
 
-When a user's request matches a specific domain, activate the corresponding skill:
+When a user's request matches a specific domain, run the corresponding skill using the Skill tool:
 
-- **Structure/scaffolding questions**: Activate `plugin-structure`
-- **Command/slash command questions**: Activate `command-development`
-- **Agent/subagent questions**: Activate `agent-development`
-- **Skill/SKILL.md questions**: Activate `skill-development`
-- **Hook/event/validation questions**: Activate `hook-development`
-- **MCP/external service questions**: Activate `mcp-integration`
-- **Settings/configuration questions**: Activate `plugin-settings`
-- **Marketplace/distribution questions**: Activate `marketplace-structure`
+- **Structure/scaffolding questions**: Run `/plugin-dev:plugin-structure`
+- **Command/slash command questions**: Run `/plugin-dev:command-development`
+- **Agent/subagent questions**: Run `/plugin-dev:agent-development`
+- **Skill/SKILL.md questions**: Run `/plugin-dev:skill-development`
+- **Hook/event/validation questions**: Run `/plugin-dev:hook-development`
+- **MCP/external service questions**: Run `/plugin-dev:mcp-integration`
+- **Settings/configuration questions**: Run `/plugin-dev:plugin-settings`
+- **Marketplace/distribution questions**: Run `/plugin-dev:marketplace-structure`
 
 Multiple skills can be loaded simultaneously when tasks span domains.
 
