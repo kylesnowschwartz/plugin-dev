@@ -46,7 +46,7 @@ Use when the user needs to:
 - Configure command frontmatter (description, allowed-tools, model)
 - Use dynamic arguments ($ARGUMENTS, $1, $2)
 - Reference files with @ syntax
-- Execute bash inline with `!` backticks
+- Execute bash inline with `[BANG]` backticks
 
 ### Creating Autonomous Agents
 
