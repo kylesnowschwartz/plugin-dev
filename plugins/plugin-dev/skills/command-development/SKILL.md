@@ -1,6 +1,6 @@
 ---
 name: command-development
-description: This skill should be used when the user asks to "create a slash command", "add a command", "write a custom command", "define command arguments", "use command frontmatter", "organize commands", "create command with file references", "interactive command", "use AskUserQuestion in command", "SlashCommand tool", "programmatic command invocation", "disable-model-invocation", "prevent Claude from running command", "debug command", "command debugging", "troubleshoot command", or needs guidance on slash command structure, YAML frontmatter fields, dynamic arguments, bash execution in commands, user interaction patterns, programmatic invocation control, debugging commands, or command development best practices for Claude Code.
+description: This skill should be used when the user asks to "create a slash command", "add a command", "write a custom command", "define command arguments", "use command frontmatter", "organize commands", "create command with file references", "interactive command", "use AskUserQuestion in command", "Skill tool", "programmatic command invocation", "disable-model-invocation", "prevent Claude from running command", "debug command", "command debugging", "troubleshoot command", or needs guidance on slash command structure, YAML frontmatter fields, dynamic arguments, bash execution in commands, user interaction patterns, programmatic invocation control, debugging commands, or command development best practices for Claude Code.
 ---
 
 # Command Development for Claude Code
@@ -193,7 +193,7 @@ argument-hint: [pr-number] [priority] [assignee]
 
 ### disable-model-invocation
 
-**Purpose:** Prevent SlashCommand tool from programmatically calling command
+**Purpose:** Prevent Skill tool from programmatically calling command
 **Type:** Boolean
 **Default:** false
 
@@ -704,7 +704,7 @@ Commands should validate inputs and resources before processing:
 ## Additional Resources
 
 For detailed frontmatter field specifications, see `references/frontmatter-reference.md`.
-For SlashCommand tool, programmatic invocation, and permission configuration, see `references/slashcommand-tool.md`.
+For Skill tool, programmatic invocation, and permission configuration, see `references/skill-tool.md`.
 For plugin-specific features and patterns, see `references/plugin-features-reference.md`.
 For plugin integration and validation patterns, see `references/plugin-integration.md`.
 For interactive user input patterns using AskUserQuestion, see `references/interactive-commands.md`.

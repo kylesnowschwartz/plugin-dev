@@ -64,6 +64,55 @@ Use `allowed-tools` for:
 
 When specified, Claude can only use the listed tools without needing permission. If omitted, Claude follows the standard permission model.
 
+##### user-invocable
+
+Control whether the skill appears in the slash command menu:
+
+```yaml
+---
+name: internal-review-standards
+description: Apply internal code review standards...
+user-invocable: false
+---
+```
+
+**Default:** `true` (skills are visible in the `/` menu)
+
+**Important:** This field only controls slash menu visibility. It does NOT affect:
+
+- **Skill tool access** - Claude can still invoke the skill programmatically
+- **Auto-discovery** - Claude still discovers and uses the skill based on context
+
+Use `user-invocable: false` for skills that Claude should use automatically but users shouldn't invoke directly.
+
+##### disable-model-invocation
+
+Prevent Claude from programmatically invoking the skill via the Skill tool:
+
+```yaml
+---
+name: dangerous-operation
+description: Perform dangerous operation...
+disable-model-invocation: true
+---
+```
+
+**Default:** `false` (programmatic invocation allowed)
+
+Use for skills that should only be manually invoked by users, such as:
+
+- Destructive operations requiring human judgment
+- Interactive workflows needing user input
+- Approval processes
+
+**Visibility comparison:**
+
+| Setting | Slash Menu | Skill Tool | Auto-Discovery |
+|---------|-----------|------------|----------------|
+| `user-invocable: true` (default) | Visible | Allowed | Yes |
+| `user-invocable: false` | Hidden | Allowed | Yes |
+| `disable-model-invocation: true` | Visible | Blocked | Yes |
+
 #### Bundled Resources (optional)
 
 ##### Scripts (`scripts/`)
@@ -201,6 +250,8 @@ Before finalizing a skill:
 - [ ] Name uses only lowercase letters, numbers, and hyphens (max 64 chars)
 - [ ] Description is under 1024 characters
 - [ ] (Optional) `allowed-tools` field if restricting tool access
+- [ ] (Optional) `user-invocable` field if hiding from slash menu
+- [ ] (Optional) `disable-model-invocation` field if blocking programmatic use
 - [ ] Markdown body is present and substantial
 - [ ] Referenced files actually exist
 

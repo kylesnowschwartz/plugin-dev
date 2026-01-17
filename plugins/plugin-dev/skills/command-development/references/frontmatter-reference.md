@@ -280,7 +280,7 @@ Run tests matching $1 with options: $2
 **Required:** No
 **Default:** false
 
-**Purpose:** Prevent SlashCommand tool from programmatically invoking command
+**Purpose:** Prevent Skill tool from programmatically invoking command
 
 **Examples:**
 ```yaml
@@ -314,13 +314,13 @@ disable-model-invocation: true
    ```
 
 **Default behavior (false):**
-- Command available to SlashCommand tool
+- Command available to Skill tool
 - Claude can invoke programmatically
 - Still available for manual invocation
 
 **When true:**
 - Command only invokable by user typing `/command`
-- Not available to SlashCommand tool
+- Not available to Skill tool
 - Safer for sensitive operations
 
 **Best practices:**

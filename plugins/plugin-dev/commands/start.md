@@ -1,7 +1,7 @@
 ---
 description: Start plugin development - choose your path
 argument-hint: [description]
-allowed-tools: AskUserQuestion, SlashCommand, TodoWrite
+allowed-tools: AskUserQuestion, Skill, TodoWrite
 model: sonnet
 disable-model-invocation: true
 ---
@@ -73,13 +73,13 @@ After the user selects an option:
 **If they chose "A plugin"**:
 
 - Acknowledge their choice
-- Use the SlashCommand tool to invoke `/plugin-dev:create-plugin`
+- Use the Skill tool to invoke `/plugin-dev:create-plugin`
 - Pass through any context from $ARGUMENTS if provided
 
 **If they chose "A marketplace"**:
 
 - Acknowledge their choice
-- Use the SlashCommand tool to invoke `/plugin-dev:create-marketplace`
+- Use the Skill tool to invoke `/plugin-dev:create-marketplace`
 - Pass through any context from $ARGUMENTS if provided
 
 ---

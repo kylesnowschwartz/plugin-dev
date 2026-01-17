@@ -1,48 +1,62 @@
-# SlashCommand Tool Reference
+# Skill Tool Reference
 
-How Claude programmatically invokes slash commands during conversations.
+How Claude programmatically invokes slash commands and skills during conversations.
 
 ## Overview
 
-The SlashCommand tool enables Claude to programmatically execute slash commands without user typing. This allows Claude to autonomously invoke commands as part of complex workflows, chain commands together, or use commands in response to user requests.
+The Skill tool enables Claude to programmatically execute both slash commands and Agent Skills without user typing. This allows Claude to autonomously invoke these capabilities as part of complex workflows, chain them together, or use them in response to user requests.
+
+> **Note:** In earlier versions of Claude Code, slash command invocation was provided by a separate `SlashCommand` tool. This has been merged into the `Skill` tool.
 
 **Key concepts:**
 
-- Claude can invoke commands via the SlashCommand tool
+- Claude can invoke both commands and skills via the Skill tool
 - Commands need `description` frontmatter to be visible
-- Permission rules control which commands Claude can invoke
-- Character budget limits how many commands Claude "sees"
-- `disable-model-invocation` prevents programmatic invocation
+- Skills can control visibility via `user-invocable` field
+- Permission rules control which commands/skills Claude can invoke
+- Character budget limits how many items Claude "sees"
+- `disable-model-invocation` prevents programmatic invocation for both
 
-## How the SlashCommand Tool Works
+## What the Skill Tool Can Invoke
+
+| Type | Location | Requirements |
+|------|----------|--------------|
+| Custom slash commands | `.claude/commands/` or `~/.claude/commands/` | Must have `description` frontmatter |
+| Agent Skills | `.claude/skills/` or `~/.claude/skills/` | Must not have `disable-model-invocation: true` |
+| Plugin commands | `plugin-name/commands/` | Must have `description` frontmatter |
+| Plugin skills | `plugin-name/skills/` | Must not have `disable-model-invocation: true` |
+
+**Note:** Built-in commands like `/compact` and `/init` are NOT available through this tool.
+
+## How the Skill Tool Works
 
 ### What It Does
 
-When Claude determines a slash command would help accomplish a task, it uses the SlashCommand tool to invoke that command. The tool:
+When Claude determines a slash command or skill would help accomplish a task, it uses the Skill tool to invoke that capability. The tool:
 
-1. Identifies available commands based on permission rules
-2. Selects appropriate command for the task
-3. Executes the command with any arguments
-4. Processes the command output
+1. Identifies available commands and skills based on permission rules
+2. Selects appropriate item for the task
+3. Executes the command or loads the skill with any arguments
+4. Processes the output
 
 ### When Claude Uses It
 
-Claude uses the SlashCommand tool when:
+Claude uses the Skill tool when:
 
-- A command directly addresses the user's request
-- Multiple steps require command chaining
-- Automated workflows need command execution
+- A command or skill directly addresses the user's request
+- Multiple steps require chaining capabilities
+- Automated workflows need command/skill execution
 - User asks Claude to "run /command" or similar
 
-**Example:** If a user says "review my code changes," Claude might use the SlashCommand tool to invoke `/review` if such a command exists and is available.
+**Example:** If a user says "review my code changes," Claude might use the Skill tool to invoke `/review` if such a command exists and is available.
 
 ## Visibility Requirements
 
 ### description Field Required
 
-Commands **must** have a `description` frontmatter field to be visible to the SlashCommand tool.
+Commands **must** have a `description` frontmatter field to be visible to the Skill tool.
 
-**Visible to SlashCommand tool:**
+**Visible to Skill tool:**
 
 ```yaml
 ---
@@ -50,7 +64,7 @@ description: Review code for security issues
 ---
 ```
 
-**NOT visible to SlashCommand tool:**
+**NOT visible to Skill tool:**
 
 ```markdown
 # No frontmatter - command only available via manual invocation
@@ -89,21 +103,21 @@ description: A command  # Obvious - provides no information
 
 ### Default Budget
 
-The SlashCommand tool has a character budget limiting how many command descriptions Claude receives. The default budget is **15,000 characters**.
+The Skill tool has a character budget limiting how many command/skill descriptions Claude receives. The default budget is **15,000 characters**.
 
 ### How Budget Works
 
-1. Commands are sorted by priority (project, then user, then plugin)
-2. Command descriptions are added until budget exhausted
-3. Commands exceeding budget are not visible to Claude
-4. More concise descriptions = more commands visible
+1. Items are sorted by priority (project, then user, then plugin)
+2. Descriptions are added until budget exhausted
+3. Items exceeding budget are not visible to Claude
+4. More concise descriptions = more items visible
 
 ### Configuring Budget
 
 Set the `SLASH_COMMAND_TOOL_CHAR_BUDGET` environment variable to adjust:
 
 ```bash
-# Increase budget to show more commands
+# Increase budget to show more commands/skills
 export SLASH_COMMAND_TOOL_CHAR_BUDGET=30000
 
 # Decrease budget for faster processing
@@ -122,38 +136,38 @@ description: Review PR for security issues
 description: This command reviews pull requests for potential security vulnerabilities and issues
 ```
 
-**Prioritize important commands:**
+**Prioritize important items:**
 
-- Project commands appear before user commands
-- Keep critical commands in project scope
-- Move rarely-used commands to user scope
+- Project items appear before user items
+- Keep critical commands/skills in project scope
+- Move rarely-used items to user scope
 
 ## Permission Rules
 
 ### Overview
 
-Permission rules control which commands Claude can invoke via the SlashCommand tool. Rules are configured in Claude Code settings.
+Permission rules control which commands and skills Claude can invoke via the Skill tool. Rules are configured in Claude Code settings.
 
 ### Rule Patterns
 
-**Exact match:**
+**Exact match (no arguments):**
 
 ```
-SlashCommand:/commit  # Only /commit command
-SlashCommand:/deploy  # Only /deploy command
+Skill(commit)      # Only commit with no arguments
+Skill(deploy)      # Only deploy with no arguments
 ```
 
-**Prefix match (wildcards):**
+**Prefix match (with arguments):**
 
 ```
-SlashCommand:/review-pr:*  # All commands starting with /review-pr
-SlashCommand:/git:*        # All commands starting with /git
-SlashCommand:/plugin-name:*  # All commands from specific plugin
+Skill(review-pr:*)     # review-pr with any arguments
+Skill(git:*)           # All items starting with git
+Skill(plugin-name:*)   # All items from specific plugin
 ```
 
 **Deny all:**
 
-Add `SlashCommand` to deny rules to prevent all programmatic command invocation.
+Add `Skill` to deny rules to prevent all programmatic invocation.
 
 ### Configuration Examples
 
@@ -162,8 +176,8 @@ Add `SlashCommand` to deny rules to prevent all programmatic command invocation.
 ```json
 {
   "allow": [
-    "SlashCommand:/review",
-    "SlashCommand:/test:*"
+    "Skill(review:*)",
+    "Skill(test:*)"
   ]
 }
 ```
@@ -173,8 +187,8 @@ Add `SlashCommand` to deny rules to prevent all programmatic command invocation.
 ```json
 {
   "deny": [
-    "SlashCommand:/deploy-prod",
-    "SlashCommand:/delete:*"
+    "Skill(deploy-prod:*)",
+    "Skill(delete:*)"
   ]
 }
 ```
@@ -183,7 +197,7 @@ Add `SlashCommand` to deny rules to prevent all programmatic command invocation.
 
 ```json
 {
-  "deny": ["SlashCommand"]
+  "deny": ["Skill"]
 }
 ```
 
@@ -192,13 +206,13 @@ Add `SlashCommand` to deny rules to prevent all programmatic command invocation.
 1. Explicit deny rules take precedence
 2. Explicit allow rules override defaults
 3. Default behavior allows programmatic invocation
-4. `disable-model-invocation` in command frontmatter always blocks
+4. `disable-model-invocation` in frontmatter always blocks
 
 ## disable-model-invocation Field
 
 ### Purpose
 
-The `disable-model-invocation` frontmatter field prevents Claude from programmatically invoking a command, regardless of permission rules.
+The `disable-model-invocation` frontmatter field prevents Claude from programmatically invoking a command or skill, regardless of permission rules.
 
 ```yaml
 ---
@@ -254,22 +268,44 @@ This wizard requires interactive user input at each step.
 
 | Aspect | disable-model-invocation | Permission Rules |
 |--------|-------------------------|------------------|
-| Scope | Single command | Global/pattern-based |
-| Location | Command frontmatter | Settings file |
+| Scope | Single command/skill | Global/pattern-based |
+| Location | Frontmatter | Settings file |
 | Override | Cannot be overridden | Can be adjusted |
-| Use case | Command-specific restriction | Policy enforcement |
+| Use case | Item-specific restriction | Policy enforcement |
 
 **Use `disable-model-invocation` when:**
 
-- Command should NEVER be programmatically invoked
-- Restriction is inherent to command purpose
-- Decision made by command author
+- Item should NEVER be programmatically invoked
+- Restriction is inherent to item's purpose
+- Decision made by author
 
 **Use permission rules when:**
 
 - Organization policy restricts certain patterns
 - User wants to control Claude's autonomy
 - Temporary or adjustable restrictions needed
+
+## user-invocable Field (Skills Only)
+
+Skills have an additional `user-invocable` field that controls slash menu visibility:
+
+```yaml
+---
+name: internal-review-standards
+description: Apply internal code review standards
+user-invocable: false
+---
+```
+
+**Important distinctions:**
+
+| Setting | Slash Menu | Skill Tool | Auto-Discovery |
+|---------|-----------|------------|----------------|
+| `user-invocable: true` (default) | Visible | Allowed | Yes |
+| `user-invocable: false` | Hidden | Allowed | Yes |
+| `disable-model-invocation: true` | Visible | Blocked | Yes |
+
+The `user-invocable` field only controls whether users see the skill in the `/` menu. It does NOT prevent Claude from using the skill via the Skill tool or auto-discovery.
 
 ## Integration Patterns
 
@@ -346,7 +382,7 @@ If sub-commands have `disable-model-invocation: true`, this workflow command wil
 
 ## Troubleshooting
 
-### Command Not Available to Claude
+### Command/Skill Not Available to Claude
 
 **Check description field:**
 
@@ -358,16 +394,16 @@ description: Must have description  # Required for visibility
 
 **Check character budget:**
 
-- Too many commands may exceed budget
+- Too many items may exceed budget
 - Shorten descriptions or increase budget
-- Check if command appears with `SLASH_COMMAND_TOOL_CHAR_BUDGET=100000`
+- Check if item appears with `SLASH_COMMAND_TOOL_CHAR_BUDGET=100000`
 
 **Check permission rules:**
 
-- Verify no deny rules match the command
+- Verify no deny rules match the item
 - Check if allow rules are too restrictive
 
-### Claude Won't Invoke Command
+### Claude Won't Invoke Command/Skill
 
 **Check disable-model-invocation:**
 
@@ -377,10 +413,10 @@ disable-model-invocation: true  # Blocks programmatic invocation
 
 **Check permission rules:**
 
-- Look for deny patterns matching command
-- Verify SlashCommand not in global deny list
+- Look for deny patterns matching item
+- Verify Skill not in global deny list
 
-### Too Many Commands Visible
+### Too Many Items Visible
 
 **Reduce character budget:**
 
@@ -396,23 +432,23 @@ export SLASH_COMMAND_TOOL_CHAR_BUDGET=8000
 
 **Use disable-model-invocation:**
 
-- Add to commands that shouldn't be auto-invoked
-- Keep only essential commands visible
+- Add to items that shouldn't be auto-invoked
+- Keep only essential items visible
 
 ## Best Practices
 
-### For Command Authors
+### For Authors
 
 1. **Always include description** - Required for visibility
 2. **Keep descriptions concise** - Respect character budget
 3. **Use `disable-model-invocation` thoughtfully** - Only when truly needed
-4. **Document dangerous commands** - Make risks clear in description
-5. **Design for both uses** - Commands should work manually and programmatically
+4. **Document dangerous operations** - Make risks clear in description
+5. **Design for both uses** - Items should work manually and programmatically
 
 ### For Users/Organizations
 
 1. **Set appropriate permission rules** - Balance autonomy and safety
-2. **Adjust character budget** - Based on command volume
-3. **Review command descriptions** - Ensure Claude can understand them
-4. **Test programmatic invocation** - Verify commands work as expected
-5. **Monitor command usage** - Track which commands Claude invokes
+2. **Adjust character budget** - Based on item volume
+3. **Review descriptions** - Ensure Claude can understand them
+4. **Test programmatic invocation** - Verify items work as expected
+5. **Monitor usage** - Track which items Claude invokes
