@@ -206,7 +206,7 @@ Skill instructions and guidance...
 ---
 name: safe-reader
 description: Read-only file access skill
-allowed-tools: Read, Grep, Glob  # Optional: restricts available tools
+allowed-tools: Read, Grep, Glob # Optional: restricts available tools
 ---
 ```
 
@@ -237,14 +237,18 @@ hooks/
 ```json
 {
   "hooks": {
-    "PreToolUse": [{
-      "matcher": "Write|Edit",
-      "hooks": [{
-        "type": "command",
-        "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/validate.sh",
-        "timeout": 30
-      }]
-    }]
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/validate.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
   }
 }
 ```

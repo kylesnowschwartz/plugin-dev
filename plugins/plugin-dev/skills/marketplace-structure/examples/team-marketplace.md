@@ -105,9 +105,7 @@ For projects requiring specific plugins, commit `.claude/settings.json`:
       }
     }
   },
-  "enabledPlugins": [
-    "code-standards@company-plugins"
-  ]
+  "enabledPlugins": ["code-standards@company-plugins"]
 }
 ```
 

@@ -274,8 +274,8 @@ Location: [path]
 
 ### Plugin Entries ([count])
 
-| Name | Source Type | Version | Status |
-|------|-------------|---------|--------|
+| Name   | Source Type           | Version   | Status         |
+| ------ | --------------------- | --------- | -------------- |
 | [name] | [relative/github/url] | [version] | [valid/issues] |
 
 ### Local Plugin Validation

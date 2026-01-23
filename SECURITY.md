@@ -28,6 +28,7 @@ This is the preferred method as it allows us to work with you privately to fix t
 If you prefer, you can also email security concerns to: **<sjnims@gmail.com>**
 
 Please include:
+
 - Type of issue (e.g., buffer overflow, SQL injection, cross-site scripting, etc.)
 - Full paths of source file(s) related to the issue
 - Location of the affected source code (tag/branch/commit or direct URL)
@@ -85,9 +86,11 @@ Due to a Claude Code issue, inline bash execution patterns (exclamation mark fol
 
 ```markdown
 <!-- UNSAFE - may execute during skill load -->
+
 Current branch: !`git branch --show-current`
 
 <!-- SAFE - displays as documentation only -->
+
 Current branch: [BANG]`git branch --show-current`
 ```
 
@@ -95,7 +98,7 @@ Current branch: [BANG]`git branch --show-current`
 
 - Do NOT "fix" `[BANG]` back to `!` - this is intentional
 - When adding new documentation with bash patterns, use `[BANG]`
-- Audit command: `rg '!\`' plugins/plugin-dev/skills/ --glob '*.md' | rg -v '\[BANG\]'`
+- Audit command: `rg '!\`' plugins/plugin-dev/skills/ --glob '\*.md' | rg -v '\[BANG\]'`
 - See [CONTRIBUTING.md](CONTRIBUTING.md) for documentation guidelines
 - Reference: [command-development skill](plugins/plugin-dev/skills/command-development/SKILL.md) lines 340-378
 

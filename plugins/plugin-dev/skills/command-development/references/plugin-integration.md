@@ -15,12 +15,14 @@ argument-hint: [file-path]
 Initiate comprehensive review of @$1 using the code-reviewer agent.
 
 The agent will analyze:
+
 - Code structure
 - Security issues
 - Performance
 - Best practices
 
 Agent uses plugin resources:
+
 - ${CLAUDE_PLUGIN_ROOT}/config/rules.json
 - ${CLAUDE_PLUGIN_ROOT}/checklists/review.md
 ```
@@ -45,6 +47,7 @@ argument-hint: [api-file]
 Document API in @$1 following plugin standards.
 
 Use the api-docs-standards skill to ensure:
+
 - Complete endpoint documentation
 - Consistent formatting
 - Example quality
@@ -121,10 +124,10 @@ argument-hint: [environment]
 Validate environment: `echo "$1" | grep -E "^(dev|staging|prod)$" || echo "INVALID"`
 
 If $1 is valid environment:
-  Deploy to $1
+Deploy to $1
 Otherwise:
-  Explain valid environments: dev, staging, prod
-  Show usage: /deploy [environment]
+Explain valid environments: dev, staging, prod
+Show usage: /deploy [environment]
 ```
 
 ### File Existence Checks
@@ -138,11 +141,11 @@ argument-hint: [config-file]
 Check file exists: `test -f $1 && echo "EXISTS" || echo "MISSING"`
 
 If file exists:
-  Process configuration: @$1
+Process configuration: @$1
 Otherwise:
-  Explain where to place config file
-  Show expected format
-  Provide example configuration
+Explain where to place config file
+Show expected format
+Provide example configuration
 ```
 
 ### Plugin Resource Validation
@@ -154,6 +157,7 @@ allowed-tools: Bash(test:*)
 ---
 
 Validate plugin setup:
+
 - Script: `test -x ${CLAUDE_PLUGIN_ROOT}/bin/analyze && echo "✓" || echo "✗"`
 - Config: `test -f ${CLAUDE_PLUGIN_ROOT}/config.json && echo "✓" || echo "✗"`
 
@@ -172,11 +176,11 @@ allowed-tools: Bash(*)
 Execute build: `bash ${CLAUDE_PLUGIN_ROOT}/scripts/build.sh 2>&1 || echo "BUILD_FAILED"`
 
 If build succeeded:
-  Report success and output location
+Report success and output location
 If build failed:
-  Analyze error output
-  Suggest likely causes
-  Provide troubleshooting steps
+Analyze error output
+Suggest likely causes
+Provide troubleshooting steps
 ```
 
 **Best practices:**

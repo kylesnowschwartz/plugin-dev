@@ -16,6 +16,7 @@ Prompt-based hooks offer several advantages:
 ### Before (Basic Command Hook)
 
 **Configuration:**
+
 ```json
 {
   "PreToolUse": [
@@ -33,6 +34,7 @@ Prompt-based hooks offer several advantages:
 ```
 
 **Script (validate-bash.sh):**
+
 ```bash
 #!/bin/bash
 input=$(cat)
@@ -46,6 +48,7 @@ fi
 ```
 
 **Problems:**
+
 - Only checks for exact "rm -rf" pattern
 - Doesn't catch variations like `rm -fr` or `rm -r -f`
 - Misses other dangerous commands (`dd`, `mkfs`, etc.)
@@ -55,6 +58,7 @@ fi
 ### After (Advanced Prompt Hook)
 
 **Configuration:**
+
 ```json
 {
   "PreToolUse": [
@@ -73,6 +77,7 @@ fi
 ```
 
 **Benefits:**
+
 - Catches all variations and patterns
 - Understands intent, not just literal strings
 - No script file needed
@@ -85,6 +90,7 @@ fi
 ### Before (Basic Command Hook)
 
 **Configuration:**
+
 ```json
 {
   "PreToolUse": [
@@ -102,6 +108,7 @@ fi
 ```
 
 **Script (validate-write.sh):**
+
 ```bash
 #!/bin/bash
 input=$(cat)
@@ -128,6 +135,7 @@ fi
 ```
 
 **Problems:**
+
 - Hard-coded path patterns
 - Doesn't understand symlinks
 - Missing edge cases (e.g., `/etc` vs `/etc/`)
@@ -136,6 +144,7 @@ fi
 ### After (Advanced Prompt Hook)
 
 **Configuration:**
+
 ```json
 {
   "PreToolUse": [
@@ -153,6 +162,7 @@ fi
 ```
 
 **Benefits:**
+
 - Context-aware (considers content too)
 - Handles symlinks and edge cases
 - Natural understanding of "system directories"
@@ -329,6 +339,7 @@ my-plugin/
 ### Pattern: String Contains → Natural Language
 
 **Before:**
+
 ```bash
 if [[ "$command" == *"sudo"* ]]; then
   echo "Privilege escalation" >&2
@@ -337,6 +348,7 @@ fi
 ```
 
 **After:**
+
 ```
 "Check for privilege escalation (sudo, su, etc)"
 ```
@@ -344,6 +356,7 @@ fi
 ### Pattern: Regex → Intent
 
 **Before:**
+
 ```bash
 if [[ "$file" =~ \.(env|secret|key|token)$ ]]; then
   echo "Credential file" >&2
@@ -352,6 +365,7 @@ fi
 ```
 
 **After:**
+
 ```
 "Verify not writing to credential files (.env, secrets, keys, tokens)"
 ```
@@ -359,6 +373,7 @@ fi
 ### Pattern: Multiple Conditions → Criteria List
 
 **Before:**
+
 ```bash
 if [ condition1 ] || [ condition2 ] || [ condition3 ]; then
   echo "Invalid" >&2
@@ -367,6 +382,7 @@ fi
 ```
 
 **After:**
+
 ```
 "Check: 1) condition1 2) condition2 3) condition3. Deny if any fail."
 ```

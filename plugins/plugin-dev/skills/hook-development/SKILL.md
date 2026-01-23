@@ -153,7 +153,7 @@ Execute before any tool runs. Use to approve, deny, or modify tool calls.
 {
   "hookSpecificOutput": {
     "permissionDecision": "allow|deny|ask",
-    "updatedInput": {"field": "modified_value"}
+    "updatedInput": { "field": "modified_value" }
   },
   "systemMessage": "Explanation for Claude"
 }
@@ -188,7 +188,7 @@ Execute when user is shown a permission dialog. Use to automatically allow or de
   "hookSpecificOutput": {
     "decision": {
       "behavior": "allow|deny",
-      "updatedInput": {"command": "modified command"},
+      "updatedInput": { "command": "modified command" },
       "message": "Reason for denial",
       "interrupt": false
     }
@@ -421,7 +421,13 @@ In plugins, define hooks in `hooks/hooks.json` using the **plugin wrapper format
     "SessionStart": [
       {
         "matcher": "*",
-        "hooks": [{ "type": "command", "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/load-context.sh", "timeout": 10 }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/load-context.sh",
+            "timeout": 10
+          }
+        ]
       }
     ]
   }
@@ -554,9 +560,9 @@ All matching hooks run **in parallel**:
     {
       "matcher": "Write",
       "hooks": [
-        {"type": "command", "command": "check1.sh"},  // Parallel
-        {"type": "command", "command": "check2.sh"},  // Parallel
-        {"type": "prompt", "prompt": "Validate..."}   // Parallel
+        { "type": "command", "command": "check1.sh" }, // Parallel
+        { "type": "command", "command": "check2.sh" }, // Parallel
+        { "type": "prompt", "prompt": "Validate..." } // Parallel
       ]
     }
   ]
@@ -641,18 +647,18 @@ echo "$output" | jq .
 
 ### Hook Events Summary
 
-| Event | When | Use For |
-|-------|------|---------|
-| PreToolUse | Before tool | Validation, modification |
-| PermissionRequest | Permission dialog | Auto-allow/deny |
-| PostToolUse | After tool | Feedback, logging |
-| UserPromptSubmit | User input | Context, validation |
-| Stop | Agent stopping | Completeness check |
-| SubagentStop | Subagent done | Task validation |
-| SessionStart | Session begins | Context loading |
-| SessionEnd | Session ends | Cleanup, logging |
-| PreCompact | Before compact | Preserve context |
-| Notification | User notified | Logging, reactions |
+| Event             | When              | Use For                  |
+| ----------------- | ----------------- | ------------------------ |
+| PreToolUse        | Before tool       | Validation, modification |
+| PermissionRequest | Permission dialog | Auto-allow/deny          |
+| PostToolUse       | After tool        | Feedback, logging        |
+| UserPromptSubmit  | User input        | Context, validation      |
+| Stop              | Agent stopping    | Completeness check       |
+| SubagentStop      | Subagent done     | Task validation          |
+| SessionStart      | Session begins    | Context loading          |
+| SessionEnd        | Session ends      | Cleanup, logging         |
+| PreCompact        | Before compact    | Preserve context         |
+| Notification      | User notified     | Logging, reactions       |
 
 ### Best Practices
 

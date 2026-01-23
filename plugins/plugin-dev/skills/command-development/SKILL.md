@@ -38,6 +38,7 @@ When a user invokes `/command-name`, the command content becomes Claude's instru
 
 ```markdown
 Review this code for security vulnerabilities including:
+
 - SQL injection
 - XSS attacks
 - Authentication issues
@@ -94,6 +95,7 @@ Commands are Markdown files with `.md` extension:
 
 ```markdown
 Review this code for security vulnerabilities including:
+
 - SQL injection
 - XSS attacks
 - Authentication bypass
@@ -294,6 +296,7 @@ argument-hint: [file-path]
 ---
 
 Review @$1 for:
+
 - Code quality
 - Best practices
 - Potential bugs
@@ -315,6 +318,7 @@ Reference multiple files:
 Compare @src/old-version.js with @src/new-version.js
 
 Identify:
+
 - Breaking changes
 - New features
 - Bug fixes
@@ -328,6 +332,7 @@ Reference known files without arguments:
 Review @package.json and @tsconfig.json for consistency
 
 Ensure:
+
 - TypeScript version matches
 - Dependencies are aligned
 - Build configuration is correct
@@ -452,8 +457,8 @@ argument-hint: [pr-number]
 ---
 
 $IF($1,
-  Review PR #$1,
-  Please provide a PR number. Usage: /review-pr [number]
+Review PR #$1,
+Please provide a PR number. Usage: /review-pr [number]
 )
 ```
 
@@ -516,6 +521,7 @@ allowed-tools: Bash(gh:*), Read
 ---
 
 PR #$1 Workflow:
+
 1. Fetch PR: `gh pr view $1`
 2. Review changes
 3. Run checks
@@ -581,15 +587,19 @@ Review results and report findings.
 
 ```markdown
 # Execute plugin script
+
 `bash ${CLAUDE_PLUGIN_ROOT}/scripts/script.sh`
 
 # Load plugin configuration
+
 @${CLAUDE_PLUGIN_ROOT}/config/settings.json
 
 # Use plugin template
+
 @${CLAUDE_PLUGIN_ROOT}/templates/report.md
 
 # Access plugin resources
+
 @${CLAUDE_PLUGIN_ROOT}/docs/reference.md
 ```
 

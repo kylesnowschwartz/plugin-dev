@@ -98,10 +98,7 @@ Pre-configure required plugins for a project:
       }
     }
   },
-  "enabledPlugins": [
-    "security-scanner@team-tools",
-    "code-formatter@team-tools"
-  ]
+  "enabledPlugins": ["security-scanner@team-tools", "code-formatter@team-tools"]
 }
 ```
 
@@ -173,11 +170,11 @@ Track marketplace changes with semantic versioning:
 }
 ```
 
-| Change Type | Version Bump | Examples |
-|-------------|--------------|----------|
-| Breaking | Major (X.0.0) | Remove plugins, major restructuring |
-| Feature | Minor (X.Y.0) | Add new plugins, new categories |
-| Fix | Patch (X.Y.Z) | Update versions, fix metadata |
+| Change Type | Version Bump  | Examples                            |
+| ----------- | ------------- | ----------------------------------- |
+| Breaking    | Major (X.0.0) | Remove plugins, major restructuring |
+| Feature     | Minor (X.Y.0) | Add new plugins, new categories     |
+| Fix         | Patch (X.Y.Z) | Update versions, fix metadata       |
 
 ### Plugin Version Tracking
 

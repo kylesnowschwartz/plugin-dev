@@ -45,6 +45,7 @@ Before contributing, ensure you have:
    - [SECURITY.md](SECURITY.md) - Security policy
 
 2. **Explore the architecture**:
+
    ```
    plugins/plugin-dev/
    ├── commands/      # 3 slash commands
@@ -143,6 +144,7 @@ markdownlint '**/*.md' --ignore node_modules --fix
 ```
 
 **Style Rules** (see `.markdownlint.json`):
+
 - Use ATX-style headers (`#`, `##`, `###`)
 - Use dash-style lists (`-`, not `*` or `+`)
 - Use 2-space indentation for lists
@@ -156,6 +158,7 @@ When documenting bash execution patterns in skill files, use `[BANG]` instead of
 
 ```markdown
 <!-- In skill documentation (SKILL.md, references/, examples/) -->
+
 Current branch: [BANG]`git branch --show-current`
 
 <!-- The [BANG] placeholder prevents execution while loading -->
@@ -192,12 +195,12 @@ Always include a comment explaining why the directive is needed.
 
 #### Common Issues
 
-| Warning | Typical Fix |
-|---------|-------------|
-| SC2086 | Quote variables: `"$var"` |
-| SC2046 | Quote command substitution: `"$(cmd)"` |
-| SC2034 | Remove unused variables or export them |
-| SC2155 | Separate declaration and assignment: `local var; var=$(cmd)` |
+| Warning | Typical Fix                                                  |
+| ------- | ------------------------------------------------------------ |
+| SC2086  | Quote variables: `"$var"`                                    |
+| SC2046  | Quote command substitution: `"$(cmd)"`                       |
+| SC2034  | Remove unused variables or export them                       |
+| SC2155  | Separate declaration and assignment: `local var; var=$(cmd)` |
 
 ## Component-Specific Guidelines
 
@@ -206,6 +209,7 @@ Always include a comment explaining why the directive is needed.
 When creating or modifying commands:
 
 1. **YAML Frontmatter Required**:
+
    ```yaml
    ---
    description: Brief description
@@ -231,6 +235,7 @@ When creating or modifying commands:
 When creating or modifying skills:
 
 1. **YAML Frontmatter Required**:
+
    ```yaml
    ---
    name: skill-name
@@ -254,6 +259,7 @@ When creating or modifying skills:
 When creating or modifying agents:
 
 1. **YAML Frontmatter Required**:
+
    ```yaml
    ---
    name: agent-name
@@ -281,16 +287,16 @@ When creating and/or modifying hooks:
 
 ## Common Mistakes to Avoid
 
-| Mistake | Problem | Solution |
-|---------|---------|----------|
-| Testing in development repo | Pollutes your environment with test files | Create a separate test repository |
-| Using `!` in skill documentation | Shell execution during skill load | Use `[BANG]` placeholder (see [SECURITY.md](SECURITY.md)) |
-| Missing trigger phrases | Skills don't load when expected | Include specific user queries in descriptions |
-| Overly broad tool matchers | Hooks trigger unexpectedly | Use specific patterns like `Write\|Edit` not `*` |
-| Hardcoded paths | Plugin breaks on other machines | Use `${CLAUDE_PLUGIN_ROOT}` |
-| Large SKILL.md files | Slow loading, excessive context | Keep core <2,000 words; use `references/` for details |
-| Missing frontmatter fields | Components fail validation | Always include required fields (`name`, `description`) |
-| Committing test files | Repository bloat | Use `.gitignore` and clean up test repos |
+| Mistake                          | Problem                                   | Solution                                                  |
+| -------------------------------- | ----------------------------------------- | --------------------------------------------------------- |
+| Testing in development repo      | Pollutes your environment with test files | Create a separate test repository                         |
+| Using `!` in skill documentation | Shell execution during skill load         | Use `[BANG]` placeholder (see [SECURITY.md](SECURITY.md)) |
+| Missing trigger phrases          | Skills don't load when expected           | Include specific user queries in descriptions             |
+| Overly broad tool matchers       | Hooks trigger unexpectedly                | Use specific patterns like `Write\|Edit` not `*`          |
+| Hardcoded paths                  | Plugin breaks on other machines           | Use `${CLAUDE_PLUGIN_ROOT}`                               |
+| Large SKILL.md files             | Slow loading, excessive context           | Keep core <2,000 words; use `references/` for details     |
+| Missing frontmatter fields       | Components fail validation                | Always include required fields (`name`, `description`)    |
+| Committing test files            | Repository bloat                          | Use `.gitignore` and clean up test repos                  |
 
 ## Testing
 
@@ -415,20 +421,20 @@ See [pull_request_template.md](.github/pull_request_template.md) for the complet
 
 Your PR will automatically run these checks:
 
-| Workflow | What It Checks |
-|----------|----------------|
-| `markdownlint.yml` | Markdown style and formatting |
-| `links.yml` | Broken links in documentation |
-| `component-validation.yml` | Plugin component structure |
-| `version-check.yml` | Version consistency across manifests |
-| `validate-workflows.yml` | GitHub Actions syntax |
-| `claude-pr-review.yml` | AI-powered code review |
+| Workflow                   | What It Checks                       |
+| -------------------------- | ------------------------------------ |
+| `markdownlint.yml`         | Markdown style and formatting        |
+| `links.yml`                | Broken links in documentation        |
+| `component-validation.yml` | Plugin component structure           |
+| `version-check.yml`        | Version consistency across manifests |
+| `validate-workflows.yml`   | GitHub Actions syntax                |
+| `claude-pr-review.yml`     | AI-powered code review               |
 
 All checks must pass before merging. Fix any failures before requesting review.
 
 ### Version Releases
 
-Version releases are handled by maintainers. If your contribution requires a version bump, maintainers will follow the [Version Release Procedure](CLAUDE.md#version-release-procedure) in CLAUDE.md.
+Version releases are handled by maintainers. If your contribution requires a version bump, maintainers will follow the [Version Release Procedure](docs/release-procedure.md).
 
 ## Style Guide
 
@@ -485,6 +491,7 @@ Version releases are handled by maintainers. If your contribution requires a ver
 ### Recognition
 
 Contributors are recognized in:
+
 - Release notes
 - README.md (for significant contributions)
 - Git commit history

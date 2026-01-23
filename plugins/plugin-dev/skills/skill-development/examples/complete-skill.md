@@ -21,7 +21,7 @@ api-testing/
 
 ### SKILL.md
 
-```markdown
+````markdown
 ---
 name: api-testing
 description: This skill should be used when the user asks to "write API tests", "test REST endpoints", "test GraphQL queries", "create integration tests for APIs", "mock API responses", "test authentication flows", or needs guidance on API testing patterns, assertion strategies, or test organization.
@@ -58,6 +58,7 @@ tests/
     ├── auth.js
     └── fixtures.js
 ```
+````
 
 ## Core Patterns
 
@@ -65,9 +66,9 @@ tests/
 
 ```javascript
 const response = await request(app)
-  .post('/api/users')
-  .set('Authorization', `Bearer ${token}`)
-  .send({ name: 'Test User', email: 'test@example.com' })
+  .post("/api/users")
+  .set("Authorization", `Bearer ${token}`)
+  .send({ name: "Test User", email: "test@example.com" })
   .expect(201);
 ```
 
@@ -76,8 +77,8 @@ const response = await request(app)
 ```javascript
 expect(response.body).toMatchObject({
   id: expect.any(String),
-  name: 'Test User',
-  createdAt: expect.any(String)
+  name: "Test User",
+  createdAt: expect.any(String),
 });
 ```
 
@@ -108,7 +109,8 @@ See `examples/` for complete test files:
 
 - `rest-api-tests.sh` - curl-based REST API tests
 - `graphql-tests.sh` - GraphQL query tests
-```
+
+````
 
 ### references/authentication-guide.md
 
@@ -142,31 +144,29 @@ function generateExpiredToken(userId) {
 }
 
 module.exports = { generateTestToken, generateExpiredToken };
-```
+````
 
 ### Test Cases
 
 ```javascript
-describe('Protected Endpoints', () => {
-  it('returns 401 without token', async () => {
+describe("Protected Endpoints", () => {
+  it("returns 401 without token", async () => {
+    await request(app).get("/api/profile").expect(401);
+  });
+
+  it("returns 401 with expired token", async () => {
+    const token = generateExpiredToken("user-123");
     await request(app)
-      .get('/api/profile')
+      .get("/api/profile")
+      .set("Authorization", `Bearer ${token}`)
       .expect(401);
   });
 
-  it('returns 401 with expired token', async () => {
-    const token = generateExpiredToken('user-123');
+  it("returns 200 with valid token", async () => {
+    const token = generateTestToken("user-123");
     await request(app)
-      .get('/api/profile')
-      .set('Authorization', `Bearer ${token}`)
-      .expect(401);
-  });
-
-  it('returns 200 with valid token', async () => {
-    const token = generateTestToken('user-123');
-    await request(app)
-      .get('/api/profile')
-      .set('Authorization', `Bearer ${token}`)
+      .get("/api/profile")
+      .set("Authorization", `Bearer ${token}`)
       .expect(200);
   });
 });
@@ -175,22 +175,23 @@ describe('Protected Endpoints', () => {
 ## API Key Authentication
 
 ```javascript
-describe('API Key Auth', () => {
-  it('accepts valid API key in header', async () => {
+describe("API Key Auth", () => {
+  it("accepts valid API key in header", async () => {
     await request(app)
-      .get('/api/data')
-      .set('X-API-Key', process.env.TEST_API_KEY)
+      .get("/api/data")
+      .set("X-API-Key", process.env.TEST_API_KEY)
       .expect(200);
   });
 
-  it('accepts valid API key in query', async () => {
+  it("accepts valid API key in query", async () => {
     await request(app)
       .get(`/api/data?api_key=${process.env.TEST_API_KEY}`)
       .expect(200);
   });
 });
 ```
-```
+
+````
 
 ### references/assertion-patterns.md
 
@@ -209,14 +210,14 @@ expect(response.body).toEqual({
   name: 'Test',
   active: true
 });
-```
+````
 
 ### Partial Match
 
 ```javascript
 expect(response.body).toMatchObject({
-  name: 'Test',
-  active: true
+  name: "Test",
+  active: true,
   // id can be anything
 });
 ```
@@ -228,7 +229,7 @@ expect(response.body).toMatchObject({
   id: expect.any(String),
   count: expect.any(Number),
   tags: expect.any(Array),
-  meta: expect.any(Object)
+  meta: expect.any(Object),
 });
 ```
 
@@ -238,7 +239,7 @@ expect(response.body).toMatchObject({
 
 ```javascript
 expect(response.body.items).toContainEqual(
-  expect.objectContaining({ name: 'Test' })
+  expect.objectContaining({ name: "Test" }),
 );
 ```
 
@@ -251,9 +252,9 @@ expect(response.body.items).toHaveLength(10);
 ### All Items Match
 
 ```javascript
-response.body.items.forEach(item => {
-  expect(item).toHaveProperty('id');
-  expect(item).toHaveProperty('createdAt');
+response.body.items.forEach((item) => {
+  expect(item).toHaveProperty("id");
+  expect(item).toHaveProperty("createdAt");
 });
 ```
 
@@ -262,13 +263,14 @@ response.body.items.forEach(item => {
 ```javascript
 expect(response.body).toMatchObject({
   error: {
-    code: 'VALIDATION_ERROR',
+    code: "VALIDATION_ERROR",
     message: expect.any(String),
-    details: expect.any(Array)
-  }
+    details: expect.any(Array),
+  },
 });
 ```
-```
+
+````
 
 ### examples/rest-api-tests.sh
 
@@ -314,7 +316,7 @@ else
 fi
 
 echo "All tests passed!"
-```
+````
 
 ### examples/graphql-tests.sh
 
@@ -452,12 +454,12 @@ $ claude
 
 ## Progressive Disclosure in Action
 
-| Level | Content | Word Count |
-|-------|---------|------------|
-| Metadata | name + description | ~50 words |
-| SKILL.md | Core patterns, quick start | ~400 words |
-| references/ | Detailed guides | ~600 words |
-| examples/ | Working code | N/A (code) |
-| scripts/ | Automation | N/A (code) |
+| Level       | Content                    | Word Count |
+| ----------- | -------------------------- | ---------- |
+| Metadata    | name + description         | ~50 words  |
+| SKILL.md    | Core patterns, quick start | ~400 words |
+| references/ | Detailed guides            | ~600 words |
+| examples/   | Working code               | N/A (code) |
+| scripts/    | Automation                 | N/A (code) |
 
 Total context loaded depends on user needs, not skill complexity.

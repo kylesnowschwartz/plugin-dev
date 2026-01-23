@@ -52,12 +52,12 @@ Each component follows progressive disclosure: lean core documentation with deta
 
 The plugin includes utility scripts for validation and testing. These require:
 
-| Tool | Version | Purpose |
-|------|---------|---------|
-| bash | 3.2+ | Shell scripting (macOS default works) |
-| jq | 1.6+ | JSON parsing and validation |
-| grep | - | Pattern matching (with `-E` support) |
-| sed | - | Stream editing (GNU or BSD) |
+| Tool | Version | Purpose                               |
+| ---- | ------- | ------------------------------------- |
+| bash | 3.2+    | Shell scripting (macOS default works) |
+| jq   | 1.6+    | JSON parsing and validation           |
+| grep | -       | Pattern matching (with `-E` support)  |
+| sed  | -       | Stream editing (GNU or BSD)           |
 
 **Check your environment:**
 
@@ -114,16 +114,16 @@ You can also learn progressively by asking questions. Skills load automatically:
 
 Skills load automatically when you ask relevant questions. Each skill includes core documentation, reference guides, working examples, and utility scripts.
 
-| Skill | Trigger Phrases | Use For |
-|-------|-----------------|---------|
-| **Hook Development** | `create a hook`, `PreToolUse hook`, `validate tool use`, `prompt-based hooks`, `block dangerous commands` | Event-driven automation, operation validation, policy enforcement |
-| **MCP Integration** | `add MCP server`, `integrate MCP`, `.mcp.json`, `Model Context Protocol`, `stdio/SSE server` | External service integration, API connections, database access |
-| **Plugin Structure** | `plugin structure`, `plugin.json`, `auto-discovery`, `component organization` | Starting new plugins, organizing components, manifest configuration |
-| **Plugin Settings** | `plugin settings`, `.local.md files`, `YAML frontmatter`, `per-project settings` | Configuration storage, user preferences, per-project state |
-| **Command Development** | `create a slash command`, `command frontmatter`, `command arguments` | Slash commands, argument handling, command organization |
-| **Agent Development** | `create an agent`, `write a subagent`, `agent frontmatter`, `autonomous agent` | Autonomous agents, AI-assisted generation, agent behavior |
-| **Skill Development** | `create a skill`, `add a skill`, `skill description`, `progressive disclosure` | Creating new skills, improving skill quality |
-| **Marketplace Structure** | `create a marketplace`, `marketplace.json`, `distribute plugins`, `host plugins` | Marketplace creation, plugin distribution, team sharing |
+| Skill                     | Trigger Phrases                                                                                           | Use For                                                             |
+| ------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| **Hook Development**      | `create a hook`, `PreToolUse hook`, `validate tool use`, `prompt-based hooks`, `block dangerous commands` | Event-driven automation, operation validation, policy enforcement   |
+| **MCP Integration**       | `add MCP server`, `integrate MCP`, `.mcp.json`, `Model Context Protocol`, `stdio/SSE server`              | External service integration, API connections, database access      |
+| **Plugin Structure**      | `plugin structure`, `plugin.json`, `auto-discovery`, `component organization`                             | Starting new plugins, organizing components, manifest configuration |
+| **Plugin Settings**       | `plugin settings`, `.local.md files`, `YAML frontmatter`, `per-project settings`                          | Configuration storage, user preferences, per-project state          |
+| **Command Development**   | `create a slash command`, `command frontmatter`, `command arguments`                                      | Slash commands, argument handling, command organization             |
+| **Agent Development**     | `create an agent`, `write a subagent`, `agent frontmatter`, `autonomous agent`                            | Autonomous agents, AI-assisted generation, agent behavior           |
+| **Skill Development**     | `create a skill`, `add a skill`, `skill description`, `progressive disclosure`                            | Creating new skills, improving skill quality                        |
+| **Marketplace Structure** | `create a marketplace`, `marketplace.json`, `distribute plugins`, `host plugins`                          | Marketplace creation, plugin distribution, team sharing             |
 
 ### Skill Resources
 
@@ -196,11 +196,11 @@ A guided workflow for creating plugin marketplaces to distribute plugins.
 
 Use these agents proactively after creating components:
 
-| Agent | Purpose | Trigger |
-|-------|---------|---------|
+| Agent                | Purpose                                                           | Trigger                                        |
+| -------------------- | ----------------------------------------------------------------- | ---------------------------------------------- |
 | **plugin-validator** | Validates entire plugin structure, manifest, and marketplace.json | "validate my plugin", "check plugin structure" |
-| **skill-reviewer** | Reviews skill quality, triggering reliability, and best practices | "review my skill", "check skill quality" |
-| **agent-creator** | Generates new agents from natural language descriptions | "create an agent", "generate an agent that..." |
+| **skill-reviewer**   | Reviews skill quality, triggering reliability, and best practices | "review my skill", "check skill quality"       |
+| **agent-creator**    | Generates new agents from natural language descriptions           | "create an agent", "generate an agent that..." |
 
 **Example usage:**
 
@@ -289,39 +289,39 @@ plugin-structure   command/agent/     mcp-integration    hook-development   vali
 
 </details>
 
-| Phase | Skill/Tool | What You Do |
-|-------|------------|-------------|
-| **Design** | plugin-structure | Define manifest, directory layout |
-| **Components** | command/agent/skill development | Create commands, agents, skills |
-| **Services** | mcp-integration | Configure MCP servers |
-| **Automation** | hook-development | Add hooks for validation/automation |
-| **Validate** | Agents + scripts | Run validators, test components |
+| Phase          | Skill/Tool                      | What You Do                         |
+| -------------- | ------------------------------- | ----------------------------------- |
+| **Design**     | plugin-structure                | Define manifest, directory layout   |
+| **Components** | command/agent/skill development | Create commands, agents, skills     |
+| **Services**   | mcp-integration                 | Configure MCP servers               |
+| **Automation** | hook-development                | Add hooks for validation/automation |
+| **Validate**   | Agents + scripts                | Run validators, test components     |
 
 ## Use Cases
 
 ### Building a Database Plugin
 
-| Step | Ask Claude Code | Skill Used |
-|------|-----------------|------------|
-| 1 | "What's the structure for a plugin with MCP integration?" | plugin-structure |
-| 2 | "Configure an stdio MCP server for PostgreSQL" | mcp-integration |
-| 3 | "Add a Stop hook to ensure connections close properly" | hook-development |
+| Step | Ask Claude Code                                           | Skill Used       |
+| ---- | --------------------------------------------------------- | ---------------- |
+| 1    | "What's the structure for a plugin with MCP integration?" | plugin-structure |
+| 2    | "Configure an stdio MCP server for PostgreSQL"            | mcp-integration  |
+| 3    | "Add a Stop hook to ensure connections close properly"    | hook-development |
 
 ### Creating a Validation Plugin
 
-| Step | Ask Claude Code | Skill Used |
-|------|-----------------|------------|
-| 1 | "Create hooks that validate all file writes for security" | hook-development |
-| 2 | "Test my hooks before deploying" | Use validate-hook-schema.sh |
-| 3 | "Organize my hooks and configuration files" | plugin-structure |
+| Step | Ask Claude Code                                           | Skill Used                  |
+| ---- | --------------------------------------------------------- | --------------------------- |
+| 1    | "Create hooks that validate all file writes for security" | hook-development            |
+| 2    | "Test my hooks before deploying"                          | Use validate-hook-schema.sh |
+| 3    | "Organize my hooks and configuration files"               | plugin-structure            |
 
 ### Integrating External Services
 
-| Step | Ask Claude Code | Skill Used |
-|------|-----------------|------------|
-| 1 | "Add Asana MCP server with OAuth" | mcp-integration |
-| 2 | "Use Asana tools in my commands" | mcp-integration |
-| 3 | "Structure my plugin with commands and MCP" | plugin-structure |
+| Step | Ask Claude Code                             | Skill Used       |
+| ---- | ------------------------------------------- | ---------------- |
+| 1    | "Add Asana MCP server with OAuth"           | mcp-integration  |
+| 2    | "Use Asana tools in my commands"            | mcp-integration  |
+| 3    | "Structure my plugin with commands and MCP" | plugin-structure |
 
 ## Best Practices
 
@@ -354,13 +354,13 @@ plugin-structure   command/agent/     mcp-integration    hook-development   vali
 
 ### What to Avoid
 
-| Anti-Pattern | Why It's Bad | Better Approach |
-|--------------|--------------|-----------------|
-| Hardcoded absolute paths | Breaks portability | Use `${CLAUDE_PLUGIN_ROOT}` |
-| Overly broad hook matchers (`*`) | Unexpected triggers, performance impact | Use specific patterns like `Write\|Edit` |
-| Large SKILL.md files (>2,000 words) | Slow loading, context bloat | Use `references/` for detailed docs |
-| Storing secrets in manifests | Security risk | Use environment variables |
-| Testing in your main dev repo | File pollution, git noise | Use dedicated test repositories |
+| Anti-Pattern                        | Why It's Bad                            | Better Approach                          |
+| ----------------------------------- | --------------------------------------- | ---------------------------------------- |
+| Hardcoded absolute paths            | Breaks portability                      | Use `${CLAUDE_PLUGIN_ROOT}`              |
+| Overly broad hook matchers (`*`)    | Unexpected triggers, performance impact | Use specific patterns like `Write\|Edit` |
+| Large SKILL.md files (>2,000 words) | Slow loading, context bloat             | Use `references/` for detailed docs      |
+| Storing secrets in manifests        | Security risk                           | Use environment variables                |
+| Testing in your main dev repo       | File pollution, git noise               | Use dedicated test repositories          |
 
 ## FAQ
 

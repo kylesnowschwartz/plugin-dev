@@ -160,9 +160,11 @@ Fixes # (issue)
 <!-- Information specifically for the reviewer -->
 
 **Areas that need special attention**:
+
 <!-- List any specific areas you'd like reviewers to focus on -->
 
 **Known limitations or trade-offs**:
+
 <!-- Describe any known issues or compromises made -->
 
 ---

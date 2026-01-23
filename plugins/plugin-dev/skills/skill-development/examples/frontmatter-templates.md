@@ -116,11 +116,11 @@ description: This skill should be used when the user asks to "test plugin", "val
 
 ## Frontmatter Field Reference
 
-| Field | Required | Type | Description |
-|-------|----------|------|-------------|
-| `name` | Yes | string | Skill identifier (kebab-case) |
-| `description` | Yes | string | When to use (third-person) |
-| `allowed-tools` | No | string | Comma-separated tool names |
+| Field           | Required | Type   | Description                   |
+| --------------- | -------- | ------ | ----------------------------- |
+| `name`          | Yes      | string | Skill identifier (kebab-case) |
+| `description`   | Yes      | string | When to use (third-person)    |
+| `allowed-tools` | No       | string | Comma-separated tool names    |
 
 ## Common Mistakes
 

@@ -20,7 +20,7 @@ Guide the user through creating a complete, high-quality Claude Code plugin from
 
 **Initial request:** $ARGUMENTS
 
-**Security note:** This workflow has broad file system access to create plugin structures. It can write files and create directories within your permission scope. Review the target directory before starting, and see CLAUDE.md "Workflow Command Security" for details.
+**Security note:** This workflow has broad file system access to create plugin structures. It can write files and create directories within your permission scope. Review the target directory before starting, and see [docs/workflow-security.md](../../docs/workflow-security.md) for details.
 
 ---
 
@@ -29,6 +29,7 @@ Guide the user through creating a complete, high-quality Claude Code plugin from
 **Goal**: Understand what plugin needs to be built and what problem it solves
 
 **Actions**:
+
 1. Create todo list with all 8 phases
 2. If plugin purpose is clear from arguments:
    - Summarize understanding
@@ -51,6 +52,7 @@ Guide the user through creating a complete, high-quality Claude Code plugin from
 **MUST load plugin-structure skill** using Skill tool before this phase.
 
 **Actions**:
+
 1. Load plugin-structure skill to understand component types
 2. Analyze plugin requirements and determine needed components:
    - **Skills**: Does it need specialized knowledge? (hooks API, MCP patterns, etc.)
@@ -86,6 +88,7 @@ Guide the user through creating a complete, high-quality Claude Code plugin from
 **CRITICAL**: This is one of the most important phases. DO NOT SKIP.
 
 **Actions**:
+
 1. For each component in the plan, identify underspecified aspects:
    - **Skills**: What triggers them? What knowledge do they provide? How detailed?
    - **Commands**: What arguments? What tools? Interactive or automated?
@@ -101,12 +104,14 @@ Guide the user through creating a complete, high-quality Claude Code plugin from
 4. If user says "whatever you think is best", provide specific recommendations and get explicit confirmation
 
 **Example questions for a skill**:
+
 - What specific user queries should trigger this skill?
 - Should it include utility scripts? What functionality?
 - How detailed should the core SKILL.md be vs references/?
 - Any real-world examples to include?
 
 **Example questions for an agent**:
+
 - Should this agent trigger proactively after certain actions, or only when explicitly requested?
 - What tools does it need (Read, Write, Bash, etc.)?
 - What should the output format be?
@@ -121,6 +126,7 @@ Guide the user through creating a complete, high-quality Claude Code plugin from
 **Goal**: Create plugin directory structure and manifest
 
 **Actions**:
+
 1. Determine plugin name (kebab-case, descriptive)
 2. Choose plugin location:
    - Ask user: "Where should I create the plugin?"
@@ -146,7 +152,7 @@ Guide the user through creating a complete, high-quality Claude Code plugin from
    }
    ```
 5. Create README.md template
-6. Create .gitignore if needed (for .claude/*.local.md, etc.)
+6. Create .gitignore if needed (for .claude/\*.local.md, etc.)
 7. Initialize git repo if creating new directory (only `git init` is available; additional git operations like staging and committing are left to the user after the workflow completes to respect their commit preferences)
 
 **Output**: Plugin directory structure created and ready for components
@@ -165,6 +171,7 @@ git commit -m "feat: initial plugin structure"
 **Goal**: Create each component following best practices
 
 **LOAD RELEVANT SKILLS** before implementing each component type:
+
 - Skills: Load skill-development skill
 - Commands: Load command-development skill
 - Agents: Load agent-development skill
@@ -251,6 +258,7 @@ git commit -m "feat: initial plugin structure"
 **Goal**: Ensure plugin meets quality standards and works correctly
 
 **Actions**:
+
 1. **Run plugin-validator agent**:
    - Use plugin-validator agent to comprehensively validate plugin
    - Check: manifest, structure, naming, components, security
@@ -290,6 +298,7 @@ git commit -m "feat: initial plugin structure"
 **Goal**: Test that plugin works correctly in Claude Code
 
 **Actions**:
+
 1. **Installation instructions**:
    - Show user how to test locally:
      ```bash
@@ -359,6 +368,7 @@ git commit -m "feat: initial plugin structure"
      - Ask user to confirm entry
      - Update marketplace.json with new plugin entry
      - Update marketplace metadata.version (bump patch version)
+
    - If create new marketplace:
      - Suggest using `/plugin-dev:create-marketplace` command
      - Or create minimal marketplace.json with this plugin as first entry
@@ -424,6 +434,7 @@ git commit -m "feat: initial plugin structure"
 ### Quality Standards
 
 Every component must meet these standards:
+
 - ✅ Follows plugin-dev's proven patterns
 - ✅ Uses correct naming conventions
 - ✅ Has strong trigger conditions (skills/agents)

@@ -19,7 +19,7 @@ Guide the user through creating a complete plugin marketplace from initial conce
 
 **Initial request:** $ARGUMENTS
 
-**Security note:** This workflow has broad file system access to create marketplace structures. It can write files and create directories within your permission scope. Review the target directory before starting, and see CLAUDE.md "Workflow Command Security" for details.
+**Security note:** This workflow has broad file system access to create marketplace structures. It can write files and create directories within your permission scope. Review the target directory before starting, and see [docs/workflow-security.md](../../docs/workflow-security.md) for details.
 
 ---
 
@@ -182,7 +182,6 @@ git commit -m "feat: initial marketplace structure"
 1. For each plugin in the plan (from Phase 2):
 
    **For local plugins**:
-
    - If plugin exists:
      - Read its plugin.json to get metadata
      - Create entry with relative source path
@@ -192,13 +191,11 @@ git commit -m "feat: initial marketplace structure"
      - If placeholder: Create entry with TODO comment in README
 
    **For GitHub plugins**:
-
    - Create entry with github source object
    - Prompt for version, description if not known
    - Consider strict: false if plugin lacks plugin.json
 
    **For git URL plugins**:
-
    - Create entry with url source object
    - Prompt for version, description if not known
 
@@ -213,7 +210,7 @@ git commit -m "feat: initial marketplace structure"
 4. Update README.md with plugin table:
 
    | Plugin | Description | Version |
-   |--------|-------------|---------|
+   | ------ | ----------- | ------- |
    | X      | Does Y      | 1.0.0   |
 
 **Output**: All plugin entries configured in marketplace.json

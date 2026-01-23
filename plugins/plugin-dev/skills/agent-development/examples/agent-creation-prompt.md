@@ -7,6 +7,7 @@ Use this template to generate agents using Claude with the agent creation system
 ### Step 1: Describe Your Agent Need
 
 Think about:
+
 - What task should the agent handle?
 - When should it be triggered?
 - Should it be proactive or reactive?
@@ -46,7 +47,7 @@ name: [identifier from JSON]
 description: [whenToUse from JSON]
 model: inherit
 color: [choose: blue/cyan/green/yellow/magenta/red]
-tools: ["Read", "Write", "Grep"]  # Optional: restrict tools
+tools: ["Read", "Write", "Grep"] # Optional: restrict tools
 ---
 
 [systemPrompt from JSON]
@@ -55,11 +56,13 @@ tools: ["Read", "Write", "Grep"]  # Optional: restrict tools
 ## Example 1: Code Review Agent
 
 **Your request:**
+
 ```
 I need an agent that reviews code changes for quality issues, security vulnerabilities, and adherence to best practices. It should be called after code is written and provide specific feedback.
 ```
 
 **Claude generates:**
+
 ```json
 {
   "identifier": "code-quality-reviewer",
@@ -104,12 +107,14 @@ tools: ["Read", "Grep", "Glob"]
 You are an expert code quality reviewer specializing in identifying issues in software implementations.
 
 **Your Core Responsibilities:**
+
 1. Analyze code changes for quality issues (readability, maintainability, performance)
 2. Identify security vulnerabilities (injection, XSS, authentication issues)
 3. Check adherence to project best practices and coding standards
 4. Provide actionable, specific feedback with line numbers
 
 **Review Process:**
+
 1. Read the code changes using available tools
 2. Analyze for:
    - Code quality (duplication, complexity, clarity)
@@ -121,6 +126,7 @@ You are an expert code quality reviewer specializing in identifying issues in so
 
 **Output Format:**
 Provide a structured review:
+
 1. Summary (2-3 sentences)
 2. Critical Issues (must fix)
 3. Major Issues (should fix)
@@ -134,11 +140,13 @@ Include file names and line numbers for all findings.
 ## Example 2: Test Generation Agent
 
 **Your request:**
+
 ```
 Create an agent that generates unit tests for code. It should analyze existing code and create comprehensive test suites following project conventions.
 ```
 
 **Claude generates:**
+
 ```json
 {
   "identifier": "test-generator",
@@ -152,6 +160,7 @@ Create an agent that generates unit tests for code. It should analyze existing c
 ## Example 3: Documentation Agent
 
 **Your request:**
+
 ```
 Build an agent that writes and updates API documentation. It should analyze code and generate clear, comprehensive docs.
 ```
@@ -163,11 +172,13 @@ Build an agent that writes and updates API documentation. It should analyze code
 ### Be Specific in Your Request
 
 **Vague:**
+
 ```
 "I need an agent that helps with code"
 ```
 
 **Specific:**
+
 ```
 "I need an agent that reviews pull requests for type safety issues in TypeScript, checking for proper type annotations, avoiding 'any', and ensuring correct generic usage"
 ```
@@ -229,6 +240,7 @@ If generated agent needs improvement:
 ## When to Edit Manually
 
 Edit generated agents when:
+
 - Need very specific project patterns
 - Require custom tool combinations
 - Want unique persona or style

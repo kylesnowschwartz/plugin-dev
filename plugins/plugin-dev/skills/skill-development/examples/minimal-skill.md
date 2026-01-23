@@ -13,7 +13,7 @@ git-conventions/
 
 ### SKILL.md
 
-```markdown
+````markdown
 ---
 name: git-conventions
 description: This skill should be used when the user asks about "git commit message format", "conventional commits", "commit conventions", "branch naming", or needs guidance on git workflow standards.
@@ -34,6 +34,7 @@ Follow the Conventional Commits specification:
 
 [optional footer(s)]
 ```
+````
 
 ### Types
 
@@ -71,7 +72,8 @@ feature/user-authentication
 fix/null-pointer-exception
 docs/api-reference
 ```
-```
+
+````
 
 ## Usage
 
@@ -82,7 +84,7 @@ $ claude
 > What format should I use for commit messages?
 
 [Skill loads and provides Conventional Commits guidance]
-```
+````
 
 ## Key Points
 

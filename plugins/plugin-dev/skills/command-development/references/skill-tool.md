@@ -19,12 +19,12 @@ The Skill tool enables Claude to programmatically execute both slash commands an
 
 ## What the Skill Tool Can Invoke
 
-| Type | Location | Requirements |
-|------|----------|--------------|
-| Custom slash commands | `.claude/commands/` or `~/.claude/commands/` | Must have `description` frontmatter |
-| Agent Skills | `.claude/skills/` or `~/.claude/skills/` | Must not have `disable-model-invocation: true` |
-| Plugin commands | `plugin-name/commands/` | Must have `description` frontmatter |
-| Plugin skills | `plugin-name/skills/` | Must not have `disable-model-invocation: true` |
+| Type                  | Location                                     | Requirements                                   |
+| --------------------- | -------------------------------------------- | ---------------------------------------------- |
+| Custom slash commands | `.claude/commands/` or `~/.claude/commands/` | Must have `description` frontmatter            |
+| Agent Skills          | `.claude/skills/` or `~/.claude/skills/`     | Must not have `disable-model-invocation: true` |
+| Plugin commands       | `plugin-name/commands/`                      | Must have `description` frontmatter            |
+| Plugin skills         | `plugin-name/skills/`                        | Must not have `disable-model-invocation: true` |
 
 **Note:** Built-in commands like `/compact` and `/init` are NOT available through this tool.
 
@@ -175,10 +175,7 @@ Add `Skill` to deny rules to prevent all programmatic invocation.
 
 ```json
 {
-  "allow": [
-    "Skill(review:*)",
-    "Skill(test:*)"
-  ]
+  "allow": ["Skill(review:*)", "Skill(test:*)"]
 }
 ```
 
@@ -186,10 +183,7 @@ Add `Skill` to deny rules to prevent all programmatic invocation.
 
 ```json
 {
-  "deny": [
-    "Skill(deploy-prod:*)",
-    "Skill(delete:*)"
-  ]
+  "deny": ["Skill(deploy-prod:*)", "Skill(delete:*)"]
 }
 ```
 
@@ -230,7 +224,6 @@ disable-model-invocation: true
 description: Approve production deployment
 disable-model-invocation: true
 ---
-
 # Production Deployment Approval
 
 This deployment requires human judgment and sign-off.
@@ -258,7 +251,6 @@ This operation cannot be undone.
 description: Setup wizard for new project
 disable-model-invocation: true
 ---
-
 # Project Setup Wizard
 
 This wizard requires interactive user input at each step.
@@ -266,12 +258,12 @@ This wizard requires interactive user input at each step.
 
 ### How It Differs from Permission Rules
 
-| Aspect | disable-model-invocation | Permission Rules |
-|--------|-------------------------|------------------|
-| Scope | Single command/skill | Global/pattern-based |
-| Location | Frontmatter | Settings file |
-| Override | Cannot be overridden | Can be adjusted |
-| Use case | Item-specific restriction | Policy enforcement |
+| Aspect   | disable-model-invocation  | Permission Rules     |
+| -------- | ------------------------- | -------------------- |
+| Scope    | Single command/skill      | Global/pattern-based |
+| Location | Frontmatter               | Settings file        |
+| Override | Cannot be overridden      | Can be adjusted      |
+| Use case | Item-specific restriction | Policy enforcement   |
 
 **Use `disable-model-invocation` when:**
 
@@ -299,11 +291,11 @@ user-invocable: false
 
 **Important distinctions:**
 
-| Setting | Slash Menu | Skill Tool | Auto-Discovery |
-|---------|-----------|------------|----------------|
-| `user-invocable: true` (default) | Visible | Allowed | Yes |
-| `user-invocable: false` | Hidden | Allowed | Yes |
-| `disable-model-invocation: true` | Visible | Blocked | Yes |
+| Setting                          | Slash Menu | Skill Tool | Auto-Discovery |
+| -------------------------------- | ---------- | ---------- | -------------- |
+| `user-invocable: true` (default) | Visible    | Allowed    | Yes            |
+| `user-invocable: false`          | Hidden     | Allowed    | Yes            |
+| `disable-model-invocation: true` | Visible    | Blocked    | Yes            |
 
 The `user-invocable` field only controls whether users see the skill in the `/` menu. It does NOT prevent Claude from using the skill via the Skill tool or auto-discovery.
 
@@ -343,7 +335,6 @@ description: Force push to protected branch (DANGEROUS)
 disable-model-invocation: true
 allowed-tools: Bash(git:*)
 ---
-
 # Force Push
 
 WARNING: This will overwrite remote history.
@@ -388,7 +379,7 @@ If sub-commands have `disable-model-invocation: true`, this workflow command wil
 
 ```yaml
 ---
-description: Must have description  # Required for visibility
+description: Must have description # Required for visibility
 ---
 ```
 
@@ -408,7 +399,7 @@ description: Must have description  # Required for visibility
 **Check disable-model-invocation:**
 
 ```yaml
-disable-model-invocation: true  # Blocks programmatic invocation
+disable-model-invocation: true # Blocks programmatic invocation
 ```
 
 **Check permission rules:**

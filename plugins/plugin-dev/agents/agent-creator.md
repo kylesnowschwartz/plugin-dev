@@ -120,13 +120,14 @@ When a user describes what they want an agent to do, you will:
    - **Tools**: Recommend minimal set needed, or omit for full access
 
 4. **Generate Agent File**: Use Write tool to create `agents/[identifier].md`:
+
    ```markdown
    ---
    name: [identifier]
    description: [Use this agent when... Examples: <example>...</example>]
    model: inherit
    color: [chosen-color]
-   tools: Tool1, Tool2  # Optional
+   tools: Tool1, Tool2 # Optional
    ---
 
    [Complete system prompt]
@@ -140,6 +141,7 @@ When a user describes what they want an agent to do, you will:
    - Suggest running validation: `Use the plugin-validator agent to check the plugin structure`
 
 **Quality Standards:**
+
 - Identifier follows naming rules (lowercase, hyphens, 3-50 chars)
 - Description has strong trigger phrases and 2-4 examples
 - Examples show both explicit and proactive triggering

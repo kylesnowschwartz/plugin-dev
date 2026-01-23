@@ -120,12 +120,14 @@ To complete SKILL.md body, answer the following questions:
 ### Reference Files
 
 For detailed patterns and techniques, consult:
+
 - **`references/patterns.md`** - Common patterns
 - **`references/advanced.md`** - Advanced use cases
 
 ### Example Files
 
 Working examples in `examples/`:
+
 - **`example-script.sh`** - Working example
 ```
 
@@ -365,10 +367,12 @@ Why bad: Claude doesn't know references exist
 ## Additional Resources
 
 ### Reference Files
+
 - **`references/patterns.md`** - Detailed patterns
 - **`references/advanced.md`** - Advanced techniques
 
 ### Examples
+
 - **`examples/script.sh`** - Working example
 ```
 

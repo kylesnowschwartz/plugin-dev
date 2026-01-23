@@ -107,11 +107,11 @@ Use for skills that should only be manually invoked by users, such as:
 
 **Visibility comparison:**
 
-| Setting | Slash Menu | Skill Tool | Auto-Discovery |
-|---------|-----------|------------|----------------|
-| `user-invocable: true` (default) | Visible | Allowed | Yes |
-| `user-invocable: false` | Hidden | Allowed | Yes |
-| `disable-model-invocation: true` | Visible | Blocked | Yes |
+| Setting                          | Slash Menu | Skill Tool | Auto-Discovery |
+| -------------------------------- | ---------- | ---------- | -------------- |
+| `user-invocable: true` (default) | Visible    | Allowed    | Yes            |
+| `user-invocable: false`          | Hidden     | Allowed    | Yes            |
+| `disable-model-invocation: true` | Visible    | Blocked    | Yes            |
 
 #### Bundled Resources (optional)
 
@@ -145,9 +145,9 @@ Skills use a three-level loading system to manage context efficiently:
 
 1. **Metadata (name + description)** - Always in context (~100 words)
 2. **SKILL.md body** - When skill triggers (<5k words)
-3. **Bundled resources** - As needed by Claude (Unlimited*)
+3. **Bundled resources** - As needed by Claude (Unlimited\*)
 
-*Unlimited because scripts can be executed without reading into context window.
+\*Unlimited because scripts can be executed without reading into context window.
 
 ## Skill Creation Process
 

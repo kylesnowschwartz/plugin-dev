@@ -18,12 +18,12 @@ Marketplaces provide:
 
 ### When to Create a Marketplace vs. a Plugin
 
-| Create a Plugin | Create a Marketplace |
-|----------------|---------------------|
-| Single-purpose extension | Collection of related plugins |
-| Used directly by end users | Distributes multiple plugins |
+| Create a Plugin                     | Create a Marketplace                 |
+| ----------------------------------- | ------------------------------------ |
+| Single-purpose extension            | Collection of related plugins        |
+| Used directly by end users          | Distributes multiple plugins         |
 | One team or individual maintains it | Curates plugins from various sources |
-| Installed via `/plugin install` | Added via `/plugin marketplace add` |
+| Installed via `/plugin install`     | Added via `/plugin marketplace add`  |
 
 ## Directory Structure
 
@@ -49,11 +49,11 @@ The `marketplace.json` manifest defines the marketplace and its available plugin
 
 ### Required Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `name` | string | Marketplace identifier (kebab-case, no spaces) |
-| `owner` | object | Marketplace maintainer information |
-| `plugins` | array | List of available plugin entries |
+| Field     | Type   | Description                                    |
+| --------- | ------ | ---------------------------------------------- |
+| `name`    | string | Marketplace identifier (kebab-case, no spaces) |
+| `owner`   | object | Marketplace maintainer information             |
+| `plugins` | array  | List of available plugin entries               |
 
 ### Owner Object
 
@@ -85,10 +85,10 @@ The `pluginRoot` field sets the base path for relative plugin sources.
 
 Each plugin in the `plugins` array requires:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `name` | string | Plugin identifier (kebab-case, unique within marketplace) |
-| `source` | string or object | Where to fetch the plugin |
+| Field    | Type             | Description                                               |
+| -------- | ---------------- | --------------------------------------------------------- |
+| `name`   | string           | Plugin identifier (kebab-case, unique within marketplace) |
+| `source` | string or object | Where to fetch the plugin                                 |
 
 ### Optional Plugin Fields
 
@@ -156,10 +156,10 @@ For GitLab, Bitbucket, or self-hosted git:
 
 The `strict` field controls whether plugins must have their own `plugin.json`:
 
-| Mode | Behavior |
-|------|----------|
-| `strict: true` (default) | Plugin must include `plugin.json`; marketplace entry supplements it |
-| `strict: false` | `plugin.json` optional; marketplace entry serves as complete manifest |
+| Mode                     | Behavior                                                              |
+| ------------------------ | --------------------------------------------------------------------- |
+| `strict: true` (default) | Plugin must include `plugin.json`; marketplace entry supplements it   |
+| `strict: false`          | `plugin.json` optional; marketplace entry serves as complete manifest |
 
 Use `strict: false` when:
 

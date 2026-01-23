@@ -16,12 +16,12 @@ Format: markdown
 
 **URL patterns:**
 
-| Purpose | URL |
-|---------|-----|
-| Basic search | `https://www.pulsemcp.com/servers?q=[keyword]` |
-| By popularity | `https://www.pulsemcp.com/servers?q=[keyword]&sort=popular-desc` |
-| Official only | `https://www.pulsemcp.com/servers?q=[keyword]&classification=official` |
-| Server details | `https://www.pulsemcp.com/servers/[slug]` |
+| Purpose        | URL                                                                    |
+| -------------- | ---------------------------------------------------------------------- |
+| Basic search   | `https://www.pulsemcp.com/servers?q=[keyword]`                         |
+| By popularity  | `https://www.pulsemcp.com/servers?q=[keyword]&sort=popular-desc`       |
+| Official only  | `https://www.pulsemcp.com/servers?q=[keyword]&classification=official` |
+| Server details | `https://www.pulsemcp.com/servers/[slug]`                              |
 
 **Search keywords:**
 
@@ -33,14 +33,14 @@ Format: markdown
 
 Extract from search results:
 
-| Field | Description | Use For |
-|-------|-------------|---------|
-| Server name | Display name | User presentation |
-| Provider | Company/author | Trust signal |
-| Description | Brief summary | Feature matching |
-| Classification | official/community | Quality signal |
-| Downloads/visitors | Weekly estimates | Popularity signal |
-| Slug | URL segment | Detail page fetch |
+| Field              | Description        | Use For           |
+| ------------------ | ------------------ | ----------------- |
+| Server name        | Display name       | User presentation |
+| Provider           | Company/author     | Trust signal      |
+| Description        | Brief summary      | Feature matching  |
+| Classification     | official/community | Quality signal    |
+| Downloads/visitors | Weekly estimates   | Popularity signal |
+| Slug               | URL segment        | Detail page fetch |
 
 **Example parsed entry:**
 
@@ -86,52 +86,52 @@ Curated recommendations for common use cases. Use live search for comprehensive 
 
 ### Databases
 
-| Server | Provider | Type | Best For |
-|--------|----------|------|----------|
-| Toolbox for Databases | Google | stdio | Multi-DB (PostgreSQL, MySQL, SQL Server, Neo4j, Spanner) |
-| DBHub | Bytebase | stdio | Universal gateway (PostgreSQL, MySQL, SQLite, DuckDB) |
-| Context7 | Upstash | stdio | Documentation/library lookup |
+| Server                | Provider | Type  | Best For                                                 |
+| --------------------- | -------- | ----- | -------------------------------------------------------- |
+| Toolbox for Databases | Google   | stdio | Multi-DB (PostgreSQL, MySQL, SQL Server, Neo4j, Spanner) |
+| DBHub                 | Bytebase | stdio | Universal gateway (PostgreSQL, MySQL, SQLite, DuckDB)    |
+| Context7              | Upstash  | stdio | Documentation/library lookup                             |
 
 ### Productivity
 
-| Server | Provider | Type | Best For |
-|--------|----------|------|----------|
-| Notion | Notion | SSE | Workspace integration |
-| Asana | Asana | SSE | Task/project management |
-| Slack | Slack | SSE | Team communication |
-| Linear | Linear | SSE | Issue tracking |
+| Server | Provider | Type | Best For                |
+| ------ | -------- | ---- | ----------------------- |
+| Notion | Notion   | SSE  | Workspace integration   |
+| Asana  | Asana    | SSE  | Task/project management |
+| Slack  | Slack    | SSE  | Team communication      |
+| Linear | Linear   | SSE  | Issue tracking          |
 
 ### Developer Tools
 
-| Server | Provider | Type | Best For |
-|--------|----------|------|----------|
-| GitHub | GitHub | SSE | Repository management, PRs, issues |
-| GitLab | GitLab | SSE | GitLab repositories and CI/CD |
-| Playwright | Microsoft | stdio | Browser automation, testing |
+| Server     | Provider  | Type  | Best For                           |
+| ---------- | --------- | ----- | ---------------------------------- |
+| GitHub     | GitHub    | SSE   | Repository management, PRs, issues |
+| GitLab     | GitLab    | SSE   | GitLab repositories and CI/CD      |
+| Playwright | Microsoft | stdio | Browser automation, testing        |
 
 ### Cloud & Infrastructure
 
-| Server | Provider | Type | Best For |
-|--------|----------|------|----------|
-| AWS | AWS | stdio | AWS service management |
+| Server     | Provider  | Type  | Best For               |
+| ---------- | --------- | ----- | ---------------------- |
+| AWS        | AWS       | stdio | AWS service management |
 | Kubernetes | Community | stdio | K8s cluster operations |
-| Docker | Community | stdio | Container management |
+| Docker     | Community | stdio | Container management   |
 
 ### AI & Search
 
-| Server | Provider | Type | Best For |
-|--------|----------|------|----------|
-| Tavily | Tavily | stdio | Web search and extraction |
-| Perplexity | Perplexity | SSE | AI-powered search |
-| Memory | Various | stdio | Conversation memory/RAG |
+| Server     | Provider   | Type  | Best For                  |
+| ---------- | ---------- | ----- | ------------------------- |
+| Tavily     | Tavily     | stdio | Web search and extraction |
+| Perplexity | Perplexity | SSE   | AI-powered search         |
+| Memory     | Various    | stdio | Conversation memory/RAG   |
 
 ### File & Storage
 
-| Server | Provider | Type | Best For |
-|--------|----------|------|----------|
-| Filesystem | Anthropic | stdio | Local file access |
-| Google Drive | Google | SSE | Cloud storage |
-| S3 | AWS | stdio | Object storage |
+| Server       | Provider  | Type  | Best For          |
+| ------------ | --------- | ----- | ----------------- |
+| Filesystem   | Anthropic | stdio | Local file access |
+| Google Drive | Google    | SSE   | Cloud storage     |
+| S3           | AWS       | stdio | Object storage    |
 
 ## Integration Workflow
 

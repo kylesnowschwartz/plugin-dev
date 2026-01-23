@@ -104,7 +104,7 @@ awesome-claude-plugins/
 
 ## README.md Template
 
-```markdown
+````markdown
 # Awesome Claude Plugins
 
 A curated collection of high-quality Claude Code plugins.
@@ -114,15 +114,16 @@ A curated collection of high-quality Claude Code plugins.
 ```bash
 /plugin marketplace add awesome-claude-plugins/awesome-claude-plugins
 ```
+````
 
 ## Available Plugins
 
-| Plugin | Description | Category |
-|--------|-------------|----------|
-| code-reviewer | AI-powered code review | Development |
-| test-generator | Automatic test generation | Testing |
-| doc-writer | Documentation generation | Documentation |
-| featured-plugin | Community featured plugin | Productivity |
+| Plugin          | Description               | Category      |
+| --------------- | ------------------------- | ------------- |
+| code-reviewer   | AI-powered code review    | Development   |
+| test-generator  | Automatic test generation | Testing       |
+| doc-writer      | Documentation generation  | Documentation |
+| featured-plugin | Community featured plugin | Productivity  |
 
 ## Contributing
 
@@ -131,7 +132,8 @@ See `CONTRIBUTING.md` for submission guidelines.
 ## License
 
 MIT
-```
+
+````
 
 ## CONTRIBUTING.md Template
 
@@ -163,7 +165,7 @@ MIT
 2. Maintainer reviews plugin quality
 3. Community feedback period (1 week)
 4. Merge and marketplace update
-```
+````
 
 ## CI Validation Workflow
 
@@ -175,7 +177,7 @@ name: Validate Marketplace
 on:
   pull_request:
     paths:
-      - '.claude-plugin/marketplace.json'
+      - ".claude-plugin/marketplace.json"
 
 jobs:
   validate:
