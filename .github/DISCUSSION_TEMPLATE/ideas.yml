@@ -4,9 +4,13 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for sharing your idea! Help us understand what problem you're solving and your proposed solution.
+        Thanks for sharing your idea! This plugin helps developers create Claude Code plugins
+        with skills, agents, commands, hooks, and MCP integrations.
 
-        **Before submitting**: Check [existing ideas](https://github.com/sjnims/plugin-dev/discussions/categories/ideas) and review our [contribution guidelines](https://github.com/sjnims/plugin-dev/blob/main/CONTRIBUTING.md).
+        Ideas can be about **new skills**, **development workflows**, **validation tooling**,
+        **documentation patterns**, or **marketplace features**.
+
+        **Before submitting**: Check [existing ideas](../../discussions/categories/ideas).
 
   - type: checkboxes
     id: checklist
@@ -15,15 +19,51 @@ body:
       options:
         - label: I've searched existing ideas and discussions
           required: true
-        - label: I've checked the README for related features
-          required: true
+
+  - type: dropdown
+    id: idea-type
+    attributes:
+      label: Idea Type
+      description: "What area does this idea improve?"
+      options:
+        - Skill development patterns
+        - Agent development patterns
+        - Command development patterns
+        - Hook development patterns
+        - MCP integration patterns
+        - Plugin structure / scaffolding
+        - Validation tooling
+        - Marketplace features
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component-type
+    attributes:
+      label: Component Type (if applicable)
+      description: "Does this relate to a specific plugin component?"
+      options:
+        - Not component-specific
+        - Skills
+        - Agents
+        - Commands
+        - Hooks
+        - MCP Servers
+        - Plugin manifest (plugin.json)
+        - Marketplace manifest
+    validations:
+      required: false
 
   - type: textarea
     id: problem
     attributes:
       label: Problem or Need
-      description: What problem does this idea solve? What need does it address?
-      placeholder: "I'm frustrated when... I need a way to..."
+      description: "What problem does this idea solve?"
+      placeholder: |
+        Example: "The skill-development skill doesn't cover dynamic argument generation..."
+        Example: "There's no guidance on testing hooks before deployment..."
     validations:
       required: true
 
@@ -31,8 +71,7 @@ body:
     id: solution
     attributes:
       label: Proposed Idea
-      description: Describe your idea clearly
-      placeholder: I think it would be great if...
+      description: "Describe your idea clearly"
     validations:
       required: true
 
@@ -40,16 +79,26 @@ body:
     id: benefit
     attributes:
       label: Expected Benefit
-      description: How would this improve the plugin?
-      placeholder: This would help users by...
+      description: "How would this improve the plugin?"
+      placeholder: |
+        - Faster plugin development for...
+        - Better documentation of...
+        - Reduced errors when...
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: alternatives
     attributes:
       label: Alternatives Considered
-      description: Have you thought of other ways to achieve this?
-      placeholder: Instead of this, we could also...
+      description: "Have you considered other approaches?"
     validations:
       required: false
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution interest
+      options:
+        - label: I'd be willing to help implement this idea
+          required: false

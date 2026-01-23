@@ -6,14 +6,37 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for suggesting a new feature! Please provide as much detail as possible to help us understand your idea.
+        Thanks for suggesting a feature! This could be about skill patterns,
+        agent capabilities, command improvements, hook events, validation tooling,
+        or other plugin development enhancements.
+
+  - type: dropdown
+    id: feature-type
+    attributes:
+      label: Feature Type
+      description: What area does this feature improve?
+      options:
+        - Skill development patterns
+        - Agent development patterns
+        - Command development patterns
+        - Hook development patterns
+        - MCP integration patterns
+        - Plugin structure / scaffolding
+        - Validation tooling
+        - Marketplace features
+        - Documentation
+        - Other
+    validations:
+      required: true
 
   - type: textarea
     id: problem
     attributes:
       label: Problem or Need
       description: Is your feature request related to a problem? Please describe.
-      placeholder: "I'm frustrated when... I need a way to..."
+      placeholder: |
+        Example: "The skill-development skill doesn't cover conditional triggering..."
+        Example: "There's no way to validate hook configurations before deployment..."
     validations:
       required: true
 
@@ -22,7 +45,6 @@ body:
     attributes:
       label: Proposed Solution
       description: Describe the solution you'd like
-      placeholder: A clear and concise description of what you want to happen
     validations:
       required: true
 
@@ -49,18 +71,16 @@ body:
       label: Specific Component (if applicable)
       description: E.g., "/plugin-dev:create-plugin", "agent-development skill", "plugin-validator agent"
       placeholder: Component name
+    validations:
+      required: false
 
   - type: textarea
     id: alternatives
     attributes:
       label: Alternatives Considered
       description: Describe any alternative solutions or features you've considered
-
-  - type: textarea
-    id: context
-    attributes:
-      label: Additional Context
-      description: Add any other context, screenshots, or relevant information
+    validations:
+      required: false
 
   - type: dropdown
     id: priority
@@ -73,6 +93,14 @@ body:
         - Low - Just a suggestion
     validations:
       required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other context, screenshots, or relevant information
+    validations:
+      required: false
 
   - type: checkboxes
     id: contribution

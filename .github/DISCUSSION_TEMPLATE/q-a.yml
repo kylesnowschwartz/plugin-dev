@@ -4,45 +4,67 @@ body:
   - type: markdown
     attributes:
       value: |
-        Have a question about using the plugin? We're here to help!
+        Have a question about the plugin-dev toolkit? This could be about:
+        - **Skills** - creation, triggering, progressive disclosure
+        - **Agents** - creation, AI generation, tool configuration
+        - **Commands** - slash commands, arguments, frontmatter
+        - **Hooks** - events, prompt-based hooks
+        - **MCP** - server integration, configuration
+        - **Plugin structure** - manifests, file organization
 
-        **Before asking**: Please check the [README](https://github.com/sjnims/plugin-dev/blob/main/README.md) and existing discussions first.
+        **Resources**: [README](../../blob/main/README.md) | [CLAUDE.md](../../blob/main/CLAUDE.md) | [docs/](../../blob/main/docs/)
 
   - type: checkboxes
     id: checklist
     attributes:
       label: Pre-submission checklist
       options:
-        - label: I've checked the README.md
-          required: true
-        - label: I've searched existing discussions for similar questions
+        - label: I've checked the README, CLAUDE.md, and searched existing discussions
           required: true
 
   - type: dropdown
     id: category
     attributes:
       label: Question Category
+      description: "What area is your question about?"
       options:
         - Installation and setup
         - Skills (creation, triggering)
         - Agents (creation, AI generation)
-        - Hooks (events, prompt-based)
         - Commands (slash commands)
+        - Hooks (events, prompt-based)
         - MCP integration
         - Plugin structure
         - Marketplace creation
+        - Validation tooling
         - Troubleshooting
         - Contributing
         - Other
     validations:
       required: true
 
+  - type: dropdown
+    id: component-type
+    attributes:
+      label: Component Type (if applicable)
+      description: "Which plugin component is involved?"
+      options:
+        - Not component-specific
+        - Skill
+        - Agent
+        - Command
+        - Hook
+        - MCP Server
+        - Plugin manifest (plugin.json)
+        - Marketplace manifest
+    validations:
+      required: false
+
   - type: textarea
     id: question
     attributes:
       label: Your Question
-      description: What would you like to know?
-      placeholder: How do I...? Why does...? Can I...?
+      description: "What would you like to know?"
     validations:
       required: true
 
@@ -50,17 +72,20 @@ body:
     id: context
     attributes:
       label: Additional Context
-      description: Any relevant details about your setup or use case
-      placeholder: I'm trying to...
+      description: "Any relevant details: error messages, configuration snippets, file structure"
+      placeholder: |
+        ```yaml
+        # Paste relevant config or file contents here
+        ```
     validations:
       required: false
 
   - type: input
     id: claude-code-version
     attributes:
-      label: Claude Code Version (for troubleshooting)
-      description: "Run `claude --version` to find this"
-      placeholder: "e.g., 1.0.0"
+      label: Claude Code Version
+      description: "Run `claude --version` (helpful for troubleshooting)"
+      placeholder: "e.g., 1.0.30"
     validations:
       required: false
 

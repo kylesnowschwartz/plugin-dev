@@ -8,6 +8,31 @@ Plugin marketplace containing the **plugin-dev** plugin - a toolkit for developi
 
 **Version**: v0.2.1 | [CHANGELOG.md](CHANGELOG.md)
 
+## MCP Tool Requirements (CRITICAL)
+
+**Cost tiers**: FREE (Serena, rg) → PAID (Morph ~$0.8-1.2/1M tokens) → AVOID (built-in Grep/Edit)
+
+### Search (prefer in order)
+
+| Tool                              | Cost | Use When                               |
+| --------------------------------- | ---- | -------------------------------------- |
+| Serena `find_symbol`              | FREE | Know the symbol name                   |
+| Serena `find_referencing_symbols` | FREE | Find all usages of a symbol            |
+| Serena `get_symbols_overview`     | FREE | Understand file structure              |
+| `rg "pattern"`                    | FREE | Regex/text patterns (not symbol-based) |
+| Morph `warpgrep_codebase_search`  | PAID | Semantic/fuzzy queries (last resort)   |
+
+### Edit (prefer in order)
+
+| Tool                         | Cost  | Use When                           |
+| ---------------------------- | ----- | ---------------------------------- |
+| Serena `replace_symbol_body` | FREE  | Replacing entire methods/functions |
+| Serena `insert_after_symbol` | FREE  | Adding new code after a symbol     |
+| Morph `edit_file`            | PAID  | Partial edits, non-LSP files       |
+| Built-in `Edit`              | AVOID | Fallback only                      |
+
+> **FREE tools first. Morph costs real money. Built-in Edit only as last resort.**
+
 ## Critical: Two-Level Architecture
 
 This repo has TWO `.claude-plugin/` directories:

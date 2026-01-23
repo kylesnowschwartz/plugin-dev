@@ -4,38 +4,87 @@ body:
   - type: markdown
     attributes:
       value: |
-        Share how you're using plugin-dev! We'd love to hear about your projects and learnings.
+        Share what you've built with plugin-dev! This could be:
+        - **Complete plugins** you've created
+        - **Skills** with interesting triggering patterns
+        - **Agents** with custom tool configurations
+        - **Hooks** solving real workflow problems
+        - **Commands** with dynamic arguments
+        - **Marketplace** setups for distributing plugins
+        - **Lessons learned** from plugin development
+
+        **Tip**: Include code snippets, before/after comparisons, or configuration examples.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission checklist
+      options:
+        - label: My showcase doesn't expose sensitive information (API keys, internal paths)
+          required: true
 
   - type: dropdown
-    id: component-type
+    id: showcase-type
     attributes:
-      label: What type of component?
+      label: What are you showcasing?
+      description: "Select the type of showcase"
       options:
-        - Complete plugin
-        - Skill
-        - Agent
-        - Hook
-        - Command
-        - Marketplace
+        - Complete plugin I built
+        - Individual component (skill, agent, hook, command)
+        - Interesting triggering pattern
+        - Plugin structure or organization
+        - Marketplace setup
+        - CI/CD or automation integration
+        - Lesson learned or gotcha discovered
         - Other
     validations:
       required: true
 
+  - type: dropdown
+    id: component-type
+    attributes:
+      label: Component Type (if applicable)
+      description: "Which plugin component is involved?"
+      options:
+        - Not component-specific
+        - Skill
+        - Agent
+        - Command
+        - Hook
+        - MCP Server
+        - Multiple types
+    validations:
+      required: false
+
   - type: textarea
     id: showcase
     attributes:
-      label: What are you sharing?
-      description: Describe what you built or accomplished
-      placeholder: I used plugin-dev to...
+      label: What You're Sharing
+      description: "Describe what you built or discovered"
     validations:
       required: true
+
+  - type: textarea
+    id: code-examples
+    attributes:
+      label: Code or Configuration Examples
+      description: "Share relevant snippets that others can learn from"
+      placeholder: |
+        ```yaml
+        # Example skill frontmatter, plugin.json excerpt, etc.
+        ```
+    validations:
+      required: false
 
   - type: textarea
     id: learnings
     attributes:
       label: Key Learnings
-      description: What did you learn that might help others? This is the heart of Show and Tell!
-      placeholder: Tips I'd share...
+      description: "What did you learn that might help others? This is the heart of Show & Tell!"
+      placeholder: |
+        The tricky part was...
+        A tip for others: ...
+        I was surprised to find...
     validations:
       required: true
 
@@ -43,8 +92,7 @@ body:
     id: links
     attributes:
       label: Links or Resources
-      description: Any relevant links to your project, blog post, or resources
-      placeholder: "GitHub repo: ... Blog post: ..."
+      description: "Repository, blog post, or relevant links"
     validations:
       required: false
 
@@ -53,5 +101,7 @@ body:
     attributes:
       label: Sharing preferences
       options:
-        - label: I'm okay with this being featured in project documentation
+        - label: This can be featured in project documentation
+          required: false
+        - label: Code snippets can be shared as examples
           required: false

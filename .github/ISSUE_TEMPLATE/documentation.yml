@@ -6,7 +6,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for helping improve our documentation! Clear documentation helps everyone use the plugin more effectively.
+        Thanks for helping improve our documentation!
+        Clear documentation helps everyone use the plugin more effectively.
 
   - type: dropdown
     id: doc-type
@@ -16,16 +17,14 @@ body:
         - README.md
         - CLAUDE.md
         - CHANGELOG.md
-        - Command documentation
         - Skill documentation
         - Agent documentation
+        - Command documentation
         - Hook documentation
         - MCP integration docs
         - Marketplace documentation
         - Example files
-        - Code of Conduct
-        - Contributing guidelines
-        - LICENSE
+        - Contributing / Code of Conduct
         - Other
     validations:
       required: true
@@ -35,14 +34,15 @@ body:
     attributes:
       label: Specific Location
       description: File path or section name
-      placeholder: "e.g., README.md - Installation section, plugins/plugin-dev/commands/create-plugin.md"
+      placeholder: "e.g., README.md - Installation section, plugins/plugin-dev/skills/skill-development/SKILL.md"
+    validations:
+      required: false
 
   - type: textarea
     id: issue
     attributes:
       label: What's unclear or missing?
       description: Describe what's confusing, incorrect, or missing
-      placeholder: The documentation doesn't explain...
     validations:
       required: true
 
@@ -51,7 +51,8 @@ body:
     attributes:
       label: Suggested Improvement
       description: How would you improve it? (Feel free to include proposed wording)
-      placeholder: It would be clearer if...
+    validations:
+      required: false
 
   - type: checkboxes
     id: issue-type
@@ -62,6 +63,7 @@ body:
         - label: Missing information
         - label: Unclear explanation
         - label: Code example needed
+        - label: Configuration example needed (plugin.json, frontmatter)
         - label: Broken link
         - label: Missing link (should link somewhere but doesn't)
         - label: Typo or grammar
@@ -72,4 +74,13 @@ body:
     id: context
     attributes:
       label: Additional Context
-      description: Add any other context, screenshots, or relevant information
+      description: Screenshots, links, or other relevant information
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I'm willing to submit a PR with this improvement
