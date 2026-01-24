@@ -1,6 +1,6 @@
 ---
 name: hook-development
-description: This skill should be used when the user asks to "create a hook", "add a PreToolUse/PostToolUse/Stop hook", "validate tool use", "implement prompt-based hooks", "use ${CLAUDE_PLUGIN_ROOT}", "set up event-driven automation", "block dangerous commands", or mentions hook events (PreToolUse, PermissionRequest, PostToolUse, Stop, SubagentStop, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, Notification). Provides comprehensive guidance for creating and implementing Claude Code plugin hooks with focus on advanced prompt-based hooks API.
+description: This skill should be used when the user asks to "create a hook", "add a PreToolUse/PostToolUse/Stop hook", "validate tool use", "implement prompt-based hooks", "use ${CLAUDE_PLUGIN_ROOT}", "set up event-driven automation", "block dangerous commands", or mentions hook events (PreToolUse, PermissionRequest, PostToolUse, PostToolUseFailure, Stop, SubagentStop, SubagentStart, Setup, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, Notification). Provides comprehensive guidance for creating and implementing Claude Code plugin hooks with focus on advanced prompt-based hooks API.
 ---
 
 # Hook Development for Claude Code Plugins
@@ -235,6 +235,33 @@ Execute after tool completes. Use to react to results, provide feedback, or log.
 - Exit 2: stderr fed back to Claude
 - systemMessage included in context
 
+### PostToolUseFailure
+
+Execute when a tool fails after PostToolUse hooks have run. Use to handle errors or provide fallback actions.
+
+**Example:**
+
+```json
+{
+  "PostToolUseFailure": [
+    {
+      "matcher": "Edit",
+      "hooks": [
+        {
+          "type": "prompt",
+          "prompt": "Error occurred during edit. Provide fallback action or ask for user input."
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Output behavior:**
+
+- Exit 2: stderr fed back to Claude
+- systemMessage included in context
+
 ### Stop
 
 Execute when main agent considers stopping. Use to validate completeness.
@@ -272,6 +299,50 @@ Execute when main agent considers stopping. Use to validate completeness.
 Execute when subagent considers stopping. Use to ensure subagent completed its task.
 
 Similar to Stop hook, but for subagents.
+
+### SubagentStart
+
+Execute when a subagent is started. Use to initialize subagent state or perform setup.
+
+**Example:**
+
+```json
+{
+  "SubagentStart": [
+    {
+      "matcher": "mcp__subagent_name",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/subagent-init.sh"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Setup
+
+Execute once at session start to perform global setup or initialize resources.
+
+**Example:**
+
+```json
+{
+  "Setup": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/session-setup.sh"
+        }
+      ]
+    }
+  ]
+}
+```
 
 ### UserPromptSubmit
 
@@ -647,18 +718,21 @@ echo "$output" | jq .
 
 ### Hook Events Summary
 
-| Event             | When              | Use For                  |
-| ----------------- | ----------------- | ------------------------ |
-| PreToolUse        | Before tool       | Validation, modification |
-| PermissionRequest | Permission dialog | Auto-allow/deny          |
-| PostToolUse       | After tool        | Feedback, logging        |
-| UserPromptSubmit  | User input        | Context, validation      |
-| Stop              | Agent stopping    | Completeness check       |
-| SubagentStop      | Subagent done     | Task validation          |
-| SessionStart      | Session begins    | Context loading          |
-| SessionEnd        | Session ends      | Cleanup, logging         |
-| PreCompact        | Before compact    | Preserve context         |
-| Notification      | User notified     | Logging, reactions       |
+| Event              | When               | Use For                  |
+| ------------------ | ------------------ | ------------------------ |
+| Setup              | Session init       | Global initialization    |
+| PreToolUse         | Before tool        | Validation, modification |
+| PermissionRequest  | Permission dialog  | Auto-allow/deny          |
+| PostToolUse        | After tool success | Feedback, logging        |
+| PostToolUseFailure | After tool fails   | Error handling           |
+| UserPromptSubmit   | User input         | Context, validation      |
+| Stop               | Agent stopping     | Completeness check       |
+| SubagentStart      | Subagent begins    | Subagent setup           |
+| SubagentStop       | Subagent done      | Task validation          |
+| SessionStart       | Session begins     | Context loading          |
+| SessionEnd         | Session ends       | Cleanup, logging         |
+| PreCompact         | Before compact     | Preserve context         |
+| Notification       | User notified      | Logging, reactions       |
 
 ### Best Practices
 

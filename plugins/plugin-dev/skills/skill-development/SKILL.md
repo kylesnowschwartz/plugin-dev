@@ -64,6 +64,68 @@ Use `allowed-tools` for:
 
 When specified, Claude can only use the listed tools without needing permission. If omitted, Claude follows the standard permission model.
 
+##### context
+
+Control how the skill's context is loaded:
+
+```yaml
+---
+name: analysis-skill
+description: Perform deep code analysis...
+context: fork
+---
+```
+
+**Values:**
+
+- `fork` - Run skill in a subagent (separate context), preserving main agent's context
+- Not specified - Run in main agent's context (default)
+
+Use `context: fork` for:
+
+- Skills that load large reference files
+- Skills that might pollute the main context
+- Expensive operations you want isolated
+
+##### agent
+
+Specify which agent type handles the skill when `context: fork` is set:
+
+```yaml
+---
+name: exploration-skill
+description: Explore codebase patterns...
+context: fork
+agent: Explore
+---
+```
+
+**Values:**
+
+- `Explore` - Fast agent for codebase exploration
+- `Plan` - Architect agent for implementation planning
+- `general` - General-purpose agent (default if `context: fork`)
+
+Requires `context: fork` to be set.
+
+##### skills
+
+Load other skills into the forked agent's context:
+
+```yaml
+---
+name: comprehensive-review
+description: Full code review with testing...
+context: fork
+agent: general
+skills:
+  - testing-patterns
+  - security-audit
+---
+```
+
+Requires `context: fork` to be set. Only skills from the same plugin can be loaded.
+
 ##### user-invocable
 
 Control whether the skill appears in the slash command menu:
@@ -138,6 +200,49 @@ Files not intended to be loaded into context, but rather used within the output 
 
 - **When to include**: When the skill needs files that will be used in the final output
 - **Examples**: `assets/logo.png` for brand assets, `assets/slides.pptx` for templates
+
+### Dynamic Content in Skills
+
+Skills support dynamic content injection and variable substitution for context-aware behavior.
+
+#### String Substitutions
+
+Use variables in skill content that get replaced at runtime:
+
+```markdown
+The session ID is: ${CLAUDE_SESSION_ID}
+Arguments passed: $ARGUMENTS
+```
+
+**Available substitutions:**
+
+- `$ARGUMENTS` - Arguments passed when skill is invoked (e.g., `/skill-name arg1 arg2`)
+- `${CLAUDE_SESSION_ID}` - Current session identifier
+- `${CLAUDE_PLUGIN_ROOT}` - Plugin directory path
+
+#### Dynamic Context Injection
+
+Execute commands to inject their output into skill context using backtick syntax:
+
+```markdown
+## Current Project Status
+
+The git status is:
+!`git status --short`
+
+Recent commits:
+!`git log --oneline -5`
+```
+
+**Syntax:** `` !`command` ``
+
+**Use cases:**
+
+- Load current project state (git status, package.json)
+- Include dynamic configuration
+- Fetch environment-specific information
+
+**Security note:** Commands execute in the user's environment. Only use trusted commands.
 
 ### Progressive Disclosure Design Principle
 
@@ -250,6 +355,9 @@ Before finalizing a skill:
 - [ ] Name uses only lowercase letters, numbers, and hyphens (max 64 chars)
 - [ ] Description is under 1024 characters
 - [ ] (Optional) `allowed-tools` field if restricting tool access
+- [ ] (Optional) `context: fork` if running in subagent
+- [ ] (Optional) `agent` field if specifying agent type (requires `context: fork`)
+- [ ] (Optional) `skills` array if loading other skills (requires `context: fork`)
 - [ ] (Optional) `user-invocable` field if hiding from slash menu
 - [ ] (Optional) `disable-model-invocation` field if blocking programmatic use
 - [ ] Markdown body is present and substantial

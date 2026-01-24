@@ -227,6 +227,58 @@ When MCP servers provide tools, they're automatically prefixed:
 - Tool: `create_task`
 - **Full name:** `mcp__plugin_asana_asana__asana_create_task`
 
+## MCP Resources
+
+MCP servers can expose resources that Claude can access using the `@` syntax:
+
+### Resource Syntax
+
+```
+@server-name:protocol://path
+```
+
+**Examples:**
+
+```
+@filesystem:file:///Users/me/project/README.md
+@database:postgres://localhost/mydb/users
+@github:https://github.com/user/repo
+```
+
+### Using Resources in Prompts
+
+Reference resources directly in your prompts:
+
+```
+Look at @filesystem:file:///path/to/config.json and suggest improvements
+```
+
+Claude will fetch the resource content and include it in context.
+
+### Resource Types
+
+- **file://** - Local file system paths
+- **https://** - HTTP resources
+- **Custom protocols** - Server-specific (postgres://, s3://, etc.)
+
+## Tool Search
+
+For MCP servers with many tools, use Tool Search to find relevant tools:
+
+**When to use:**
+
+- Server provides 10+ tools
+- You don't know exact tool names
+- Exploring server capabilities
+
+**How it works:**
+
+1. Claude Code indexes MCP tool names and descriptions
+2. Search by natural language or partial names
+3. Get filtered list of matching tools
+
+This feature is automatic - just ask Claude about available tools or describe what you want to do.
+
 ### Using MCP Tools in Commands
 
 Pre-allow specific MCP tools in command frontmatter:
@@ -411,6 +463,33 @@ Pre-allow only necessary MCP tools:
 
 ❌ allowed-tools: ["mcp__plugin_api_server__*"]
 ```
+
+### Managed MCP Controls (Enterprise)
+
+Organizations can control MCP server access through managed settings:
+
+**Restrict allowed servers:**
+
+```json
+{
+  "mcpServers": {
+    "allowedServers": ["github", "internal-api"],
+    "blockedServers": ["*"]
+  }
+}
+```
+
+**Disable MCP entirely:**
+
+```json
+{
+  "mcpServers": {
+    "enabled": false
+  }
+}
+```
+
+These settings are configured by administrators and cannot be overridden by users or plugins.
 
 ## Error Handling
 

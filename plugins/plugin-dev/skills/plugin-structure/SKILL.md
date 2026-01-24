@@ -1,6 +1,6 @@
 ---
 name: plugin-structure
-description: This skill should be used when the user asks to "create a plugin", "scaffold a plugin", "understand plugin structure", "organize plugin components", "set up plugin.json", "use ${CLAUDE_PLUGIN_ROOT}", "add commands/agents/skills/hooks", "configure auto-discovery", or needs guidance on plugin directory layout, manifest configuration, component organization, file naming conventions, or Claude Code plugin architecture best practices.
+description: This skill should be used when the user asks to "create a plugin", "scaffold a plugin", "understand plugin structure", "organize plugin components", "set up plugin.json", "use ${CLAUDE_PLUGIN_ROOT}", "add commands/agents/skills/hooks", "add lspServers", "configure auto-discovery", or needs guidance on plugin directory layout, manifest configuration, component organization, file naming conventions, or Claude Code plugin architecture best practices.
 ---
 
 # Plugin Structure for Claude Code
@@ -281,6 +281,57 @@ hooks/
 
 **Usage**: MCP servers integrate seamlessly with Claude Code's tool system
 
+### LSP Servers
+
+**Location**: Inline in `plugin.json` under `lspServers` field
+**Format**: JSON configuration for Language Server Protocol servers
+**Auto-start**: Servers start when files matching extensions are opened
+
+**Example format**:
+
+```json
+{
+  "lspServers": {
+    "python": {
+      "command": "pyright-langserver",
+      "args": ["--stdio"],
+      "extensionToLanguage": {
+        ".py": "python",
+        ".pyi": "python"
+      }
+    }
+  }
+}
+```
+
+**Usage**: LSP servers provide code intelligence (go-to-definition, find references, hover)
+
+For detailed LSP configuration, see the `lsp-integration` skill.
+
+### Output Styles
+
+**Location**: Inline in `plugin.json` under `outputStyles` field
+**Format**: JSON configuration for custom output formatting
+**Purpose**: Customize how Claude formats responses
+
+**Example format**:
+
+```json
+{
+  "outputStyles": {
+    "code-blocks": {
+      "style": "fenced",
+      "language": "auto"
+    },
+    "headers": {
+      "numbering": true
+    }
+  }
+}
+```
+
+**Usage**: Plugins can define consistent output formatting for their domain
+
 ## Portable Path References
 
 ### ${CLAUDE_PLUGIN_ROOT}
@@ -487,6 +538,52 @@ my-plugin/
     │   └── SKILL.md
     └── skill-two/
         └── SKILL.md
+```
+
+## Plugin Caching
+
+Claude Code caches plugin content for performance. Understanding caching behavior helps with development and debugging.
+
+### What Gets Cached
+
+- Plugin manifest (plugin.json)
+- Component files (commands, agents, skills)
+- Configuration files (hooks.json, .mcp.json)
+
+### Cache Invalidation
+
+Cached content refreshes when:
+
+- Claude Code session restarts
+- Plugin is reinstalled or updated
+- User runs `/plugins refresh` (if available)
+
+### Why External Paths Fail
+
+**Important:** Paths outside the plugin directory may not work reliably because:
+
+1. **Security boundary** - Plugins are sandboxed to their directory
+2. **Caching** - External paths aren't monitored for changes
+3. **Portability** - External paths break on different machines
+
+**Always use:**
+
+- `${CLAUDE_PLUGIN_ROOT}` for paths within the plugin
+- Bundled resources instead of external file references
+- Environment variables for user-specific paths
+
+### Development Workflow
+
+During development, reload plugins by:
+
+1. Exiting Claude Code
+2. Making changes to plugin files
+3. Restarting Claude Code
+
+Or use `--plugin-dir` for testing without installation:
+
+```bash
+claude --plugin-dir /path/to/plugin
 ```
 
 ## Troubleshooting

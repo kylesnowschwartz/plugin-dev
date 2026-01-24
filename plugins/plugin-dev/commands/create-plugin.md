@@ -60,6 +60,7 @@ Guide the user through creating a complete, high-quality Claude Code plugin from
    - **Agents**: Autonomous tasks? (validation, generation, analysis)
    - **Hooks**: Event-driven automation? (validation, notifications)
    - **MCP**: External service integration? (databases, APIs)
+   - **LSP**: Code intelligence? (go-to-definition, find references)
    - **Settings**: User configuration? (.local.md files)
 3. For each component type needed, identify:
    - How many of each type
@@ -177,6 +178,7 @@ git commit -m "feat: initial plugin structure"
 - Agents: Load agent-development skill
 - Hooks: Load hook-development skill
 - MCP: Load mcp-integration skill
+- LSP: Load lsp-integration skill
 - Settings: Load plugin-settings skill
 
 **Actions for each component**:
@@ -238,6 +240,17 @@ git commit -m "feat: initial plugin structure"
    - Environment variables as needed
 3. Document required env vars in README
 4. Provide setup instructions
+
+### For LSP
+
+1. Load lsp-integration skill using Skill tool
+2. Add lspServers configuration to plugin.json:
+   - Server command and args
+   - extensionToLanguage mapping
+   - Environment variables if needed
+3. Bundle LSP server binary if self-contained
+4. Or document external server installation in README
+5. Test with language files matching configured extensions
 
 ### For Settings
 
@@ -427,7 +440,7 @@ git commit -m "feat: initial plugin structure"
 ### Skills to Load by Phase
 
 - **Phase 2**: plugin-structure
-- **Phase 5**: skill-development, command-development, agent-development, hook-development, mcp-integration, plugin-settings (as needed)
+- **Phase 5**: skill-development, command-development, agent-development, hook-development, mcp-integration, lsp-integration, plugin-settings (as needed)
 - **Phase 6**: (agents will use skills automatically)
 - **Phase 8**: marketplace-structure (if publishing to marketplace)
 

@@ -255,6 +255,44 @@ tools: Read, Write, Grep, Bash
 
 > **Important:** Agents use `tools` while Skills use `allowed-tools`. The field names differ between component types. For skill tool restrictions, see the `skill-development` skill.
 
+### skills (optional)
+
+Load specific skills into the agent's context:
+
+```yaml
+skills:
+  - testing-patterns
+  - security-audit
+  - api-design
+```
+
+**Use cases:**
+
+- Give agent domain expertise via skills
+- Combine multiple skills for comprehensive workflows
+- Share knowledge between agents and skills
+
+Skills must be from the same plugin. The skill's SKILL.md content loads into the agent's context.
+
+### permissionMode (optional)
+
+Control how the agent handles permission requests:
+
+```yaml
+permissionMode: acceptEdits
+```
+
+**Values:**
+
+- `acceptEdits` - Auto-accept file edit operations (Write, Edit)
+- `dontAsk` - Skip permission dialogs for all operations
+- `bypassPermissions` - Full bypass (requires trust)
+- `plan` - Planning mode, propose changes without executing
+
+**Default:** Standard permission model (asks user)
+
+**Security note:** Use restrictive modes (`plan`, `acceptEdits`) for untrusted agents. `bypassPermissions` should only be used for fully trusted agents.
+
 ## System Prompt Design
 
 The markdown body becomes the agent's system prompt. Write in second person, addressing the agent directly.
@@ -421,6 +459,24 @@ Create test scenarios to verify agent triggers correctly:
 3. Check Claude loads the agent
 4. Verify agent provides expected functionality
 
+### Load Agents at Session Start
+
+Use the `--agents` CLI flag to pre-load specific agents:
+
+```bash
+# Load single agent
+claude --agents code-reviewer
+
+# Load multiple agents
+claude --agents "code-reviewer,test-generator"
+```
+
+**Use cases:**
+
+- Testing agent behavior without triggering
+- Workflows requiring specific agents
+- Debugging agent system prompts
+
 ### Test System Prompt
 
 Ensure system prompt is complete:
@@ -455,13 +511,15 @@ Output: [What to provide]
 
 ### Frontmatter Fields Summary
 
-| Field       | Required | Format                     | Example                  |
-| ----------- | -------- | -------------------------- | ------------------------ |
-| name        | Yes      | lowercase-hyphens          | code-reviewer            |
-| description | Yes      | Text + examples            | Use when... <example>... |
-| model       | Yes      | inherit/sonnet/opus/haiku  | inherit                  |
-| color       | Yes      | Color name                 | blue                     |
-| tools       | No       | Comma-separated tool names | Read, Grep               |
+| Field          | Required | Format                     | Example                  |
+| -------------- | -------- | -------------------------- | ------------------------ |
+| name           | Yes      | lowercase-hyphens          | code-reviewer            |
+| description    | Yes      | Text + examples            | Use when... <example>... |
+| model          | Yes      | inherit/sonnet/opus/haiku  | inherit                  |
+| color          | Yes      | Color name                 | blue                     |
+| tools          | No       | Comma-separated tool names | Read, Grep               |
+| skills         | No       | Array of skill names       | [testing, security]      |
+| permissionMode | No       | Permission mode string     | acceptEdits              |
 
 > **Note:** Agents use `tools` to restrict tool access. Skills use `allowed-tools` for the same purpose. The field names differ between component types.
 

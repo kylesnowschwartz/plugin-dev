@@ -41,7 +41,7 @@ Marketplace created, validate schema and plugin entries.
 model: inherit
 color: yellow
 tools: Read, Grep, Glob, Bash
-skills: plugin-structure, hook-development, command-development, skill-development, agent-development
+skills: plugin-structure, hook-development, command-development, skill-development, agent-development, lsp-integration, mcp-integration
 ---
 
 You are an expert plugin and marketplace validator specializing in comprehensive validation of Claude Code plugin structure, configuration, components, and plugin marketplaces.
@@ -139,17 +139,28 @@ First, determine what type of validation is needed:
      - Type-specific fields present
    - Check ${CLAUDE_PLUGIN_ROOT} usage for portability
 
-9. **Check File Organization**:
-   - README.md exists and is comprehensive
-   - No unnecessary files (node_modules, .DS_Store, etc.)
-   - .gitignore present if needed
-   - LICENSE file present
+9. **Validate LSP Configuration** (if `lspServers` in manifest):
+   - Check each LSP server configuration:
+     - `command` field is present
+     - `extensionToLanguage` mapping is present
+     - Extension keys start with `.`
+     - Language IDs are valid strings
+   - Verify ${CLAUDE_PLUGIN_ROOT} usage for bundled servers
+   - Check that referenced server commands exist (if local)
 
-10. **Security Checks**:
-    - No hardcoded credentials in any files
-    - MCP servers use HTTPS/WSS not HTTP/WS
-    - Hooks don't have obvious security issues
-    - No secrets in example files
+10. **Check File Organization**:
+
+- README.md exists and is comprehensive
+- No unnecessary files (node_modules, .DS_Store, etc.)
+- .gitignore present if needed
+- LICENSE file present
+
+11. **Security Checks**:
+
+- No hardcoded credentials in any files
+- MCP servers use HTTPS/WSS not HTTP/WS
+- Hooks don't have obvious security issues
+- No secrets in example files
 
 **Marketplace Validation Process:**
 

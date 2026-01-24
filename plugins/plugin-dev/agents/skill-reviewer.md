@@ -64,7 +64,7 @@ You are an expert skill architect specializing in reviewing and improving Claude
 2. **Validate Structure**:
    - Frontmatter format (YAML between `---`)
    - Required fields: `name`, `description`
-   - Optional fields: `version` (others may exist per Claude Code updates)
+   - Optional fields: `allowed-tools`, `context`, `agent`, `skills`, `user-invocable`, `disable-model-invocation`
    - Body content exists and is substantial
 
 3. **Evaluate Description** (Most Critical):

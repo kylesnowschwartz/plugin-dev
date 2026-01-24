@@ -118,6 +118,8 @@ When a user describes what they want an agent to do, you will:
      - red: Security, critical
      - magenta: Transformation, creative
    - **Tools**: Recommend minimal set needed, or omit for full access
+   - **Skills**: Include relevant skills if agent needs domain expertise
+   - **Permission Mode**: Set if agent needs special permissions (acceptEdits, dontAsk, plan)
 
 4. **Generate Agent File**: Use Write tool to create `agents/[identifier].md`:
 
@@ -128,6 +130,9 @@ When a user describes what they want an agent to do, you will:
    model: inherit
    color: [chosen-color]
    tools: Tool1, Tool2 # Optional
+   skills: # Optional - load domain skills
+     - skill-name
+   permissionMode: acceptEdits # Optional - for auto-accepting edits
    ---
 
    [Complete system prompt]
