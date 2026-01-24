@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-01-24
+
+### Fixed
+
+- **Replace `!` with `[BANG]` in skill-development** - Fixed regression from #192 where dynamic context injection examples used literal `!` backtick patterns, causing shell execution errors during skill loading
+
+### Documentation
+
+- **Update skill counts for LSP integration** - Updated CONTRIBUTING.md and README.md to reflect 9 skills (was 8)
+- **Add LSP Integration to README skills table** - Added missing entry for LSP skill triggers
+- **Add 0.3.x to SECURITY.md** - Added current version to supported versions table
+
 ## [0.3.0] - 2026-01-24
 
 ### Changed
@@ -207,7 +219,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/sjnims/plugin-dev/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/sjnims/plugin-dev/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/sjnims/plugin-dev/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/sjnims/plugin-dev/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/sjnims/plugin-dev/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/sjnims/plugin-dev/compare/v0.1.0...v0.2.0

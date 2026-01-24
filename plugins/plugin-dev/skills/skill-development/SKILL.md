@@ -228,13 +228,13 @@ Execute commands to inject their output into skill context using backtick syntax
 ## Current Project Status
 
 The git status is:
-!`git status --short`
+[BANG]`git status --short`
 
 Recent commits:
-!`git log --oneline -5`
+[BANG]`git log --oneline -5`
 ```
 
-**Syntax:** `` !`command` ``
+**Syntax:** `` [BANG]`command` ``
 
 **Use cases:**
 

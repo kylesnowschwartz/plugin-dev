@@ -33,7 +33,7 @@ A comprehensive toolkit for developing Claude Code plugins with expert guidance 
 
 ## Overview
 
-The plugin-dev toolkit provides **8 specialized skills**, **3 validation agents**, and **3 slash commands** to help you build high-quality Claude Code plugins:
+The plugin-dev toolkit provides **9 specialized skills**, **3 validation agents**, and **3 slash commands** to help you build high-quality Claude Code plugins:
 
 - **Skills** provide domain expertise loaded on-demand via trigger phrases
 - **Agents** automate validation and generation tasks
@@ -118,6 +118,7 @@ Skills load automatically when you ask relevant questions. Each skill includes c
 | ------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | **Hook Development**      | `create a hook`, `PreToolUse hook`, `validate tool use`, `prompt-based hooks`, `block dangerous commands` | Event-driven automation, operation validation, policy enforcement   |
 | **MCP Integration**       | `add MCP server`, `integrate MCP`, `.mcp.json`, `Model Context Protocol`, `stdio/SSE server`              | External service integration, API connections, database access      |
+| **LSP Integration**       | `add LSP server`, `configure language server`, `set up LSP`, `code intelligence`, `pyright-lsp`           | Language server integration, code navigation, type information      |
 | **Plugin Structure**      | `plugin structure`, `plugin.json`, `auto-discovery`, `component organization`                             | Starting new plugins, organizing components, manifest configuration |
 | **Plugin Settings**       | `plugin settings`, `.local.md files`, `YAML frontmatter`, `per-project settings`                          | Configuration storage, user preferences, per-project state          |
 | **Command Development**   | `create a slash command`, `command frontmatter`, `command arguments`                                      | Slash commands, argument handling, command organization             |

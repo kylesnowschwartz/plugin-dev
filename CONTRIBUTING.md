@@ -49,12 +49,12 @@ Before contributing, ensure you have:
    ```
    plugins/plugin-dev/
    ├── commands/      # 3 slash commands
-   ├── skills/        # 8 skills
+   ├── skills/        # 9 skills
    └── agents/        # 3 specialized agents
    ```
 
 3. **Understand the plugin components**:
-   - 8 skills for different plugin development aspects
+   - 9 skills for different plugin development aspects
    - 3 agents for validation and generation
    - 3 slash commands: `/plugin-dev:start` (entry point), `/plugin-dev:create-plugin`, `/plugin-dev:create-marketplace`
 
