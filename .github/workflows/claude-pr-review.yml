@@ -34,6 +34,22 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Cache npm tools
+        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+        id: claude-pr-review-npm-tools-cache
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-lint-tools-v1
+
+      - name: Install linting tools
+        if: steps.claude-pr-review-npm-tools-cache.outputs.cache-hit != 'true'
+        run: npm install -g markdownlint-cli2 prettier
+
       - name: Review PR with Claude
         uses: anthropics/claude-code-action@f64219702d7454cf29fe32a74104be6ed43dc637 # v1.0.34
         with:
@@ -47,12 +63,34 @@ jobs:
             - PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}
             - Author: ${{ github.event.pull_request.user.login }}
             - Base: ${{ github.event.pull_request.base.ref }}
+            - Dependencies: markdownlint-cli2 and prettier are pre-installed globally
+
+            > **Note**: The `component-validation` workflow runs in parallel and validates plugin component
+            > structure (frontmatter fields, JSON schema, etc.). Focus your review on content quality,
+            > best practices, and issues beyond structural validation.
 
             ## Instructions
-            1. Get the PR diff to understand what changed
-            2. If any `.md` files were changed, run `npx markdownlint-cli2 <files>` to check for style issues
-            3. Review the changes against the criteria below
-            4. Post a summary comment with your findings
+
+            ### Step 1: Run Quality Checks
+            Run these checks and note any failures:
+            - `markdownlint-cli2 <changed-md-files>` - Markdown style issues
+            - `prettier --check <changed-md-files>` - Formatting issues
+            - `shellcheck plugins/plugin-dev/skills/*/scripts/*.sh` - Shell script issues (if scripts changed)
+
+            ### Step 2: Review the Diff
+            Run `gh pr diff ${{ github.event.pull_request.number }}` to see all changes.
+
+            ### Step 3: Provide Feedback
+
+            **For specific line-level issues**, use inline comments. Target:
+            - Missing or invalid YAML frontmatter fields
+            - Imperative voice violations in commands ("You should" instead of "Do")
+            - Missing trigger phrases in skill descriptions
+            - `<example>` block formatting issues in agents
+            - Shell script issues (shellcheck findings)
+            - Security concerns
+
+            **For general observations**, post a summary comment.
 
             ## Review Criteria
 
@@ -62,25 +100,28 @@ jobs:
             - **Agents** (`agents/*.md`): Verify <example> blocks for triggering, appropriate tool restrictions.
             - **Hooks** (`hooks/hooks.json`): Validate event types and matcher patterns.
 
-            ### Markdown Quality (run prettier and markdownlint-cli2)
-            Run `npx prettier` and `npx markdownlint-cli2` on changed `.md` files. Key markdown rules enforced:
+            ### Shell Scripts (if changed)
+            - Run shellcheck on any changed `.sh` files in `plugins/plugin-dev/skills/*/scripts/`
+            - Flag any shellcheck errors or warnings
+
+            ### Markdown Quality
+            Key markdown rules enforced:
             - ATX-style headers (`#` not underlines)
             - Dash-style lists (`-` not `*` or `+`)
             - 2-space indentation for nested lists
             - Fenced code blocks (not indented)
-            Include any lint errors in your review under a "Markdown Linting" section.
 
             ### Documentation
             - README.md updates if user-facing changes
             - CLAUDE.md updates if development process changes
 
             ## Output Format
-            Post a PR comment with your review. Structure it as:
-            1. **Summary**: One-line assessment (looks good / needs changes / has concerns)
-            2. **What's Good**: Positive aspects of the PR
-            3. **Suggestions**: Improvements or issues found (if any)
-            4. **Checklist Verification**: Confirm key items are addressed
+            1. Post inline comments for specific issues found in the diff
+            2. Post a summary comment with:
+              - **Verdict**: ✅ Looks good / ⚠️ Needs changes / 🔍 Has concerns
+              - **Quality Checks**: Results from markdownlint, prettier, shellcheck (pass/fail with details)
+              - **What's Good**: Positive aspects of the PR
+              - **Suggestions**: General improvements (not covered by inline comments)
 
             Be constructive and helpful. Focus on significant issues, not nitpicks.
-            If the PR looks good, say so briefly - don't invent problems.
-          claude_args: '--model claude-opus-4-5-20251101 --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(npx markdownlint-cli2:*),Bash(npx prettier:*),Read,Glob,Grep"'
+          claude_args: '--model claude-opus-4-5-20251101 --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Bash(markdownlint-cli2:*),Bash(prettier:*),Bash(shellcheck:*),Read,Glob,Grep"'

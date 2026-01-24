@@ -4,13 +4,14 @@
 
 ## Type of Change
 
-<!-- Mark the relevant option with an "x" -->
+<!-- Labels are applied automatically by our semantic labeler. Mark the option that best describes your change: -->
 
 - [ ] Bug fix (non-breaking change that fixes an issue)
 - [ ] New feature (non-breaking change that adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] Documentation update (improvements to README, CLAUDE.md, or component docs)
 - [ ] Refactoring (code change that neither fixes a bug nor adds a feature)
+- [ ] Chore (maintenance tasks: dependencies, CI, tooling)
 - [ ] Test (adding or updating tests)
 - [ ] Configuration change (changes to .markdownlint.json, plugin.json, etc.)
 
@@ -31,13 +32,13 @@
 ## Motivation and Context
 
 <!-- Why is this change required? What problem does it solve? -->
-<!-- If it fixes an open issue, please link to the issue here using one of these formats: -->
+<!-- If it fixes an open issue, link to the issue using one of these formats: -->
 <!-- Fixes #123 - closes issue when PR merges -->
 <!-- Closes #123 - same as Fixes -->
 <!-- Resolves #123 - same as Fixes -->
 <!-- Related to #123 - links without closing -->
 
-Fixes # (issue)
+Fixes #
 
 ## How Has This Been Tested?
 
@@ -46,7 +47,7 @@ Fixes # (issue)
 **Test Configuration**:
 
 - Claude Code version:
-- GitHub CLI version: `gh --version`
+- GitHub CLI version:
 - OS:
 - Testing repository: <!-- public repo you tested with, if applicable -->
 
@@ -84,7 +85,22 @@ Fixes # (issue)
 - [ ] Scripts are executable (`chmod +x`)
 - [ ] Scripts use `${CLAUDE_PLUGIN_ROOT}` for portable paths
 
-### Component-Specific Checks
+### Testing
+
+- [ ] I have tested the plugin locally with `claude --plugin-dir plugins/plugin-dev`
+- [ ] I have tested the full workflow (if applicable)
+- [ ] I have verified GitHub CLI integration works (if applicable)
+- [ ] I have tested in a clean repository (not my development repo)
+- [ ] I have run relevant validation scripts (validate-agent.sh, validate-command.sh, validate-hook-schema.sh, etc.)
+
+### Version Management (if applicable)
+
+- [ ] I have updated `plugins/plugin-dev/.claude-plugin/plugin.json` (source of truth)
+- [ ] I have updated `.claude-plugin/marketplace.json` (metadata.version AND plugins[0].version)
+- [ ] I have updated `CLAUDE.md` (Quick Reference section)
+- [ ] I have updated CHANGELOG.md with relevant changes
+
+## Component-Specific Checks
 
 <!-- Only relevant if you modified commands, skills, agents, or hooks -->
 
@@ -123,7 +139,7 @@ Fixes # (issue)
 <details>
 <summary><strong>Hooks</strong> (click to expand)</summary>
 
-- [ ] Hook uses correct event type (PreToolUse, PostToolUse, Stop, SubagentStop, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, Notification)
+- [ ] Hook uses correct event type (PreToolUse, PermissionRequest, PostToolUse, Stop, SubagentStop, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, Notification)
 - [ ] Matchers are properly configured for tool filtering
 - [ ] Hook type is appropriate (prompt for LLM-driven, command for scripts)
 - [ ] Prompt-based hooks have clear, focused instructions
@@ -131,25 +147,17 @@ Fixes # (issue)
 
 </details>
 
-### Testing
+## Example Output (if applicable)
 
-- [ ] I have tested the plugin locally with `claude --plugin-dir plugins/plugin-dev`
-- [ ] I have tested the full workflow (if applicable)
-- [ ] I have verified GitHub CLI integration works (if applicable)
-- [ ] I have tested in a clean repository (not my development repo)
-- [ ] I have run relevant validation scripts (validate-agent.sh, validate-command.sh, validate-hook-schema.sh, etc.)
+<!-- Add example CLI output, command results, or JSON to demonstrate your changes -->
 
-### Version Management (if applicable)
-
-- [ ] I have updated version numbers in all version files:
-  - [ ] `plugins/plugin-dev/.claude-plugin/plugin.json` (source of truth)
-  - [ ] `.claude-plugin/marketplace.json` (metadata.version AND plugins[0].version)
-  - [ ] `CLAUDE.md` (Quick Reference section)
-- [ ] I have updated CHANGELOG.md with relevant changes
+```text
+# Example: paste relevant output here
+```
 
 ## Screenshots (if applicable)
 
-<!-- Add screenshots to help explain your changes -->
+<!-- Before/after screenshots or GIFs showing UI changes or visual differences -->
 
 ## Additional Notes
 
@@ -179,3 +187,7 @@ Fixes # (issue)
 - [ ] Labels are appropriate for the change type
 - [ ] Version numbers are updated in all version files (if applicable)
 - [ ] CHANGELOG.md is updated (if applicable)
+
+---
+
+<!-- TIP: Use draft PRs for work-in-progress changes that need early feedback -->
