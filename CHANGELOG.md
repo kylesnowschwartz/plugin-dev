@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-01-24
+
+### Changed
+
+- **Sync documentation with official Claude Code docs** - Updated all skill documentation to align with latest Claude Code features and terminology (#192)
+- **Replace deprecated TodoWrite with Task tools** - Updated documentation to use current TaskCreate, TaskUpdate, TaskGet, TaskList tools (#190)
+- **Update documentation for Skill tool consolidation** - Reflect Claude Code's unified Skill tool approach (#186)
+- **Optimize CLAUDE.md with progressive disclosure** - Restructured for faster onboarding
+
+### Fixed
+
+- **Use dynamic GitHub release badge** - Badge now updates automatically from GitHub releases (#054a89b)
+
+### Security
+
+- **Remove untrusted checkout in ci-failure-analysis** - Hardened workflow against potential code injection (#0d5a428)
+
+### CI/CD
+
+- **Improve workflow consistency and add YAML linting** - Enhanced CI reliability with yamllint integration
+- **Improve links and markdownlint workflows** - Better error reporting and performance
+- **Improve greet workflow** - Enhanced new contributor welcome experience
+- **Improve CI workflows with Node.js setup** - Consistent tooling across workflows
+- **Eliminate workflow dependencies and optimize CI** - Faster parallel execution
+- **Clean up validate-workflows configuration** - Simplified workflow validation
+- **Remove dependabot auto-merge workflow** - Simplified dependency management
+- **Improve label system and dependabot config** - Better issue/PR organization
+- **Improve GitHub templates** - Enhanced issue and PR template UX
+
+### Dependencies
+
+- Bump anthropics/claude-code-action to v1.0.34
+- Bump actions/checkout to v6.0.2 (#183)
+- Bump actions/cache to v5.0.2 (#189)
+- Bump yamllint to 1.38.0
+
+### Maintenance
+
+- Ignore .mcp.json (user-specific MCP config)
+- Update release procedure for dynamic version badge
+
 ## [0.2.1] - 2025-12-13
 
 ### Security
@@ -166,7 +207,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/sjnims/plugin-dev/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/sjnims/plugin-dev/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/sjnims/plugin-dev/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/sjnims/plugin-dev/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/sjnims/plugin-dev/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/sjnims/plugin-dev/releases/tag/v0.1.0
