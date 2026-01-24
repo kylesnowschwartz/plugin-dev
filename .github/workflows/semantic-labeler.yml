@@ -1,3 +1,4 @@
+# yamllint disable rule:line-length
 name: Semantic Labeler
 
 # Claude-powered semantic labeling for both issues and PRs
@@ -34,81 +35,49 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Label issue with Claude
+        id: labeler
         uses: anthropics/claude-code-action@f64219702d7454cf29fe32a74104be6ed43dc637 # v1.0.34
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
-            Analyze this GitHub issue and apply appropriate labels.
+            Label GitHub issue #${{ github.event.issue.number }}.
 
-            ## Issue Details
-            - Repository: ${{ github.repository }}
-            - Issue #${{ github.event.issue.number }}
-            - Title: ${{ github.event.issue.title }}
-            - Author: ${{ github.event.issue.user.login }}
-
-            ## Issue Body
+            **Title**: ${{ github.event.issue.title }}
+            **Author**: ${{ github.event.issue.user.login }}
+            **Body**:
             ${{ github.event.issue.body }}
 
             ## Instructions
 
-            Based on the issue content, determine and apply appropriate labels using `gh issue edit`.
+            1. **Get available labels**: `gh label list --json name,description -q '.[] | "\(.name): \(.description)"'`
+            2. **Get current labels**: `gh issue view ${{ github.event.issue.number }} --json labels -q '.labels[].name'`
+            3. **Analyze** the issue content and determine appropriate labels
+            4. **Apply labels** using `gh issue edit`, removing conflicting mutually-exclusive labels first
 
-            ### Label Categories
+            ## Label Rules (see .github/LABELS.md for full details)
 
-            **TYPE (choose ONE):**
-            - `bug` - Something isn't working correctly
-            - `enhancement` - New feature or improvement request
-            - `documentation` - Documentation improvements or additions
-            - `question` - Asking for help or clarification
-            - `refactor` - Code restructuring without behavior change
-            - `chore` - Maintenance tasks (dependencies, CI, etc.)
+            **Required (exactly ONE each):**
+            - TYPE: bug | enhancement | documentation | question | refactor | chore
+            - PRIORITY: priority:critical | priority:high | priority:medium | priority:low
+            - EFFORT: effort:small | effort:medium | effort:large
 
-            **COMPONENT (choose ALL that apply based on what the issue discusses):**
-            - `component:command` - Related to /plugin-dev:* slash commands
-            - `component:skill` - Related to methodology skills
-            - `component:agent` - Related to agents
-            - `component:hook` - Related to hooks
-            - `component:docs` - General documentation
-            - `github-actions` - CI/CD and GitHub workflows
+            **Contextual (apply only if clearly relevant):**
+            - COMPONENT: component:skill | component:agent | component:command | component:hook | component:docs | github-actions
+            - SPECIAL: breaking | security
+            - COMMUNITY: help wanted | good first issue (only if clearly appropriate)
 
-            **PRIORITY (choose ONE based on impact/urgency):**
-            - `priority:critical` - Blocking, security issues, or data loss
-            - `priority:high` - Significant impact, should address soon
-            - `priority:medium` - Moderate impact, normal priority
-            - `priority:low` - Minor issues, nice to have
+            ## Execution
 
-            **EFFORT (choose ONE based on estimated complexity):**
-            - `effort:small` - < 1 hour of work
-            - `effort:medium` - 1-4 hours of work
-            - `effort:large` - > 4 hours of work
-
-            **IMPACT (only if applicable):**
-            - `breaking` - Would require breaking changes
-            - `security` - Security-related issue
-
-            **COMMUNITY (only if clearly appropriate):**
-            - `good first issue` - Simple, well-documented, good for newcomers
-            - `help wanted` - Could use community contribution
-
-            ### Rules
-            1. Always apply exactly ONE type label
-            2. Always apply exactly ONE priority label
-            3. Always apply exactly ONE effort label
-            4. Apply component labels only if clearly related
-            5. Apply impact/community labels only when clearly applicable
-            6. Don't guess - if unsure about a category, skip it (except required ones)
-
-            ### Execution
-            Apply labels using:
+            For mutually exclusive categories (type, priority, effort), remove existing labels before adding new ones:
             ```bash
-            gh issue edit ${{ github.event.issue.number }} --add-label "label1,label2,label3"
+            gh issue edit ${{ github.event.issue.number }} --remove-label "priority:low" --add-label "priority:high,bug,effort:medium"
             ```
 
             After applying labels, briefly explain your reasoning.
-          claude_args: |
-            --allowedTools "Bash(gh issue:*)"
+          claude_args: '--model claude-opus-4-5-20251101 --allowedTools "Bash(gh label:*),Bash(gh issue:*)"'
 
   label-pr:
     name: Label Pull Request
@@ -129,73 +98,46 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: Label PR with Claude
+        id: labeler
         uses: anthropics/claude-code-action@f64219702d7454cf29fe32a74104be6ed43dc637 # v1.0.34
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
-            Analyze this pull request and apply appropriate labels.
+            Label pull request #${{ github.event.pull_request.number }}.
 
-            ## PR Details
-            - Repository: ${{ github.repository }}
-            - PR #${{ github.event.pull_request.number }}
-            - Title: ${{ github.event.pull_request.title }}
-            - Author: ${{ github.event.pull_request.user.login }}
-
-            ## PR Description
+            **Title**: ${{ github.event.pull_request.title }}
+            **Author**: ${{ github.event.pull_request.user.login }}
+            **Description**:
             ${{ github.event.pull_request.body }}
 
             ## Instructions
 
-            1. First, get the PR diff to understand what changed:
-               ```bash
-               gh pr diff ${{ github.event.pull_request.number }}
-               ```
+            1. **Get available labels**: `gh label list --json name,description -q '.[] | "\(.name): \(.description)"'`
+            2. **Get current labels**: `gh pr view ${{ github.event.pull_request.number }} --json labels -q '.labels[].name'`
+            3. **Get the PR diff** to understand what changed: `gh pr diff ${{ github.event.pull_request.number }}`
+            4. **Read key modified files** to understand context - use Read and Glob tools to examine important changed files in detail
+            5. **Analyze** the changes and determine appropriate labels
+            6. **Apply labels** using `gh pr edit`, removing conflicting mutually-exclusive labels first
 
-            2. Analyze the changes and apply appropriate labels.
+            ## Label Rules (see .github/LABELS.md for full details)
 
-            ### Label Categories
+            **Required (exactly ONE each):**
+            - TYPE (based on nature of changes): bug | enhancement | documentation | refactor | chore
+            - EFFORT (based on diff size/complexity): effort:small | effort:medium | effort:large
 
-            **TYPE (choose ONE based on the nature of changes):**
-            - `enhancement` - New feature or capability
-            - `bug` - Bug fix
-            - `documentation` - Documentation-only changes
-            - `refactor` - Code restructuring without behavior change
-            - `chore` - Maintenance (dependencies, CI config, tooling)
+            **Contextual (apply based on files changed):**
+            - COMPONENT: component:skill (skills/**) | component:agent (agents/**) | component:command (commands/**) | component:hook (hooks/**) | component:docs (*.md, .github/**/*.md) | github-actions (.github/workflows/**)
+            - SPECIAL: breaking | security
 
-            **COMPONENT (choose ALL that apply based on files changed):**
-            - `component:command` - Changes to `plugins/plugin-dev/commands/**`
-            - `component:skill` - Changes to `plugins/plugin-dev/skills/**`
-            - `component:agent` - Changes to `plugins/plugin-dev/agents/**`
-            - `component:hook` - Changes to `plugins/plugin-dev/hooks/**`
-            - `component:docs` - Changes to root-level `*.md` or `.github/**/*.md`
-            - `github-actions` - Changes to `.github/workflows/**` (except labeler configs)
-            - `dependencies` - Changes to `.github/dependabot.yml`
+            ## Execution
 
-            **EFFORT (choose ONE based on diff size and complexity):**
-            - `effort:small` - Few files, simple changes
-            - `effort:medium` - Multiple files, moderate complexity
-            - `effort:large` - Many files, significant changes, or architectural impact
-
-            **IMPACT (only if applicable):**
-            - `breaking` - Contains breaking changes to existing functionality or APIs
-            - `security` - Security-related changes
-
-            ### Rules
-            1. Always apply exactly ONE type label
-            2. Apply component labels based on actual files changed
-            3. Always apply exactly ONE effort label
-            4. Apply impact labels only when clearly applicable
-            5. For type, infer from the PR title/description and nature of changes
-
-            ### Execution
-            Apply labels using:
+            For mutually exclusive categories (type, effort), remove existing labels before adding new ones:
             ```bash
-            gh pr edit ${{ github.event.pull_request.number }} --add-label "label1,label2,label3"
+            gh pr edit ${{ github.event.pull_request.number }} --remove-label "effort:small" --add-label "effort:medium,enhancement,component:skill"
             ```
 
             After applying labels, briefly explain your reasoning.
-          # PR job needs Read,Glob to analyze file changes for accurate component detection
-          claude_args: |
-            --allowedTools "Bash(gh pr:*),Read,Glob"
+          claude_args: '--model claude-opus-4-5-20251101 --allowedTools "Bash(gh label:*),Bash(gh pr:*),Read,Glob"'

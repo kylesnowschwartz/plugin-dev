@@ -1,14 +1,20 @@
-name: Validate Workflows
+name: YAML Lint
+
+# Validates YAML configuration files using yamllint
+# Config: .yamllint.yml (no line length limit, GHA-friendly truthy values)
+# Triggers on YAML file changes
 
 on:
   pull_request:
     paths:
-      - ".github/workflows/**"
+      - "**/*.yml"
+      - "**/*.yaml"
   push:
     branches:
       - main
     paths:
-      - ".github/workflows/**"
+      - "**/*.yml"
+      - "**/*.yaml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -16,11 +22,10 @@ concurrency:
 
 permissions:
   contents: read
-  pull-requests: write # Required for reviewdog PR comments
 
 jobs:
-  actionlint:
-    name: Lint GitHub Actions Workflows
+  lint:
+    name: Lint YAML Files
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -29,8 +34,5 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Run actionlint with reviewdog
-        uses: reviewdog/action-actionlint@83e4ed25b168066ad8f62f5afbb29ebd8641d982 # v1.69.1
-        with:
-          reporter: github-pr-review
-          fail_level: error
+      - name: Run yamllint
+        run: pipx run yamllint==1.37.1 -c .yamllint.yml .github/ .yamllint.yml
