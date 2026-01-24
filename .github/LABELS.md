@@ -15,40 +15,40 @@ This document describes the label system for plugin-dev.
 
 Standard GitHub labels for issue/PR classification:
 
-| Label           | Color                                                    | Description                            |
-| --------------- | -------------------------------------------------------- | -------------------------------------- |
-| `bug`           | ![#d73a4a](https://placehold.co/15x15/d73a4a/d73a4a.png) | Something isn't working                |
-| `documentation` | ![#0075ca](https://placehold.co/15x15/0075ca/0075ca.png) | Improvements or additions              |
-| `duplicate`     | ![#cfd3d7](https://placehold.co/15x15/cfd3d7/cfd3d7.png) | Already exists                         |
-| `enhancement`   | ![#a2eeef](https://placehold.co/15x15/a2eeef/a2eeef.png) | New feature or request                 |
-| `invalid`       | ![#e4e669](https://placehold.co/15x15/e4e669/e4e669.png) | Doesn't seem right                     |
-| `question`      | ![#d876e3](https://placehold.co/15x15/d876e3/d876e3.png) | Further information requested          |
+| Label           | Color                                                    | Description                                |
+| --------------- | -------------------------------------------------------- | ------------------------------------------ |
+| `bug`           | ![#d73a4a](https://placehold.co/15x15/d73a4a/d73a4a.png) | Something isn't working                    |
+| `documentation` | ![#0075ca](https://placehold.co/15x15/0075ca/0075ca.png) | Improvements or additions                  |
+| `duplicate`     | ![#cfd3d7](https://placehold.co/15x15/cfd3d7/cfd3d7.png) | Already exists                             |
+| `enhancement`   | ![#a2eeef](https://placehold.co/15x15/a2eeef/a2eeef.png) | New feature or request                     |
+| `invalid`       | ![#e4e669](https://placehold.co/15x15/e4e669/e4e669.png) | Doesn't seem right                         |
+| `question`      | ![#d876e3](https://placehold.co/15x15/d876e3/d876e3.png) | Further information requested              |
 | `refactor`      | ![#fef65b](https://placehold.co/15x15/fef65b/fef65b.png) | Code restructuring without behavior change |
-| `chore`         | ![#c5def5](https://placehold.co/15x15/c5def5/c5def5.png) | Maintenance tasks                      |
-| `wontfix`       | ![#ffffff](https://placehold.co/15x15/ffffff/ffffff.png) | Will not be worked on                  |
+| `chore`         | ![#c5def5](https://placehold.co/15x15/c5def5/c5def5.png) | Maintenance tasks                          |
+| `wontfix`       | ![#ffffff](https://placehold.co/15x15/ffffff/ffffff.png) | Will not be worked on                      |
 
 ### Component Labels
 
 Identify which part of the codebase (cool blue/purple tones):
 
-| Label                   | Color                                                    | Description              |
-| ----------------------- | -------------------------------------------------------- | ------------------------ |
-| `component:agent`       | ![#0052cc](https://placehold.co/15x15/0052cc/0052cc.png) | Agents layer             |
-| `component:command`     | ![#5319e7](https://placehold.co/15x15/5319e7/5319e7.png) | Commands layer           |
-| `component:docs`        | ![#d4c5f9](https://placehold.co/15x15/d4c5f9/d4c5f9.png) | Documentation files      |
-| `component:hook`        | ![#006b75](https://placehold.co/15x15/006b75/006b75.png) | Hooks layer              |
-| `component:skill`       | ![#1d76db](https://placehold.co/15x15/1d76db/1d76db.png) | Skills layer             |
-| `component:marketplace` | ![#0366d6](https://placehold.co/15x15/0366d6/0366d6.png) | Marketplace manifest     |
-| `component:mcp`         | ![#032f62](https://placehold.co/15x15/032f62/032f62.png) | MCP integration          |
+| Label                   | Color                                                    | Description          |
+| ----------------------- | -------------------------------------------------------- | -------------------- |
+| `component:agent`       | ![#0052cc](https://placehold.co/15x15/0052cc/0052cc.png) | Agents layer         |
+| `component:command`     | ![#5319e7](https://placehold.co/15x15/5319e7/5319e7.png) | Commands layer       |
+| `component:docs`        | ![#d4c5f9](https://placehold.co/15x15/d4c5f9/d4c5f9.png) | Documentation files  |
+| `component:hook`        | ![#006b75](https://placehold.co/15x15/006b75/006b75.png) | Hooks layer          |
+| `component:skill`       | ![#1d76db](https://placehold.co/15x15/1d76db/1d76db.png) | Skills layer         |
+| `component:marketplace` | ![#0366d6](https://placehold.co/15x15/0366d6/0366d6.png) | Marketplace manifest |
+| `component:mcp`         | ![#032f62](https://placehold.co/15x15/032f62/032f62.png) | MCP integration      |
 
 ### Scope Labels
 
 Labels for plugin development concerns (warm coral/pink family):
 
-| Label              | Color                                                    | Description                      |
-| ------------------ | -------------------------------------------------------- | -------------------------------- |
+| Label              | Color                                                    | Description                       |
+| ------------------ | -------------------------------------------------------- | --------------------------------- |
 | `scope:triggering` | ![#e91e63](https://placehold.co/15x15/e91e63/e91e63.png) | Trigger phrase/description issues |
-| `scope:validation` | ![#f44336](https://placehold.co/15x15/f44336/f44336.png) | Plugin validation concerns       |
+| `scope:validation` | ![#f44336](https://placehold.co/15x15/f44336/f44336.png) | Plugin validation concerns        |
 
 ### Priority Labels
 
@@ -87,12 +87,12 @@ Time estimates:
 
 ### Community Labels
 
-| Label              | Color                                                    | Description          |
-| ------------------ | -------------------------------------------------------- | -------------------- |
-| `good first issue` | ![#7057ff](https://placehold.co/15x15/7057ff/7057ff.png) | Good for newcomers   |
-| `help wanted`      | ![#008672](https://placehold.co/15x15/008672/008672.png) | Extra attention needed |
+| Label              | Color                                                    | Description                |
+| ------------------ | -------------------------------------------------------- | -------------------------- |
+| `good first issue` | ![#7057ff](https://placehold.co/15x15/7057ff/7057ff.png) | Good for newcomers         |
+| `help wanted`      | ![#008672](https://placehold.co/15x15/008672/008672.png) | Extra attention needed     |
 | `idea`             | ![#f9a825](https://placehold.co/15x15/f9a825/f9a825.png) | Feature idea or suggestion |
-| `showcase`         | ![#6f42c1](https://placehold.co/15x15/6f42c1/6f42c1.png) | Community showcase   |
+| `showcase`         | ![#6f42c1](https://placehold.co/15x15/6f42c1/6f42c1.png) | Community showcase         |
 
 ### Dependency Labels
 
@@ -105,28 +105,28 @@ Time estimates:
 
 Type of change:
 
-| Label          | Color                                                    | Description                      |
-| -------------- | -------------------------------------------------------- | -------------------------------- |
-| `breaking`     | ![#bd2130](https://placehold.co/15x15/bd2130/bd2130.png) | Breaking change (major version)  |
-| `automation`   | ![#28a745](https://placehold.co/15x15/28a745/28a745.png) | CI/CD and workflow improvements  |
-| `optimization` | ![#2188ff](https://placehold.co/15x15/2188ff/2188ff.png) | Performance improvements         |
+| Label          | Color                                                    | Description                     |
+| -------------- | -------------------------------------------------------- | ------------------------------- |
+| `breaking`     | ![#bd2130](https://placehold.co/15x15/bd2130/bd2130.png) | Breaking change (major version) |
+| `automation`   | ![#28a745](https://placehold.co/15x15/28a745/28a745.png) | CI/CD and workflow improvements |
+| `optimization` | ![#2188ff](https://placehold.co/15x15/2188ff/2188ff.png) | Performance improvements        |
 
 ### Workflow Labels
 
-| Label      | Color                                                    | Description            |
-| ---------- | -------------------------------------------------------- | ---------------------- |
-| `triage`   | ![#ededed](https://placehold.co/15x15/ededed/ededed.png) | Needs initial review   |
-| `stale`    | ![#ededed](https://placehold.co/15x15/ededed/ededed.png) | No recent activity     |
-| `pinned`   | ![#fef2c0](https://placehold.co/15x15/fef2c0/fef2c0.png) | Never mark as stale    |
-| `roadmap`  | ![#0e8a16](https://placehold.co/15x15/0e8a16/0e8a16.png) | Long-term roadmap item |
+| Label     | Color                                                    | Description            |
+| --------- | -------------------------------------------------------- | ---------------------- |
+| `triage`  | ![#ededed](https://placehold.co/15x15/ededed/ededed.png) | Needs initial review   |
+| `stale`   | ![#ededed](https://placehold.co/15x15/ededed/ededed.png) | No recent activity     |
+| `pinned`  | ![#fef2c0](https://placehold.co/15x15/fef2c0/fef2c0.png) | Never mark as stale    |
+| `roadmap` | ![#0e8a16](https://placehold.co/15x15/0e8a16/0e8a16.png) | Long-term roadmap item |
 
 ### Special Labels
 
-| Label        | Color                                                    | Description                 |
-| ------------ | -------------------------------------------------------- | --------------------------- |
-| `experiment` | ![#ff6ec7](https://placehold.co/15x15/ff6ec7/ff6ec7.png) | Experimental/testing        |
-| `security`   | ![#ee0701](https://placehold.co/15x15/ee0701/ee0701.png) | Security-related            |
-| `reverted`   | ![#666666](https://placehold.co/15x15/666666/666666.png) | Merged but later reverted   |
+| Label        | Color                                                    | Description               |
+| ------------ | -------------------------------------------------------- | ------------------------- |
+| `experiment` | ![#ff6ec7](https://placehold.co/15x15/ff6ec7/ff6ec7.png) | Experimental/testing      |
+| `security`   | ![#ee0701](https://placehold.co/15x15/ee0701/ee0701.png) | Security-related          |
+| `reverted`   | ![#666666](https://placehold.co/15x15/666666/666666.png) | Merged but later reverted |
 
 ## Label Application Guidelines
 
@@ -152,17 +152,17 @@ Apply when relevant:
 
 Common label combinations for plugin-dev:
 
-| Scenario                    | Labels                                                |
-| --------------------------- | ----------------------------------------------------- |
-| Skill not triggering        | `bug`, `component:skill`, `scope:triggering`          |
-| New agent feature           | `enhancement`, `component:agent`, `priority:*`        |
-| Marketplace manifest issue  | `bug`, `component:marketplace`, `priority:*`          |
-| Validation script fix       | `bug`, `component:docs`, `automation`                 |
-| MCP integration enhancement | `enhancement`, `component:mcp`, `effort:*`            |
-| Hook development docs       | `documentation`, `component:hook`, `effort:small`     |
-| Command triggering bug      | `bug`, `component:command`, `scope:triggering`        |
-| Plugin architecture design  | `enhancement`, `status:needs-design`, `roadmap`       |
-| Dependabot PR               | `chore`, `dependencies`, `effort:small`               |
+| Scenario                    | Labels                                            |
+| --------------------------- | ------------------------------------------------- |
+| Skill not triggering        | `bug`, `component:skill`, `scope:triggering`      |
+| New agent feature           | `enhancement`, `component:agent`, `priority:*`    |
+| Marketplace manifest issue  | `bug`, `component:marketplace`, `priority:*`      |
+| Validation script fix       | `bug`, `component:docs`, `automation`             |
+| MCP integration enhancement | `enhancement`, `component:mcp`, `effort:*`        |
+| Hook development docs       | `documentation`, `component:hook`, `effort:small` |
+| Command triggering bug      | `bug`, `component:command`, `scope:triggering`    |
+| Plugin architecture design  | `enhancement`, `status:needs-design`, `roadmap`   |
+| Dependabot PR               | `chore`, `dependencies`, `effort:small`           |
 
 ## Automatic Label Application
 
@@ -178,15 +178,15 @@ The `semantic-labeler.yml` workflow:
 
 ### Labels Applied Automatically
 
-| Category  | Labels                                                      | Required      |
-| --------- | ----------------------------------------------------------- | ------------- |
-| Type      | bug, enhancement, documentation, question, refactor, chore  | Yes (one)     |
-| Component | component:\*, github-actions, dependencies                  | If applicable |
-| Scope     | scope:triggering, scope:validation                          | If applicable |
-| Priority  | priority:critical/high/medium/low                           | Yes (one)     |
-| Effort    | effort:small/medium/large                                   | Yes (one)     |
-| Impact    | breaking, security                                          | If applicable |
-| Community | good first issue, help wanted                               | If applicable |
+| Category  | Labels                                                     | Required      |
+| --------- | ---------------------------------------------------------- | ------------- |
+| Type      | bug, enhancement, documentation, question, refactor, chore | Yes (one)     |
+| Component | component:\*, github-actions, dependencies                 | If applicable |
+| Scope     | scope:triggering, scope:validation                         | If applicable |
+| Priority  | priority:critical/high/medium/low                          | Yes (one)     |
+| Effort    | effort:small/medium/large                                  | Yes (one)     |
+| Impact    | breaking, security                                         | If applicable |
+| Community | good first issue, help wanted                              | If applicable |
 
 ### Skipped Cases
 
@@ -235,16 +235,16 @@ Deleting labels requires manual action - the automated workflow only creates and
 
 ## Color Scheme Rationale
 
-| Category   | Color Family           | Rationale                                    |
-| ---------- | ---------------------- | -------------------------------------------- |
-| Type       | GitHub defaults        | Familiar to all GitHub users                 |
-| Component  | Cool blues/purples     | Technical, structural feel                   |
-| Scope      | Warm coral/pink        | Distinct from components, user-facing issues |
-| Priority   | Heat map (red → green) | Intuitive urgency indication                 |
-| Status     | Soft pastels           | Non-distracting state indicators             |
-| Effort     | Green → red gradient   | Easy (green) to hard (red)                   |
-| Category   | Semantic colors        | Breaking=red, automation=green               |
-| Workflow   | Neutral greys          | Background process labels                    |
+| Category  | Color Family           | Rationale                                    |
+| --------- | ---------------------- | -------------------------------------------- |
+| Type      | GitHub defaults        | Familiar to all GitHub users                 |
+| Component | Cool blues/purples     | Technical, structural feel                   |
+| Scope     | Warm coral/pink        | Distinct from components, user-facing issues |
+| Priority  | Heat map (red → green) | Intuitive urgency indication                 |
+| Status    | Soft pastels           | Non-distracting state indicators             |
+| Effort    | Green → red gradient   | Easy (green) to hard (red)                   |
+| Category  | Semantic colors        | Breaking=red, automation=green               |
+| Workflow  | Neutral greys          | Background process labels                    |
 
 ## Label Naming Conventions
 

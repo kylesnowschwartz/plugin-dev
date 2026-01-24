@@ -26,7 +26,7 @@ allowed-tools: Read, Write, Edit, Grep, Glob, Bash(mkdir:*), Bash(git init:*), .
 
 ## Design Contrast with `/plugin-dev:start`
 
-The entry point command uses `disable-model-invocation: true` and restricts tools to `AskUserQuestion, Skill, TodoWrite` since it only routes to other commands. The workflow commands need broader access because they perform the actual file creation work.
+The entry point command uses `disable-model-invocation: true` and restricts tools to `AskUserQuestion, Skill, TaskCreate, TaskGet, TaskUpdate, TaskList` since it only routes to other commands. The workflow commands need broader access because they perform the actual file creation work.
 
 ## For Security-Sensitive Environments
 

@@ -97,7 +97,7 @@ Fixes #
 
 - [ ] I have updated `plugins/plugin-dev/.claude-plugin/plugin.json` (source of truth)
 - [ ] I have updated `.claude-plugin/marketplace.json` (metadata.version AND plugins[0].version)
-- [ ] I have updated `CLAUDE.md` (Quick Reference section)
+- [ ] I have updated `CLAUDE.md` (version line)
 - [ ] I have updated CHANGELOG.md with relevant changes
 
 ## Component-Specific Checks

@@ -1,7 +1,7 @@
 ---
 description: Start plugin development - choose your path
 argument-hint: [description]
-allowed-tools: AskUserQuestion, Skill, TodoWrite
+allowed-tools: AskUserQuestion, Skill, TaskCreate, TaskGet, TaskUpdate, TaskList
 model: sonnet
 disable-model-invocation: true
 ---

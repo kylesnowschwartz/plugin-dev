@@ -157,4 +157,4 @@ _No security issues have been reported yet._
 
 ---
 
-**Note:** _This security policy was last updated: December 13, 2025_
+**Note:** _This security policy was last updated: January 24, 2026_

@@ -1,7 +1,7 @@
 ---
 description: Create plugin marketplaces with guided workflow
 argument-hint: [marketplace-description]
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash(mkdir:*), Bash(git init:*), TodoWrite, AskUserQuestion, Skill, Task
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash(mkdir:*), Bash(git init:*), TaskCreate, TaskGet, TaskUpdate, TaskList, AskUserQuestion, Skill, Task
 model: sonnet
 ---
 
@@ -15,11 +15,11 @@ Guide the user through creating a complete plugin marketplace from initial conce
 - **Load marketplace-structure skill**: Use the Skill tool to load the marketplace-structure skill for schema and pattern guidance
 - **Use plugin-validator agent**: Leverage the plugin-validator agent for comprehensive marketplace validation
 - **Follow best practices**: Apply patterns from this repository's own marketplace.json
-- **Use TodoWrite**: Track all progress throughout all phases
+- **Use Task tools**: Track all progress throughout all phases using TaskCreate, TaskUpdate, and TaskList
 
 **Initial request:** $ARGUMENTS
 
-**Security note:** This workflow has broad file system access to create marketplace structures. It can write files and create directories within your permission scope. Review the target directory before starting, and see [docs/workflow-security.md](../../docs/workflow-security.md) for details.
+**Security note:** This workflow has broad file system access to create marketplace structures. It can write files and create directories within your permission scope. Review the target directory before starting, and see [docs/workflow-security.md](../../../docs/workflow-security.md) for details.
 
 ---
 
@@ -29,7 +29,7 @@ Guide the user through creating a complete plugin marketplace from initial conce
 
 **Actions**:
 
-1. Create todo list with all 8 phases
+1. Create task list with all 8 phases
 2. If marketplace purpose is clear from arguments:
    - Summarize understanding
    - Identify marketplace type (team internal, community, single-plugin, multi-plugin)
@@ -336,7 +336,7 @@ git commit -m "feat: initial marketplace structure"
    - [ ] External plugins accessible (if public)
 
 3. **Create summary**:
-   - Mark all todos complete
+   - Mark all tasks complete
    - List what was created:
      - Marketplace name and purpose
      - Number of plugins configured
@@ -360,7 +360,7 @@ git commit -m "feat: initial marketplace structure"
 
 ### Throughout All Phases
 
-- **Use TodoWrite** to track progress at every phase
+- **Use Task tools** to track progress at every phase (TaskCreate, TaskUpdate, TaskList)
 - **Load marketplace-structure skill** for schema reference
 - **Use plugin-validator agent** for validation
 - **Ask for user confirmation** at key decision points

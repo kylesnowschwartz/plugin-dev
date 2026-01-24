@@ -1,7 +1,7 @@
 ---
 description: Create plugins with guided 8-phase workflow
 argument-hint: [plugin-description]
-allowed-tools: Read, Write, Edit, Grep, Glob, Bash(mkdir:*), Bash(git init:*), TodoWrite, AskUserQuestion, Skill, Task
+allowed-tools: Read, Write, Edit, Grep, Glob, Bash(mkdir:*), Bash(git init:*), TaskCreate, TaskGet, TaskUpdate, TaskList, AskUserQuestion, Skill, Task
 model: sonnet
 ---
 
@@ -16,11 +16,11 @@ Guide the user through creating a complete, high-quality Claude Code plugin from
 - **Use specialized agents**: Leverage agent-creator, plugin-validator, and skill-reviewer agents for AI-assisted development
 - **Follow best practices**: Apply patterns from plugin-dev's own implementation
 - **Progressive disclosure**: Create lean skills with references/examples
-- **Use TodoWrite**: Track all progress throughout all phases
+- **Use Task tools**: Track all progress throughout all phases using TaskCreate, TaskUpdate, and TaskList
 
 **Initial request:** $ARGUMENTS
 
-**Security note:** This workflow has broad file system access to create plugin structures. It can write files and create directories within your permission scope. Review the target directory before starting, and see [docs/workflow-security.md](../../docs/workflow-security.md) for details.
+**Security note:** This workflow has broad file system access to create plugin structures. It can write files and create directories within your permission scope. Review the target directory before starting, and see [docs/workflow-security.md](../../../docs/workflow-security.md) for details.
 
 ---
 
@@ -30,7 +30,7 @@ Guide the user through creating a complete, high-quality Claude Code plugin from
 
 **Actions**:
 
-1. Create todo list with all 8 phases
+1. Create task list with all 8 phases
 2. If plugin purpose is clear from arguments:
    - Summarize understanding
    - Identify plugin type (integration, workflow, analysis, toolkit, etc.)
@@ -247,7 +247,7 @@ git commit -m "feat: initial plugin structure"
 4. Implement settings reading in hooks/commands as needed
 5. Add to .gitignore: `.claude/*.local.md`
 
-**Progress tracking**: Update todos as each component is completed
+**Progress tracking**: Update tasks as each component is completed
 
 **Output**: All plugin components implemented
 
@@ -375,7 +375,7 @@ git commit -m "feat: initial plugin structure"
    - Validate marketplace after update using plugin-validator agent
 
 4. **Create summary**:
-   - Mark all todos complete
+   - Mark all tasks complete
    - List what was created:
      - Plugin name and purpose
      - Components created (X skills, Y commands, Z agents, etc.)
@@ -402,7 +402,7 @@ git commit -m "feat: initial plugin structure"
 
 ### Throughout All Phases
 
-- **Use TodoWrite** to track progress at every phase
+- **Use Task tools** to track progress at every phase (TaskCreate, TaskUpdate, TaskList)
 - **Load skills with Skill tool** when working on specific component types
 - **Use specialized agents** (agent-creator, plugin-validator, skill-reviewer)
 - **Ask for user confirmation** at key decision points
