@@ -55,6 +55,9 @@ markdownlint '**/*.md' --ignore node_modules
 
 # Lint shell scripts
 shellcheck plugins/plugin-dev/skills/*/scripts/*.sh
+
+# Lint YAML files
+uvx yamllint .github/workflows/
 ```
 
 ## Key Conventions

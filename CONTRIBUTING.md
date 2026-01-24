@@ -143,6 +143,15 @@ markdownlint '**/*.md' --ignore node_modules
 markdownlint '**/*.md' --ignore node_modules --fix
 ```
 
+### YAML Linting
+
+GitHub Actions workflows must pass YAML linting:
+
+```bash
+# Lint workflow files
+uvx yamllint .github/workflows/
+```
+
 **Style Rules** (see `.markdownlint.json`):
 
 - Use ATX-style headers (`#`, `##`, `###`)

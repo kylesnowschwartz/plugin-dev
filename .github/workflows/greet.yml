@@ -17,6 +17,7 @@ jobs:
     # Skip bot accounts to avoid greeting automated tools
     if: github.actor != 'dependabot[bot]' && github.actor != 'claude[bot]'
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       issues: write
       pull-requests: write
@@ -24,15 +25,21 @@ jobs:
       - uses: actions/first-interaction@1c4688942c71f71d4f5502a26ea67c331730fa4d # v3.1.0
         with:
           issue_message: |
-            👋 Thanks for opening your first issue! We appreciate your contribution to plugin-dev.
+            Thanks for opening your first issue! 👋 We appreciate your contribution to plugin-dev.
 
-            Please make sure you've provided all the requested information in the issue template. Our maintainers will review this soon.
+            **Resources:**
+            - [Contributing Guide](CONTRIBUTING.md)
+            - [Code of Conduct](CODE_OF_CONDUCT.md)
+
+            Please ensure you've provided all the requested information in the issue template.
+            Our maintainers will review this soon!
           pr_message: |
-            🎉 Thanks for opening your first pull request! We appreciate your contribution to plugin-dev.
+            Thanks for opening your first pull request! 🎉 We appreciate your contribution to plugin-dev.
 
-            Please make sure:
-            - [ ] You've filled out the PR template completely
-            - [ ] All markdown is properly linted
-            - [ ] You've tested the changes locally
+            **Before merge, please ensure:**
+            - [ ] You've read our [Contributing Guide](CONTRIBUTING.md)
+            - [ ] All markdown is properly linted (`markdownlint '**/*.md' --ignore node_modules`)
+            - [ ] Shell scripts pass validation (`shellcheck plugins/plugin-dev/skills/*/scripts/*.sh`)
+            - [ ] You've tested the changes locally with `claude --plugin-dir plugins/plugin-dev`
 
             A maintainer will review your PR soon. Feel free to ask questions if you need help!

@@ -1,0 +1,19 @@
+---
+# yamllint configuration for GitHub Actions workflows
+
+extends: default
+
+rules:
+  # GitHub Actions workflows don't require document start
+  document-start: disable
+
+  # Disable line-length - GHA workflows have long inline scripts and URLs
+  line-length: disable
+
+  # GHA uses truthy triggers like `on: push` which is fine
+  truthy:
+    allowed-values: ["true", "false", "on"]
+
+  # Single space before comments is acceptable
+  comments:
+    min-spaces-from-content: 1
