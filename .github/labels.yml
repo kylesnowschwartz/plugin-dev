@@ -69,6 +69,23 @@
   color: "1d76db"
   description: "Skills layer"
 
+- name: "component:marketplace"
+  color: "0366d6"
+  description: "Marketplace manifest and root-level configuration"
+
+- name: "component:mcp"
+  color: "032f62"
+  description: "MCP integration layer"
+
+# Scope labels (plugin development concerns)
+- name: "scope:triggering"
+  color: "e91e63"
+  description: "Trigger phrase and description issues"
+
+- name: "scope:validation"
+  color: "f44336"
+  description: "Plugin validation concerns"
+
 # Priority labels (how urgent)
 - name: "priority:critical"
   color: "b60205"
@@ -102,6 +119,18 @@
 - name: "status:needs-review"
   color: "fff3b3"
   description: "Ready for review"
+
+- name: "status:needs-design"
+  color: "c5cae9"
+  description: "Needs design decision"
+
+- name: "status:analyzed"
+  color: "a5d6a7"
+  description: "Analyzed by Claude"
+
+- name: "needs-analysis"
+  color: "b39ddb"
+  description: "Request Claude issue analysis"
 
 # Effort labels (time estimate)
 - name: "effort:small"
@@ -141,6 +170,14 @@
 - name: "stale"
   color: "ededed"
   description: "No recent activity - will be closed soon"
+
+- name: "triage"
+  color: "ededed"
+  description: "Needs initial review and categorization"
+
+- name: "roadmap"
+  color: "0e8a16"
+  description: "Long-term roadmap item"
 
 - name: "reverted"
   color: "666666"

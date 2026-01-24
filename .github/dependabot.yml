@@ -1,5 +1,6 @@
 version: 2
 updates:
+  # GitHub Actions - Keep workflow action versions up to date
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -35,8 +36,4 @@ updates:
         update-types:
           - "minor"
           - "patch"
-    # Ignore ultra-stable actions that rarely have meaningful patch changes
-    ignore:
-      - dependency-name: "actions/checkout"
-        update-types: ["version-update:semver-patch"]
     open-pull-requests-limit: 5
