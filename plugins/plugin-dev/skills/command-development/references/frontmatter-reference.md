@@ -65,7 +65,7 @@ description: Generate API documentation
 
 ### allowed-tools
 
-**Type:** String or Array of strings
+**Type:** Comma-separated string
 **Required:** No
 **Default:** Inherits from conversation permissions
 
@@ -85,13 +85,8 @@ allowed-tools: Read
 allowed-tools: Read, Write, Edit
 ```
 
-**Multiple tools (array):**
-
 ```yaml
-allowed-tools:
-  - Read
-  - Write
-  - Bash(git:*)
+allowed-tools: Read, Write, Bash(git:*)
 ```
 
 **Tool Patterns:**

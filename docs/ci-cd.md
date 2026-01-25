@@ -11,6 +11,7 @@ Documentation for GitHub Actions workflows, labels, and templates.
 | `component-validation.yml` | Plugin components changed      | Validate plugin components |
 | `version-check.yml`        | Version files changed          | Ensure version consistency |
 | `validate-workflows.yml`   | `.github/workflows/**` changed | Lint GitHub Actions        |
+| `yaml-lint.yml`            | `.github/workflows/**` changed | Lint YAML files            |
 | `claude-pr-review.yml`     | All PRs (non-draft)            | AI-powered code review     |
 
 ## Other Workflows
@@ -19,7 +20,6 @@ Documentation for GitHub Actions workflows, labels, and templates.
 - `stale.yml` - Manages stale issues/PRs (Mon/Wed/Fri)
 - `semantic-labeler.yml` - Auto-labels issues/PRs
 - `ci-failure-analysis.yml` - Analyzes CI failures
-- `weekly-maintenance.yml` - Scheduled maintenance tasks
 - `sync-labels.yml` - Synchronizes repository labels
 - `greet.yml` - Greets new contributors
 

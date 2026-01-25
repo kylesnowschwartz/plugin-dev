@@ -60,7 +60,7 @@ allowed-tools: ["mcp__plugin_asana_asana__asana_create_task"]
 To create a task:
 
 1. Gather task details from user
-2. Use mcp**plugin_asana_asana**asana_create_task with the details
+2. Use mcp__plugin_asana_asana__asana_create_task with the details
 3. Confirm creation to user
 ```
 
@@ -107,7 +107,7 @@ allowed-tools:
 
 To search for tasks:
 
-1. Use mcp**plugin_asana_asana**asana_search_tasks
+1. Use mcp__plugin_asana_asana__asana_search_tasks
 2. Provide search filters (assignee, project, etc.)
 3. Display results to user
 
@@ -121,7 +121,7 @@ To create a task:
    - Project
    - Assignee
    - Due date
-2. Use mcp**plugin_asana_asana**asana_create_task
+2. Use mcp__plugin_asana_asana__asana_create_task
 3. Show confirmation with task link
 ```
 
@@ -145,10 +145,10 @@ Autonomous agent for generating Asana project status reports.
 
 ## Process
 
-1. **Query tasks**: Use mcp**plugin_asana_asana**asana_search_tasks to get all tasks
+1. **Query tasks**: Use mcp__plugin_asana_asana__asana_search_tasks to get all tasks
 2. **Analyze progress**: Calculate completion rates and identify blockers
 3. **Generate report**: Create formatted status update
-4. **Update Asana**: Use mcp**plugin_asana_asana**asana_create_comment to post report
+4. **Update Asana**: Use mcp__plugin_asana_asana__asana_create_comment to post report
 
 ## Available Tools
 
@@ -173,7 +173,7 @@ Single tool call with validation:
 Steps:
 
 1. Validate user provided required fields
-2. Call mcp**plugin_api_server**create_item with validated data
+2. Call mcp__plugin_api_server__create_item with validated data
 3. Check for errors
 4. Display confirmation
 ```
@@ -185,9 +185,9 @@ Chain multiple tool calls:
 ```markdown
 Steps:
 
-1. Search for existing items: mcp**plugin_api_server**search
-2. If not found, create new: mcp**plugin_api_server**create
-3. Add metadata: mcp**plugin_api_server**update_metadata
+1. Search for existing items: mcp__plugin_api_server__search
+2. If not found, create new: mcp__plugin_api_server__create
+3. Add metadata: mcp__plugin_api_server__update_metadata
 4. Return final item ID
 ```
 
@@ -200,7 +200,7 @@ Steps:
 
 1. Get list of items to process
 2. For each item:
-   - Call mcp**plugin_api_server**update_item
+   - Call mcp__plugin_api_server__update_item
    - Track success/failure
 3. Report results summary
 ```
@@ -212,7 +212,7 @@ Graceful error handling:
 ```markdown
 Steps:
 
-1. Try to call mcp**plugin_api_server**get_data
+1. Try to call mcp__plugin_api_server__get_data
 2. If error (rate limit, network, etc.):
    - Wait and retry (max 3 attempts)
    - If still failing, inform user
@@ -337,7 +337,7 @@ Steps:
 ```markdown
 Steps:
 
-1. Call mcp**plugin_api_server**search with filters:
+1. Call mcp__plugin_api_server__search with filters:
    - project_id: "123"
    - status: "active"
    - limit: 100
@@ -350,7 +350,7 @@ Steps:
 Steps:
 
 1. For each item ID:
-   - Call mcp**plugin_api_server**get_item
+   - Call mcp__plugin_api_server__get_item
    - Process item
 ```
 
@@ -359,7 +359,7 @@ Steps:
 ```markdown
 Steps:
 
-1. Call expensive MCP operation: mcp**plugin_api_server**analyze
+1. Call expensive MCP operation: mcp__plugin_api_server__analyze
 2. Store results in variable for reuse
 3. Use cached results for subsequent operations
 4. Only re-fetch if data changes
@@ -373,9 +373,9 @@ When tools don't depend on each other, call in parallel:
 Steps:
 
 1. Make parallel calls (Claude handles this automatically):
-   - mcp**plugin_api_server**get_project
-   - mcp**plugin_api_server**get_users
-   - mcp**plugin_api_server**get_tags
+   - mcp__plugin_api_server__get_project
+   - mcp__plugin_api_server__get_users
+   - mcp__plugin_api_server__get_tags
 2. Wait for all to complete
 3. Combine results
 ```
@@ -390,7 +390,7 @@ Steps:
 Steps:
 
 1. Inform user: "Searching Asana tasks..."
-2. Call mcp**plugin_asana_asana**asana_search_tasks
+2. Call mcp__plugin_asana_asana__asana_search_tasks
 3. Show progress: "Found 15 tasks, analyzing..."
 4. Present results
 ```
@@ -522,7 +522,7 @@ Use delete_item with item ID (ask for confirmation first)...
 ```markdown
 Steps:
 
-1. **Search**: mcp**plugin_api_server**search with filters
+1. **Search**: mcp__plugin_api_server__search with filters
 2. **Filter**: Apply additional local filtering if needed
 3. **Transform**: Process each result
 4. **Present**: Format and display to user

@@ -285,11 +285,7 @@ Pre-allow specific MCP tools in command frontmatter:
 
 ```markdown
 ---
-allowed-tools:
-  [
-    "mcp__plugin_asana_asana__asana_create_task",
-    "mcp__plugin_asana_asana__asana_search_tasks",
-  ]
+allowed-tools: mcp__plugin_asana_asana__asana_create_task, mcp__plugin_asana_asana__asana_search_tasks
 ---
 ```
 
@@ -297,7 +293,7 @@ allowed-tools:
 
 ```markdown
 ---
-allowed-tools: ["mcp__plugin_asana_asana__*"]
+allowed-tools: mcp__plugin_asana_asana__*
 ---
 ```
 
@@ -380,12 +376,12 @@ Commands use MCP tools with user interaction:
 
 ---
 
-## allowed-tools: ["mcp__plugin_name_server__create_item"]
+allowed-tools: `mcp__plugin_name_server__create_item`
 
 Steps:
 
 1. Gather item details from user
-2. Use mcp**plugin_name_server**create_item
+2. Use `mcp__plugin_name_server__create_item`
 3. Confirm creation
 ```
 
@@ -400,7 +396,7 @@ Agents use MCP tools autonomously:
 
 Analysis Process:
 
-1. Query data via mcp**plugin_db_server**query
+1. Query data via `mcp__plugin_db_server__query`
 2. Process and analyze results
 3. Generate insights report
 ```
@@ -456,12 +452,9 @@ Always use secure connections:
 Pre-allow only necessary MCP tools:
 
 ```markdown
-✅ allowed-tools: [
-"mcp__plugin_api_server__read_data",
-"mcp__plugin_api_server__create_item"
-]
+✅ allowed-tools: `mcp__plugin_api_server__read_data`, `mcp__plugin_api_server__create_item`
 
-❌ allowed-tools: ["mcp__plugin_api_server__*"]
+❌ allowed-tools: mcp__plugin_api_server__*
 ```
 
 ### Managed MCP Controls (Enterprise)

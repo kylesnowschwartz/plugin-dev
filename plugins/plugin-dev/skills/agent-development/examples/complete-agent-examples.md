@@ -43,7 +43,7 @@ assistant: "I'll use the code-reviewer agent to validate the changes."
 
 model: inherit
 color: blue
-tools: ["Read", "Grep", "Glob"]
+tools: Read, Grep, Glob
 ---
 
 You are an expert code quality reviewer specializing in identifying issues, security vulnerabilities, and opportunities for improvement in software implementations.
@@ -152,7 +152,7 @@ Direct test generation request triggers the agent.
 
 model: inherit
 color: green
-tools: ["Read", "Write", "Grep", "Bash"]
+tools: Read, Write, Grep, Bash
 ---
 
 You are an expert test engineer specializing in creating comprehensive, maintainable unit tests that ensure code correctness and reliability.
@@ -214,7 +214,6 @@ describe('[module name]', () => {
   // More tests...
 })
 ```
-````
 
 **Edge Cases:**
 
@@ -223,7 +222,6 @@ describe('[module name]', () => {
 - Unclear behavior: Add tests for observable behavior, note uncertainties
 - Complex mocking: Prefer integration tests or minimal mocking
 - Untestable code: Suggest refactoring for testability
-
 ````
 
 ## Example 3: Documentation Generator
@@ -256,18 +254,20 @@ Explicit documentation request triggers the agent.
 
 model: inherit
 color: cyan
-tools: ["Read", "Write", "Grep", "Glob"]
+tools: Read, Write, Grep, Glob
 ---
 
 You are an expert technical writer specializing in creating clear, comprehensive documentation for software projects.
 
 **Your Core Responsibilities:**
+
 1. Generate accurate, clear documentation from code
 2. Follow project documentation standards
 3. Include examples and usage patterns
 4. Ensure completeness and correctness
 
 **Documentation Generation Process:**
+
 1. **Analyze Code**: Read implementation to understand:
    - Public interfaces and APIs
    - Parameters and return values
@@ -288,6 +288,7 @@ You are an expert technical writer specializing in creating clear, comprehensive
 5. **Validate**: Ensure accuracy and completeness
 
 **Quality Standards:**
+
 - Documentation matches actual code behavior
 - Examples are runnable and correct
 - All public APIs documented
@@ -296,6 +297,7 @@ You are an expert technical writer specializing in creating clear, comprehensive
 
 **Output Format:**
 Create documentation in project's standard format:
+
 - Function/method signatures
 - Description of behavior
 - Parameters with types and descriptions
@@ -305,11 +307,12 @@ Create documentation in project's standard format:
 - Notes or warnings if applicable
 
 **Edge Cases:**
+
 - Private/internal code: Document only if requested
 - Complex APIs: Break into sections, provide multiple examples
 - Deprecated code: Mark as deprecated with migration guide
 - Unclear behavior: Document observable behavior, note assumptions
-````
+```
 
 ## Example 4: Security Analyzer
 
@@ -341,7 +344,7 @@ Explicit security review request triggers the agent.
 
 model: inherit
 color: red
-tools: ["Read", "Grep", "Glob"]
+tools: Read, Grep, Glob
 ---
 
 You are an expert security analyst specializing in identifying vulnerabilities and security issues in software implementations.
@@ -429,9 +432,9 @@ Take these templates and customize:
 
 Restrict or expand based on agent needs:
 
-- **Read-only agents**: `["Read", "Grep", "Glob"]`
-- **Generator agents**: `["Read", "Write", "Grep"]`
-- **Executor agents**: `["Read", "Write", "Bash", "Grep"]`
+- **Read-only agents**: `Read, Grep, Glob`
+- **Generator agents**: `Read, Write, Grep`
+- **Executor agents**: `Read, Write, Bash, Grep`
 - **Full access**: Omit tools field
 
 ### Customize Colors

@@ -80,16 +80,12 @@ For complete format with all options, see [Agent File Structure](#agent-file-str
 - Action should not happen automatically
 - Workflow requires user confirmation at each step
 
-For command development guidance, see the `command-development` skill.
-
 ### Choose Skills When
 
 - Providing knowledge or procedural guidance
 - Extending Claude's domain expertise
 - No autonomous execution needed
 - Information should be available contextually on-demand
-
-For skill development guidance, see the `skill-development` skill.
 
 ## Agent File Structure
 
@@ -293,68 +289,41 @@ permissionMode: acceptEdits
 
 **Security note:** Use restrictive modes (`plan`, `acceptEdits`) for untrusted agents. `bypassPermissions` should only be used for fully trusted agents.
 
+### Fields NOT Available for Agents
+
+Some frontmatter fields are specific to skills and do not apply to agents:
+
+| Skill-Only Field           | Purpose                                | Why Not for Agents                                      |
+| -------------------------- | -------------------------------------- | ------------------------------------------------------- |
+| `context: fork`            | Run skill in separate subagent context | Agents already run as subprocesses by design            |
+| `agent`                    | Specify agent type for forked context  | Only applies when `context: fork` is set                |
+| `user-invocable`           | Control slash menu visibility          | Agents aren't invoked via slash commands                |
+| `disable-model-invocation` | Block programmatic Skill tool usage    | Agents use Task tool, not Skill tool                    |
+| `allowed-tools`            | Restrict tool access (skill syntax)    | Agents use `tools` field instead (different field name) |
+
+**Key distinction:** Skills provide knowledge and guidance that loads into context. Agents are autonomous subprocesses that execute independently. This architectural difference explains why context-forking options don't apply to agents—they're already isolated processes.
+
 ## System Prompt Design
 
 The markdown body becomes the agent's system prompt. Write in second person, addressing the agent directly.
 
-### Structure
+**Key elements:**
 
-**Standard template:**
+- Role definition ("You are [role] specializing in [domain]")
+- Core responsibilities (numbered list)
+- Process steps (concrete, actionable)
+- Quality standards (measurable criteria)
+- Output format (specific structure)
+- Edge cases (how to handle exceptions)
 
-```markdown
-You are [role] specializing in [domain].
-
-**Your Core Responsibilities:**
-
-1. [Primary responsibility]
-2. [Secondary responsibility]
-3. [Additional responsibilities...]
-
-**Analysis Process:**
-
-1. [Step one]
-2. [Step two]
-3. [Step three]
-   [...]
-
-**Quality Standards:**
-
-- [Standard 1]
-- [Standard 2]
-
-**Output Format:**
-Provide results in this format:
-
-- [What to include]
-- [How to structure]
-
-**Edge Cases:**
-Handle these situations:
-
-- [Edge case 1]: [How to handle]
-- [Edge case 2]: [How to handle]
-```
-
-### Best Practices
-
-✅ **DO:**
+**Best practices:**
 
 - Write in second person ("You are...", "You will...")
-- Be specific about responsibilities
-- Provide step-by-step process
-- Define output format
-- Include quality standards
-- Address edge cases
+- Be specific, not vague
 - Keep under 10,000 characters
+- Include concrete steps, not generic instructions
 
-❌ **DON'T:**
-
-- Write in first person ("I am...", "I will...")
-- Be vague or generic
-- Omit process steps
-- Leave output format undefined
-- Skip quality guidance
-- Ignore error cases
+For detailed templates and patterns (Analysis, Generation, Validation, Orchestration agents), see `references/system-prompt-design.md`.
 
 ## Creating Agents
 
@@ -441,6 +410,16 @@ plugin-name/
 
 All `.md` files in `agents/` are auto-discovered.
 
+### Portable Paths
+
+When referencing files within your plugin (scripts, references, etc.) from agent system prompts, use `${CLAUDE_PLUGIN_ROOT}` for portable paths:
+
+```markdown
+Run the validation script at `${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh`
+```
+
+This variable resolves to the plugin's installation directory at runtime, ensuring paths work regardless of where the plugin is installed.
+
 ### Namespacing
 
 Agents are namespaced automatically:
@@ -488,26 +467,6 @@ Ensure system prompt is complete:
 5. Confirm quality standards are met
 
 ## Quick Reference
-
-### Minimal Agent
-
-```markdown
----
-name: simple-agent
-description: Use this agent when... Examples: <example>...</example>
-model: inherit
-color: blue
----
-
-You are an agent that [does X].
-
-Process:
-
-1. [Step 1]
-2. [Step 2]
-
-Output: [What to provide]
-```
 
 ### Frontmatter Fields Summary
 
@@ -567,19 +526,3 @@ Development tools in `scripts/`:
 - **`create-agent-skeleton.sh`** - Generate new agent file from template
 - **`validate-agent.sh`** - Validate agent file structure
 - **`test-agent-trigger.sh`** - Test if agent triggers correctly
-
-## Implementation Workflow
-
-To create an agent for a plugin:
-
-1. Define agent purpose and triggering conditions
-2. Choose creation method (AI-assisted or manual)
-3. Create agent file using skeleton: `./skills/agent-development/scripts/create-agent-skeleton.sh agent-name agents/`
-4. Write frontmatter with all required fields
-5. Write system prompt following best practices
-6. Include 2-4 triggering examples in description
-7. Validate with `./skills/agent-development/scripts/validate-agent.sh agents/your-agent.md`
-8. Test triggering with real scenarios
-9. Document agent in plugin README
-
-Focus on clear triggering conditions and comprehensive system prompts for autonomous operation.

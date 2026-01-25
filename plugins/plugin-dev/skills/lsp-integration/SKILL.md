@@ -38,6 +38,31 @@ Plugins can provide LSP servers in the plugin manifest:
 }
 ```
 
+### Separate File Configuration
+
+LSP servers can also be configured in a separate `.lsp.json` file at the plugin root:
+
+```json
+{
+  "go": {
+    "command": "gopls",
+    "args": ["serve"],
+    "extensionToLanguage": {
+      ".go": "go"
+    }
+  }
+}
+```
+
+Reference this file in `plugin.json`:
+
+```json
+{
+  "name": "my-plugin",
+  "lspServers": "./.lsp.json"
+}
+```
+
 ### Configuration Fields
 
 **command** (required): The LSP server executable
@@ -66,59 +91,70 @@ Plugins can provide LSP servers in the plugin manifest:
 }
 ```
 
+**transport** (optional): Communication transport - `stdio` (default) or `socket`
+
+**initializationOptions** (optional): Options passed to the server during LSP initialization
+
+**settings** (optional): Settings passed via `workspace/didChangeConfiguration`
+
+**workspaceFolder** (optional): Workspace folder path for the server
+
+**startupTimeout** (optional): Maximum time to wait for server startup in milliseconds
+
+**shutdownTimeout** (optional): Maximum time to wait for graceful shutdown in milliseconds
+
+**restartOnCrash** (optional): Whether to automatically restart the server if it crashes
+
+**maxRestarts** (optional): Maximum number of restart attempts before giving up
+
+## What Claude Gains from LSP
+
+When an LSP plugin is installed and its language server binary is available, Claude gains two key capabilities:
+
+### Automatic Diagnostics
+
+After every file edit Claude makes, the language server analyzes the changes and reports errors and warnings back automatically. Claude sees type errors, missing imports, and syntax issues without needing to run a compiler or linter. If Claude introduces an error, it notices and fixes the issue in the same turn.
+
+### Code Navigation
+
+Claude can use the language server to:
+
+- Jump to definitions
+- Find all references to a symbol
+- Get type information on hover
+- List symbols in a file
+- Find implementations of interfaces
+- Trace call hierarchies
+
+These operations give Claude more precise navigation than grep-based search.
+
 ## Pre-built LSP Plugins
 
-Claude Code provides official LSP plugins for common languages:
+Claude Code provides official LSP plugins for common languages. Install from the marketplace:
 
-### pyright-lsp
+| Language   | Plugin              | Binary Required              |
+| ---------- | ------------------- | ---------------------------- |
+| C/C++      | `clangd-lsp`        | `clangd`                     |
+| C#         | `csharp-lsp`        | `csharp-ls`                  |
+| Go         | `gopls-lsp`         | `gopls`                      |
+| Java       | `jdtls-lsp`         | `jdtls`                      |
+| Kotlin     | `kotlin-lsp`        | `kotlin-language-server`     |
+| Lua        | `lua-lsp`           | `lua-language-server`        |
+| PHP        | `php-lsp`           | `intelephense`               |
+| Python     | `pyright-lsp`       | `pyright-langserver`         |
+| Rust       | `rust-analyzer-lsp` | `rust-analyzer`              |
+| Swift      | `swift-lsp`         | `sourcekit-lsp`              |
+| TypeScript | `typescript-lsp`    | `typescript-language-server` |
 
-Python language server using Pyright:
+Install the language server binary first, then install the plugin:
 
 ```bash
-# Install from marketplace
+# Example: Python
+pip install pyright  # or: npm install -g pyright
 claude /install-plugin pyright-lsp
 ```
 
-Features:
-
-- Type checking and inference
-- Go-to-definition
-- Find references
-- Hover documentation
-- Completions
-
-### typescript-lsp
-
-TypeScript/JavaScript language server:
-
-```bash
-# Install from marketplace
-claude /install-plugin typescript-lsp
-```
-
-Features:
-
-- TypeScript and JavaScript support
-- Type information on hover
-- Go-to-definition
-- Find references
-- Rename symbol
-
-### rust-lsp
-
-Rust language server using rust-analyzer:
-
-```bash
-# Install from marketplace
-claude /install-plugin rust-lsp
-```
-
-Features:
-
-- Full rust-analyzer capabilities
-- Trait resolution
-- Macro expansion
-- Go-to-definition and references
+**Troubleshooting**: If you see `Executable not found in $PATH` in the `/plugin` Errors tab, install the required binary from the table above.
 
 ## Creating Custom LSP Integration
 
@@ -364,11 +400,16 @@ Look for:
 
 For detailed information, consult:
 
-- **`references/popular-lsp-servers.md`** - Curated list of LSP servers by language
-- **`references/lsp-capabilities.md`** - LSP protocol capabilities reference
+- **`references/popular-lsp-servers.md`** - Curated list of LSP servers by language with installation commands
+- **`references/lsp-capabilities.md`** - LSP protocol capabilities and what they enable
+
+### Examples
+
+- **`examples/minimal-lsp-plugin/`** - Complete directory structure for a minimal LSP plugin
+- **`examples/lsp-json-configs.md`** - Various `.lsp.json` configuration patterns
 
 ### External Resources
 
 - **LSP Specification**: <https://microsoft.github.io/language-server-protocol/>
-- **Claude Code Plugins Reference**: <https://docs.claude.com/en/docs/claude-code/plugins-reference>
+- **Claude Code Plugins Reference**: <https://docs.anthropic.com/en/docs/claude-code/plugins-reference>
 - **Language Server List**: <https://langserver.org/>

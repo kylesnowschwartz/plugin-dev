@@ -1,0 +1,4 @@
+# MCP integration docs use mcp__plugin_*__* patterns that prettier
+# incorrectly converts __ to ** (treating as emphasis)
+plugins/plugin-dev/skills/mcp-integration/SKILL.md
+plugins/plugin-dev/skills/mcp-integration/references/tool-usage.md

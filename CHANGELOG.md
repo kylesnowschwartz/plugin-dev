@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-01-24
+
+### Fixed
+
+- **Restore MCP tool naming patterns** - Fixed `mcp__plugin_*__*` patterns in mcp-integration docs that prettier corrupted to `mcp**plugin_*__*`; added .prettierignore to prevent recurrence
+
+### Documentation
+
+- **Expand LSP integration skill** - Aligned with official Claude Code docs for comprehensive LSP server guidance
+- **Optimize agent-development skill** - Trimmed SKILL.md to target word count for faster loading
+- **Align tools/allowed-tools format** - Updated documentation to match official Claude Code docs terminology
+- **Update CI/CD workflow documentation** - Fixed workflow list in docs/ci-cd.md (added yaml-lint.yml, removed non-existent weekly-maintenance.yml)
+
 ## [0.3.1] - 2026-01-24
 
 ### Fixed
@@ -219,7 +232,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/sjnims/plugin-dev/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/sjnims/plugin-dev/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/sjnims/plugin-dev/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/sjnims/plugin-dev/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/sjnims/plugin-dev/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/sjnims/plugin-dev/compare/v0.2.0...v0.2.1

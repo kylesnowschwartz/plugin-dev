@@ -1,0 +1,14 @@
+{
+  "name": "go-lsp",
+  "version": "1.0.0",
+  "description": "Go language server integration for Claude Code",
+  "lspServers": {
+    "go": {
+      "command": "gopls",
+      "args": ["serve"],
+      "extensionToLanguage": {
+        ".go": "go"
+      }
+    }
+  }
+}
