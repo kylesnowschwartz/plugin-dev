@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "plugin-dev",
-      "description": "Comprehensive toolkit for developing Claude Code plugins. Includes 9 expert skills covering hooks, MCP integration, LSP servers, commands, agents, marketplaces, and best practices. AI-assisted plugin creation and validation.",
+      "description": "Comprehensive toolkit for developing Claude Code plugins. Includes 10 expert skills covering hooks, MCP integration, LSP servers, commands, agents, marketplaces, and best practices, plus a guide skill for navigation. AI-assisted plugin creation and validation.",
       "version": "0.3.2",
       "author": {
         "name": "Daisy Hollman",
