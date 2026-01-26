@@ -9,7 +9,7 @@ This meta-skill provides an overview of Claude Code plugin development and route
 
 ## Plugin Development Skills Overview
 
-The plugin-dev toolkit provides 9 specialized skills for building Claude Code plugins. Each skill handles a specific domain of plugin development.
+The plugin-dev toolkit provides 9 specialized skills for building Claude Code plugins, plus this guide. Each skill handles a specific domain of plugin development.
 
 ### Skill Quick Reference
 

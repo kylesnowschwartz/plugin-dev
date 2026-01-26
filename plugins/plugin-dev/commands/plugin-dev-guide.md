@@ -1,6 +1,8 @@
 ---
 description: Get an overview of plugin development capabilities and skill routing
 argument-hint: [question or task]
+allowed-tools: Skill, AskUserQuestion
+model: sonnet
 ---
 
 Invoke the plugin-dev:plugin-dev-guide skill to load plugin development guidance.
