@@ -83,7 +83,8 @@ case "$event" in
 
   Notification)
     notification_type=$(echo "$input" | jq -r '.notification_type')
-    message=$(echo "$input" | jq -r '.message' | head -c 200)
+    # Truncate and flatten to single line for log parsing
+    message=$(echo "$input" | jq -r '.message' | tr '\n' ' ' | head -c 200)
     echo "[$timestamp] NOTIFICATION type=$notification_type msg=$message" >> "$log_file"
     ;;
 

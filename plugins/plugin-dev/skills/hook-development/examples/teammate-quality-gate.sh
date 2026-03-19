@@ -33,7 +33,7 @@ staged_files=$(git diff --cached --name-only 2>/dev/null || true)
 # Reject if TODO/FIXME added in staged files
 if [ -n "$staged_files" ]; then
   # shellcheck disable=SC2086
-  if git diff --cached -- $staged_files 2>/dev/null | grep -qE '^\+.*\b(TODO|FIXME|HACK|XXX)\b'; then
+  if git diff --cached -- $staged_files 2>/dev/null | grep -qiE '^\+.*\b(TODO|FIXME|HACK|XXX)\b'; then
     echo "Teammate $teammate_name has TODO/FIXME markers in staged changes. Address these before going idle." >&2
     exit 2  # Reject idle, teammate keeps working
   fi

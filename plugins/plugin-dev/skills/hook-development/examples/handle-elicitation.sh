@@ -25,8 +25,8 @@ mode=$(echo "$input" | jq -r '.mode // "form"')
 # Handle URL-based auth flows (open browser for user)
 if [ "$mode" = "url" ]; then
   url=$(echo "$input" | jq -r '.url // ""')
-  if [ -n "$url" ]; then
-    # Open in browser
+  # Only open https URLs to prevent file://, javascript:, or other dangerous schemes
+  if [[ "$url" == https://* ]]; then
     if command -v open &>/dev/null; then
       open "$url" 2>/dev/null || true
     elif command -v xdg-open &>/dev/null; then

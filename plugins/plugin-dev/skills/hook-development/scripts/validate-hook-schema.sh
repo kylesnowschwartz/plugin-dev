@@ -66,12 +66,21 @@ for event in $(jq -r 'keys[]' "$HOOKS_FILE"); do
   hook_count=$(jq -r ".\"$event\" | length" "$HOOKS_FILE")
 
   for ((i = 0; i < hook_count; i++)); do
-    # Check matcher exists
+    # Check matcher (optional -- some events don't support matchers)
     matcher=$(jq -r ".\"$event\"[$i].matcher // empty" "$HOOKS_FILE")
+    NO_MATCHER_EVENTS=("UserPromptSubmit" "Stop" "TeammateIdle" "TaskCompleted" "WorktreeCreate" "WorktreeRemove")
     if [ -z "$matcher" ]; then
-      echo "❌ ${event}[$i]: Missing 'matcher' field"
-      ((error_count++))
-      continue
+      is_no_matcher=false
+      for nm_event in "${NO_MATCHER_EVENTS[@]}"; do
+        if [ "$event" = "$nm_event" ]; then
+          is_no_matcher=true
+          break
+        fi
+      done
+      if [ "$is_no_matcher" = false ]; then
+        echo "⚠️  ${event}[$i]: No 'matcher' field (will match all occurrences)"
+        ((warning_count++))
+      fi
     fi
 
     # Check hooks array exists
@@ -123,7 +132,8 @@ for event in $(jq -r 'keys[]' "$HOOKS_FILE"); do
       prompt | agent)
         prompt=$(jq -r ".\"$event\"[$i].hooks[$j].prompt // empty" "$HOOKS_FILE")
         if [ -z "$prompt" ]; then
-          echo "❌ ${event}[$i].hooks[$j]: ${hook_type^} hooks must have 'prompt' field"
+          ht_label=$(echo "$hook_type" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')
+          echo "❌ ${event}[$i].hooks[$j]: $ht_label hooks must have 'prompt' field"
           ((error_count++))
         fi
         ;;

@@ -23,22 +23,31 @@ set -euo pipefail
 input=$(cat)
 name=$(echo "$input" | jq -r '.name')
 
+# Sanitize name: reject path traversal and restrict to safe characters
+if [[ "$name" == *".."* ]] || [[ "$name" == /* ]] || [[ ! "$name" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+  echo "Invalid worktree name: $name" >&2
+  exit 1
+fi
+
 # Create worktree in a designated directory
 worktree_base="/tmp/claude-worktrees"
 mkdir -p "$worktree_base"
 worktree_dir="$worktree_base/$name"
 
 # Create the git worktree
-git worktree add "$worktree_dir" -b "worktree/$name" HEAD 2>/dev/null
+if ! git worktree add "$worktree_dir" -b "worktree/$name" HEAD 2>&1; then
+  echo "Failed to create worktree: $worktree_dir" >&2
+  exit 1
+fi
 
-# Install dependencies in the new worktree
+# Install dependencies in the new worktree (best-effort, log failures)
 cd "$worktree_dir"
 if [ -f "package.json" ]; then
-  npm ci --silent 2>/dev/null || npm install --silent 2>/dev/null || true
+  npm ci --silent 2>&1 || npm install --silent 2>&1 || echo "Warning: npm install failed" >&2
 elif [ -f "Gemfile" ]; then
-  bundle install --quiet 2>/dev/null || true
+  bundle install --quiet 2>&1 || echo "Warning: bundle install failed" >&2
 elif [ -f "requirements.txt" ]; then
-  pip install -q -r requirements.txt 2>/dev/null || true
+  pip install -q -r requirements.txt 2>&1 || echo "Warning: pip install failed" >&2
 fi
 
 # Print the absolute path -- this IS the return value
