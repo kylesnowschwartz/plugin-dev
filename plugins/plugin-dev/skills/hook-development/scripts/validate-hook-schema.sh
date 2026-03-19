@@ -38,7 +38,7 @@ echo "✅ Valid JSON"
 # Check 2: Root structure
 echo ""
 echo "Checking root structure..."
-VALID_EVENTS=("PreToolUse" "PermissionRequest" "PostToolUse" "UserPromptSubmit" "Stop" "SubagentStop" "SessionStart" "SessionEnd" "PreCompact" "Notification")
+VALID_EVENTS=("SessionStart" "InstructionsLoaded" "SessionEnd" "UserPromptSubmit" "PreToolUse" "PermissionRequest" "PostToolUse" "PostToolUseFailure" "Stop" "StopFailure" "SubagentStart" "SubagentStop" "TeammateIdle" "TaskCompleted" "PreCompact" "PostCompact" "ConfigChange" "WorktreeCreate" "WorktreeRemove" "Elicitation" "ElicitationResult" "Notification")
 
 for event in $(jq -r 'keys[]' "$HOOKS_FILE"); do
   found=false
@@ -65,7 +65,7 @@ warning_count=0
 for event in $(jq -r 'keys[]' "$HOOKS_FILE"); do
   hook_count=$(jq -r ".\"$event\" | length" "$HOOKS_FILE")
 
-  for ((i=0; i<hook_count; i++)); do
+  for ((i = 0; i < hook_count; i++)); do
     # Check matcher exists
     matcher=$(jq -r ".\"$event\"[$i].matcher // empty" "$HOOKS_FILE")
     if [ -z "$matcher" ]; then
@@ -85,7 +85,7 @@ for event in $(jq -r 'keys[]' "$HOOKS_FILE"); do
     # Validate each hook in the array
     hook_array_count=$(jq -r ".\"$event\"[$i].hooks | length" "$HOOKS_FILE")
 
-    for ((j=0; j<hook_array_count; j++)); do
+    for ((j = 0; j < hook_array_count; j++)); do
       hook_type=$(jq -r ".\"$event\"[$i].hooks[$j].type // empty" "$HOOKS_FILE")
 
       if [ -z "$hook_type" ]; then
@@ -94,38 +94,56 @@ for event in $(jq -r 'keys[]' "$HOOKS_FILE"); do
         continue
       fi
 
-      if [ "$hook_type" != "command" ] && [ "$hook_type" != "prompt" ]; then
-        echo "❌ ${event}[$i].hooks[$j]: Invalid type '$hook_type' (must be 'command' or 'prompt')"
+      case "$hook_type" in
+      command | prompt | http | agent) ;;
+      *)
+        echo "❌ ${event}[$i].hooks[$j]: Invalid type '$hook_type' (must be 'command', 'prompt', 'http', or 'agent')"
         ((error_count++))
         continue
-      fi
+        ;;
+      esac
 
-      # Check type-specific fields
-      if [ "$hook_type" = "command" ]; then
+      # Check type-specific required fields
+      case "$hook_type" in
+      command)
         command=$(jq -r ".\"$event\"[$i].hooks[$j].command // empty" "$HOOKS_FILE")
         if [ -z "$command" ]; then
           echo "❌ ${event}[$i].hooks[$j]: Command hooks must have 'command' field"
           ((error_count++))
         else
           # Check for hardcoded paths
+          # Checking for literal ${CLAUDE_PLUGIN_ROOT} string, not expanding
+          # shellcheck disable=SC2016
           if [[ "$command" == /* ]] && [[ "$command" != *'${CLAUDE_PLUGIN_ROOT}'* ]]; then
             echo "⚠️  ${event}[$i].hooks[$j]: Hardcoded absolute path detected. Consider using \${CLAUDE_PLUGIN_ROOT}"
             ((warning_count++))
           fi
         fi
-      elif [ "$hook_type" = "prompt" ]; then
+        ;;
+      prompt | agent)
         prompt=$(jq -r ".\"$event\"[$i].hooks[$j].prompt // empty" "$HOOKS_FILE")
         if [ -z "$prompt" ]; then
-          echo "❌ ${event}[$i].hooks[$j]: Prompt hooks must have 'prompt' field"
+          echo "❌ ${event}[$i].hooks[$j]: ${hook_type^} hooks must have 'prompt' field"
           ((error_count++))
         fi
-
-        # Check if prompt-based hooks are used on supported events
-        if [ "$event" != "Stop" ] && [ "$event" != "SubagentStop" ] && [ "$event" != "UserPromptSubmit" ] && [ "$event" != "PreToolUse" ]; then
-          echo "⚠️  ${event}[$i].hooks[$j]: Prompt hooks may not be fully supported on $event (best on Stop, SubagentStop, UserPromptSubmit, PreToolUse)"
-          ((warning_count++))
+        ;;
+      http)
+        url=$(jq -r ".\"$event\"[$i].hooks[$j].url // empty" "$HOOKS_FILE")
+        if [ -z "$url" ]; then
+          echo "❌ ${event}[$i].hooks[$j]: HTTP hooks must have 'url' field"
+          ((error_count++))
         fi
-      fi
+        ;;
+      esac
+
+      # Check if hook type is supported for this event
+      COMMAND_ONLY_EVENTS=("SessionStart" "WorktreeCreate" "WorktreeRemove")
+      for cmd_event in "${COMMAND_ONLY_EVENTS[@]}"; do
+        if [ "$event" = "$cmd_event" ] && [ "$hook_type" != "command" ]; then
+          echo "❌ ${event}[$i].hooks[$j]: $event only supports 'command' hook type, not '$hook_type'"
+          ((error_count++))
+        fi
+      done
 
       # Check timeout
       timeout=$(jq -r ".\"$event\"[$i].hooks[$j].timeout // empty" "$HOOKS_FILE")
