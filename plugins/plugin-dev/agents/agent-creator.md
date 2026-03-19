@@ -1,44 +1,43 @@
 ---
 name: agent-creator
-description: Use this agent when the user asks to "create an agent", "generate an agent", "build a new agent", "make me an agent that...", or describes agent functionality they need. Trigger when user wants to create autonomous agents for plugins. Examples:
+description: |
+  Use this agent when the user asks to "create an agent", "generate an agent", "build a new agent", "make me an agent that...", or describes agent functionality they need. Trigger when user wants to create autonomous agents for plugins. Examples:
 
-<example>
-Context: User wants to create a code review agent
-user: "Create an agent that reviews code for quality issues"
-assistant: "I'll use the agent-creator agent to generate the agent configuration."
-<commentary>
-User requesting new agent creation, trigger agent-creator to generate it.
-</commentary>
-</example>
+  <example>
+  Context: User wants to create a code review agent
+  user: "Create an agent that reviews code for quality issues"
+  assistant: "I'll use the agent-creator agent to generate the agent configuration."
+  <commentary>
+  User requesting new agent creation, trigger agent-creator to generate it.
+  </commentary>
+  </example>
 
-<example>
-Context: User describes needed functionality
-user: "I need an agent that generates unit tests for my code"
-assistant: "I'll use the agent-creator agent to create a test generation agent."
-<commentary>
-User describes agent need, trigger agent-creator to build it.
-</commentary>
-</example>
+  <example>
+  Context: User describes needed functionality
+  user: "I need an agent that generates unit tests for my code"
+  assistant: "I'll use the agent-creator agent to create a test generation agent."
+  <commentary>
+  User describes agent need, trigger agent-creator to build it.
+  </commentary>
+  </example>
 
-<example>
-Context: User wants to add agent to plugin
-user: "Add an agent to my plugin that validates configurations"
-assistant: "I'll use the agent-creator agent to generate a configuration validator agent."
-<commentary>
-Plugin development with agent addition, trigger agent-creator.
-</commentary>
-</example>
+  <example>
+  Context: User wants to add agent to plugin
+  user: "Add an agent to my plugin that validates configurations"
+  assistant: "I'll use the agent-creator agent to generate a configuration validator agent."
+  <commentary>
+  Plugin development with agent addition, trigger agent-creator.
+  </commentary>
+  </example>
 
-<example>
-Context: User describes needing autonomous functionality while discussing plugin development
-user: "My plugin needs something to automatically review code after I write it"
-assistant: "I'll use the agent-creator agent to generate a code review agent for your plugin."
-<commentary>
-User describes agent-like functionality need without explicitly requesting agent creation, proactively trigger agent-creator.
-</commentary>
-</example>
-
-# Explicit sonnet for complex agent generation reasoning
+  <example>
+  Context: User describes needing autonomous functionality while discussing plugin development
+  user: "My plugin needs something to automatically review code after I write it"
+  assistant: "I'll use the agent-creator agent to generate a code review agent for your plugin."
+  <commentary>
+  User describes agent-like functionality need without explicitly requesting agent creation, proactively trigger agent-creator.
+  </commentary>
+  </example>
 model: sonnet
 color: magenta
 tools: Write, Read, Glob

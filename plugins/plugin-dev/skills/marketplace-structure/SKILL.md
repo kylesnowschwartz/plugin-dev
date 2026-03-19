@@ -1,5 +1,6 @@
 ---
 name: marketplace-structure
+version: 0.1.0
 description: This skill should be used when the user asks to "create a marketplace", "set up marketplace.json", "organize multiple plugins", "distribute plugins", "host plugins", "marketplace schema", "plugin marketplace structure", "multi-plugin organization", or needs guidance on plugin marketplace creation, marketplace manifest configuration, or plugin distribution strategies.
 ---
 

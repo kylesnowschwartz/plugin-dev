@@ -1,13 +1,16 @@
 ---
 name: command-development
+version: 0.2.0
 description: This skill should be used when the user asks to "create a slash command", "add a command", "write a custom command", "define command arguments", "use command frontmatter", "organize commands", "create command with file references", "interactive command", "use AskUserQuestion in command", "Skill tool", "programmatic command invocation", "disable-model-invocation", "prevent Claude from running command", "debug command", "command debugging", "troubleshoot command", or needs guidance on slash command structure, YAML frontmatter fields, dynamic arguments, bash execution in commands, user interaction patterns, programmatic invocation control, debugging commands, or command development best practices for Claude Code.
 ---
 
 # Command Development for Claude Code
 
+> **Note:** The `.claude/commands/` directory is a legacy format. For new plugins, prefer the `skills/<name>/SKILL.md` directory format. Both are loaded identically by Claude Code -- the only difference is file layout. The skills format supports progressive disclosure via `references/` and `examples/` subdirectories. See the `skill-development` skill for the preferred format.
+
 ## Overview
 
-Slash commands are frequently-used prompts defined as Markdown files that Claude executes during interactive sessions. Master command structure, frontmatter options, and dynamic features to create powerful, reusable workflows.
+Slash commands are frequently-used prompts defined as Markdown files that Claude executes during interactive sessions. Understanding command structure, frontmatter options, and dynamic features enables creating powerful, reusable workflows.
 
 **Key concepts:**
 

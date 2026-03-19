@@ -1,5 +1,6 @@
 ---
 name: lsp-integration
+version: 0.1.0
 description: This skill should be used when the user asks to "add LSP server", "configure language server", "set up LSP in plugin", "add code intelligence", "integrate language server protocol", "use pyright-lsp", "use typescript-lsp", "use rust-lsp", mentions LSP servers, or discusses extensionToLanguage mappings. Provides guidance for integrating Language Server Protocol servers into Claude Code plugins for enhanced code intelligence.
 ---
 

@@ -1,42 +1,43 @@
 ---
 name: plugin-validator
-description: Use this agent when the user asks to "validate my plugin", "check plugin structure", "verify plugin is correct", "validate plugin.json", "check plugin files", "validate marketplace", "check marketplace.json", "verify marketplace structure", or mentions plugin or marketplace validation. Also trigger proactively after user creates or modifies plugin or marketplace components. Examples:
+description: |
+  Use this agent when the user asks to "validate my plugin", "check plugin structure", "verify plugin is correct", "validate plugin.json", "check plugin files", "validate marketplace", "check marketplace.json", "verify marketplace structure", or mentions plugin or marketplace validation. Also trigger proactively after user creates or modifies plugin or marketplace components. Examples:
 
-<example>
-Context: User finished creating a new plugin
-user: "I've created my first plugin with commands and hooks"
-assistant: "I'll use the plugin-validator agent to validate the plugin structure."
-<commentary>
-Plugin created, proactively validate to catch issues early.
-</commentary>
-</example>
+  <example>
+  Context: User finished creating a new plugin
+  user: "I've created my first plugin with commands and hooks"
+  assistant: "I'll use the plugin-validator agent to validate the plugin structure."
+  <commentary>
+  Plugin created, proactively validate to catch issues early.
+  </commentary>
+  </example>
 
-<example>
-Context: User explicitly requests validation
-user: "Validate my plugin before I publish it"
-assistant: "I'll use the plugin-validator agent to perform comprehensive validation."
-<commentary>
-Explicit validation request triggers the agent.
-</commentary>
-</example>
+  <example>
+  Context: User explicitly requests validation
+  user: "Validate my plugin before I publish it"
+  assistant: "I'll use the plugin-validator agent to perform comprehensive validation."
+  <commentary>
+  Explicit validation request triggers the agent.
+  </commentary>
+  </example>
 
-<example>
-Context: User modified plugin.json
-user: "I've updated the plugin manifest"
-assistant: "I'll use the plugin-validator agent to validate the manifest changes."
-<commentary>
-Manifest modified, validate to ensure correctness.
-</commentary>
-</example>
+  <example>
+  Context: User modified plugin.json
+  user: "I've updated the plugin manifest"
+  assistant: "I'll use the plugin-validator agent to validate the manifest changes."
+  <commentary>
+  Manifest modified, validate to ensure correctness.
+  </commentary>
+  </example>
 
-<example>
-Context: User created or modified a marketplace
-user: "I've set up a marketplace.json for my plugins"
-assistant: "I'll use the plugin-validator agent to validate the marketplace structure."
-<commentary>
-Marketplace created, validate schema and plugin entries.
-</commentary>
-</example>
+  <example>
+  Context: User created or modified a marketplace
+  user: "I've set up a marketplace.json for my plugins"
+  assistant: "I'll use the plugin-validator agent to validate the marketplace structure."
+  <commentary>
+  Marketplace created, validate schema and plugin entries.
+  </commentary>
+  </example>
 
 model: inherit
 color: yellow

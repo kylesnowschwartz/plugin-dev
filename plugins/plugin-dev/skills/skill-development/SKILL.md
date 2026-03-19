@@ -1,5 +1,6 @@
 ---
 name: skill-development
+version: 0.2.0
 description: This skill should be used when the user asks to "create a skill", "add a skill to plugin", "write a new skill", "improve skill description", "organize skill content", "SKILL.md format", "skill frontmatter", "skill triggers", "trigger phrases for skills", "progressive disclosure", "skill references folder", "skill examples folder", "validate skill", or needs guidance on skill structure, file organization, writing style, or skill development best practices for Claude Code plugins.
 ---
 
