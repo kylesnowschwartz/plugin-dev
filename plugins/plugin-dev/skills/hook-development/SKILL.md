@@ -1067,9 +1067,17 @@ Working examples in `examples/`:
 
 > **Note:** After copying example scripts, make them executable: `chmod +x script.sh`
 
-- **`validate-write.sh`** -- File write validation example
-- **`validate-bash.sh`** -- Bash command validation example
-- **`load-context.sh`** -- SessionStart context loading example
+- **`validate-write.sh`** -- PreToolUse file write validation
+- **`validate-bash.sh`** -- PreToolUse bash command validation
+- **`load-context.sh`** -- SessionStart context loading
+- **`stop-failure-alert.sh`** -- StopFailure API error alerting
+- **`validate-task.sh`** -- TaskCompleted deliverable verification
+- **`teammate-quality-gate.sh`** -- TeammateIdle quality gate
+- **`create-worktree.sh`** -- WorktreeCreate custom worktree setup
+- **`cleanup-worktree.sh`** -- WorktreeRemove resource cleanup
+- **`audit-config-change.sh`** -- ConfigChange security monitoring
+- **`handle-elicitation.sh`** -- Elicitation auto-response
+- **`log-observability.sh`** -- Unified logging for InstructionsLoaded, PreCompact, PostCompact, Notification
 
 ### Utility Scripts
 
