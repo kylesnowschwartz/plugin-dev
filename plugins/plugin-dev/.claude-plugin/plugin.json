@@ -1,13 +1,13 @@
 {
   "name": "plugin-dev",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "Comprehensive toolkit for developing Claude Code plugins. Includes 10 expert skills covering hooks, MCP integration, LSP servers, commands, agents, marketplaces, and best practices, plus a guide skill for navigation. AI-assisted plugin creation and validation.",
   "author": {
-    "name": "Steve Nims",
-    "url": "https://github.com/sjnims"
+    "name": "Kyle Snow Schwartz",
+    "url": "https://github.com/kylesnowschwartz"
   },
-  "homepage": "https://github.com/sjnims/plugin-dev",
-  "repository": "https://github.com/sjnims/plugin-dev",
+  "homepage": "https://github.com/kylesnowschwartz/plugin-dev",
+  "repository": "https://github.com/kylesnowschwartz/plugin-dev",
   "license": "MIT",
   "keywords": [
     "ai-tools",
