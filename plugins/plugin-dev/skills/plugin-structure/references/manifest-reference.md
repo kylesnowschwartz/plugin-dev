@@ -355,6 +355,40 @@ MCP server configuration location or inline definition.
 - Complex plugins: External `.mcp.json` file
 - Multiple servers: Always use external file
 
+#### outputStyles
+
+**Type**: String or Array of strings
+**Default**: `["./output-styles"]`
+**Example**: `"./styles"`
+
+Path(s) to output style definition files or directories.
+
+**Single path**:
+
+```json
+{
+  "outputStyles": "./styles"
+}
+```
+
+**Multiple paths**:
+
+```json
+{
+  "outputStyles": ["./styles/default.md", "./styles/compact.md"]
+}
+```
+
+**Behavior**: Supplements default `output-styles/` directory (does not replace)
+
+Output style files are markdown with YAML frontmatter (`name`, `description`, `keep-coding-instructions`). See the plugin-structure skill's `references/output-styles.md` for the complete frontmatter schema.
+
+**Use cases**:
+
+- Providing domain-specific formatting (e.g., concise code review output)
+- Bundling multiple style options for users to choose from
+- Offering specialized output modes for different workflows
+
 ## Path Resolution
 
 ### Relative Path Rules

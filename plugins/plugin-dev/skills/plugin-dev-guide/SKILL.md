@@ -140,6 +140,30 @@ Use when the user needs to:
 - Distribute plugins to teams
 - Organize plugin collections
 
+## Decision Tree for Skill Selection
+
+```
+User wants to...
+├── Create/organize a plugin structure? → plugin-structure
+├── Add a simple slash command (no bundled resources)? → command-development
+├── Create an autonomous agent? → agent-development
+├── Add a complex skill with scripts/references? → skill-development
+├── React to Claude Code events? → hook-development
+├── Integrate external service/API? → mcp-integration
+├── Add code intelligence/LSP? → lsp-integration
+├── Make plugin configurable? → plugin-settings
+└── Distribute multiple plugins? → marketplace-structure
+```
+
+## Available Commands
+
+| Command                          | Purpose                                             |
+| -------------------------------- | --------------------------------------------------- |
+| `/plugin-dev:plugin-dev-guide`   | Overview and skill routing                          |
+| `/plugin-dev:start`              | Entry point - choose plugin or marketplace creation |
+| `/plugin-dev:create-plugin`      | 8-phase guided plugin creation workflow             |
+| `/plugin-dev:create-marketplace` | 8-phase guided marketplace creation workflow        |
+
 ## Common Multi-Skill Workflows
 
 ### Building a Complete Plugin

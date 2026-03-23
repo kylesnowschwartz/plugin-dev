@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-03-24
+
+### Documentation
+
+- **Audit skills against official Claude Code docs** - Incorporated upstream documentation audit covering all 10 skills with new sections for agent teams, execution modes, MCP scope system, CLI commands, plugin validation, enterprise features, visibility budgets, and context management
+- **Add 10 new reference files** - Advanced agent fields, permission modes/rules, hook input schemas, memory/rules system, headless CI mode, GitHub Actions integration, output styles, advanced topics, advanced frontmatter, commands-vs-skills
+- **Expand existing references** - Hook advanced patterns, marketplace distribution/schema, MCP authentication/tool-usage, manifest reference, command skill-tool
+- **Fix prompt hook support claim** - Corrected false claim that prompt hooks only support 4 events (actually supports 19)
+- **Fix SessionEnd Quick Reference** - Added missing "resume" matcher
+- **Update project docs** - Lint command updates (markdownlint-cli2), component-patterns agent fields, SECURITY supported versions
+
+## [0.4.0] - 2026-03-20
+
+### Added
+
+- **Plugin-dev-guide meta-skill** - Navigation skill that routes users to the correct specialized skill
+- **All 22 hook event documentation** - Comprehensive schemas, examples, and gotchas for every Claude Code hook event
+- **Hook example scripts** - Working examples for StopFailure, TaskCompleted, TeammateIdle, WorktreeCreate/Remove, ConfigChange, Elicitation, and observability logging
+
+### Changed
+
+- **Fork ownership** - Updated plugin and marketplace ownership to kylesnowschwartz
+- **Synced plugin structure** - Aligned with official Claude Code plugin conventions
+
 ## [0.3.2] - 2026-01-24
 
 ### Fixed
@@ -232,7 +256,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/sjnims/plugin-dev/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/sjnims/plugin-dev/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/sjnims/plugin-dev/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/sjnims/plugin-dev/compare/v0.2.1...v0.3.0

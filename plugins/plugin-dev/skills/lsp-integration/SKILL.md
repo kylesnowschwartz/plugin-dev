@@ -1,7 +1,7 @@
 ---
 name: lsp-integration
 version: 0.1.0
-description: This skill should be used when the user asks to "add LSP server", "configure language server", "set up LSP in plugin", "add code intelligence", "integrate language server protocol", "use pyright-lsp", "use typescript-lsp", "use rust-lsp", mentions LSP servers, or discusses extensionToLanguage mappings. Provides guidance for integrating Language Server Protocol servers into Claude Code plugins for enhanced code intelligence.
+description: This skill should be used when the user asks to "add LSP server", "configure language server", "set up LSP in plugin", "add code intelligence", "integrate language server protocol", "use pyright-lsp", "use typescript-lsp", "use rust-lsp", "socket transport", "initializationOptions", mentions LSP servers, or discusses extensionToLanguage mappings. Provides guidance for integrating Language Server Protocol servers into Claude Code plugins for enhanced code intelligence.
 ---
 
 # LSP Integration for Claude Code Plugins
@@ -92,9 +92,34 @@ Reference this file in `plugin.json`:
 }
 ```
 
-**transport** (optional): Communication transport - `stdio` (default) or `socket`
+**transport** (optional): Communication transport - `stdio` (default) or `socket`. Socket transport connects to the server via TCP port instead of stdin/stdout:
 
-**initializationOptions** (optional): Options passed to the server during LSP initialization
+```json
+{
+  "lspServers": {
+    "dart": {
+      "transport": "socket",
+      "command": "dart",
+      "args": ["language-server", "--port", "8123"],
+      "extensionToLanguage": { ".dart": "dart" }
+    }
+  }
+}
+```
+
+**initializationOptions** (optional): Options passed to the server during LSP initialization. Use this to configure server-specific behavior at startup:
+
+```json
+{
+  "initializationOptions": {
+    "typescript": {
+      "tsdk": "./node_modules/typescript/lib"
+    },
+    "diagnostics": true,
+    "formatting": { "tabSize": 2 }
+  }
+}
+```
 
 **settings** (optional): Settings passed via `workspace/didChangeConfiguration`
 
@@ -366,13 +391,25 @@ Look for:
     "language": {
       "command": "${CLAUDE_PLUGIN_ROOT}/servers/lsp-server",
       "args": ["--stdio", "--log-level", "warn"],
+      "transport": "stdio",
       "extensionToLanguage": {
         ".ext1": "language",
         ".ext2": "language"
       },
       "env": {
         "CONFIG_PATH": "${CLAUDE_PLUGIN_ROOT}/config"
-      }
+      },
+      "initializationOptions": {
+        "diagnostics": true
+      },
+      "settings": {
+        "language": { "lint": { "enabled": true } }
+      },
+      "workspaceFolder": "${workspaceFolder}",
+      "startupTimeout": 30000,
+      "shutdownTimeout": 5000,
+      "restartOnCrash": true,
+      "maxRestarts": 3
     }
   }
 }

@@ -1,7 +1,6 @@
 ---
 name: hook-development
-version: 0.2.0
-description: This skill should be used when the user asks to "create a hook", "add a PreToolUse/PostToolUse/Stop hook", "validate tool use", "implement prompt-based hooks", "use ${CLAUDE_PLUGIN_ROOT}", "set up event-driven automation", "block dangerous commands", or mentions hook events (PreToolUse, PermissionRequest, PostToolUse, PostToolUseFailure, Stop, StopFailure, SubagentStop, SubagentStart, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, PostCompact, Notification, ConfigChange, TeammateIdle, TaskCompleted, WorktreeCreate, WorktreeRemove, InstructionsLoaded, Elicitation, ElicitationResult). Provides comprehensive guidance for creating and implementing Claude Code plugin hooks with focus on advanced prompt-based hooks API.
+description: This skill should be used when the user asks to "create a hook", "add a PreToolUse/PostToolUse/Stop hook", "validate tool use", "implement prompt-based hooks", "use ${CLAUDE_PLUGIN_ROOT}", "set up event-driven automation", "block dangerous commands", "scoped hooks", "frontmatter hooks", "hook in skill", "hook in agent", "agent hook type", "async hooks", "once handler", "statusMessage", "hook decision control", or mentions hook events (PreToolUse, PermissionRequest, PostToolUse, PostToolUseFailure, Stop, StopFailure, SubagentStop, SubagentStart, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, PostCompact, Notification, ConfigChange, TeammateIdle, TaskCompleted, WorktreeCreate, WorktreeRemove, InstructionsLoaded, Elicitation, ElicitationResult). Provides comprehensive guidance for creating and implementing Claude Code plugin hooks with focus on advanced prompt-based hooks API.
 ---
 
 # Hook Development for Claude Code Plugins
@@ -90,6 +89,10 @@ Send event data to an HTTP endpoint:
 
 **Use for:** External service integration, centralized logging, webhook-driven workflows.
 
+**Prompt hooks** work on most events (see [Hook Type Support by Event](#hook-type-support-by-event) for the full matrix). The only events restricted to command hooks are SessionStart, WorktreeCreate, and WorktreeRemove.
+
+**Response format:** Prompt hooks return the standard hook output JSON (`decision`, `reason`, `systemMessage`). For events with event-specific behavior (PreToolUse, PermissionRequest, Elicitation), include `hookSpecificOutput` with event-appropriate fields — see each event's documentation below and `references/event-schemas.md`.
+
 ## Hook Configuration Formats
 
 ### Plugin hooks.json Format
@@ -152,6 +155,49 @@ Each hook entry in a matcher group supports these fields:
 - `async`: Fire-and-forget, cannot block (command hooks only)
 
 **Important:** The examples below show the hook event structure that goes inside either format. For plugin hooks.json, wrap these in `{"hooks": {...}}`.
+
+### Plugin Hook Configuration
+
+Define hooks in `hooks/hooks.json` using the plugin wrapper format:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/validate-bash.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Plugin hooks merge with user hooks and run in parallel.
+
+### Scoped Hooks in Skill/Agent Frontmatter
+
+Hooks can be defined directly in YAML frontmatter of skills and agents:
+
+```yaml
+hooks:
+  PreToolUse:
+    - matcher: Write
+      hooks:
+        - type: command
+          command: "${CLAUDE_PLUGIN_ROOT}/scripts/validate-write.sh"
+```
+
+**Supported events in frontmatter:** `PreToolUse`, `PostToolUse`, `Stop`
+
+These hooks are lifecycle-bound -- they activate when the skill/agent loads and deactivate when it finishes. Use for skill-specific validation that shouldn't apply globally.
+
+See `references/advanced.md` for details.
 
 ## Hook Events
 
@@ -1016,7 +1062,7 @@ echo "$output" | jq .
 | ------------------ | ------------- | --------------------------- | ----------------------------- |
 | SessionStart       | Lifecycle     | startup, resume, clear, compact | continue, env vars         |
 | InstructionsLoaded | Lifecycle     | session_start, nested_traversal, path_glob_match, include, compact | None (observability) |
-| SessionEnd         | Lifecycle     | clear, logout, prompt_input_exit, bypass_permissions_disabled, other | None (observability) |
+| SessionEnd         | Lifecycle     | clear, logout, prompt_input_exit, bypass_permissions_disabled, resume, other | None (observability) |
 | UserPromptSubmit   | Input         | None                        | Block prompt                  |
 | PreToolUse         | Tool          | Tool names (regex)          | Allow/deny/ask, modify input  |
 | PermissionRequest  | Tool          | Tool names (regex)          | Allow/deny, modify input      |
@@ -1060,6 +1106,7 @@ For detailed patterns and advanced techniques, consult:
 - **`references/patterns.md`** -- Proven patterns including temporarily active and configuration-driven hooks
 - **`references/migration.md`** -- Migrating from basic to advanced hooks
 - **`references/advanced.md`** -- Advanced use cases and techniques
+- **`references/hook-input-schemas.md`** -- Per-event and per-tool input field documentation
 
 ### Example Hook Scripts
 

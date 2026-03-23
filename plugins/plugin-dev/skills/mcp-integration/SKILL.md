@@ -1,7 +1,7 @@
 ---
 name: mcp-integration
 version: 0.2.0
-description: This skill should be used when the user asks to "add MCP server", "integrate MCP", "configure MCP in plugin", "use .mcp.json", "set up Model Context Protocol", "connect external service", mentions "${CLAUDE_PLUGIN_ROOT} with MCP", discusses MCP server types (SSE, stdio, HTTP, WebSocket), or asks to "find MCP server", "discover MCP servers", "what MCP servers exist", "recommend MCP server for [service]". Provides comprehensive guidance for integrating Model Context Protocol servers into Claude Code plugins for external tool and service integration.
+description: This skill should be used when the user asks to "add MCP server", "integrate MCP", "configure MCP in plugin", "use .mcp.json", "set up Model Context Protocol", "connect external service", mentions "${CLAUDE_PLUGIN_ROOT} with MCP", discusses MCP server types (SSE, stdio, HTTP, WebSocket), or asks to "find MCP server", "discover MCP servers", "what MCP servers exist", "recommend MCP server for [service]", "MCP prompts", "MCP prompts as commands", "tool search", "tool search threshold", "claude mcp serve", "allowedMcpServers", "deniedMcpServers", "managed MCP", "MCP scope", "MCP output limits", "MCP CLI commands". Provides comprehensive guidance for integrating Model Context Protocol servers into Claude Code plugins for external tool and service integration.
 ---
 
 # MCP Integration for Claude Code Plugins
@@ -16,6 +16,18 @@ Model Context Protocol (MCP) enables Claude Code plugins to integrate with exter
 - Provide 10+ related tools from a single service
 - Handle OAuth and complex authentication flows
 - Bundle MCP servers with plugins for automatic setup
+
+## MCP Scope System
+
+MCP server configurations follow scope precedence: Local > Project > User.
+
+| Scope   | File                              | Shared in repo |
+| ------- | --------------------------------- | -------------- |
+| Local   | `.claude/.mcp.local.json`         | No             |
+| Project | `.claude/.mcp.json` or `.mcp.json`| Yes            |
+| User    | `~/.claude/.mcp.json`             | No             |
+
+Plugin-bundled MCP servers auto-start and interact with user/project MCP configs.
 
 ## MCP Server Configuration Methods
 
@@ -213,6 +225,8 @@ All MCP configurations support environment variable substitution:
 }
 ```
 
+Env vars support fallback values: `${VAR:-default_value}`. Supported in `command`, `args`, `env`, `url`, and `headers` fields.
+
 **Best practice:** Document all required environment variables in plugin README.
 
 ## MCP Tool Naming
@@ -279,6 +293,12 @@ For MCP servers with many tools, use Tool Search to find relevant tools:
 3. Get filtered list of matching tools
 
 This feature is automatic - just ask Claude about available tools or describe what you want to do.
+
+### Tool Search Auto-Enable
+
+When MCP servers provide more tools than fit in context (default threshold: 10%), Claude Code activates tool search automatically. Control with `ENABLE_TOOL_SEARCH=auto:5` (custom percentage) or `ENABLE_TOOL_SEARCH=false` (disable).
+
+For plugins bundling many-tool MCP servers, document which tools are most commonly needed so users can pre-allow them.
 
 ### Using MCP Tools in Commands
 
@@ -458,30 +478,24 @@ Pre-allow only necessary MCP tools:
 ❌ allowed-tools: mcp__plugin_api_server__*
 ```
 
-### Managed MCP Controls (Enterprise)
+### Managed MCP Controls
 
-Organizations can control MCP server access through managed settings:
-
-**Restrict allowed servers:**
+Organizations can restrict MCP server usage via managed settings:
 
 ```json
 {
-  "mcpServers": {
-    "allowedServers": ["github", "internal-api"],
-    "blockedServers": ["*"]
-  }
+  "allowedMcpServers": [
+    { "serverName": "github" },
+    { "serverCommand": ["npx", "-y", "@company/mcp-server"] },
+    { "serverUrl": "https://mcp.company.com/*" }
+  ],
+  "deniedMcpServers": [
+    { "serverName": "untrusted-server" }
+  ]
 }
 ```
 
-**Disable MCP entirely:**
-
-```json
-{
-  "mcpServers": {
-    "enabled": false
-  }
-}
-```
+Three matcher types: `serverName`, `serverCommand`, `serverUrl`.
 
 These settings are configured by administrators and cannot be overridden by users or plugins.
 
@@ -631,6 +645,40 @@ Look for:
 - ❌ Pre-allow all tools with wildcards
 - ❌ Skip error handling
 - ❌ Forget to document setup
+
+### Claude Code as MCP Server
+
+```bash
+claude mcp serve
+```
+
+Enables other MCP-compatible clients to use Claude Code's tools.
+
+### Dynamic Tool Updates
+
+MCP servers can notify Claude Code of tool changes at runtime via `list_changed`. When implementing a plugin's MCP server, send `list_changed` notifications when available tools change dynamically.
+
+### MCP Output Limits
+
+- Warning threshold: 10,000 tokens
+- Default maximum: 25,000 tokens
+- Configure with `MAX_MCP_OUTPUT_TOKENS` environment variable
+
+Design plugin MCP tools to return concise results. Paginate or summarize large outputs.
+
+## MCP CLI Commands
+
+```bash
+claude mcp add --transport stdio <name> -- <command> [args...]
+claude mcp list
+claude mcp get <name>
+claude mcp remove <name>
+claude mcp add-json <name> '<json>'
+claude mcp add-from-claude-desktop
+claude mcp reset-project-choices
+```
+
+Key flags: `--scope` (user/project/local), `--env KEY=VALUE`, `--callback-port` (OAuth).
 
 ## Additional Resources
 

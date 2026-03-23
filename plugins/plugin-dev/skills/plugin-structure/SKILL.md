@@ -1,7 +1,7 @@
 ---
 name: plugin-structure
 version: 0.2.0
-description: This skill should be used when the user asks to "create a plugin", "scaffold a plugin", "understand plugin structure", "organize plugin components", "set up plugin.json", "use ${CLAUDE_PLUGIN_ROOT}", "add commands/agents/skills/hooks", "add lspServers", "configure auto-discovery", or needs guidance on plugin directory layout, manifest configuration, component organization, file naming conventions, or Claude Code plugin architecture best practices.
+description: This skill should be used when the user asks to "create a plugin", "scaffold a plugin", "understand plugin structure", "organize plugin components", "set up plugin.json", "use ${CLAUDE_PLUGIN_ROOT}", "add commands/agents/skills/hooks", "add lspServers", "configure auto-discovery", "headless mode", "CI mode", "plugin in CI", "github actions", "plugin caching", "plugin CLI", "install plugin", "installation scope", "auto-update", "validate plugin", "plugin validate", "debug plugin", "output styles", "outputStyles", "custom output format", "response formatting", "--verbose", or needs guidance on plugin directory layout, manifest configuration, component organization, file naming conventions, or Claude Code plugin architecture best practices.
 ---
 
 # Plugin Structure for Claude Code
@@ -113,6 +113,8 @@ Specify custom paths for components (supplements default directories):
 ### Commands (Legacy)
 
 > **Note:** The `commands/` directory is a legacy format. For new plugins, prefer `skills/<name>/SKILL.md` which supports progressive disclosure via `references/` and `examples/` subdirectories. Both formats are loaded identically by Claude Code.
+
+Simple, user-invocable prompts stored as single `.md` files. Use when you don't need bundled resources. Both commands and skills are invoked via the Skill tool — commands are essentially simple skills.
 
 **Location**: `commands/` directory
 **Format**: Markdown files with YAML frontmatter
@@ -313,27 +315,27 @@ For detailed LSP configuration, see the `lsp-integration` skill.
 
 ### Output Styles
 
-**Location**: Inline in `plugin.json` under `outputStyles` field
-**Format**: JSON configuration for custom output formatting
+**Location**: `plugin.json` under `outputStyles` field, pointing to style files
+**Format**: Path or array of paths to markdown style files
 **Purpose**: Customize how Claude formats responses
 
-**Example format**:
+**Example format (directory)**:
 
 ```json
 {
-  "outputStyles": {
-    "code-blocks": {
-      "style": "fenced",
-      "language": "auto"
-    },
-    "headers": {
-      "numbering": true
-    }
-  }
+  "outputStyles": "./styles/"
 }
 ```
 
-**Usage**: Plugins can define consistent output formatting for their domain
+**Example format (array of paths)**:
+
+```json
+{
+  "outputStyles": ["./styles/concise.md", "./styles/detailed.md"]
+}
+```
+
+**Usage**: Plugins can define consistent output formatting for their domain. See `references/output-styles.md` for detailed style file format.
 
 ## Portable Path References
 
@@ -619,6 +621,31 @@ claude --plugin-dir /path/to/plugin
 - Document potential conflicts in plugin README
 - Consider command prefixes for related functionality
 
+## Runtime Contexts
+
+Plugins behave differently in non-interactive environments:
+
+- **Headless/CI mode** (`claude -p`): See `references/headless-ci-mode.md`
+- **GitHub Actions**: See `references/github-actions.md`
+- **Advanced topics** (caching, auto-update, keybindings): See `references/advanced-topics.md`
+
+## Plugin Validation
+
+```bash
+claude plugin validate    # CLI validation
+claude --debug            # Detailed logging
+claude --verbose          # Additional debugging
+```
+
+Use `/plugins` in the TUI to view installed plugins and their status.
+
+### Additional Source Types
+
+```bash
+claude plugin install npm-package-name
+claude plugin install pip-package-name
+```
+
 ---
 
 ## Additional Resources
@@ -627,6 +654,10 @@ claude --plugin-dir /path/to/plugin
 
 - **`references/component-patterns.md`** - Detailed patterns for each component type
 - **`references/manifest-reference.md`** - Complete plugin.json field reference
+- **`references/headless-ci-mode.md`** - Headless and CI mode behavior
+- **`references/github-actions.md`** - GitHub Actions integration
+- **`references/advanced-topics.md`** - Caching, auto-update, keybindings
+- **`references/output-styles.md`** - Output style file format and examples
 
 ### Example Files
 

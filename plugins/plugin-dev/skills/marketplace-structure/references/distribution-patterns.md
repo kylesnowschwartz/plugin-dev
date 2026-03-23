@@ -223,12 +223,57 @@ Use git branches for experimental plugins:
 /plugin marketplace add owner/repo#feature-branch
 ```
 
+## Private Repository Authentication
+
+For marketplaces and plugins hosted in private repositories, Claude Code uses environment variables for authentication:
+
+| Service   | Environment Variable | Format                       |
+| --------- | -------------------- | ---------------------------- |
+| GitHub    | `GITHUB_TOKEN`       | Personal access token or PAT |
+| GitLab    | `GITLAB_TOKEN`       | Personal or project token    |
+| Bitbucket | `BITBUCKET_TOKEN`    | App password or token        |
+
+### Configuration
+
+Set the appropriate token before adding private marketplaces:
+
+```bash
+# GitHub private repository
+export GITHUB_TOKEN="ghp_xxxxxxxxxxxx"
+/plugin marketplace add company/private-plugins
+
+# GitLab private repository
+export GITLAB_TOKEN="glpat-xxxxxxxxxxxx"
+/plugin marketplace add https://gitlab.company.com/team/plugins.git
+```
+
+Tokens are used for cloning and updating marketplace content. Ensure tokens have read access to the repository.
+
+### Team Distribution with Private Repos
+
+For teams, add the marketplace in project settings and document required environment variables:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "team-tools": {
+      "source": {
+        "source": "github",
+        "repo": "company/claude-plugins"
+      }
+    }
+  }
+}
+```
+
+Team members must have `GITHUB_TOKEN` set with access to the private repository.
+
 ## Security Considerations
 
 ### Access Control
 
 - **Public marketplaces**: Anyone can install plugins
-- **Private repositories**: Only authorized users can access
+- **Private repositories**: Only authorized users can access (via env tokens)
 - **Team settings**: Control which marketplaces are auto-installed
 
 ### Plugin Verification

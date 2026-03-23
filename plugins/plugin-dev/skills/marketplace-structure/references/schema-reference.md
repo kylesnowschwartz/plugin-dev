@@ -120,7 +120,9 @@ Paths are relative to:
 {
   "source": {
     "source": "github",
-    "repo": "owner/repo-name"
+    "repo": "owner/repo-name",
+    "ref": "v1.0",
+    "sha": "abc123..."
   }
 }
 ```
@@ -129,6 +131,8 @@ Paths are relative to:
 | -------- | ------ | -------- | ---------------------------------------- |
 | `source` | string | Yes      | Must be `"github"`                       |
 | `repo`   | string | Yes      | GitHub repository in `owner/repo` format |
+| `ref`    | string | No       | Branch, tag, or commit reference         |
+| `sha`    | string | No       | Exact commit SHA for integrity pinning   |
 
 ### Git URL (Object)
 
@@ -138,15 +142,34 @@ For GitLab, Bitbucket, or self-hosted git repositories:
 {
   "source": {
     "source": "url",
-    "url": "https://gitlab.com/team/plugin.git"
+    "url": "https://gitlab.com/team/plugin.git",
+    "ref": "main"
   }
 }
 ```
 
-| Field    | Type   | Required | Description        |
-| -------- | ------ | -------- | ------------------ |
-| `source` | string | Yes      | Must be `"url"`    |
-| `url`    | string | Yes      | Full git clone URL |
+| Field    | Type   | Required | Description                    |
+| -------- | ------ | -------- | ------------------------------ |
+| `source` | string | Yes      | Must be `"url"`                |
+| `url`    | string | Yes      | Full git clone URL             |
+| `ref`    | string | No       | Branch or tag reference        |
+| `sha`    | string | No       | Exact commit SHA for integrity |
+
+### Host Pattern (Object)
+
+Match plugins by URL pattern for internal registries:
+
+```json
+{
+  "source": {
+    "hostPattern": "https://git.company.com/*"
+  }
+}
+```
+
+| Field         | Type   | Required | Description                    |
+| ------------- | ------ | -------- | ------------------------------ |
+| `hostPattern` | string | Yes      | URL pattern with `*` wildcards |
 
 ## Complete Plugin Entry Example
 
@@ -256,3 +279,32 @@ plugin.json schema (all fields optional in marketplace entry)
 ```
 
 This means any field valid in `plugin.json` can also be used in a marketplace entry.
+
+## Enterprise Settings
+
+Organizations can control marketplace behavior through managed settings:
+
+| Setting                   | Type    | Description                                           |
+| ------------------------- | ------- | ----------------------------------------------------- |
+| `strictKnownMarketplaces` | boolean | Only allow plugins from approved marketplaces         |
+| `enabledPlugins`          | array   | Pre-configured list of enabled plugins                |
+| `extraKnownMarketplaces`  | object  | Additional approved marketplaces beyond built-in ones |
+
+### Example Managed Settings
+
+```json
+{
+  "strictKnownMarketplaces": true,
+  "enabledPlugins": ["security-scanner@company-tools"],
+  "extraKnownMarketplaces": {
+    "company-tools": {
+      "source": {
+        "source": "github",
+        "repo": "company/claude-plugins"
+      }
+    }
+  }
+}
+```
+
+These settings are configured by administrators and cannot be overridden by individual users.

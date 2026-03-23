@@ -1,7 +1,7 @@
 ---
 name: marketplace-structure
 version: 0.1.0
-description: This skill should be used when the user asks to "create a marketplace", "set up marketplace.json", "organize multiple plugins", "distribute plugins", "host plugins", "marketplace schema", "plugin marketplace structure", "multi-plugin organization", or needs guidance on plugin marketplace creation, marketplace manifest configuration, or plugin distribution strategies.
+description: This skill should be used when the user asks to "create a marketplace", "set up marketplace.json", "organize multiple plugins", "distribute plugins", "host plugins", "marketplace schema", "plugin marketplace structure", "multi-plugin organization", "strictKnownMarketplaces", "private marketplace", "marketplace auth", "pin plugin version", "hostPattern", or needs guidance on plugin marketplace creation, marketplace manifest configuration, or plugin distribution strategies.
 ---
 
 # Marketplace Structure
@@ -153,6 +153,38 @@ For GitLab, Bitbucket, or self-hosted git:
 }
 ```
 
+### Pinning to Specific Versions
+
+Lock plugins to exact versions for reproducibility:
+
+```json
+{
+  "name": "github-plugin",
+  "source": {
+    "source": "github",
+    "repo": "owner/plugin-repo",
+    "ref": "v1.2.0",
+    "sha": "abc123def456..."
+  }
+}
+```
+
+- `ref` — Branch, tag, or commit reference
+- `sha` — Exact commit SHA for integrity verification
+
+### Host Pattern Sources
+
+Match any repository from a specific host:
+
+```json
+{
+  "name": "internal-plugin",
+  "source": {
+    "hostPattern": "https://git.company.com/*"
+  }
+}
+```
+
 ## Strict vs. Non-Strict Mode
 
 The `strict` field controls whether plugins must have their own `plugin.json`:
@@ -180,6 +212,33 @@ Use `strict: false` when:
   "strict": false
 }
 ```
+
+## Enterprise Features
+
+### Managed Marketplace Restrictions
+
+Organizations can restrict plugin sources via managed settings:
+
+- `strictKnownMarketplaces: true` — Only allow plugins from known/approved marketplaces
+- `extraKnownMarketplaces` — Add organization-approved marketplace URLs in managed settings
+
+### Private Repository Authentication
+
+For private marketplace repositories, set authentication tokens:
+
+- `GITHUB_TOKEN` — GitHub private repos
+- `GITLAB_TOKEN` — GitLab private repos
+- `BITBUCKET_TOKEN` — Bitbucket private repos
+
+See `references/distribution-patterns.md` for detailed authentication setup.
+
+### Reserved Marketplace Names
+
+Anthropic reserves certain marketplace names. Avoid using names that could conflict with official marketplaces.
+
+### URL-Based Marketplace Limitations
+
+Relative paths in plugin source configurations may not resolve correctly in URL-based marketplaces. Use absolute paths or repository-based sources for reliable resolution.
 
 ## Best Practices
 

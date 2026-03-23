@@ -32,9 +32,11 @@ Before contributing, ensure you have:
   gh auth login
   ```
 - **Git**: For version control
-- **Node.js**: For markdownlint (optional but recommended)
+- **markdownlint-cli2** and **prettier**: For linting (should be available globally)
   ```bash
-  npm install -g markdownlint-cli
+  # Verify they're installed
+  markdownlint-cli2 --version
+  prettier --version
   ```
 
 ### Understanding the Project
@@ -48,15 +50,15 @@ Before contributing, ensure you have:
 
    ```
    plugins/plugin-dev/
-   ├── commands/      # 3 slash commands
-   ├── skills/        # 9 skills
+   ├── commands/      # 4 slash commands
+   ├── skills/        # 10 skills
    └── agents/        # 3 specialized agents
    ```
 
 3. **Understand the plugin components**:
-   - 9 skills for different plugin development aspects
+   - 10 skills for different plugin development aspects
    - 3 agents for validation and generation
-   - 3 slash commands: `/plugin-dev:start` (entry point), `/plugin-dev:create-plugin`, `/plugin-dev:create-marketplace`
+   - 4 slash commands: `/plugin-dev:start`, `/plugin-dev:create-plugin`, `/plugin-dev:create-marketplace`, `/plugin-dev:plugin-dev-guide`
 
 ## Development Setup
 
@@ -137,10 +139,11 @@ All markdown files must follow the repository's style:
 
 ```bash
 # Lint before committing
-markdownlint '**/*.md' --ignore node_modules
+markdownlint-cli2 '**/*.md'
 
-# Auto-fix issues
-markdownlint '**/*.md' --ignore node_modules --fix
+# Format with prettier
+prettier --check '**/*.md'
+prettier --write '**/*.md'  # fix formatting issues
 ```
 
 ### YAML Linting
@@ -382,10 +385,10 @@ gh repo delete test-plugin-repo --yes
 
 ```bash
 # Lint all markdown
-markdownlint '**/*.md' --ignore node_modules --fix
+markdownlint-cli2 '**/*.md'
 
-# Check specific files
-markdownlint plugins/plugin-dev/commands/your-command.md
+# Format with prettier
+prettier --write '**/*.md'
 ```
 
 ### 3. Commit Your Changes

@@ -10,14 +10,18 @@ MCP servers support multiple authentication methods depending on the server type
 
 ### How It Works
 
-Claude Code automatically handles the complete OAuth 2.0 flow for SSE and HTTP servers:
+Claude Code automatically handles the complete OAuth 2.0 flow (with PKCE) for SSE and HTTP servers:
 
 1. User attempts to use MCP tool
-2. Claude Code detects authentication needed
-3. Opens browser for OAuth consent
-4. User authorizes in browser
-5. Tokens stored securely by Claude Code
-6. Automatic token refresh
+2. Claude Code detects authentication is needed
+3. Initiates OAuth 2.0 Authorization Code flow with PKCE (Proof Key for Code Exchange)
+4. Opens browser for OAuth consent
+5. User authorizes in browser
+6. Claude Code exchanges the authorization code for tokens
+7. Tokens stored securely by Claude Code
+8. Automatic token refresh using refresh tokens
+
+PKCE provides additional security for public clients by preventing authorization code interception attacks. Claude Code also supports pre-configured OAuth credentials for MCP servers that provide them.
 
 ### Configuration
 
@@ -83,6 +87,23 @@ Tokens are stored securely by Claude Code:
 
 - Claude Code auto-refreshes
 - If refresh fails, prompts re-authentication
+
+## CLI OAuth Setup
+
+For MCP servers requiring OAuth 2.0, use CLI flags to pre-configure credentials:
+
+```bash
+claude mcp add --transport http my-service https://api.example.com/mcp \
+  --client-id "your-client-id" \
+  --client-secret \
+  --callback-port 8080
+```
+
+- `--client-id` — OAuth client ID
+- `--client-secret` — prompts for secret (hidden input); or set `MCP_CLIENT_SECRET` env var
+- `--callback-port` — local port for OAuth callback (default varies by server)
+
+For interactive OAuth setup, use the `/mcp` command within Claude Code to authenticate via browser.
 
 ## Token-Based Authentication
 

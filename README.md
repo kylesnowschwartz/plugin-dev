@@ -33,7 +33,7 @@ A comprehensive toolkit for developing Claude Code plugins with expert guidance 
 
 ## Overview
 
-The plugin-dev toolkit provides **9 specialized skills**, **3 validation agents**, and **3 slash commands** to help you build high-quality Claude Code plugins:
+The plugin-dev toolkit provides **10 specialized skills**, **3 validation agents**, and **4 slash commands** to help you build high-quality Claude Code plugins:
 
 - **Skills** provide domain expertise loaded on-demand via trigger phrases
 - **Agents** automate validation and generation tasks
@@ -130,7 +130,7 @@ Skills load automatically when you ask relevant questions. Each skill includes c
 
 Each skill provides:
 
-- **Core SKILL.md** (~1,000-2,200 words) - Essential API reference
+- **Core SKILL.md** (~1,500-2,500 words) - Essential API reference
 - **references/** - Detailed guides and patterns
 - **examples/** - Complete working code for copy-paste
 - **scripts/** - Validation and testing utilities
@@ -392,7 +392,7 @@ To contribute improvements:
 1. Fork this repository
 2. Make changes to `plugins/plugin-dev/`
 3. Test locally with `claude --plugin-dir plugins/plugin-dev`
-4. Run linters: `markdownlint '**/*.md'` and `shellcheck plugins/plugin-dev/skills/*/scripts/*.sh`
+4. Run linters: `markdownlint-cli2 '**/*.md'` and `shellcheck plugins/plugin-dev/skills/*/scripts/*.sh`
 5. Create a PR with your changes
 
 ## Getting Help

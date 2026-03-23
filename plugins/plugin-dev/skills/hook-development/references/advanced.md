@@ -169,6 +169,14 @@ Use transcript and session context for intelligent decisions:
 
 The LLM can read the transcript file and make context-aware decisions.
 
+**Response format:** Agent hooks use the same response schema as prompt hooks:
+
+```json
+{ "ok": true, "reason": "Explanation of decision" }
+```
+
+Agent hooks can also use tool access for multi-turn verification (up to 50 turns). Default timeout: 60 seconds.
+
 ## Performance Optimization
 
 ### Caching Validation Results
@@ -480,6 +488,383 @@ if [ ! -f "$file_path" ]; then
   exit 0
 fi
 ```
+
+## Scoped Hooks in Skill/Agent Frontmatter
+
+Hooks can be defined directly in skill or agent YAML frontmatter, scoping them to activate only when that component is in use.
+
+### Concept
+
+Unlike `hooks.json` (global, always active when plugin enabled) or settings hooks (user-level), scoped hooks are lifecycle-bound to a specific skill or agent. They activate when the component loads and deactivate when it completes.
+
+### Format
+
+The `hooks` field in frontmatter uses the same event/matcher/hook structure as `hooks.json`:
+
+```yaml
+---
+name: secure-writer
+description: Write files with safety validation...
+hooks:
+  PreToolUse:
+    - matcher: Write
+      hooks:
+        - type: command
+          command: "${CLAUDE_PLUGIN_ROOT}/scripts/validate-write.sh"
+          timeout: 10
+  PostToolUse:
+    - matcher: Write
+      hooks:
+        - type: command
+          command: "${CLAUDE_PLUGIN_ROOT}/scripts/post-write-check.sh"
+---
+```
+
+### Supported Events
+
+Only a subset of hook events apply in frontmatter scope:
+
+| Event         | Purpose in Frontmatter                                                                             |
+| ------------- | -------------------------------------------------------------------------------------------------- |
+| `PreToolUse`  | Validate or block tool calls during skill execution                                                |
+| `PostToolUse` | Run checks after tool execution during skill use                                                   |
+| `Stop`        | Verify completion criteria before skill/agent finishes (auto-converted to SubagentStop for agents) |
+
+Session-level events (`SessionStart`, `UserPromptSubmit`, `Notification`, etc.) don't apply — they operate at a different lifecycle scope.
+
+### Comparison with hooks.json
+
+| Aspect         | `hooks.json`                               | Frontmatter `hooks`                                 |
+| -------------- | ------------------------------------------ | --------------------------------------------------- |
+| Scope          | Global (always active when plugin enabled) | Component-specific (active only during use)         |
+| Events         | All 11+ hook events                        | PreToolUse, PostToolUse, Stop                       |
+| Location       | `hooks/hooks.json` file                    | YAML frontmatter in SKILL.md or agent .md           |
+| Merge behavior | Merges with user/project hooks             | Merges with global hooks during component lifecycle |
+
+### Use Cases
+
+- **Skill-specific validation:** A "database writer" skill that validates SQL before execution
+- **Restricted workflows:** A "deploy" skill that checks branch and test status before allowing Bash commands
+- **Quality gates:** A "code generator" skill that runs linting after every Write operation
+- **Agent safety:** An autonomous agent that validates all Bash commands before execution
+
+### Both Hook Types Work
+
+**Command hook** (deterministic script execution):
+
+```yaml
+hooks:
+  PreToolUse:
+    - matcher: Bash
+      hooks:
+        - type: command
+          command: "${CLAUDE_PLUGIN_ROOT}/scripts/check-safety.sh"
+```
+
+**Prompt hook** (LLM evaluation):
+
+```yaml
+hooks:
+  Stop:
+    - hooks:
+        - type: prompt
+          prompt: 'Verify all generated code has tests. Return {"decision": "stop"} if satisfied or {"decision": "continue", "reason": "missing tests"} if not.'
+```
+
+## Agent Hook Type
+
+The `agent` hook type spawns a subagent for complex, multi-step verification workflows that require tool access.
+
+### Concept
+
+While `command` hooks execute bash scripts and `prompt` hooks evaluate a single LLM prompt, `agent` hooks create a full subagent that can use tools (Read, Bash, Grep, etc.) to perform thorough verification. This is the most powerful but most expensive hook type.
+
+### Configuration
+
+```json
+{
+  "type": "agent",
+  "prompt": "Verify that all generated code has tests and passes linting. Check each modified file.",
+  "timeout": 120
+}
+```
+
+### Supported Events
+
+Agent hooks are supported on **Stop** and **SubagentStop** events only. They aren't suitable for PreToolUse (too slow) or session-level events.
+
+### When to Use Agent Hooks
+
+| Hook Type | Speed           | Capability            | Best For                                      |
+| --------- | --------------- | --------------------- | --------------------------------------------- |
+| `command` | Fast (~1-5s)    | Bash scripts only     | Deterministic checks, file validation         |
+| `prompt`  | Medium (~5-15s) | Single LLM evaluation | Context-aware decisions, flexible logic       |
+| `agent`   | Slow (~30-120s) | Multi-step with tools | Comprehensive verification, multi-file checks |
+
+Use agent hooks when:
+
+- Verification requires reading multiple files
+- You need to run commands and analyze their output
+- Single-prompt evaluation is insufficient
+- Completion criteria are complex and multi-faceted
+
+### Example: Comprehensive Completion Check
+
+```json
+{
+  "Stop": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "agent",
+          "prompt": "Before approving task completion, verify: 1) All modified files have corresponding tests, 2) Tests pass (run them), 3) No linting errors exist. Report findings and return approve/block decision.",
+          "timeout": 120
+        }
+      ]
+    }
+  ]
+}
+```
+
+The agent will autonomously read files, run tests, check linting, and make a comprehensive decision about whether to allow the main agent to stop.
+
+## Handler Configuration Fields
+
+Beyond `type`, `command`/`prompt`, and `timeout`, hook handlers support additional fields:
+
+### once
+
+```json
+{
+  "type": "command",
+  "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/init.sh",
+  "once": true
+}
+```
+
+When `true`, the hook runs only once per session and is then auto-removed. Useful for one-time initialization hooks in scoped contexts (skills/agents).
+
+### statusMessage
+
+```json
+{
+  "type": "command",
+  "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh",
+  "statusMessage": "Validating file write..."
+}
+```
+
+Display text shown in the UI while the hook is executing. Helps users understand what's happening during longer hook operations.
+
+## Event-Specific Matchers
+
+Some hook events support matcher values beyond tool names:
+
+| Event         | Matcher Values                                                                 |
+| ------------- | ------------------------------------------------------------------------------ |
+| SessionStart  | `startup`, `resume`, `clear`, `compact`                                        |
+| SessionEnd    | `clear`, `logout`, `prompt_input_exit`, `bypass_permissions_disabled`, `other` |
+| Notification  | `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog`       |
+| PreCompact    | `manual`, `auto`                                                               |
+| SubagentStart | Agent type name (e.g., `Bash`, `Explore`, `Plan`, or custom agent names)       |
+| SubagentStop  | Agent type name (same as SubagentStart)                                        |
+| PreToolUse    | Tool name (exact, regex, or `*` wildcard)                                      |
+
+## Decision Control Output Schemas
+
+Different hook events support different output formats for controlling Claude's behavior.
+
+### PreToolUse Decision Control
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    "permissionDecision": "allow|deny|ask",
+    "permissionDecisionReason": "Explanation",
+    "updatedInput": { "field": "modified_value" },
+    "additionalContext": "Extra context for Claude"
+  }
+}
+```
+
+- `permissionDecision`: `allow` (proceed), `deny` (block), `ask` (prompt user)
+- `updatedInput`: Optionally modify tool parameters before execution
+- `additionalContext`: Injected into Claude's context
+
+### PermissionRequest Decision Control
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PermissionRequest",
+    "decision": {
+      "behavior": "allow|deny",
+      "updatedInput": {},
+      "updatedPermissions": {},
+      "message": "Reason for denial",
+      "interrupt": false
+    }
+  }
+}
+```
+
+- `behavior`: `allow` or `deny`
+- `updatedInput`: Modified tool parameters (only with `allow`)
+- `updatedPermissions`: Permission changes (only with `allow`)
+- `message`: Shown to user (only with `deny`)
+- `interrupt`: If true with `deny`, stops the current operation
+
+### PostToolUse / Stop / UserPromptSubmit Decision Control
+
+These events share a simpler top-level schema:
+
+```json
+{
+  "decision": "block",
+  "reason": "Explanation of why the action is blocked"
+}
+```
+
+- `decision`: Set to `"block"` to prevent the action (stopping, prompt processing, etc.)
+- `reason`: Required when blocking; fed back to Claude or shown to user
+
+PostToolUse specifically supports an additional field for replacing MCP tool output:
+
+```json
+{
+  "updatedMCPToolOutput": "Replacement output for MCP tool response"
+}
+```
+
+This allows hooks to replace what Claude sees as the MCP tool response before processing. Only applies to MCP tools in PostToolUse events.
+
+### PostToolUseFailure Decision Control
+
+PostToolUseFailure supports providing additional context to help Claude handle the failure:
+
+```json
+{
+  "additionalContext": "Extra context to help Claude handle the failure"
+}
+```
+
+### TeammateIdle and TaskCompleted
+
+These events use **exit codes only** for decision control (no JSON output):
+
+- Exit code `0`: Allow (teammate goes idle / task marked complete)
+- Exit code `2`: Block — stderr is fed back to the teammate/model as feedback
+
+### Common Output Fields (All Hooks)
+
+These fields can be included in any hook's JSON output:
+
+```json
+{
+  "continue": true,
+  "stopReason": "Critical error, halting all processing",
+  "suppressOutput": false,
+  "systemMessage": "Warning message for the user"
+}
+```
+
+- `continue`: If `false`, halts all processing (default: `true`)
+- `stopReason`: Message when `continue` is `false`
+- `suppressOutput`: Hide hook output from transcript (default: `false`)
+- `systemMessage`: Warning/info message shown to the user
+
+## TeammateIdle and TaskCompleted Events
+
+These events support quality gates in agent team workflows.
+
+### TeammateIdle
+
+Fires when a teammate is about to go idle (stop processing). Use to keep teammates working or validate their output.
+
+**Input schema:**
+
+```json
+{
+  "session_id": "...",
+  "teammate_name": "researcher",
+  "team_name": "my-project"
+}
+```
+
+**Example hook:**
+
+```json
+{
+  "TeammateIdle": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/check-teammate.sh"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### TaskCompleted
+
+Fires when a task is marked complete. Use to verify task quality before accepting completion.
+
+**Input schema:**
+
+```json
+{
+  "session_id": "...",
+  "task_id": "123",
+  "task_subject": "Implement feature X",
+  "task_description": "...",
+  "teammate_name": "implementer",
+  "team_name": "my-project"
+}
+```
+
+**Example hook:**
+
+```json
+{
+  "TaskCompleted": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/verify-task.sh"
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Async Hooks
+
+Command hooks can run asynchronously in the background without blocking the main flow:
+
+```json
+{
+  "type": "command",
+  "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/log-event.sh",
+  "async": true
+}
+```
+
+**Key constraints:**
+
+- Only available on `type: "command"` hooks (not prompt or agent)
+- Cannot block or control behavior — the action proceeds immediately
+- Response fields (`decision`, `hookSpecificOutput`) have no effect
+- Useful for logging, metrics collection, and fire-and-forget notifications
+- Uses the same `timeout` field (default: 600 seconds)
 
 ## Conclusion
 

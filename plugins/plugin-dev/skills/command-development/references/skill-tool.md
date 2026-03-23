@@ -6,6 +6,8 @@ How Claude programmatically invokes slash commands and skills during conversatio
 
 The Skill tool enables Claude to programmatically execute both slash commands and Agent Skills without user typing. This allows Claude to autonomously invoke these capabilities as part of complex workflows, chain them together, or use them in response to user requests.
 
+> **Key Insight:** Commands and skills are the same mechanism. Both are invoked via the Skill tool. Commands are simple (single `.md` file); skills are complex (directory with bundled resources).
+>
 > **Note:** In earlier versions of Claude Code, slash command invocation was provided by a separate `SlashCommand` tool. This has been merged into the `Skill` tool.
 
 **Key concepts:**

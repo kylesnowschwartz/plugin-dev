@@ -1,7 +1,7 @@
 ---
 name: command-development
 version: 0.2.0
-description: This skill should be used when the user asks to "create a slash command", "add a command", "write a custom command", "define command arguments", "use command frontmatter", "organize commands", "create command with file references", "interactive command", "use AskUserQuestion in command", "Skill tool", "programmatic command invocation", "disable-model-invocation", "prevent Claude from running command", "debug command", "command debugging", "troubleshoot command", or needs guidance on slash command structure, YAML frontmatter fields, dynamic arguments, bash execution in commands, user interaction patterns, programmatic invocation control, debugging commands, or command development best practices for Claude Code.
+description: This skill should be used when the user asks to "create a slash command", "add a command", "write a custom command", "define command arguments", "use command frontmatter", "organize commands", "create command with file references", "interactive command", "use AskUserQuestion in command", "Skill tool", "programmatic command invocation", "disable-model-invocation", "prevent Claude from running command", "debug command", "command debugging", "troubleshoot command", "commands vs skills", "Skill tool mechanism", "load-time injection", "runtime execution", or needs guidance on slash command structure, YAML frontmatter fields, dynamic arguments, bash execution in commands, user interaction patterns, programmatic invocation control, debugging commands, or command development best practices for Claude Code.
 ---
 
 # Command Development for Claude Code
@@ -393,6 +393,28 @@ This is intentional. When skill content loads into Claude's context, `[BANG]` fo
 
 **Implementation details:**
 For advanced patterns, environment-specific configurations, and plugin integration, see `references/plugin-features-reference.md`
+
+### Load-Time Injection vs Runtime Execution
+
+The `[BANG]` syntax performs **load-time context injection**: commands execute when the skill or command is loaded, and their output becomes static text in the prompt Claude receives. This is different from Claude choosing to run commands at runtime via the Bash tool. Use `[BANG]` for gathering context (git status, environment variables, config files) that informs Claude's starting state, not for actions Claude should perform during the task.
+
+### Commands and Skills: Same Mechanism, Different Complexity
+
+Commands and skills are both invoked via the same **Skill tool**. The difference is organizational complexity:
+
+| Aspect    | Commands                        | Skills                            |
+| --------- | ------------------------------- | --------------------------------- |
+| Location  | `commands/`                     | `skills/name/`                    |
+| Format    | Single `.md` file               | `SKILL.md` + optional resources   |
+| Resources | None                            | scripts/, references/, examples/  |
+| Best for  | Quick prompts, simple workflows | Complex knowledge, bundled assets |
+
+**Invocation control** (works for both):
+
+- `disable-model-invocation: true` → User-only (for side effects: deploy, commit)
+- Default → Both Claude and user can invoke
+
+**When to graduate a command to a skill**: If you need scripts, reference files, or progressive disclosure, convert the command to a skill. See the `skill-development` skill for guidance.
 
 ## Command Organization
 

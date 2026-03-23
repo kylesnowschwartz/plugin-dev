@@ -61,7 +61,7 @@ rg 'Version.*v[0-9]' CLAUDE.md
 
 ```bash
 # Lint markdown files
-markdownlint '**/*.md' --ignore node_modules
+markdownlint-cli2 '**/*.md'
 
 # Verify version consistency
 rg '"version"' plugins/plugin-dev/.claude-plugin/plugin.json .claude-plugin/marketplace.json

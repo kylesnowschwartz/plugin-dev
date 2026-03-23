@@ -136,6 +136,12 @@ for event in $(jq -r 'keys[]' "$HOOKS_FILE"); do
           echo "❌ ${event}[$i].hooks[$j]: $ht_label hooks must have 'prompt' field"
           ((error_count++))
         fi
+
+        # Check if prompt-based hooks are used on supported events
+        if [ "$hook_type" = "prompt" ] && [ "$event" != "Stop" ] && [ "$event" != "SubagentStop" ] && [ "$event" != "UserPromptSubmit" ] && [ "$event" != "PreToolUse" ]; then
+          echo "⚠️  ${event}[$i].hooks[$j]: Prompt hooks may not be fully supported on $event (best on Stop, SubagentStop, UserPromptSubmit, PreToolUse)"
+          ((warning_count++))
+        fi
         ;;
       http)
         url=$(jq -r ".\"$event\"[$i].hooks[$j].url // empty" "$HOOKS_FILE")

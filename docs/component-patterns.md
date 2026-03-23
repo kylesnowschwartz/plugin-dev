@@ -10,8 +10,14 @@ Agents require YAML frontmatter with:
 - `description`: Starts with "Use this agent when...", includes `<example>` blocks
 - `model`: inherit/sonnet/opus/haiku
 - `color`: blue/cyan/green/yellow/magenta/red
-- `tools`: Comma-separated list of allowed tools (optional)
+- `tools`: Comma-separated list of allowed tools (optional, allowlist)
+- `disallowedTools`: Comma-separated list of blocked tools (optional, denylist — use one or the other)
 - `skills`: Comma-separated list of skills the agent can load (optional)
+- `permissionMode`: default/acceptEdits/delegate/dontAsk/bypassPermissions/plan (optional)
+- `maxTurns`: Number limiting agentic turns (optional)
+- `memory`: user/project/local for persistent memory (optional)
+- `mcpServers`: Scoped MCP server access (optional)
+- `hooks`: Lifecycle hooks scoped to agent (optional)
 
 ## Skills
 
@@ -43,20 +49,28 @@ Commands are markdown files with frontmatter:
 
 ## Skills/Agents Optional Frontmatter
 
-Both skills and agents support `allowed-tools` to restrict tool access:
+**Skills** use `allowed-tools`:
 
 ```yaml
 allowed-tools: Read, Grep, Glob # Read-only skill
 ```
 
-Use for read-only workflows, security-sensitive tasks, or limited-scope operations.
+**Agents** use `tools` (allowlist) or `disallowedTools` (denylist):
+
+```yaml
+tools: Read, Grep, Glob # Allowlist
+# OR
+disallowedTools: Bash, Write # Denylist
+```
+
+> **Note:** Field names differ — skills use `allowed-tools`, agents use `tools`/`disallowedTools`.
 
 ## Hooks
 
 Hooks defined in `hooks/hooks.json`:
 
-- Events: PreToolUse, PermissionRequest, PostToolUse, Stop, SubagentStop, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, Notification
-- Types: `prompt` (LLM-driven) or `command` (bash scripts)
+- Events: PreToolUse, PermissionRequest, PostToolUse, PostToolUseFailure, Stop, SubagentStart, SubagentStop, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, Notification, TeammateIdle, TaskCompleted
+- Types: `prompt` (LLM-driven), `command` (bash scripts), or `agent` (multi-step with tools)
 - Use matchers for tool filtering (e.g., "Write|Edit", "\*")
 
 ### Plugin hooks.json Format

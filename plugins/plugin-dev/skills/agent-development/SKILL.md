@@ -1,7 +1,6 @@
 ---
 name: agent-development
-version: 0.2.0
-description: This skill should be used when the user asks to "create an agent", "add an agent", "write a subagent", "agent frontmatter", "when to use description", "agent examples", "agent tools", "agent colors", "autonomous agent", or needs guidance on agent structure, system prompts, triggering conditions, or agent development best practices for Claude Code plugins.
+description: This skill should be used when the user asks to "create an agent", "add an agent", "write a subagent", "agent frontmatter", "when to use description", "agent examples", "agent tools", "agent colors", "autonomous agent", "disallowedTools", "block tools", "agent denylist", "maxTurns", "agent memory", "mcpServers in agent", "agent hooks", "background agent", "resume agent", "agent teams", "permission rules", "permission mode", "delegate mode", "agent team", "team lead", "teammate", "multi-agent", or needs guidance on agent structure, system prompts, triggering conditions, or agent development best practices for Claude Code plugins.
 ---
 
 # Agent Development for Claude Code Plugins
@@ -252,6 +251,27 @@ tools: Read, Write, Grep, Bash
 
 > **Important:** Agents use `tools` while Skills use `allowed-tools`. The field names differ between component types. For skill tool restrictions, see the `skill-development` skill.
 
+### disallowedTools (optional)
+
+Denylist complement to `tools`. Block specific tools while allowing all others:
+
+```yaml
+disallowedTools: Bash, Write
+```
+
+**Format:** Comma-separated tool names
+
+**Default:** No tools blocked
+
+| Field             | Approach  | Use When                                |
+| ----------------- | --------- | --------------------------------------- |
+| `tools`           | Allowlist | Few tools needed, restrict to minimum   |
+| `disallowedTools` | Denylist  | Most tools needed, block specific risks |
+
+**Best practice:** Prefer `tools` (allowlist) for tighter security. Use `disallowedTools` when an agent needs broad access but specific tools are dangerous.
+
+> **Note:** Use one or the other. If both are specified, behavior is undefined.
+
 ### skills (optional)
 
 Load specific skills into the agent's context:
@@ -281,14 +301,72 @@ permissionMode: acceptEdits
 
 **Values:**
 
-- `acceptEdits` - Auto-accept file edit operations (Write, Edit)
+- `default` - Standard permission model, prompts user for each action (implicit when omitted)
+- `acceptEdits` - Auto-accept file edit operations (Write, Edit, NotebookEdit)
 - `dontAsk` - Skip permission dialogs for all operations
 - `bypassPermissions` - Full bypass (requires trust)
 - `plan` - Planning mode, propose changes without executing
+- `delegate` - Coordination-only, restricted to team management tools (spawn, message, manage tasks)
 
 **Default:** Standard permission model (asks user)
 
 **Security note:** Use restrictive modes (`plan`, `acceptEdits`) for untrusted agents. `bypassPermissions` should only be used for fully trusted agents.
+
+See `references/permission-modes-rules.md` for complete permission mode details and rule syntax.
+
+### maxTurns (optional)
+
+Limit the maximum number of agentic turns before the agent stops:
+
+```yaml
+maxTurns: 50
+```
+
+**Use cases:**
+
+- Prevent runaway agents from consuming excessive resources
+- Set reasonable bounds for task complexity
+- Higher values (50-100) for complex multi-file tasks; lower values (10-20) for focused checks
+
+If omitted, the agent runs until it completes or the user interrupts.
+
+### memory (optional)
+
+Enable persistent memory across sessions:
+
+```yaml
+memory: user
+```
+
+**Scopes:** `user` (~/.claude/agent-memory/), `project` (.claude/agent-memory/), `local` (.claude/agent-memory-local/)
+
+When enabled, the agent's first 200 lines of `MEMORY.md` are auto-injected into its system prompt. The agent can read/write its memory directory to learn across sessions. See `references/advanced-agent-fields.md` for details.
+
+### mcpServers (optional)
+
+Scope MCP servers to this agent:
+
+```yaml
+mcpServers:
+  slack:
+```
+
+Reference an already-configured server by name, or provide inline config. Restricts which MCP servers the agent can access. See `references/advanced-agent-fields.md` for configuration examples.
+
+### hooks (optional)
+
+Define lifecycle hooks scoped to this agent:
+
+```yaml
+hooks:
+  PreToolUse:
+    - matcher: Bash
+      hooks:
+        - type: command
+          command: "${CLAUDE_PLUGIN_ROOT}/scripts/validate-bash.sh"
+```
+
+Supports all hook events. Note: `Stop` hooks in agent frontmatter are auto-converted to `SubagentStop` at runtime. Hooks activate when the agent starts and deactivate when it finishes. See `references/advanced-agent-fields.md` for full details.
 
 ### Fields NOT Available for Agents
 
@@ -411,6 +489,8 @@ plugin-name/
 
 All `.md` files in `agents/` are auto-discovered.
 
+**Agent precedence:** `--agents` CLI flag > `.claude/agents/` (project) > `~/.claude/agents/` (personal) > Plugin `agents/` directory. Higher-priority agents with the same name shadow lower-priority ones. Use distinctive, namespaced names for plugin agents to avoid collisions.
+
 ### Portable Paths
 
 When referencing files within your plugin (scripts, references, etc.) from agent system prompts, use `${CLAUDE_PLUGIN_ROOT}` for portable paths:
@@ -471,15 +551,20 @@ Ensure system prompt is complete:
 
 ### Frontmatter Fields Summary
 
-| Field          | Required | Format                     | Example                  |
-| -------------- | -------- | -------------------------- | ------------------------ |
-| name           | Yes      | lowercase-hyphens          | code-reviewer            |
-| description    | Yes      | Text + examples            | Use when... <example>... |
-| model          | Yes      | inherit/sonnet/opus/haiku  | inherit                  |
-| color          | Yes      | Color name                 | blue                     |
-| tools          | No       | Comma-separated tool names | Read, Grep               |
-| skills         | No       | Array of skill names       | [testing, security]      |
-| permissionMode | No       | Permission mode string     | acceptEdits              |
+| Field            | Required | Format                     | Example                  |
+| ---------------- | -------- | -------------------------- | ------------------------ |
+| name             | Yes      | lowercase-hyphens          | code-reviewer            |
+| description      | Yes      | Text + examples            | Use when... <example>... |
+| model            | Yes      | inherit/sonnet/opus/haiku  | inherit                  |
+| color            | Yes      | Color name                 | blue                     |
+| tools            | No       | Comma-separated tool names | Read, Grep               |
+| disallowedTools  | No       | Comma-separated tool names | Bash, Write              |
+| skills           | No       | Array of skill names       | [testing, security]      |
+| permissionMode   | No       | Permission mode string     | acceptEdits              |
+| maxTurns         | No       | Integer                    | 50                       |
+| memory           | No       | Scope string               | user                     |
+| mcpServers       | No       | Server name map            | slack:                   |
+| hooks            | No       | Hook event map             | PreToolUse: [...]        |
 
 > **Note:** Agents use `tools` to restrict tool access. Skills use `allowed-tools` for the same purpose. The field names differ between component types.
 
@@ -503,6 +588,31 @@ Ensure system prompt is complete:
 - ❌ Write vague system prompts
 - ❌ Skip testing
 
+## Execution Modes
+
+Agents can run in foreground (blocking) or background (concurrent) mode:
+
+- **Foreground** (default): Blocks the main conversation until the agent completes
+- **Background**: Runs concurrently; permissions must be pre-approved at spawn time since the user can't be prompted
+
+Background agents that need an unapproved permission will fail. Plan tool restrictions accordingly.
+
+**MCP limitation:** MCP tools are unavailable in background subagents. If your agent relies on MCP tools (from the plugin's `.mcp.json`), it must run in foreground mode. Design agents that may run in background to use only built-in tools.
+
+**Resuming agents:** Each Task invocation creates a fresh agent. To continue with full prior context, ask Claude to "resume that agent" — it will restore the previous transcript.
+
+**Restricting spawnable agents:** Use `Task(agent_type1, agent_type2)` syntax in settings.json allow rules to control which agent types can be spawned. Omitting `Task` entirely prevents subagent spawning.
+
+**Built-in agent types:** Explore (read-only, Haiku), Plan (read-only research), general-purpose (all tools), Bash (terminal commands), statusline-setup (Haiku), Claude Code Guide (Haiku).
+
+## Agent Teams (Experimental)
+
+Agent teams enable multi-agent coordination where a team lead spawns and manages multiple independent Claude Code sessions as teammates. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
+
+Teams provide shared task lists, inter-agent messaging, and parallel execution. Use `permissionMode: delegate` to restrict a lead to coordination-only tools.
+
+This is an advanced feature — see the [official agent teams documentation](https://code.claude.com/docs/en/agent-teams) for details.
+
 ## Additional Resources
 
 ### Reference Files
@@ -512,6 +622,8 @@ For detailed guidance, consult:
 - **`references/system-prompt-design.md`** - Four system prompt patterns (Analysis, Generation, Validation, Orchestration) with complete templates and common pitfalls
 - **`references/triggering-examples.md`** - Example block anatomy, four example types, template library, and debugging guide
 - **`references/agent-creation-system-prompt.md`** - The exact prompt used by Claude Code's agent generation feature with usage patterns
+- **`references/advanced-agent-fields.md`** - Detailed docs for maxTurns, memory, mcpServers, hooks, execution modes, and agent teams
+- **`references/permission-modes-rules.md`** - Complete permission mode details and permission rule syntax for fine-grained access control
 
 ### Example Files
 

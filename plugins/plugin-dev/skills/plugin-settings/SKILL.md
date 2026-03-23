@@ -1,7 +1,7 @@
 ---
 name: plugin-settings
 version: 0.1.0
-description: This skill should be used when the user asks about "plugin settings", "store plugin configuration", "user-configurable plugin", ".local.md files", "plugin state files", "read YAML frontmatter", "per-project plugin settings", or wants to make plugin behavior configurable. Documents the .claude/plugin-name.local.md pattern for storing plugin-specific configuration with YAML frontmatter and markdown content.
+description: This skill should be used when the user asks about "plugin settings", "store plugin configuration", "user-configurable plugin", ".local.md files", "plugin state files", "read YAML frontmatter", "per-project plugin settings", "CLAUDE.md imports", "rules system", "memory hierarchy", "memory priority", or wants to make plugin behavior configurable. Documents the .claude/plugin-name.local.md pattern for storing plugin-specific configuration with YAML frontmatter and markdown content.
 ---
 
 # Plugin Settings Pattern for Claude Code Plugins
@@ -526,6 +526,16 @@ if [[ ! -f ".claude/my-plugin.local.md" ]]; then
 fi
 ```
 
+## Memory & Rules Context
+
+### Settings Scope Precedence
+
+Settings follow precedence: Managed > CLI flags > Local (`.claude/settings.local.json`) > Project (`.claude/settings.json`) > User (`~/.claude/settings.json`). Plugin hooks and MCP servers are merged across scopes, not replaced. A plugin-settings `.local.md` file is separate from this system -- it's a custom per-project state file your plugin reads directly.
+
+Plugin settings files (`.local.md`) exist alongside Claude Code's broader memory and rules system. Understanding how CLAUDE.md imports, `.claude/rules/` path-specific rules, and the memory priority hierarchy interact with plugin content helps design plugins that complement rather than conflict with user configurations.
+
+See `references/memory-rules-system.md` for the full priority hierarchy, import syntax, and design implications.
+
 ## Additional Resources
 
 ### Reference Files
@@ -534,6 +544,7 @@ For detailed implementation patterns:
 
 - **`references/parsing-techniques.md`** - Complete guide to parsing YAML frontmatter and markdown bodies
 - **`references/real-world-examples.md`** - Deep dive into multi-agent-swarm and ralph-wiggum implementations
+- **`references/memory-rules-system.md`** - How plugin content interacts with CLAUDE.md, rules, and the memory hierarchy
 
 ### Example Files
 

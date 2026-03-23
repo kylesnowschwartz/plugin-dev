@@ -1,7 +1,7 @@
 ---
 name: skill-development
 version: 0.2.0
-description: This skill should be used when the user asks to "create a skill", "add a skill to plugin", "write a new skill", "improve skill description", "organize skill content", "SKILL.md format", "skill frontmatter", "skill triggers", "trigger phrases for skills", "progressive disclosure", "skill references folder", "skill examples folder", "validate skill", or needs guidance on skill structure, file organization, writing style, or skill development best practices for Claude Code plugins.
+description: This skill should be used when the user asks to "create a skill", "add a skill to plugin", "write a new skill", "improve skill description", "organize skill content", "SKILL.md format", "skill frontmatter", "skill triggers", "trigger phrases for skills", "progressive disclosure", "skill references folder", "skill examples folder", "validate skill", "skill model field", "skill hooks", "scoped hooks in skill", "visibility budget", "context budget", "SLASH_COMMAND_TOOL_CHAR_BUDGET", "skill permissions", "Skill() syntax", "visual output", "skill precedence", "argument-hint", or needs guidance on skill structure, file organization, writing style, or skill development best practices for Claude Code plugins.
 ---
 
 # Skill Development for Claude Code Plugins
@@ -21,6 +21,7 @@ equipped with procedural knowledge that no model can fully possess.
 2. Tool integrations - Instructions for working with specific file formats or APIs
 3. Domain expertise - Company-specific knowledge, schemas, business logic
 4. Bundled resources - Scripts, references, and assets for complex and repetitive tasks
+5. Visual output generation — Scripts that produce HTML/interactive visualizations
 
 ### Anatomy of a Skill
 
@@ -38,6 +39,12 @@ skill-name/
     ├── references/       - Documentation intended to be loaded into context as needed
     └── assets/           - Files used in output (templates, icons, fonts, etc.)
 ```
+
+Both skills and commands are invoked via the Skill tool and share the same underlying mechanism. Commands are essentially simple skills stored as single `.md` files without bundled resources. See `references/commands-vs-skills.md` for a comparison.
+
+### Skill Precedence
+
+Skills follow precedence: Enterprise > Personal (`~/.claude/skills/`) > Project (`.claude/skills/`) > Plugin skills. Higher-priority skills with the same name shadow lower-priority ones. Use distinctive, namespaced names for plugin skills to avoid collisions.
 
 #### SKILL.md (required)
 
@@ -176,6 +183,35 @@ Use for skills that should only be manually invoked by users, such as:
 | `user-invocable: false`          | Hidden     | Allowed    | Yes            |
 | `disable-model-invocation: true` | Visible    | Blocked    | Yes            |
 
+##### model (optional)
+
+```yaml
+model: haiku
+```
+
+Values: `sonnet`, `opus`, `haiku`, `inherit` (default), or full model ID. See `references/advanced-frontmatter.md` for details.
+
+##### hooks (optional)
+
+```yaml
+hooks:
+  PreToolUse:
+    - matcher: Write
+      hooks:
+        - type: command
+          command: "${CLAUDE_PLUGIN_ROOT}/scripts/validate-write.sh"
+```
+
+Scoped hooks that activate when this skill is loaded and deactivate when it finishes. Supported events: `PreToolUse`, `PostToolUse`, `Stop`. See `references/advanced-frontmatter.md`.
+
+##### argument-hint (optional)
+
+```yaml
+argument-hint: "<file-path> [--verbose]"
+```
+
+Provides autocomplete hint text in the `/` menu. Cosmetic only; doesn't affect argument parsing.
+
 #### Bundled Resources (optional)
 
 ##### Scripts (`scripts/`)
@@ -218,6 +254,8 @@ Arguments passed: $ARGUMENTS
 **Available substitutions:**
 
 - `$ARGUMENTS` - Arguments passed when skill is invoked (e.g., `/skill-name arg1 arg2`)
+- `$ARGUMENTS[0]`, `$ARGUMENTS[1]` - Individual positional arguments (0-indexed)
+- `$1`, `$2`, `$3` - 1-indexed shorthand for positional arguments
 - `${CLAUDE_SESSION_ID}` - Current session identifier
 - `${CLAUDE_PLUGIN_ROOT}` - Plugin directory path
 
@@ -271,6 +309,18 @@ To create a skill, follow these six steps. For detailed instructions on each ste
 - **Description**: Use third-person ("This skill should be used when...") with specific trigger phrases
 - **Body**: Use imperative/infinitive form ("To create X, do Y"), not second person ("You should...")
 - **Size**: Target 1,500-2,000 words; move detailed content to references/
+
+### Visibility Budget
+
+Skill descriptions consume ~2% of context window (~16KB fallback). If total skill descriptions exceed this budget, some skills may be excluded from discovery. Controlled by `SLASH_COMMAND_TOOL_CHAR_BUDGET`.
+
+Keep descriptions concise but include trigger phrases. Skills with longer descriptions are more likely to be excluded when budget pressure is high. See `references/advanced-frontmatter.md` for optimization strategies.
+
+### Context Management for Plugins
+
+After auto-compaction, skill descriptions survive (they're re-injected), but skill body content may be lost. Users can re-invoke the skill to reload it. The `PreCompact` hook can preserve critical state before compaction occurs.
+
+When multiple plugins are installed, their skill descriptions share the same budget. Design descriptions to be distinctive and concise.
 
 ## Plugin-Specific Considerations
 
@@ -361,6 +411,9 @@ Before finalizing a skill:
 - [ ] (Optional) `skills` array if loading other skills (requires `context: fork`)
 - [ ] (Optional) `user-invocable` field if hiding from slash menu
 - [ ] (Optional) `disable-model-invocation` field if blocking programmatic use
+- [ ] (Optional) `model` field if overriding default model
+- [ ] (Optional) `hooks` field if using scoped hooks
+- [ ] (Optional) `argument-hint` field for autocomplete hints
 - [ ] Markdown body is present and substantial
 - [ ] Referenced files actually exist
 
@@ -461,6 +514,8 @@ For detailed guidance, consult:
 
 - **`references/skill-creation-workflow.md`** - Plugin-specific skill creation workflow (recommended for plugin skills)
 - **`references/skill-creator-original.md`** - Original generic skill-creator methodology (includes init/packaging scripts for standalone skills)
+- **`references/advanced-frontmatter.md`** - Model, hooks, argument-hint, and visibility budget details
+- **`references/commands-vs-skills.md`** - Comparison of commands and skills formats
 
 ### Study These Skills
 

@@ -585,3 +585,39 @@ Effective MCP tool usage requires:
 6. **Testing thoroughly** before deployment
 
 Follow these patterns for robust MCP tool integration in your plugin commands and agents.
+
+## MCP Prompts as Commands
+
+Beyond tools and resources, MCP servers can expose **prompts** — pre-defined instruction templates that appear as slash commands in Claude Code.
+
+### How Prompts Work
+
+When an MCP server declares prompts via the MCP protocol, Claude Code automatically registers them as slash commands:
+
+- **Format:** `/mcp__servername__promptname`
+- **Discovery:** Prompts appear in the `/` autocomplete menu alongside regular commands
+- **Arguments:** Prompts can accept arguments defined by the server's prompt schema
+
+### Integration with Plugin Commands
+
+If your plugin bundles an MCP server that exposes prompts, those prompts become available when the plugin is installed. This provides another mechanism for guided workflows:
+
+```markdown
+# Example: Plugin README documenting MCP prompts
+
+## Available MCP Prompts
+
+After installing this plugin, the following MCP prompts are available:
+
+- `/mcp__myserver__create-report` - Generate a structured report
+- `/mcp__myserver__analyze-data` - Run data analysis with guided inputs
+```
+
+### When to Use MCP Prompts vs Plugin Commands
+
+| Approach | Best For |
+| --- | --- |
+| MCP prompts | Server-defined workflows, dynamic templates from external services |
+| Plugin commands | Static workflows, plugin-specific logic, complex prompt composition |
+
+**Tip:** MCP prompts are ideal when the workflow logic lives on the server side and may change independently of the plugin. Plugin commands are better when you want full control over the prompt content.
