@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-03-27
+
+### Added
+
+- **agent-development**: `initialPrompt` frontmatter field for auto-submitting a first turn when agent runs as main session agent
+- **hook-development**: `CwdChanged` event for reactive environment management on directory changes (supports `CLAUDE_ENV_FILE` and `watchPaths`)
+- **hook-development**: `FileChanged` event for watching file changes with basename matcher support
+- **plugin-structure**: `userConfig` manifest field for plugin-configurable values prompted at enable time, with keychain storage for sensitive values
+- **skill-development**: `paths` frontmatter field accepting YAML list of globs for file-scoped skill activation
+- **mcp-integration**: MCP description limits section documenting the 2KB cap on tool descriptions and server instructions
+
+### Changed
+
+- **hook-development**: Updated event count from 22 to 24 across skill, quick reference table, and hook type support matrix
+- **hook-development**: `WorktreeCreate` now documents HTTP hook support with `hookSpecificOutput.worktreePath` response format
+
 ## [0.4.1] - 2026-03-24
 
 ### Documentation

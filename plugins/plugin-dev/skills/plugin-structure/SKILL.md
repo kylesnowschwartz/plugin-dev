@@ -1,7 +1,7 @@
 ---
 name: plugin-structure
 version: 0.2.0
-description: This skill should be used when the user asks to "create a plugin", "scaffold a plugin", "understand plugin structure", "organize plugin components", "set up plugin.json", "use ${CLAUDE_PLUGIN_ROOT}", "add commands/agents/skills/hooks", "add lspServers", "configure auto-discovery", "headless mode", "CI mode", "plugin in CI", "github actions", "plugin caching", "plugin CLI", "install plugin", "installation scope", "auto-update", "validate plugin", "plugin validate", "debug plugin", "output styles", "outputStyles", "custom output format", "response formatting", "--verbose", or needs guidance on plugin directory layout, manifest configuration, component organization, file naming conventions, or Claude Code plugin architecture best practices.
+description: This skill should be used when the user asks to "create a plugin", "scaffold a plugin", "understand plugin structure", "organize plugin components", "set up plugin.json", "use ${CLAUDE_PLUGIN_ROOT}", "add commands/agents/skills/hooks", "add lspServers", "configure auto-discovery", "headless mode", "CI mode", "plugin in CI", "github actions", "plugin caching", "plugin CLI", "install plugin", "installation scope", "auto-update", "validate plugin", "plugin validate", "debug plugin", "output styles", "outputStyles", "custom output format", "response formatting", "--verbose", "userConfig", "plugin configuration", "sensitive config", or needs guidance on plugin directory layout, manifest configuration, component organization, file naming conventions, or Claude Code plugin architecture best practices.
 ---
 
 # Plugin Structure for Claude Code
@@ -107,6 +107,38 @@ Specify custom paths for components (supplements default directories):
 - Must start with `./`
 - Cannot use absolute paths
 - Support arrays for multiple locations
+
+### User Configuration (userConfig)
+
+Declare configurable values in `.claude-plugin/plugin.json` that users are prompted for when enabling the plugin:
+
+```json
+{
+  "name": "plugin-name",
+  "userConfig": {
+    "api_endpoint": {
+      "description": "Your team's API endpoint",
+      "sensitive": false
+    },
+    "api_token": {
+      "description": "API authentication token",
+      "sensitive": true
+    }
+  }
+}
+```
+
+**Storage:**
+
+- Non-sensitive values: stored in `settings.json` under `pluginConfigs[<plugin-id>].options`
+- Sensitive values (`sensitive: true`): stored in the system keychain (macOS) or `~/.claude/.credentials.json` elsewhere
+
+**Accessing configured values:**
+
+- In MCP/LSP server configs, hook commands, and skill/agent content: `${user_config.KEY}` (non-sensitive only)
+- As environment variables in plugin subprocesses: `CLAUDE_PLUGIN_OPTION_<KEY>`
+
+**Constraints:** Keychain storage has an approximately 2KB total limit for sensitive values. Keep sensitive values small.
 
 ## Component Organization
 

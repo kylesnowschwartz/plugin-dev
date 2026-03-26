@@ -1,6 +1,6 @@
 ---
 name: agent-development
-description: This skill should be used when the user asks to "create an agent", "add an agent", "write a subagent", "agent frontmatter", "when to use description", "agent examples", "agent tools", "agent colors", "autonomous agent", "disallowedTools", "block tools", "agent denylist", "maxTurns", "agent memory", "mcpServers in agent", "agent hooks", "background agent", "resume agent", "agent teams", "permission rules", "permission mode", "delegate mode", "agent team", "team lead", "teammate", "multi-agent", or needs guidance on agent structure, system prompts, triggering conditions, or agent development best practices for Claude Code plugins.
+description: This skill should be used when the user asks to "create an agent", "add an agent", "write a subagent", "agent frontmatter", "when to use description", "agent examples", "agent tools", "agent colors", "autonomous agent", "disallowedTools", "block tools", "agent denylist", "maxTurns", "agent memory", "mcpServers in agent", "agent hooks", "background agent", "resume agent", "initialPrompt", "auto-submit prompt", "agent teams", "permission rules", "permission mode", "delegate mode", "agent team", "team lead", "teammate", "multi-agent", or needs guidance on agent structure, system prompts, triggering conditions, or agent development best practices for Claude Code plugins.
 ---
 
 # Agent Development for Claude Code Plugins
@@ -368,6 +368,27 @@ hooks:
 
 Supports all hook events. Note: `Stop` hooks in agent frontmatter are auto-converted to `SubagentStop` at runtime. Hooks activate when the agent starts and deactivate when it finishes. See `references/advanced-agent-fields.md` for full details.
 
+### initialPrompt (optional)
+
+Auto-submit a prompt as the first user turn when the agent runs as the main session agent:
+
+```yaml
+initialPrompt: "Scan the codebase for lint errors, test failures, and report a summary."
+```
+
+**Behavior:**
+
+- Only fires when the agent is the **main session agent** (launched via `--agent` flag or `agent` setting)
+- Does **not** fire when the agent is spawned as a subagent by another agent
+- The prompt is submitted automatically — no manual input required
+- If the user also provides a prompt, both are submitted
+
+**Use cases:**
+
+- Agents that should immediately start working without user input
+- Daily standup or health-check agents
+- Automated validation that runs on session start
+
 ### Fields NOT Available for Agents
 
 Some frontmatter fields are specific to skills and do not apply to agents:
@@ -565,6 +586,7 @@ Ensure system prompt is complete:
 | memory           | No       | Scope string               | user                     |
 | mcpServers       | No       | Server name map            | slack:                   |
 | hooks            | No       | Hook event map             | PreToolUse: [...]        |
+| initialPrompt    | No       | String                     | "Run health check..."    |
 
 > **Note:** Agents use `tools` to restrict tool access. Skills use `allowed-tools` for the same purpose. The field names differ between component types.
 

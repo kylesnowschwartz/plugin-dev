@@ -666,6 +666,10 @@ MCP servers can notify Claude Code of tool changes at runtime via `list_changed`
 
 Design plugin MCP tools to return concise results. Paginate or summarize large outputs.
 
+### MCP Description Limits
+
+Tool descriptions and server instructions are capped at **2KB each**. This prevents OpenAPI-generated servers with verbose schemas from bloating the context window. Keep tool descriptions concise and focused on usage rather than exhaustive parameter documentation.
+
 ## MCP CLI Commands
 
 ```bash

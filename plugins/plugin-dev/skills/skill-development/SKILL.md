@@ -1,7 +1,7 @@
 ---
 name: skill-development
 version: 0.2.0
-description: This skill should be used when the user asks to "create a skill", "add a skill to plugin", "write a new skill", "improve skill description", "organize skill content", "SKILL.md format", "skill frontmatter", "skill triggers", "trigger phrases for skills", "progressive disclosure", "skill references folder", "skill examples folder", "validate skill", "skill model field", "skill hooks", "scoped hooks in skill", "visibility budget", "context budget", "SLASH_COMMAND_TOOL_CHAR_BUDGET", "skill permissions", "Skill() syntax", "visual output", "skill precedence", "argument-hint", or needs guidance on skill structure, file organization, writing style, or skill development best practices for Claude Code plugins.
+description: This skill should be used when the user asks to "create a skill", "add a skill to plugin", "write a new skill", "improve skill description", "organize skill content", "SKILL.md format", "skill frontmatter", "skill triggers", "trigger phrases for skills", "progressive disclosure", "skill references folder", "skill examples folder", "validate skill", "skill model field", "skill hooks", "scoped hooks in skill", "visibility budget", "context budget", "SLASH_COMMAND_TOOL_CHAR_BUDGET", "skill permissions", "Skill() syntax", "visual output", "skill precedence", "argument-hint", "paths frontmatter", "file-scoped skill", or needs guidance on skill structure, file organization, writing style, or skill development best practices for Claude Code plugins.
 ---
 
 # Skill Development for Claude Code Plugins
@@ -203,6 +203,19 @@ hooks:
 ```
 
 Scoped hooks that activate when this skill is loaded and deactivate when it finishes. Supported events: `PreToolUse`, `PostToolUse`, `Stop`. See `references/advanced-frontmatter.md`.
+
+##### paths (optional)
+
+Scope the skill to specific files using glob patterns:
+
+```yaml
+paths:
+  - "src/**/*.{ts,tsx}"
+  - "lib/**/*.ts"
+  - "tests/**/*.test.ts"
+```
+
+When set, the skill only loads into context when Claude is working with files matching these patterns. Reduces token usage by making skills contextual rather than always-loaded. Accepts a YAML list of glob patterns with brace expansion support.
 
 ##### argument-hint (optional)
 
@@ -414,6 +427,7 @@ Before finalizing a skill:
 - [ ] (Optional) `model` field if overriding default model
 - [ ] (Optional) `hooks` field if using scoped hooks
 - [ ] (Optional) `argument-hint` field for autocomplete hints
+- [ ] (Optional) `paths` field for file-scoped activation
 - [ ] Markdown body is present and substantial
 - [ ] Referenced files actually exist
 

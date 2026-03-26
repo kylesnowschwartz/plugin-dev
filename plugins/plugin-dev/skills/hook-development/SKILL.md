@@ -1,6 +1,6 @@
 ---
 name: hook-development
-description: This skill should be used when the user asks to "create a hook", "add a PreToolUse/PostToolUse/Stop hook", "validate tool use", "implement prompt-based hooks", "use ${CLAUDE_PLUGIN_ROOT}", "set up event-driven automation", "block dangerous commands", "scoped hooks", "frontmatter hooks", "hook in skill", "hook in agent", "agent hook type", "async hooks", "once handler", "statusMessage", "hook decision control", or mentions hook events (PreToolUse, PermissionRequest, PostToolUse, PostToolUseFailure, Stop, StopFailure, SubagentStop, SubagentStart, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, PostCompact, Notification, ConfigChange, TeammateIdle, TaskCompleted, WorktreeCreate, WorktreeRemove, InstructionsLoaded, Elicitation, ElicitationResult). Provides comprehensive guidance for creating and implementing Claude Code plugin hooks with focus on advanced prompt-based hooks API.
+description: This skill should be used when the user asks to "create a hook", "add a PreToolUse/PostToolUse/Stop hook", "validate tool use", "implement prompt-based hooks", "use ${CLAUDE_PLUGIN_ROOT}", "set up event-driven automation", "block dangerous commands", "scoped hooks", "frontmatter hooks", "hook in skill", "hook in agent", "agent hook type", "async hooks", "once handler", "statusMessage", "hook decision control", or mentions hook events (PreToolUse, PermissionRequest, PostToolUse, PostToolUseFailure, Stop, StopFailure, SubagentStop, SubagentStart, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, PostCompact, Notification, ConfigChange, TeammateIdle, TaskCompleted, CwdChanged, FileChanged, WorktreeCreate, WorktreeRemove, InstructionsLoaded, Elicitation, ElicitationResult). Provides comprehensive guidance for creating and implementing Claude Code plugin hooks with focus on advanced prompt-based hooks API.
 ---
 
 # Hook Development for Claude Code Plugins
@@ -9,7 +9,7 @@ description: This skill should be used when the user asks to "create a hook", "a
 
 Hooks are event-driven automation that execute in response to Claude Code events. Use hooks to validate operations, enforce policies, add context, and integrate external tools into workflows.
 
-Claude Code has **22 hook events** across these categories:
+Claude Code has **24 hook events** across these categories:
 
 - **Session Lifecycle** -- SessionStart, InstructionsLoaded, SessionEnd
 - **User Input** -- UserPromptSubmit
@@ -19,6 +19,7 @@ Claude Code has **22 hook events** across these categories:
 - **Teams** -- TeammateIdle, TaskCompleted
 - **Context Management** -- PreCompact, PostCompact
 - **Configuration** -- ConfigChange
+- **Environment** -- CwdChanged, FileChanged
 - **Worktrees** -- WorktreeCreate, WorktreeRemove
 - **MCP Elicitation** -- Elicitation, ElicitationResult
 - **Notifications** -- Notification
@@ -89,7 +90,7 @@ Send event data to an HTTP endpoint:
 
 **Use for:** External service integration, centralized logging, webhook-driven workflows.
 
-**Prompt hooks** work on most events (see [Hook Type Support by Event](#hook-type-support-by-event) for the full matrix). The only events restricted to command hooks are SessionStart, WorktreeCreate, and WorktreeRemove.
+**Prompt hooks** work on most events (see [Hook Type Support by Event](#hook-type-support-by-event) for the full matrix). SessionStart and WorktreeRemove are restricted to command hooks only. WorktreeCreate supports command and HTTP hooks.
 
 **Response format:** Prompt hooks return the standard hook output JSON (`decision`, `reason`, `systemMessage`). For events with event-specific behavior (PreToolUse, PermissionRequest, Elicitation), include `hookSpecificOutput` with event-appropriate fields — see each event's documentation below and `references/event-schemas.md`.
 
@@ -605,6 +606,73 @@ Execute when a configuration file changes during a session. Use for security mon
 
 **Gotcha:** `policy_settings` changes cannot be blocked. The block decision is silently ignored.
 
+### Environment
+
+#### CwdChanged
+
+Execute when the working directory changes during a session (e.g., when Claude runs `cd`).
+
+**Matchers:** Not supported (fires on every directory change)
+**Hook types:** Command, HTTP, Prompt, Agent
+**Decision control:** None (cannot block directory changes)
+
+**Input includes:** `old_cwd`, `new_cwd`
+
+```json
+{
+  "CwdChanged": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/env-setup.sh"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Special capabilities:**
+
+- Supports `$CLAUDE_ENV_FILE` — write `export VAR=value` to persist env vars into subsequent Bash commands
+- Can return `watchPaths` array to dynamically update file monitoring
+
+**Use case:** Reactive environment management with tools like direnv — reload env vars, activate project-specific toolchains, or run setup scripts on directory change.
+
+#### FileChanged
+
+Execute when a watched file changes on disk.
+
+**Matchers:** Pipe-separated basenames (filenames without directory paths), e.g. `".envrc|.env"`
+**Hook types:** Command, HTTP, Prompt, Agent
+**Decision control:** None (cannot block file changes)
+
+**Input includes:** `file_path` (absolute), `event` (`"change"`, `"add"`, or `"unlink"`)
+
+```json
+{
+  "FileChanged": [
+    {
+      "matcher": ".envrc|.env",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/reload-env.sh"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Special capabilities:**
+
+- Supports `$CLAUDE_ENV_FILE` for persisting environment variable changes
+- Can return `watchPaths` array to dynamically update monitored paths
+
+**Use case:** Reloading environment variables when config files change, triggering rebuilds on config modifications.
+
 ### Worktrees
 
 #### WorktreeCreate
@@ -612,8 +680,8 @@ Execute when a configuration file changes during a session. Use for security mon
 Execute when a git worktree is created (via `--worktree` flag or subagent `isolation: "worktree"`).
 
 **Matchers:** Not supported
-**Hook types:** Command only
-**Decision control:** Hook must print the **absolute path** to the created worktree directory on stdout. Non-zero exit code fails the creation.
+**Hook types:** Command, HTTP
+**Decision control:** Hook must return the **absolute path** to the created worktree directory. Command hooks print the path on stdout. HTTP hooks return it via `hookSpecificOutput.worktreePath`.
 
 ```json
 {
@@ -632,7 +700,18 @@ Execute when a git worktree is created (via `--worktree` flag or subagent `isola
 
 **Input includes:** `name` (worktree identifier)
 
-This is the only hook where stdout is the return value (a path), not JSON.
+**HTTP hook response format:**
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "WorktreeCreate",
+    "worktreePath": "/absolute/path/to/worktree"
+  }
+}
+```
+
+For command hooks, stdout is the return value (a path), not JSON.
 
 #### WorktreeRemove
 
@@ -847,7 +926,7 @@ Match on MCP server name.
 
 ### Events Without Matcher Support
 
-These events ignore the `matcher` field: UserPromptSubmit, Stop, TeammateIdle, TaskCompleted, WorktreeCreate, WorktreeRemove.
+These events ignore the `matcher` field: UserPromptSubmit, Stop, TeammateIdle, TaskCompleted, CwdChanged, WorktreeCreate, WorktreeRemove.
 
 ## Hook Type Support by Event
 
@@ -872,7 +951,9 @@ Not all events support all four hook types:
 | PreCompact         | Yes     | Yes  | Yes    | Yes   |
 | PostCompact        | Yes     | Yes  | Yes    | Yes   |
 | ConfigChange       | Yes     | Yes  | Yes    | Yes   |
-| WorktreeCreate     | Yes     | --   | --     | --    |
+| CwdChanged         | Yes     | Yes  | Yes    | Yes   |
+| FileChanged        | Yes     | Yes  | Yes    | Yes   |
+| WorktreeCreate     | Yes     | Yes  | --     | --    |
 | WorktreeRemove     | Yes     | --   | --     | --    |
 | Elicitation        | Yes     | Yes  | Yes    | Yes   |
 | ElicitationResult  | Yes     | Yes  | Yes    | Yes   |
@@ -1056,7 +1137,7 @@ echo "$output" | jq .
 
 ## Quick Reference
 
-### All 22 Hook Events
+### All 24 Hook Events
 
 | Event              | Category      | Matchers                    | Decision Control              |
 | ------------------ | ------------- | --------------------------- | ----------------------------- |
@@ -1077,7 +1158,9 @@ echo "$output" | jq .
 | PreCompact         | Context       | manual, auto                | None (observability)          |
 | PostCompact        | Context       | manual, auto                | None (observability)          |
 | ConfigChange       | Config        | Settings sources            | Block (except policy)         |
-| WorktreeCreate     | Worktree      | None                        | Stdout = path, exit code      |
+| CwdChanged         | Environment   | None                        | None (env vars, watchPaths)   |
+| FileChanged        | Environment   | Basenames (pipe-separated)  | None (env vars, watchPaths)   |
+| WorktreeCreate     | Worktree      | None                        | Return path, exit code        |
 | WorktreeRemove     | Worktree      | None                        | None (cleanup)                |
 | Elicitation        | MCP           | MCP server name             | Accept/decline/cancel         |
 | ElicitationResult  | MCP           | MCP server name             | Override response              |
@@ -1102,7 +1185,7 @@ echo "$output" | jq .
 
 For detailed patterns and advanced techniques, consult:
 
-- **`references/event-schemas.md`** -- Complete input/output JSON schemas for all 22 events
+- **`references/event-schemas.md`** -- Complete input/output JSON schemas for all 24 events
 - **`references/patterns.md`** -- Proven patterns including temporarily active and configuration-driven hooks
 - **`references/migration.md`** -- Migrating from basic to advanced hooks
 - **`references/advanced.md`** -- Advanced use cases and techniques
@@ -1146,7 +1229,7 @@ Development tools in `scripts/`:
 
 To implement hooks in a plugin:
 
-1. Identify events to hook into (see [Quick Reference](#all-22-hook-events))
+1. Identify events to hook into (see [Quick Reference](#all-24-hook-events))
 2. Decide hook type: prompt (flexible), agent (multi-step), command (deterministic), or HTTP (external)
 3. Write hook configuration in `hooks/hooks.json`
 4. For command hooks, create hook scripts
