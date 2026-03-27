@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-03-27
+
+### Added
+
+- **plugin-dev-guide agent**: Haiku-powered triage agent that matches plugin development questions to the right specialized skill, keeping the main context window clean
+
+### Changed
+
+- **plugin-dev-guide skill**: Converted from in-context routing table to thin dispatch shim that spawns the triage agent and follows its recommendation
+
 ## [0.5.0] - 2026-03-27
 
 ### Added

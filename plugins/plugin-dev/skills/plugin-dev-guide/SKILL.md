@@ -5,212 +5,30 @@ description: This skill should be used when the user asks about "Claude Code plu
 
 # Plugin Development Guide
 
-This meta-skill provides an overview of Claude Code plugin development and routes to specialized skills based on the task at hand.
+Spawn the `plugin-dev:plugin-dev-guide` agent (subagent_type: `plugin-dev:plugin-dev-guide`) with the user's question as the prompt. Pass `$ARGUMENTS` as the agent's task.
 
-Your goal is to match the user request (or recent conversation context) to the appropriate skill below, then invoke it using the Skill tool.
+When the agent reports back, follow its recommendation:
 
-## Plugin Development Skills Overview
-
-The plugin-dev toolkit provides 9 specialized skills and 3 slash commands for building Claude Code plugins, plus this guide. Each handles a specific domain of plugin development.
-
-### Skill Quick Reference
-
-| Skill                          | Purpose                                             |
-| -------                        | ---------                                           |
-| /plugin-structure              | Directory layout, manifest, component organization  |
-| /command-development           | Slash commands with frontmatter                     |
-| /agent-development             | Autonomous subagents                                |
-| /skill-development             | Creating skills with progressive disclosure         |
-| /hook-development              | Event-driven automation                             |
-| /mcp-integration               | Model Context Protocol servers                      |
-| /lsp-integration               | Language Server Protocol for code intelligence      |
-| /plugin-settings               | User configuration via .local.md                    |
-| /marketplace-structure         | Plugin marketplace creation                         |
-| /plugin-dev:start              | Entry point — choose plugin or marketplace creation |
-| /plugin-dev:create-plugin      | 8-phase guided plugin creation workflow             |
-| /plugin-dev:create-marketplace | 8-phase guided marketplace creation workflow        |
-
-## When to Use Each Skill
-
-### Starting a New Plugin
-
-**Skill: `plugin-structure`**
-
-Use when the user needs to:
-
-- Create a new plugin from scratch
-- Understand plugin directory layout
-- Configure plugin.json manifest
-- Learn about component auto-discovery
-- Use ${CLAUDE_PLUGIN_ROOT} for portable paths
-
-### Adding User-Facing Commands
-
-**Skill: `command-development`**
-
-Use when the user needs to:
-
-- Create slash commands (/command-name)
-- Configure command frontmatter (description, allowed-tools, model)
-- Use dynamic arguments ($ARGUMENTS, $1, $2)
-- Reference files with @ syntax
-- Execute bash inline with `[BANG]` backticks
-
-### Creating Autonomous Agents
-
-**Skill: `agent-development`**
-
-Use when the user needs to:
-
-- Create subagents for complex tasks
-- Write agent system prompts
-- Configure agent triggering (description with examples)
-- Choose agent models and colors
-- Restrict agent tool access
-
-### Building Skills
-
-**Skill: `skill-development`**
-
-Use when the user needs to:
-
-- Create skills that extend Claude's capabilities
-- Write SKILL.md with proper frontmatter
-- Organize skill content with progressive disclosure
-- Create references/, examples/, scripts/ directories
-- Write effective trigger phrases
-
-### Implementing Event Hooks
-
-**Skill: `hook-development`**
-
-Use when the user needs to:
-
-- React to Claude Code events (PreToolUse, Stop, SessionStart, etc.)
-- Create prompt-based or command-based hooks
-- Validate tool inputs before execution
-- Enforce completion standards
-- Block dangerous operations
-
-### Integrating External Services via MCP
-
-**Skill: `mcp-integration`**
-
-Use when the user needs to:
-
-- Add MCP servers to plugins
-- Configure stdio, SSE, HTTP, or WebSocket servers
-- Set up authentication (OAuth, tokens)
-- Use MCP tools in commands and agents
-- Discover existing MCP servers on PulseMCP
-
-### Adding Code Intelligence via LSP
-
-**Skill: `lsp-integration`**
-
-Use when the user needs to:
-
-- Add Language Server Protocol servers to plugins
-- Enable go-to-definition and find-references
-- Configure language-specific servers (pyright, gopls, rust-analyzer)
-- Set up extensionToLanguage mappings
-- Enhance Claude's code understanding
-
-### Managing Plugin Configuration
-
-**Skill: `plugin-settings`**
-
-Use when the user needs to:
-
-- Store user-configurable settings
-- Use .claude/plugin-name.local.md pattern
-- Parse YAML frontmatter in hooks
-- Create temporarily active hooks
-- Manage agent state
-
-### Creating Plugin Marketplaces
-
-**Skill: `marketplace-structure`**
-
-Use when the user needs to:
-
-- Create a marketplace for multiple plugins
-- Configure marketplace.json
-- Set up plugin sources (relative, GitHub, git URL)
-- Distribute plugins to teams
-- Organize plugin collections
-
-## Decision Tree for Skill Selection
-
-```
-User wants to...
-├── Create/organize a plugin structure? → plugin-structure
-├── Add a simple slash command (no bundled resources)? → command-development
-├── Create an autonomous agent? → agent-development
-├── Add a complex skill with scripts/references? → skill-development
-├── React to Claude Code events? → hook-development
-├── Integrate external service/API? → mcp-integration
-├── Add code intelligence/LSP? → lsp-integration
-├── Make plugin configurable? → plugin-settings
-└── Distribute multiple plugins? → marketplace-structure
-```
+1. **Skill recommended** — invoke that skill using the Skill tool (e.g., `Skill("plugin-dev:mcp-integration")`)
+2. **OVERVIEW** — the user wants a general overview; summarize the available skills, commands, and agents from the tables below
+3. **NO_MATCH** — no plugin-dev skill covers this topic; answer directly or ask for clarification
+4. **Also-relevant skills mentioned** — note these to the user as follow-up options
+5. **Agent fails or returns unrecognized output** — fall back to asking the user which area they need help with, listing the skill domains: plugin structure, commands, agents, skills, hooks, MCP, LSP, settings, marketplace
 
 ## Available Commands
 
 | Command                          | Purpose                                             |
 | -------------------------------- | --------------------------------------------------- |
-| `/plugin-dev:plugin-dev-guide`   | Overview and skill routing                          |
 | `/plugin-dev:start`              | Entry point - choose plugin or marketplace creation |
 | `/plugin-dev:create-plugin`      | 8-phase guided plugin creation workflow             |
 | `/plugin-dev:create-marketplace` | 8-phase guided marketplace creation workflow        |
 
-## Common Multi-Skill Workflows
-
-### Building a Complete Plugin
-
-1. Invoke `plugin-structure` to create directory layout
-2. Invoke `command-development` for user-facing commands
-3. Invoke `hook-development` for event-driven behavior
-4. Invoke `plugin-settings` if user configuration needed
-5. Use plugin-validator agent to validate structure
-
-### Creating an MCP-Powered Plugin
-
-1. Invoke `plugin-structure` for basic structure
-2. Invoke `mcp-integration` to configure MCP servers
-3. Invoke `command-development` to create commands that use MCP tools
-4. Invoke `agent-development` for autonomous MCP workflows
-
-### Building a Code Intelligence Plugin
-
-1. Invoke `plugin-structure` for basic structure
-2. Invoke `lsp-integration` to configure language servers
-3. Invoke `command-development` for commands using LSP features
-
-### Building a Skill-Focused Plugin
-
-1. Invoke `plugin-structure` for basic structure
-2. Invoke `skill-development` to create specialized skills
-3. Use skill-reviewer agent to validate skill quality
-
 ## Available Agents
 
-The plugin-dev plugin also provides 3 agents:
-
-| Agent | Purpose |
-|-------|---------|
-| **plugin-validator** | Validates plugin structure and manifests |
-| **skill-reviewer** | Reviews skill quality and triggering |
-| **agent-creator** | Generates new agents from descriptions |
-
-Use agents proactively after creating components to ensure quality.
-
----
-
-## User Request
-
-Match the user request below to a skill from the table above, then invoke it with the Skill tool. If no single skill matches, answer directly using this guide. If the request is ambiguous, ask for clarification.
-
-If no request was provided, summarize the available capabilities and ask what the user wants to build or learn about.
+| Agent                | Purpose                                    |
+| -------------------- | ------------------------------------------ |
+| **plugin-validator** | Validates plugin structure and manifests   |
+| **skill-reviewer**   | Reviews skill quality and triggering       |
+| **agent-creator**    | Generates new agents from descriptions     |
 
 $ARGUMENTS
