@@ -1,6 +1,6 @@
 {
   "name": "plugin-dev",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Comprehensive toolkit for developing Claude Code plugins. Includes 10 expert skills covering hooks, MCP integration, LSP servers, commands, agents, marketplaces, and best practices, plus a guide skill for navigation. AI-assisted plugin creation and validation.",
   "author": {
     "name": "Kyle Snow Schwartz",

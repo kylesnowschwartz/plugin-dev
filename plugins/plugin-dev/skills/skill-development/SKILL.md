@@ -126,9 +126,7 @@ name: comprehensive-review
 description: Full code review with testing...
 context: fork
 agent: general
-skills:
-  - testing-patterns
-  - security-audit
+skills: testing-patterns, security-audit
 ---
 ```
 

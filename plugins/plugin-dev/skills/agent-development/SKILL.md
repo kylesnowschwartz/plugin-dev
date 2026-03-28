@@ -277,10 +277,7 @@ disallowedTools: Bash, Write
 Load specific skills into the agent's context:
 
 ```yaml
-skills:
-  - testing-patterns
-  - security-audit
-  - api-design
+skills: testing-patterns, security-audit, api-design
 ```
 
 **Use cases:**
@@ -580,7 +577,7 @@ Ensure system prompt is complete:
 | color            | Yes      | Color name                 | blue                     |
 | tools            | No       | Comma-separated tool names | Read, Grep               |
 | disallowedTools  | No       | Comma-separated tool names | Bash, Write              |
-| skills           | No       | Array of skill names       | [testing, security]      |
+| skills           | No       | Comma-separated skill names | testing, security        |
 | permissionMode   | No       | Permission mode string     | acceptEdits              |
 | maxTurns         | No       | Integer                    | 50                       |
 | memory           | No       | Scope string               | user                     |

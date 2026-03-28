@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-03-28
+
+### Fixed
+
+- **agent-development**: `skills` field documented as YAML array; corrected to comma-separated string matching actual Claude Code runtime behavior
+- **skill-development**: Same YAML array fix for `skills` field in `context: fork` example
+
 ## [0.6.0] - 2026-03-27
 
 ### Added

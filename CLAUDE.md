@@ -6,7 +6,7 @@ Guidance for Claude Code working in this repository.
 
 Plugin marketplace containing the **plugin-dev** plugin - a toolkit for developing Claude Code plugins. Provides 10 skills, 4 agents, 3 slash commands.
 
-**Version**: v0.6.0 | [CHANGELOG.md](CHANGELOG.md)
+**Version**: v0.6.1 | [CHANGELOG.md](CHANGELOG.md)
 
 ## MCP Tool Requirements (CRITICAL)
 
