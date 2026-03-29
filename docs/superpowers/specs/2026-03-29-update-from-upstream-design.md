@@ -71,9 +71,9 @@ Each stage produces a structured artifact consumed by the next. Stages 2 and 4 a
 
 **Agent:** `update-manifest-verifier`
 
-This agent operates in a separate context from the differ. It independently:
+This agent operates in a separate context from the differ. It independently fetches its own copy of the CC changelog (fresh WebFetch, not reading from Stage 1's output) to ensure true independence:
 
-1. Re-reads the CC changelog entries for the version range and confirms each "Must Update" item actually exists and is categorized correctly
+1. Fetches the CC changelog and re-reads entries for the version range, confirming each "Must Update" item actually exists and is categorized correctly
 2. Scans the changelog for plugin-relevant keywords (`hook`, `plugin`, `agent`, `skill`, `command`, `MCP`, `LSP`, `tool`) that the differ might have classified as "No Action"
 3. For each affected skill, reads the current SKILL.md to confirm the gap actually exists (maybe plugin-dev already covers it from a previous manual update)
 4. Validates the "Affects" mapping — does the change belong to the identified skill, or a different one?
