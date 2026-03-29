@@ -40,11 +40,13 @@ Extract all version entries **after** the last audited version. If the fetched c
 
 Read the local system-prompts CHANGELOG.md. Check these paths in order:
 ```
-Read: ./claude-code-system-prompts/CHANGELOG.md                          # CI path
-Read: /Users/kyle/Code/meta-claude/claude-code-system-prompts/CHANGELOG.md  # local path
+./claude-code-system-prompts/CHANGELOG.md                          # CI path
+/Users/kyle/Code/meta-claude/claude-code-system-prompts/CHANGELOG.md  # local path
 ```
 
 If neither path exists, degrade to single-source triangulation and note this in the manifest.
+
+**Important:** This file is large (30k+ tokens). Versions are listed newest-first. Read only the first 200 lines (`offset: 1, limit: 200`) — this covers the most recent ~10 versions, which is more than enough for any audit range. Do NOT read the entire file.
 
 Extract entries for the same version range. This source is more structured (includes NEW/REMOVED markers and token deltas).
 

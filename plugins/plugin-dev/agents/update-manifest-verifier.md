@@ -39,10 +39,12 @@ Fetch your own copy of the CC changelog (do NOT rely on Stage 1's fetch):
 WebFetch: https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md
 ```
 
-Read the local system-prompts CHANGELOG:
+Read the local system-prompts CHANGELOG (first 200 lines only — versions are newest-first, full file is 30k+ tokens):
 ```
-Read: /Users/kyle/Code/meta-claude/claude-code-system-prompts/CHANGELOG.md
+./claude-code-system-prompts/CHANGELOG.md                          # CI path
+/Users/kyle/Code/meta-claude/claude-code-system-prompts/CHANGELOG.md  # local path
 ```
+Use `offset: 1, limit: 200` to avoid reading the entire file.
 
 ### Step 3: Verify Each "Must Update" Item
 
