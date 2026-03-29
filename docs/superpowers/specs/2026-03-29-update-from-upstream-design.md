@@ -28,9 +28,9 @@ Each stage produces a structured artifact consumed by the next. Stages 2 and 4 a
 
 **Inputs:**
 - `docs/claude-code-compatibility.md` — reads `Last audited: Claude Code X.Y.Z` to determine the starting version
-- CC changelog from `anthropics/claude-code` repo (fetched via WebFetch)
+- CC changelog fetched via WebFetch from `https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md`. If the fetched content does not contain the expected version range, Stage 1 fails explicitly rather than proceeding with partial data.
 - CC system prompts CHANGELOG.md from `/Users/kyle/Code/meta-claude/claude-code-system-prompts` (local read)
-- `claude-code-guide` built-in agent — cross-references changes against official documentation
+- `claude-code-guide` built-in subagent type — cross-references changes against official documentation. This agent has access to WebFetch, WebSearch, Glob, Grep, and Read. If this subagent type is unavailable at runtime, Stage 1 degrades gracefully to two-source triangulation (changelog + system-prompts) with keyword scanning from Stage 2 as the compensating check.
 
 **Process:**
 1. Parse last audited version from compatibility file
@@ -152,6 +152,35 @@ This agent operates in a separate context from the differ. It independently:
 
 **On pass:** The orchestrator commits and pushes.
 
+**Stage 4 retry mechanics:** When the reviewer reports failures, its output includes specific corrections (e.g., "missing section X in file Y", "version mismatch in Z"). The orchestrator applies these corrections as targeted edits, then re-dispatches the update-reviewer agent for a full re-check. If the second pass still fails, the orchestrator stops and reports the unresolved items without committing.
+
+## Bootstrap Behavior
+
+On first run, `docs/claude-code-compatibility.md` won't exist. The skill creates it with:
+
+```markdown
+# Claude Code Compatibility
+
+Last audited: Claude Code 2.1.86 (2026-03-28)
+Plugin-dev version: 0.6.1
+
+## Audit Log
+| plugin-dev | CC version range | Date | Notes |
+|---|---|---|---|
+| v0.6.1 | ≤2.1.86 | 2026-03-28 | Initial compatibility baseline |
+```
+
+The initial "Last audited" version is set to the CC version current at the time of implementation. All prior plugin-dev versions are treated as a single baseline row.
+
+## Release Commit Format
+
+Follows conventional commits per project standards:
+
+- **Patch bump:** `docs: sync plugin-dev with Claude Code vX.Y.Z-vA.B.C`
+- **Minor bump:** `feat: sync plugin-dev with Claude Code vX.Y.Z-vA.B.C`
+
+The commit body includes a summary of what changed (generated from the manifest).
+
 ## Component Inventory
 
 ### New Skill (1)
@@ -178,19 +207,20 @@ This agent operates in a separate context from the differ. It independently:
 
 | File | Change |
 |---|---|
-| `plugin.json` | Register new skill and agents |
-| `marketplace.json` | Version bump |
-| `CLAUDE.md` | Reference to new skill |
-| `plugin-dev-guide.md` | Add `update-from-upstream` to routing table |
+| `.claude-plugin/marketplace.json` | Version bump |
+| `CLAUDE.md` (root) | Version bump, update component counts (11 skills, 7 agents), reference to new skill |
+| `plugins/plugin-dev/skills/plugin-dev-guide/SKILL.md` | Add `update-from-upstream` to available skills listing |
+
+Note: `plugins/plugin-dev/.claude-plugin/plugin.json` and agent/skill directories use auto-discovery — no registration needed. The plugin-dev-guide *agent* routing table is not modified because `update-from-upstream` is a maintenance skill, not a user-facing plugin development question.
 
 ### External Dependencies
 
-| Dependency | Type | Used In |
-|---|---|---|
-| `claude-code-guide` agent | Built-in subagent | Stage 1 (doc cross-referencing) |
-| `markdownlint` | CLI tool | Stage 4 (lint check) |
-| `claude-code-system-prompts` | Local repo | Stage 1 (structured changelog) |
-| `anthropics/claude-code` | GitHub repo | Stage 1 (upstream changelog) |
+| Dependency | Type | Used In | Fallback |
+|---|---|---|---|
+| `claude-code-guide` subagent | Built-in subagent type | Stage 1 (doc cross-referencing) | Degrade to two-source triangulation |
+| `markdownlint` | CLI tool | Stage 4 (lint check) | Skip lint check, warn in output |
+| `claude-code-system-prompts` | Local repo at `/Users/kyle/Code/meta-claude/claude-code-system-prompts` | Stage 1 (structured changelog) | Degrade to single-source + claude-code-guide |
+| `anthropics/claude-code` CHANGELOG.md | Remote file via `https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md` | Stage 1 (upstream changelog) | Fail — this is the primary source |
 
 ## Design Decisions
 
@@ -201,3 +231,27 @@ This agent operates in a separate context from the differ. It independently:
 **Why the orchestrator applies edits (not an agent):** Stage 3 has the least ambiguity — the manifest says exactly what to change and where. The creative judgment is limited to "where in this file does new content fit" and "match existing style." This doesn't need the overhead of a separate agent context.
 
 **Why patch-default versioning:** Most upstream syncs will add a few bullets to existing sections. Minor bumps are reserved for structural additions (new sections, new skills).
+
+## SKILL.md Frontmatter (sketch)
+
+```yaml
+---
+name: update-from-upstream
+version: 0.1.0
+description: >-
+  This skill should be used when the user asks to "sync with upstream",
+  "update from Claude Code", "check for Claude Code changes",
+  "update plugin-dev docs", "sync with latest CC release",
+  "what changed in Claude Code", "audit against upstream",
+  or needs to bring plugin-dev documentation current with recent
+  Claude Code releases.
+---
+```
+
+## Agent Tool Allowlists
+
+| Agent | Tools | Why |
+|---|---|---|
+| `changelog-differ` | Read, Grep, Glob, WebFetch, Agent (for claude-code-guide dispatch) | Needs to fetch remote changelog, read local files, dispatch subagent |
+| `update-manifest-verifier` | Read, Grep, Glob, WebFetch, Edit | Needs to read changelogs and skill files, amend the manifest |
+| `update-reviewer` | Read, Grep, Glob, Bash (for markdownlint) | Needs to read modified files, run lint, verify content |
