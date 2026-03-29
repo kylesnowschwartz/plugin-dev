@@ -222,6 +222,12 @@ Organizations can restrict plugin sources via managed settings:
 - `strictKnownMarketplaces: true` — Only allow plugins from known/approved marketplaces
 - `extraKnownMarketplaces` — Add organization-approved marketplace URLs in managed settings
 
+### Organization Plugin Blocking (CC 2.1.85)
+
+Organizations can block specific plugins via `managed-settings.json`. Blocked plugins cannot be installed or enabled and are hidden from marketplace views. This is separate from marketplace restrictions — even plugins from approved marketplaces can be individually blocked.
+
+Plugin developers distributing to enterprise users should document the plugin name clearly so admins can add it to their allow list if needed.
+
 ### Private Repository Authentication
 
 For private marketplace repositories, set authentication tokens:

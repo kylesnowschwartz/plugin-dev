@@ -50,7 +50,32 @@ The command hook quickly approves obviously safe commands, while the prompt hook
 
 ## Conditional Hook Execution
 
-Execute hooks based on environment or context:
+### Declarative `if` Field (CC 2.1.85)
+
+Hooks support a declarative `if` field using permission rule syntax to filter when they run:
+
+```json
+{
+  "PreToolUse": [
+    {
+      "matcher": "Bash",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "${CLAUDE_PLUGIN_ROOT}/scripts/validate-git.sh",
+          "if": "Bash(git *)"
+        }
+      ]
+    }
+  ]
+}
+```
+
+This hook fires only for Bash commands starting with `git`. The `if` field uses the same permission rule syntax as `settings.json` allow/deny rules (e.g., `Bash(npm *)`, `Edit(src/**)`, `Write(tests/**)`). Combine with `matcher` for two-level filtering: `matcher` selects the event type, `if` narrows to specific invocations.
+
+### Script-Level Conditionals
+
+Execute hooks based on environment or context in the script itself:
 
 ```bash
 #!/bin/bash

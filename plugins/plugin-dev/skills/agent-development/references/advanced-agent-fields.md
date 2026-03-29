@@ -130,6 +130,20 @@ All hook events are supported in agent frontmatter. Key behavior difference:
 
 Background agents that encounter an unapproved permission request will fail. Design tool restrictions (`tools`, `permissionMode`) accordingly when agents may run in background.
 
+### Naming Spawned Agents (CC 2.1.85)
+
+Pass a short `name` when spawning agents so users can identify them in the teams panel and steer them mid-run:
+
+```json
+{
+  "description": "Review code changes",
+  "prompt": "Review the latest changes for bugs...",
+  "name": "code-reviewer"
+}
+```
+
+The `name` field is optional but recommended for any agent that runs in background or as part of a team. It appears in the teams panel UI, making it easier for users to track and message specific agents.
+
 ### Resuming Agents
 
 Each Task tool invocation creates a new agent instance with a fresh context. To continue with the full prior context preserved, ask Claude to "resume that agent" or "continue that subagent" — it will restore the previous transcript.

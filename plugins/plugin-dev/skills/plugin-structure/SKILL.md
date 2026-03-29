@@ -646,6 +646,19 @@ claude --plugin-dir /path/to/plugin
 - Verify custom paths in manifest are correct
 - Restart Claude Code to reload plugin configuration
 
+**Plugin blocked by organization policy**:
+
+- Organizations can block specific plugins via `managed-settings.json` (CC 2.1.85)
+- Blocked plugins cannot be installed or enabled and are hidden from marketplace views
+- If users report they can't find or install the plugin, check whether their organization has restricted it
+- Plugin developers cannot override organization policies; work with the organization's admin to approve the plugin
+
+**Plugin scripts failing with "Permission denied"**:
+
+- Fixed in CC 2.1.86. Official marketplace plugin scripts previously failed with "Permission denied" on macOS/Linux (since CC 2.1.83)
+- Ensure all executable scripts have proper permissions: `chmod +x scripts/*.sh`
+- Include `#!/bin/bash` (or appropriate shebang) at the top of every script
+
 **Conflicts between plugins**:
 
 - Use unique, descriptive component names

@@ -267,6 +267,15 @@ You are an expert [domain] orchestrator specializing in coordinating [complex wo
 - Timeout: Report partial completion
 ```
 
+## Upstream Prompt Evolution
+
+Track these changes to Claude Code's own agent prompts, since plugin agents often model their behavior on upstream patterns:
+
+- **CC 2.1.86:** The general-purpose agent directive changed from "Do what has been asked; nothing more, nothing less" to "Complete the task fully — don't gold-plate, but don't leave it half-done." This shifts from minimalist task execution toward ensuring completeness without over-engineering.
+- **CC 2.1.86:** Task complexity guidance expanded — agents are now instructed to match implementation complexity to task requirements, avoiding both speculative abstractions and half-finished implementations.
+
+When writing agent system prompts, align with this direction: encourage thorough completion rather than premature stopping, but discourage scope creep.
+
 ## Writing Style Guidelines
 
 ### Tone and Voice

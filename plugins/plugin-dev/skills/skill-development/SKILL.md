@@ -215,6 +215,8 @@ paths:
 
 When set, the skill only loads into context when Claude is working with files matching these patterns. Reduces token usage by making skills contextual rather than always-loaded. Accepts a YAML list of glob patterns with brace expansion support.
 
+> **Resolved (CC 2.1.86):** Write, Edit, and Read tools previously failed on files outside the project root when conditional (path-scoped) skills were configured. This is now fixed.
+
 ##### argument-hint (optional)
 
 ```yaml
@@ -326,6 +328,12 @@ To create a skill, follow these six steps. For detailed instructions on each ste
 Skill descriptions consume ~2% of context window (~16KB fallback). If total skill descriptions exceed this budget, some skills may be excluded from discovery. Controlled by `SLASH_COMMAND_TOOL_CHAR_BUDGET`.
 
 Keep descriptions concise but include trigger phrases. Skills with longer descriptions are more likely to be excluded when budget pressure is high. See `references/advanced-frontmatter.md` for optimization strategies.
+
+### /skills Menu Display (CC 2.1.86)
+
+The `/skills` menu truncates descriptions at **250 characters**. Descriptions longer than this are cut off in the menu listing (though the full description is still used for auto-discovery matching). Place the most important trigger phrases early in the description so they remain visible.
+
+Skills are listed **alphabetically** in the `/skills` menu. Name skills with discoverability in mind — a skill named `api-testing` appears near the top, while `zsh-config` appears at the bottom.
 
 ### Context Management for Plugins
 

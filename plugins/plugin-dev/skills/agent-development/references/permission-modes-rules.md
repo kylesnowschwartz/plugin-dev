@@ -132,6 +132,12 @@ Rules are evaluated in a strict order — first match wins within each tier:
 2. **Ask** rules checked second
 3. **Allow** rules checked last
 
+### Blocked Categories
+
+Claude Code's security monitor blocks certain categories of operations regardless of permission mode. These require explicit user approval:
+
+- **Production Reads (CC 2.1.85):** Reading inside running production systems via remote shell, dumping environment variables or configs from production, and direct production database queries. Agent developers building ops-focused or deployment agents should be aware that these operations will prompt the user even in `dontAsk` mode.
+
 ### Default Permission Tiers
 
 Tools fall into three default permission tiers:

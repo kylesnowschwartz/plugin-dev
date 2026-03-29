@@ -291,6 +291,24 @@ cat <<EOF
 EOF
 ```
 
+### Environment Variables Available to headersHelper (CC 2.1.85)
+
+Claude Code injects these environment variables into `headersHelper` scripts:
+
+- `CLAUDE_CODE_MCP_SERVER_NAME` — the MCP server's configured name (e.g., `"github"`, `"slack"`)
+- `CLAUDE_CODE_MCP_SERVER_URL` — the MCP server's URL (for SSE/HTTP/WS servers)
+
+Use these for server self-identification in multi-server plugins or for dynamic header generation based on the target server:
+
+```bash
+#!/bin/bash
+# Use server name for logging or routing
+echo "Generating headers for server: $CLAUDE_CODE_MCP_SERVER_NAME" >&2
+
+TOKEN=$(fetch-token-for "$CLAUDE_CODE_MCP_SERVER_NAME")
+echo "{\"Authorization\": \"Bearer $TOKEN\"}"
+```
+
 ### Use Cases for Dynamic Headers
 
 - Short-lived tokens that need refresh

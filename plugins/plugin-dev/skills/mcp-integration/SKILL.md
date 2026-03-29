@@ -227,6 +227,8 @@ All MCP configurations support environment variable substitution:
 
 Env vars support fallback values: `${VAR:-default_value}`. Supported in `command`, `args`, `env`, `url`, and `headers` fields.
 
+**MCP server identity variables (CC 2.1.85):** Claude Code injects `CLAUDE_CODE_MCP_SERVER_NAME` and `CLAUDE_CODE_MCP_SERVER_URL` into `headersHelper` scripts, enabling server self-identification in multi-server setups.
+
 **Best practice:** Document all required environment variables in plugin README.
 
 ## MCP Tool Naming

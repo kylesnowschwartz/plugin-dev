@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-03-29
+
+### Added
+
+- **hook-development**: Documented conditional `if` field for hooks using permission rule syntax (CC 2.1.85)
+- **hook-development**: Documented `AskUserQuestion` satisfaction via PreToolUse `updatedInput` (CC 2.1.85)
+- **skill-development**: Documented 250-character description cap in `/skills` menu (CC 2.1.86)
+- **skill-development**: Documented alphabetical sorting in `/skills` menu (CC 2.1.86)
+- **plugin-structure**: Documented organization plugin blocking via managed settings (CC 2.1.85)
+- **plugin-structure**: Documented resolved "Permission denied" bug for marketplace scripts (CC 2.1.86)
+- **mcp-integration**: Documented `CLAUDE_CODE_MCP_SERVER_NAME` and `CLAUDE_CODE_MCP_SERVER_URL` env vars for headersHelper (CC 2.1.85)
+- **agent-development**: Documented upstream prompt change from "nothing more, nothing less" to "Complete the task fully" (CC 2.1.86)
+- **agent-development**: Documented `name` field guidance for spawned agents/forks (CC 2.1.85)
+- **agent-development**: Documented "Production Reads" blocked category in permission modes (CC 2.1.85)
+- **marketplace-structure**: Documented organization plugin blocking (CC 2.1.85)
+
+### Fixed
+
+- **skill-development**: Noted resolved `paths:` frontmatter bug where tools failed on files outside project root (CC 2.1.86)
+- **event-schemas**: Updated event count from 22 to 24
+
 ## [0.7.0] - 2026-03-29
 
 ### Added

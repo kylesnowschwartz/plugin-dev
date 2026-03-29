@@ -143,6 +143,7 @@ Each hook entry in a matcher group supports these fields:
   "allowedEnvVars": ["ENV_VAR"],
   "prompt": "string (prompt/agent type only)",
   "model": "string (prompt/agent, optional)",
+  "if": "string (permission rule syntax, optional)",
   "timeout": 600,
   "statusMessage": "Validating...",
   "once": false,
@@ -150,6 +151,7 @@ Each hook entry in a matcher group supports these fields:
 }
 ```
 
+- `if`: Conditional execution using permission rule syntax (e.g., `Bash(git *)` runs the hook only for git commands). When set, the hook fires only when the tool call matches the pattern. Combines with `matcher` for precise targeting — `matcher` selects the event, `if` filters within it. Added in CC 2.1.85.
 - `timeout`: Max execution time in seconds. Defaults vary by type (command: 60s, prompt: 30s, http: 30s, agent: 60s)
 - `statusMessage`: Shown in the UI while the hook runs
 - `once`: Run only once per session (not per event occurrence)
@@ -324,6 +326,8 @@ Execute before any tool runs. Use to approve, deny, or modify tool calls.
 ```
 
 > **Deprecated:** The old top-level `decision: "approve|block"` fields still work but are superseded by `hookSpecificOutput.permissionDecision`. Use `permissionDecision` for new hooks.
+>
+> **AskUserQuestion pattern (CC 2.1.85):** PreToolUse hooks can satisfy `AskUserQuestion` tool calls by returning `updatedInput` alongside `permissionDecision: "allow"`. This enables headless integrations that collect answers via their own UI rather than requiring interactive user input.
 
 #### PermissionRequest
 
