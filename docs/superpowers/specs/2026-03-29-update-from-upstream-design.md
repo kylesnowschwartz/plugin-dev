@@ -252,6 +252,6 @@ description: >-
 
 | Agent | Tools | Why |
 |---|---|---|
-| `changelog-differ` | Read, Grep, Glob, WebFetch, Agent (for claude-code-guide dispatch) | Needs to fetch remote changelog, read local files, dispatch subagent |
+| `changelog-differ` | Read, Write, Grep, Glob, WebFetch, Agent, Bash | Needs to fetch remote changelog, read local files, dispatch subagent, write manifest, create directories |
 | `update-manifest-verifier` | Read, Grep, Glob, WebFetch, Edit | Needs to read changelogs and skill files, amend the manifest |
 | `update-reviewer` | Read, Grep, Glob, Bash (for markdownlint) | Needs to read modified files, run lint, verify content |

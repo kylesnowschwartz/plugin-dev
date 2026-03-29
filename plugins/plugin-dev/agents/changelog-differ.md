@@ -14,7 +14,7 @@ description: |
 
 model: inherit
 color: yellow
-tools: Read, Grep, Glob, WebFetch, Agent
+tools: Read, Write, Grep, Glob, WebFetch, Agent, Bash
 ---
 
 You are a changelog analysis agent. Your job is to discover what changed in Claude Code since the last plugin-dev audit and produce a structured change manifest.
