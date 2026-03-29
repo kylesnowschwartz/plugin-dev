@@ -6,13 +6,13 @@
   },
   "metadata": {
     "description": "Unofficial plugin-dev plugin marketplace. Originally created by Daisy Hollman at Anthropic, forked and maintained by Kyle Snow Schwartz.",
-    "version": "0.6.1"
+    "version": "0.7.0"
   },
   "plugins": [
     {
       "name": "plugin-dev",
-      "description": "Comprehensive toolkit for developing Claude Code plugins. Includes 10 expert skills covering hooks, MCP integration, LSP servers, commands, agents, marketplaces, and best practices, plus a guide skill for navigation. AI-assisted plugin creation and validation.",
-      "version": "0.6.1",
+      "description": "Comprehensive toolkit for developing Claude Code plugins. Includes 11 expert skills covering hooks, MCP integration, LSP servers, commands, agents, marketplaces, upstream sync, and best practices, plus a guide skill for navigation. AI-assisted plugin creation and validation.",
+      "version": "0.7.0",
       "author": {
         "name": "Kyle Snow Schwartz",
         "url": "https://github.com/kylesnowschwartz"

@@ -25,10 +25,19 @@ When the agent reports back, follow its recommendation:
 
 ## Available Agents
 
-| Agent                | Purpose                                    |
-| -------------------- | ------------------------------------------ |
-| **plugin-validator** | Validates plugin structure and manifests   |
-| **skill-reviewer**   | Reviews skill quality and triggering       |
-| **agent-creator**    | Generates new agents from descriptions     |
+| Agent                          | Purpose                                        |
+| ------------------------------ | ---------------------------------------------- |
+| **plugin-validator**           | Validates plugin structure and manifests        |
+| **skill-reviewer**             | Reviews skill quality and triggering            |
+| **agent-creator**              | Generates new agents from descriptions          |
+| **changelog-differ**           | Discovers upstream Claude Code changes (Stage 1)|
+| **update-manifest-verifier**   | Validates change manifest (Stage 2)             |
+| **update-reviewer**            | Verifies applied documentation updates (Stage 4)|
+
+## Available Skills (Maintenance)
+
+| Skill                      | Purpose                                              |
+| -------------------------- | ---------------------------------------------------- |
+| **update-from-upstream**   | Sync plugin-dev docs with Claude Code upstream releases |
 
 $ARGUMENTS

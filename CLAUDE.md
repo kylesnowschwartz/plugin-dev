@@ -4,9 +4,9 @@ Guidance for Claude Code working in this repository.
 
 ## What This Is
 
-Plugin marketplace containing the **plugin-dev** plugin - a toolkit for developing Claude Code plugins. Provides 10 skills, 4 agents, 3 slash commands.
+Plugin marketplace containing the **plugin-dev** plugin - a toolkit for developing Claude Code plugins. Provides 11 skills, 7 agents, 3 slash commands.
 
-**Version**: v0.6.1 | [CHANGELOG.md](CHANGELOG.md)
+**Version**: v0.7.0 | [CHANGELOG.md](CHANGELOG.md)
 
 ## MCP Tool Requirements (CRITICAL)
 
@@ -90,3 +90,11 @@ uvx yamllint .github/workflows/
 - **plugin-validator**: Validates plugin structure and manifests
 - **skill-reviewer**: Reviews skill quality and triggering
 - **agent-creator**: Generates agents from descriptions
+
+## Upstream Sync
+
+- **update-from-upstream**: Skill that syncs plugin-dev docs with Claude Code releases
+- **changelog-differ**: Discovers upstream changes (Stage 1)
+- **update-manifest-verifier**: Validates change manifest (Stage 2)
+- **update-reviewer**: Verifies applied updates (Stage 4)
+- Compatibility tracking: [docs/claude-code-compatibility.md](docs/claude-code-compatibility.md)

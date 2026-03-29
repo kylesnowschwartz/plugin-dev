@@ -211,7 +211,7 @@ The commit body includes a summary of what changed (generated from the manifest)
 | `CLAUDE.md` (root) | Version bump, update component counts (11 skills, 7 agents), reference to new skill |
 | `plugins/plugin-dev/skills/plugin-dev-guide/SKILL.md` | Add `update-from-upstream` to available skills listing |
 
-Note: `plugins/plugin-dev/.claude-plugin/plugin.json` and agent/skill directories use auto-discovery — no registration needed. The plugin-dev-guide *agent* routing table is not modified because `update-from-upstream` is a maintenance skill, not a user-facing plugin development question.
+Note: `plugins/plugin-dev/.claude-plugin/plugin.json` and agent/skill directories use auto-discovery — no registration needed. The plugin-dev-guide _agent_ routing table is not modified because `update-from-upstream` is a maintenance skill, not a user-facing plugin development question.
 
 ### External Dependencies
 

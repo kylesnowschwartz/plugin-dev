@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-03-29
+
+### Added
+
+- **update-from-upstream skill**: Four-stage pipeline for syncing plugin-dev documentation with Claude Code upstream releases, using source triangulation and independent verification agents
+- **changelog-differ agent**: Stage 1 agent that fetches CC changelog, reads system-prompts repo, and dispatches claude-code-guide for three-source triangulation
+- **update-manifest-verifier agent**: Stage 2 agent that independently re-fetches sources and validates the change manifest before edits are applied
+- **update-reviewer agent**: Stage 4 agent that verifies completeness, accuracy, lint, version sync, regressions, and style of applied updates
+- **claude-code-compatibility.md**: Version tracking file with audit log table recording which CC version plugin-dev is built against
+
 ## [0.6.1] - 2026-03-28
 
 ### Fixed
