@@ -449,5 +449,5 @@ For detailed information, consult:
 ### External Resources
 
 - **LSP Specification**: <https://microsoft.github.io/language-server-protocol/>
-- **Claude Code Plugins Reference**: <https://docs.anthropic.com/en/docs/claude-code/plugins-reference>
+- **Claude Code Plugins Reference**: <https://code.claude.com/docs/en/plugins-reference>
 - **Language Server List**: <https://langserver.org/>

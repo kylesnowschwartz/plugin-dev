@@ -19,7 +19,7 @@ Instead, please report them using one of the following methods:
 
 ### Preferred: GitHub Private Vulnerability Reporting
 
-1. Go to the [Security Advisories](https://github.com/sjnims/plugin-dev/security/advisories) page
+1. Go to the [Security Advisories](https://github.com/kylesnowschwartz/plugin-dev/security/advisories) page
 2. Click "Report a vulnerability"
 3. Fill out the advisory details form
 
@@ -27,7 +27,7 @@ This is the preferred method as it allows us to work with you privately to fix t
 
 ### Alternative: Email
 
-If you prefer, you can also email security concerns to: **<sjnims@gmail.com>**
+If you prefer, you can also email security concerns to: **<kyle.snowschwartz@gmail.com>**
 
 Please include:
 
@@ -147,9 +147,9 @@ _No security issues have been reported yet._
 
 ## Contact
 
-- **Security Issues**: Use [GitHub Private Vulnerability Reporting](https://github.com/sjnims/plugin-dev/security/advisories) or email <sjnims@gmail.com>
-- **General Questions**: Open an issue using our [question template](https://github.com/sjnims/plugin-dev/issues/new/choose)
-- **Maintainer**: Steve Nims ([@sjnims](https://github.com/sjnims))
+- **Security Issues**: Use [GitHub Private Vulnerability Reporting](https://github.com/kylesnowschwartz/plugin-dev/security/advisories) or email <kyle.snowschwartz@gmail.com>
+- **General Questions**: Open an issue using our [question template](https://github.com/kylesnowschwartz/plugin-dev/issues/new/choose)
+- **Maintainer**: Kyle Snow Schwartz ([@kylesnowschwartz](https://github.com/kylesnowschwartz))
 
 ## Additional Resources
 

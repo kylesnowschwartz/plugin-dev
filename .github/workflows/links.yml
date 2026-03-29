@@ -1,6 +1,7 @@
 name: Check Links
 
 # Checks all markdown files for broken links using lychee
+# Runs on PRs that touch .md files and on manual dispatch
 # Key flags:
 #   --cache: Cache results to speed up subsequent runs
 #   --exclude-link-local: Skip localhost/127.0.0.1 links (not reachable in CI)
@@ -11,8 +12,6 @@ on:
   pull_request:
     paths:
       - "**.md"
-  schedule:
-    - cron: "0 0 * * 0" # Weekly on Sunday at midnight UTC
   workflow_dispatch:
 
 concurrency:

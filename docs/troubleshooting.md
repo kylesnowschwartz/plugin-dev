@@ -54,4 +54,4 @@ Paths relative to `plugins/plugin-dev/`:
 
 - Check [README.md FAQ](../README.md#faq) for common questions
 - Review [CONTRIBUTING.md](../CONTRIBUTING.md#common-mistakes-to-avoid) for common mistakes
-- Open an [issue](https://github.com/sjnims/plugin-dev/issues) if you're stuck
+- Open an [issue](https://github.com/kylesnowschwartz/plugin-dev/issues) if you're stuck

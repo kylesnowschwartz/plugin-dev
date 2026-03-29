@@ -5,21 +5,21 @@
 # to enable per-area ownership when the team grows.
 
 # Default owner for everything
-* @sjnims
+* @kylesnowschwartz
 
 # --- Specific ownership rules (ready for team scaling) ---
 
 # GitHub configuration (workflows, templates, dependabot)
-/.github/ @sjnims
+/.github/ @kylesnowschwartz
 
 # Plugin core
-/plugins/plugin-dev/ @sjnims
+/plugins/plugin-dev/ @kylesnowschwartz
 
 # Critical documentation
-/README.md @sjnims
-/CLAUDE.md @sjnims
-/SECURITY.md @sjnims
+/README.md @kylesnowschwartz
+/CLAUDE.md @kylesnowschwartz
+/SECURITY.md @kylesnowschwartz
 
 # Manifests (version management)
-/plugins/plugin-dev/.claude-plugin/plugin.json @sjnims
-/.claude-plugin/marketplace.json @sjnims
+/plugins/plugin-dev/.claude-plugin/plugin.json @kylesnowschwartz
+/.claude-plugin/marketplace.json @kylesnowschwartz

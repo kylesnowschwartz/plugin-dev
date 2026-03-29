@@ -17,7 +17,7 @@ Thank you for your interest in contributing to the Plugin Dev toolkit for Claude
 
 ## Code of Conduct
 
-This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to <sjnims@gmail.com>.
+This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to <kyle.snowschwartz@gmail.com>.
 
 ## Getting Started
 
@@ -73,7 +73,7 @@ cd plugin-dev
 ### 2. Set Up Remote
 
 ```bash
-git remote add upstream https://github.com/sjnims/plugin-dev.git
+git remote add upstream https://github.com/kylesnowschwartz/plugin-dev.git
 ```
 
 ### 3. Create a Branch
@@ -412,7 +412,7 @@ git push origin feature/your-feature-name
 
 ### 5. Create a Pull Request
 
-1. Go to the [repository](https://github.com/sjnims/plugin-dev)
+1. Go to the [repository](https://github.com/kylesnowschwartz/plugin-dev)
 2. Click "New Pull Request"
 3. Select your fork and branch
 4. Fill out the PR template completely
@@ -482,14 +482,14 @@ Version releases are handled by maintainers. If your contribution requires a ver
 
 ### Getting Help
 
-- **Questions**: Open an issue with the [question template](https://github.com/sjnims/plugin-dev/issues/new?template=question.yml)
-- **Discussions**: Use [GitHub Discussions](https://github.com/sjnims/plugin-dev/discussions)
+- **Questions**: Open an issue with the [question template](https://github.com/kylesnowschwartz/plugin-dev/issues/new?template=question.yml)
+- **Discussions**: Use [GitHub Discussions](https://github.com/kylesnowschwartz/plugin-dev/discussions)
 
 ### Reporting Issues
 
-- **Bugs**: Use the [bug report template](https://github.com/sjnims/plugin-dev/issues/new?template=bug_report.yml)
-- **Features**: Use the [feature request template](https://github.com/sjnims/plugin-dev/issues/new?template=feature_request.yml)
-- **Documentation**: Use the [documentation template](https://github.com/sjnims/plugin-dev/issues/new?template=documentation.yml)
+- **Bugs**: Use the [bug report template](https://github.com/kylesnowschwartz/plugin-dev/issues/new?template=bug_report.yml)
+- **Features**: Use the [feature request template](https://github.com/kylesnowschwartz/plugin-dev/issues/new?template=feature_request.yml)
+- **Documentation**: Use the [documentation template](https://github.com/kylesnowschwartz/plugin-dev/issues/new?template=documentation.yml)
 - **Security**: See [SECURITY.md](SECURITY.md)
 
 ### Code Review Process
@@ -513,9 +513,9 @@ Contributors are recognized in:
 If you have questions not covered here:
 
 1. Check [CLAUDE.md](CLAUDE.md) for development details
-2. Search [existing issues](https://github.com/sjnims/plugin-dev/issues)
-3. Open a [question issue](https://github.com/sjnims/plugin-dev/issues/new?template=question.yml)
-4. Start a [discussion](https://github.com/sjnims/plugin-dev/discussions)
+2. Search [existing issues](https://github.com/kylesnowschwartz/plugin-dev/issues)
+3. Open a [question issue](https://github.com/kylesnowschwartz/plugin-dev/issues/new?template=question.yml)
+4. Start a [discussion](https://github.com/kylesnowschwartz/plugin-dev/discussions)
 
 ---
 

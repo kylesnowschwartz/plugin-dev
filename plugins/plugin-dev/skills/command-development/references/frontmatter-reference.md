@@ -149,7 +149,7 @@ allowed-tools: "*"
 
 Both formats are accepted. Shorthand names use the current default version of each model family.
 
-> **Note:** Anthropic releases new model versions periodically. For current model IDs, consult [Claude Models Overview](https://docs.anthropic.com/en/docs/about-claude/models). Prefer shorthand names unless you need a specific version.
+> **Note:** Anthropic releases new model versions periodically. For current model IDs, consult [Claude Models Overview](https://platform.claude.com/docs/en/about-claude/models/overview). Prefer shorthand names unless you need a specific version.
 
 **Purpose:** Specify which Claude model executes the command
 
@@ -484,7 +484,7 @@ allowed-tools: Bash # ❌ Missing command filter
 model: gpt4 # ❌ Not a valid Claude model
 ```
 
-**Fix:** Use shorthand (`sonnet`, `opus`, `haiku`) or full model ID (see [Claude Models Overview](https://docs.anthropic.com/en/docs/about-claude/models))
+**Fix:** Use shorthand (`sonnet`, `opus`, `haiku`) or full model ID (see [Claude Models Overview](https://platform.claude.com/docs/en/about-claude/models/overview))
 
 ### Validation Checklist
 

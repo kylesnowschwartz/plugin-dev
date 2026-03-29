@@ -1221,7 +1221,7 @@ Development tools in `scripts/`:
 
 ### External Resources
 
-- **Official Docs**: <https://docs.anthropic.com/en/docs/claude-code/hooks>
+- **Official Docs**: <https://code.claude.com/docs/en/hooks>
 - **Testing**: Use `claude --debug` for detailed logs
 - **Validation**: Use `jq` to validate hook JSON output
 

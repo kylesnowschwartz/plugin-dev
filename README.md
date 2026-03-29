@@ -4,9 +4,9 @@
 
 # Plugin Development Toolkit
 
-[![CI](https://github.com/sjnims/plugin-dev/actions/workflows/component-validation.yml/badge.svg)](https://github.com/sjnims/plugin-dev/actions/workflows/component-validation.yml)
-[![Markdown](https://github.com/sjnims/plugin-dev/actions/workflows/markdownlint.yml/badge.svg)](https://github.com/sjnims/plugin-dev/actions/workflows/markdownlint.yml)
-[![Version](https://img.shields.io/github/v/release/sjnims/plugin-dev?label=version&color=blue)](https://github.com/sjnims/plugin-dev/releases)
+[![CI](https://github.com/kylesnowschwartz/plugin-dev/actions/workflows/component-validation.yml/badge.svg)](https://github.com/kylesnowschwartz/plugin-dev/actions/workflows/component-validation.yml)
+[![Markdown](https://github.com/kylesnowschwartz/plugin-dev/actions/workflows/markdownlint.yml/badge.svg)](https://github.com/kylesnowschwartz/plugin-dev/actions/workflows/markdownlint.yml)
+[![Version](https://img.shields.io/github/v/release/kylesnowschwartz/plugin-dev?label=version&color=blue)](https://github.com/kylesnowschwartz/plugin-dev/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 A comprehensive toolkit for developing Claude Code plugins with expert guidance on hooks, MCP integration, plugin structure, and marketplace publishing.
@@ -45,7 +45,7 @@ Each component follows progressive disclosure: lean core documentation with deta
 
 ### Required
 
-- [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) installed and configured
+- [Claude Code CLI](https://code.claude.com/docs) installed and configured
 - Git (for version control and marketplace publishing)
 
 ### For Utility Scripts
@@ -74,8 +74,8 @@ grep --version 2>&1 | head -1
 Add this marketplace and install the plugin:
 
 ```bash
-/plugin marketplace add sjnims/plugin-dev
-/plugin install plugin-dev@sjnims/plugin-dev
+/plugin marketplace add kylesnowschwartz/plugin-dev
+/plugin install plugin-dev@kylesnowschwartz/plugin-dev
 ```
 
 Or for development, use directly:
@@ -397,9 +397,9 @@ To contribute improvements:
 
 ## Getting Help
 
-- **Issues**: [GitHub Issues](https://github.com/sjnims/plugin-dev/issues)
-- **Documentation**: [Claude Code Plugins](https://docs.anthropic.com/en/docs/claude-code/plugins)
-- **Skills Reference**: [Claude Code Skills](https://docs.anthropic.com/en/docs/claude-code/skills)
+- **Issues**: [GitHub Issues](https://github.com/kylesnowschwartz/plugin-dev/issues)
+- **Documentation**: [Claude Code Plugins](https://code.claude.com/docs/en/plugins)
+- **Skills Reference**: [Claude Code Skills](https://code.claude.com/docs/en/skills)
 
 ## Attribution
 
@@ -408,7 +408,7 @@ This plugin was originally developed by [Daisy Hollman](mailto:daisy@anthropic.c
 - [claude-code/plugins/plugin-dev](https://github.com/anthropics/claude-code/tree/main/plugins/plugin-dev)
 - [claude-plugins-official/plugins/plugin-dev](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/plugin-dev)
 
-This repository ([sjnims/plugin-dev](https://github.com/sjnims/plugin-dev)) is an expanded version with:
+This repository ([kylesnowschwartz/plugin-dev](https://github.com/kylesnowschwartz/plugin-dev)) is an expanded version with:
 
 - Enhanced skill descriptions with stronger trigger phrases
 - Additional utility scripts (test-agent-trigger.sh, create-agent-skeleton.sh)
