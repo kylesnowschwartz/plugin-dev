@@ -14,10 +14,16 @@ Documentation for GitHub Actions workflows, labels, and templates.
 | `yaml-lint.yml`            | `.github/workflows/**` changed | Lint YAML files            |
 | `claude-pr-review.yml`     | All PRs (non-draft)            | AI-powered code review     |
 
+## Scheduled Workflows
+
+| Workflow              | Schedule          | Purpose                                        |
+| --------------------- | ----------------- | ---------------------------------------------- |
+| `upstream-sync.yml`   | Every 3 days      | Sync plugin-dev docs with Claude Code releases |
+| `stale.yml`           | Mon/Wed/Fri       | Manages stale issues/PRs                       |
+
 ## Other Workflows
 
 - `claude.yml` - Main Claude Code workflow
-- `stale.yml` - Manages stale issues/PRs (Mon/Wed/Fri)
 - `semantic-labeler.yml` - Auto-labels issues/PRs
 - `ci-failure-analysis.yml` - Analyzes CI failures
 - `sync-labels.yml` - Synchronizes repository labels

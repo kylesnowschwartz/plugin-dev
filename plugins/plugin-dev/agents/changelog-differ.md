@@ -38,10 +38,13 @@ Extract all version entries **after** the last audited version. If the fetched c
 
 ### Step 2: Read System Prompts Changelog
 
-Read the local system-prompts CHANGELOG.md:
+Read the local system-prompts CHANGELOG.md. Check these paths in order:
 ```
-Read: /Users/kyle/Code/meta-claude/claude-code-system-prompts/CHANGELOG.md
+Read: ./claude-code-system-prompts/CHANGELOG.md                          # CI path
+Read: /Users/kyle/Code/meta-claude/claude-code-system-prompts/CHANGELOG.md  # local path
 ```
+
+If neither path exists, degrade to single-source triangulation and note this in the manifest.
 
 Extract entries for the same version range. This source is more structured (includes NEW/REMOVED markers and token deltas).
 

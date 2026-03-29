@@ -1,0 +1,96 @@
+# yamllint disable rule:line-length
+name: Upstream Sync
+
+on:
+  schedule:
+    - cron: "0 6 */3 * *" # Every 3 days at 06:00 UTC
+  workflow_dispatch: # Manual trigger for testing
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - name: Checkout plugin-dev
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Checkout claude-code-system-prompts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: Piebald-AI/claude-code-system-prompts
+          path: claude-code-system-prompts
+
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: 22
+
+      - name: Cache npm tools
+        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+        id: npm-tools-cache
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-lint-tools-v1
+
+      - name: Install linting tools
+        if: steps.npm-tools-cache.outputs.cache-hit != 'true'
+        run: npm install -g markdownlint-cli2
+
+      - name: Run upstream sync
+        uses: anthropics/claude-code-action@f64219702d7454cf29fe32a74104be6ed43dc637 # v1.0.34
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          use_commit_signing: true
+          plugin_marketplaces: "./"
+          plugins: "plugin-dev"
+          prompt: |
+            You are running an automated upstream sync for the plugin-dev plugin.
+
+            ## Task
+
+            Run the `plugin-dev:update-from-upstream` skill. Follow all four stages
+            of the pipeline exactly as documented in the skill.
+
+            ## CI Overrides
+
+            **Release step override**: Instead of committing directly to main, do this:
+            1. Create a new branch named `claude/upstream-sync-<date>` (use today's date as YYYY-MM-DD)
+            2. Commit all changes to that branch with conventional commit format
+            3. Push the branch and open a PR against main
+            4. The PR title should be: `docs: sync plugin-dev with Claude Code vX.Y.Z-vA.B.C`
+            5. The PR body should include:
+               - A summary of what changed (from the manifest)
+               - The CC version range covered
+               - A checklist of updated skills/files
+
+            **System prompts path**: The Piebald-AI/claude-code-system-prompts repo is
+            checked out at `./claude-code-system-prompts/` — use this path instead of
+            `/Users/kyle/Code/meta-claude/claude-code-system-prompts` for Stage 1
+            triangulation.
+
+            **No changes**: If the pipeline finds no new Claude Code versions since the
+            last audit (check `docs/claude-code-compatibility.md`), exit cleanly with
+            no PR. Report "Already up to date" in the step summary.
+
+            ## Important
+
+            - Do NOT commit directly to main
+            - Do NOT skip any pipeline stages
+            - Do NOT skip the verification agents (Stages 2 and 4)
+            - If any stage fails, report the failure clearly and stop
+          claude_args: |
+            --model claude-opus-4-5-20251101
+            --max-turns 50
+            --allowedTools "Read,Write,Edit,Bash,Grep,Glob,WebFetch,Agent"
