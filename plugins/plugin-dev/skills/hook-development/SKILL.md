@@ -1,6 +1,6 @@
 ---
 name: hook-development
-description: This skill should be used when the user asks to "create a hook", "add a PreToolUse/PostToolUse/Stop hook", "validate tool use", "implement prompt-based hooks", "use ${CLAUDE_PLUGIN_ROOT}", "set up event-driven automation", "block dangerous commands", "scoped hooks", "frontmatter hooks", "hook in skill", "hook in agent", "agent hook type", "async hooks", "once handler", "statusMessage", "hook decision control", or mentions hook events (PreToolUse, PermissionRequest, PostToolUse, PostToolUseFailure, Stop, StopFailure, SubagentStop, SubagentStart, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, PostCompact, Notification, ConfigChange, TeammateIdle, TaskCompleted, CwdChanged, FileChanged, WorktreeCreate, WorktreeRemove, InstructionsLoaded, Elicitation, ElicitationResult). Provides comprehensive guidance for creating and implementing Claude Code plugin hooks with focus on advanced prompt-based hooks API.
+description: This skill should be used when the user asks to "create a hook", "add a PreToolUse/PostToolUse/Stop hook", "validate tool use", "implement prompt-based hooks", "use ${CLAUDE_PLUGIN_ROOT}", "set up event-driven automation", "block dangerous commands", "scoped hooks", "frontmatter hooks", "hook in skill", "hook in agent", "agent hook type", "async hooks", "once handler", "statusMessage", "hook decision control", or mentions hook events (PreToolUse, PermissionRequest, PermissionDenied, PostToolUse, PostToolUseFailure, Stop, StopFailure, SubagentStop, SubagentStart, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, PostCompact, Notification, ConfigChange, TeammateIdle, TaskCompleted, CwdChanged, FileChanged, WorktreeCreate, WorktreeRemove, InstructionsLoaded, Elicitation, ElicitationResult). Provides comprehensive guidance for creating and implementing Claude Code plugin hooks with focus on advanced prompt-based hooks API.
 ---
 
 # Hook Development for Claude Code Plugins
@@ -9,11 +9,11 @@ description: This skill should be used when the user asks to "create a hook", "a
 
 Hooks are event-driven automation that execute in response to Claude Code events. Use hooks to validate operations, enforce policies, add context, and integrate external tools into workflows.
 
-Claude Code has **24 hook events** across these categories:
+Claude Code has **25 hook events** across these categories:
 
 - **Session Lifecycle** -- SessionStart, InstructionsLoaded, SessionEnd
 - **User Input** -- UserPromptSubmit
-- **Tool Lifecycle** -- PreToolUse, PermissionRequest, PostToolUse, PostToolUseFailure
+- **Tool Lifecycle** -- PreToolUse, PermissionRequest, PermissionDenied, PostToolUse, PostToolUseFailure
 - **Turn Control** -- Stop, StopFailure
 - **Subagents** -- SubagentStart, SubagentStop
 - **Teams** -- TeammateIdle, TaskCompleted
@@ -25,6 +25,8 @@ Claude Code has **24 hook events** across these categories:
 - **Notifications** -- Notification
 
 For complete input/output JSON schemas for every event, see **`references/event-schemas.md`**.
+
+> **CC 2.1.88:** Added PermissionDenied hook event. PreToolUse/PostToolUse `file_path` now provides absolute paths for Write/Edit/Read tools. Hook `if` filtering properly matches compound commands (e.g., `ls && git push`) and commands with env var prefixes (e.g., `FOO=bar git push`).
 
 ## Hook Types
 
@@ -151,7 +153,7 @@ Each hook entry in a matcher group supports these fields:
 }
 ```
 
-- `if`: Conditional execution using permission rule syntax (e.g., `Bash(git *)` runs the hook only for git commands). When set, the hook fires only when the tool call matches the pattern. Combines with `matcher` for precise targeting — `matcher` selects the event, `if` filters within it. Added in CC 2.1.85.
+- `if`: Conditional execution using permission rule syntax (e.g., `Bash(git *)` runs the hook only for git commands). When set, the hook fires only when the tool call matches the pattern. Combines with `matcher` for precise targeting — `matcher` selects the event, `if` filters within it. Added in CC 2.1.85. CC 2.1.88 fixed filtering to properly match compound commands (e.g., `ls && git push`) and commands with env var prefixes (e.g., `FOO=bar git push`).
 - `timeout`: Max execution time in seconds. Defaults vary by type (command: 60s, prompt: 30s, http: 30s, agent: 60s)
 - `statusMessage`: Shown in the UI while the hook runs
 - `once`: Run only once per session (not per event occurrence)
@@ -379,6 +381,45 @@ Execute when a permission dialog is about to display. Use to automatically allow
 **Difference from PreToolUse:** PreToolUse runs before every tool execution regardless of permission status. PermissionRequest runs only when a permission dialog would be shown to the user.
 
 **Known issues:** `additionalContext` is parsed but silently dropped (works in PreToolUse but not here). Race condition where dialog may briefly show despite returning "allow" ([#12176](https://github.com/anthropics/claude-code/issues/12176)).
+
+#### PermissionDenied
+
+Execute when auto mode classifier denies a tool call (CC 2.1.88). Use to request retry or handle denials programmatically.
+
+**Matchers:** Tool names (same as PreToolUse)
+**Hook types:** Command, HTTP, Prompt, Agent
+**Decision control:** Can request retry via `{retry: true}`
+
+```json
+{
+  "PermissionDenied": [
+    {
+      "matcher": "Bash",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/handle-denial.sh"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Output:**
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PermissionDenied",
+    "retry": true
+  }
+}
+```
+
+- `retry`: If `true`, requests Claude to retry the denied operation
+
+**Difference from PermissionRequest:** PermissionRequest fires when a dialog is about to show; PermissionDenied fires after auto mode has already denied the operation.
 
 #### PostToolUse
 
@@ -944,6 +985,7 @@ Not all events support all four hook types:
 | UserPromptSubmit   | Yes     | Yes  | Yes    | Yes   |
 | PreToolUse         | Yes     | Yes  | Yes    | Yes   |
 | PermissionRequest  | Yes     | Yes  | Yes    | Yes   |
+| PermissionDenied   | Yes     | Yes  | Yes    | Yes   |
 | PostToolUse        | Yes     | Yes  | Yes    | Yes   |
 | PostToolUseFailure | Yes     | Yes  | Yes    | Yes   |
 | Stop               | Yes     | Yes  | Yes    | Yes   |
@@ -1141,7 +1183,7 @@ echo "$output" | jq .
 
 ## Quick Reference
 
-### All 24 Hook Events
+### All 25 Hook Events
 
 | Event              | Category      | Matchers                    | Decision Control              |
 | ------------------ | ------------- | --------------------------- | ----------------------------- |
@@ -1151,6 +1193,7 @@ echo "$output" | jq .
 | UserPromptSubmit   | Input         | None                        | Block prompt                  |
 | PreToolUse         | Tool          | Tool names (regex)          | Allow/deny/ask, modify input  |
 | PermissionRequest  | Tool          | Tool names (regex)          | Allow/deny, modify input      |
+| PermissionDenied   | Tool          | Tool names (regex)          | Request retry                 |
 | PostToolUse        | Tool          | Tool names (regex)          | Block, modify MCP output      |
 | PostToolUseFailure | Tool          | Tool names (regex)          | Context injection             |
 | Stop               | Turn          | None                        | Block stop                    |
@@ -1189,7 +1232,7 @@ echo "$output" | jq .
 
 For detailed patterns and advanced techniques, consult:
 
-- **`references/event-schemas.md`** -- Complete input/output JSON schemas for all 24 events
+- **`references/event-schemas.md`** -- Complete input/output JSON schemas for all 25 events
 - **`references/patterns.md`** -- Proven patterns including temporarily active and configuration-driven hooks
 - **`references/migration.md`** -- Migrating from basic to advanced hooks
 - **`references/advanced.md`** -- Advanced use cases and techniques
@@ -1233,7 +1276,7 @@ Development tools in `scripts/`:
 
 To implement hooks in a plugin:
 
-1. Identify events to hook into (see [Quick Reference](#all-24-hook-events))
+1. Identify events to hook into (see [Quick Reference](#all-25-hook-events))
 2. Decide hook type: prompt (flexible), agent (multi-step), command (deterministic), or HTTP (external)
 3. Write hook configuration in `hooks/hooks.json`
 4. For command hooks, create hook scripts

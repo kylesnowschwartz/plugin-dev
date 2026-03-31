@@ -73,6 +73,8 @@ Hooks support a declarative `if` field using permission rule syntax to filter wh
 
 This hook fires only for Bash commands starting with `git`. The `if` field uses the same permission rule syntax as `settings.json` allow/deny rules (e.g., `Bash(npm *)`, `Edit(src/**)`, `Write(tests/**)`). Combine with `matcher` for two-level filtering: `matcher` selects the event type, `if` narrows to specific invocations.
 
+> **CC 2.1.88:** Fixed `if` field filtering to properly match compound commands (e.g., `ls && git push`) and commands with environment variable prefixes (e.g., `FOO=bar git push`). Previously, such commands could bypass `if` patterns.
+
 ### Script-Level Conditionals
 
 Execute hooks based on environment or context in the script itself:

@@ -100,6 +100,8 @@ Every hook receives these fields:
 
 The `tool_input` object varies by tool. Common tool schemas:
 
+> **CC 2.1.88:** The `file_path` field in PreToolUse/PostToolUse hooks for Write, Edit, and Read tools now provides **absolute paths**. Previously, paths could be relative. Hook scripts that process file paths should expect absolute paths.
+
 | Tool         | `tool_input` Fields                                                                                                                                                   |
 | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Bash         | `command` (string), `description` (string, optional), `timeout` (number, optional), `run_in_background` (boolean, optional)                                           |
