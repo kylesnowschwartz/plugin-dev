@@ -52,9 +52,9 @@ Extract entries for the same version range. This source is more structured (incl
 
 ### Step 3: Cross-Reference with Official Docs
 
-Dispatch the `claude-code-guide` subagent type to cross-reference significant changes against official documentation. This catches features the changelogs understate or omit.
+Dispatch an Agent with `subagent_type: "claude-code-guide"` to cross-reference significant changes against official documentation. This is a built-in Claude Code agent type — it IS available, so always attempt the dispatch. Pass it a prompt listing the changes found in Steps 1-2 and ask it to verify them against official docs.
 
-If the `claude-code-guide` subagent type is unavailable, skip this step and note in the manifest that triangulation is degraded to two sources.
+Only if the dispatch fails with an error should you note degraded triangulation in the manifest.
 
 ### Step 4: Classify Changes
 
