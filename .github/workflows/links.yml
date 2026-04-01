@@ -20,7 +20,6 @@ concurrency:
 
 permissions:
   contents: read
-  issues: write # Required for creating issue on failure
 
 jobs:
   linkChecker:
@@ -62,37 +61,3 @@ jobs:
         with:
           path: .lycheecache
           key: cache-lychee-v1
-
-      # Check for existing issue to avoid duplicates, then create or comment
-      - name: Check for existing open issue
-        if: failure()
-        id: check-issue
-        run: |
-          issue=$(gh issue list --state open \
-            --search "in:title Broken links detected" \
-            --json number --jq '.[0].number // empty')
-          echo "issue_number=$issue" >> "$GITHUB_OUTPUT"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create issue for broken links
-        if: failure() && steps.check-issue.outputs.issue_number == ''
-        run: gh issue create --title "Broken links detected" --body-file ./lychee/out.md
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Comment on existing issue
-        if: failure() && steps.check-issue.outputs.issue_number != ''
-        run: |
-          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}"
-          {
-            echo "## 🔄 Link check failed again"
-            echo ""
-            echo "**Run**: [${RUN_ID}](${run_url})"
-            echo "**Triggered by**: ${GITHUB_EVENT_NAME}"
-            echo ""
-            cat ./lychee/out.md
-          } | gh issue comment "${{ steps.check-issue.outputs.issue_number }}" --body-file -
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RUN_ID: ${{ github.run_id }}

@@ -32,22 +32,6 @@ jobs:
           repository: Piebald-AI/claude-code-system-prompts
           path: claude-code-system-prompts
 
-      - name: Setup Node.js
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
-        with:
-          node-version: 22
-
-      - name: Cache npm tools
-        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
-        id: npm-tools-cache
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-lint-tools-v1
-
-      - name: Install linting tools
-        if: steps.npm-tools-cache.outputs.cache-hit != 'true'
-        run: npm install -g markdownlint-cli2
-
       - name: Run upstream sync
         uses: anthropics/claude-code-action@f64219702d7454cf29fe32a74104be6ed43dc637 # v1.0.34
         with:

@@ -7,7 +7,6 @@ This document describes the label system for plugin-dev.
 - **labels.yml**: Source of truth for all repository labels
 - **LABELS.md**: This documentation file
 - **workflows/sync-labels.yml**: Automated workflow that syncs label definitions on push to main
-- **workflows/semantic-labeler.yml**: Claude-powered workflow that applies labels to issues and PRs
 
 ## Label Categories
 
@@ -163,38 +162,6 @@ Common label combinations for plugin-dev:
 | Command triggering bug      | `bug`, `component:command`, `scope:triggering`    |
 | Plugin architecture design  | `enhancement`, `status:needs-design`, `roadmap`   |
 | Dependabot PR               | `chore`, `dependencies`, `effort:small`           |
-
-## Automatic Label Application
-
-Labels are automatically applied to issues and PRs using Claude-powered semantic analysis.
-
-### How It Works
-
-The `semantic-labeler.yml` workflow:
-
-- **Triggers on**: Issues (opened, edited) and PRs (opened, synchronize, edited)
-- **Analyzes**: Title, body, and for PRs, the diff
-- **Applies**: Type, component, priority, effort, and impact labels
-
-### Labels Applied Automatically
-
-| Category  | Labels                                                     | Required      |
-| --------- | ---------------------------------------------------------- | ------------- |
-| Type      | bug, enhancement, documentation, question, refactor, chore | Yes (one)     |
-| Component | component:\*, github-actions, dependencies                 | If applicable |
-| Scope     | scope:triggering, scope:validation                         | If applicable |
-| Priority  | priority:critical/high/medium/low                          | Yes (one)     |
-| Effort    | effort:small/medium/large                                  | Yes (one)     |
-| Impact    | breaking, security                                         | If applicable |
-| Community | good first issue, help wanted                              | If applicable |
-
-### Skipped Cases
-
-The workflow skips:
-
-- Bot-created issues/PRs (dependabot, claude)
-- Draft PRs
-- Fork PRs (for security - secrets not exposed)
 
 ## Managing Labels
 

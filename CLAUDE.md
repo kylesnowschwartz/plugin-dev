@@ -50,9 +50,6 @@ This repo has TWO `.claude-plugin/` directories:
 # Test plugin locally
 claude --plugin-dir plugins/plugin-dev
 
-# Lint markdown
-markdownlint '**/*.md' --ignore node_modules
-
 # Lint shell scripts
 shellcheck plugins/plugin-dev/skills/*/scripts/*.sh
 

@@ -5,7 +5,6 @@
 # Plugin Development Toolkit
 
 [![CI](https://github.com/kylesnowschwartz/plugin-dev/actions/workflows/component-validation.yml/badge.svg)](https://github.com/kylesnowschwartz/plugin-dev/actions/workflows/component-validation.yml)
-[![Markdown](https://github.com/kylesnowschwartz/plugin-dev/actions/workflows/markdownlint.yml/badge.svg)](https://github.com/kylesnowschwartz/plugin-dev/actions/workflows/markdownlint.yml)
 [![Version](https://img.shields.io/github/v/release/kylesnowschwartz/plugin-dev?label=version&color=blue)](https://github.com/kylesnowschwartz/plugin-dev/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -392,7 +391,7 @@ To contribute improvements:
 1. Fork this repository
 2. Make changes to `plugins/plugin-dev/`
 3. Test locally with `claude --plugin-dir plugins/plugin-dev`
-4. Run linters: `markdownlint-cli2 '**/*.md'` and `shellcheck plugins/plugin-dev/skills/*/scripts/*.sh`
+4. Run linters: `shellcheck plugins/plugin-dev/skills/*/scripts/*.sh`
 5. Create a PR with your changes
 
 ## Getting Help

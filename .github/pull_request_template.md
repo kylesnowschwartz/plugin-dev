@@ -13,7 +13,7 @@
 - [ ] Refactoring (code change that neither fixes a bug nor adds a feature)
 - [ ] Chore (maintenance tasks: dependencies, CI, tooling)
 - [ ] Test (adding or updating tests)
-- [ ] Configuration change (changes to .markdownlint.json, plugin.json, etc.)
+- [ ] Configuration change (changes to plugin.json, etc.)
 
 ## Component(s) Affected
 
@@ -25,7 +25,7 @@
 - [ ] Hooks (event-driven automation)
 - [ ] Marketplace (marketplace.json, distribution)
 - [ ] Documentation (README.md, CLAUDE.md, SECURITY.md)
-- [ ] Configuration (.markdownlint.json, plugin.json)
+- [ ] Configuration (plugin.json)
 - [ ] Issue/PR templates
 - [ ] Other (please specify):
 
@@ -75,7 +75,6 @@ Fixes #
 
 ### Markdown
 
-- [ ] I have run `markdownlint` and fixed all issues
 - [ ] My markdown follows the repository style (ATX headers, dash lists, fenced code blocks)
 - [ ] I have verified special HTML elements are properly closed (`<p>`, `<img>`, `<example>`, `<commentary>`)
 

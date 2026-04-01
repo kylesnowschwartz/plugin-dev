@@ -6,28 +6,22 @@ Documentation for GitHub Actions workflows, labels, and templates.
 
 | Workflow                   | Trigger                        | Purpose                    |
 | -------------------------- | ------------------------------ | -------------------------- |
-| `markdownlint.yml`         | `**.md` changed                | Lint markdown files        |
 | `links.yml`                | `**.md` changed                | Check for broken links     |
 | `component-validation.yml` | Plugin components changed      | Validate plugin components |
 | `version-check.yml`        | Version files changed          | Ensure version consistency |
 | `validate-workflows.yml`   | `.github/workflows/**` changed | Lint GitHub Actions        |
 | `yaml-lint.yml`            | `.github/workflows/**` changed | Lint YAML files            |
-| `claude-pr-review.yml`     | All PRs (non-draft)            | AI-powered code review     |
 
 ## Scheduled Workflows
 
-| Workflow              | Schedule          | Purpose                                        |
-| --------------------- | ----------------- | ---------------------------------------------- |
-| `upstream-sync.yml`   | Every 3 days      | Sync plugin-dev docs with Claude Code releases |
-| `stale.yml`           | Mon/Wed/Fri       | Manages stale issues/PRs                       |
+| Workflow            | Schedule     | Purpose                                       |
+| ------------------- | ------------ | --------------------------------------------- |
+| `upstream-sync.yml` | Every 3 days | Sync plugin-dev docs with Claude Code releases |
 
 ## Other Workflows
 
-- `claude.yml` - Main Claude Code workflow
-- `semantic-labeler.yml` - Auto-labels issues/PRs
-- `ci-failure-analysis.yml` - Analyzes CI failures
+- `claude.yml` - On-demand `@claude` in issues/PRs
 - `sync-labels.yml` - Synchronizes repository labels
-- `greet.yml` - Greets new contributors
 
 ## Labels
 
@@ -39,8 +33,6 @@ Issues and PRs use a structured labeling system defined in `.github/labels.yml`:
 | Priority  | `priority:*`  | `priority:critical`, `priority:high`, `priority:medium`, `priority:low`                       |
 | Status    | `status:*`    | `status:blocked`, `status:in-progress`, `status:needs-review`                                 |
 | Effort    | `effort:*`    | `effort:small` (<1h), `effort:medium` (1-4h), `effort:large` (>4h)                            |
-
-The `semantic-labeler.yml` workflow auto-labels PRs based on file paths changed.
 
 ## Issue & PR Templates
 

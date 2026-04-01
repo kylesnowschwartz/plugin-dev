@@ -32,10 +32,8 @@ Before contributing, ensure you have:
   gh auth login
   ```
 - **Git**: For version control
-- **markdownlint-cli2** and **prettier**: For linting (should be available globally)
+- **prettier**: For formatting (should be available globally)
   ```bash
-  # Verify they're installed
-  markdownlint-cli2 --version
   prettier --version
   ```
 
@@ -138,9 +136,6 @@ gh auth status  # Should show logged in with 'repo' and 'project' scopes
 All markdown files must follow the repository's style:
 
 ```bash
-# Lint before committing
-markdownlint-cli2 '**/*.md'
-
 # Format with prettier
 prettier --check '**/*.md'
 prettier --write '**/*.md'  # fix formatting issues
@@ -155,7 +150,7 @@ GitHub Actions workflows must pass YAML linting:
 uvx yamllint .github/workflows/
 ```
 
-**Style Rules** (see `.markdownlint.json`):
+**Style Rules**:
 
 - Use ATX-style headers (`#`, `##`, `###`)
 - Use dash-style lists (`-`, not `*` or `+`)
@@ -384,9 +379,6 @@ gh repo delete test-plugin-repo --yes
 ### 2. Lint Your Code
 
 ```bash
-# Lint all markdown
-markdownlint-cli2 '**/*.md'
-
 # Format with prettier
 prettier --write '**/*.md'
 ```
@@ -424,7 +416,6 @@ See [pull_request_template.md](.github/pull_request_template.md) for the complet
 
 - [ ] Code follows style guidelines
 - [ ] Documentation updated
-- [ ] Markdown linted
 - [ ] Tested locally
 - [ ] Component-specific checks completed
 - [ ] No breaking changes (or clearly documented)
@@ -435,12 +426,10 @@ Your PR will automatically run these checks:
 
 | Workflow                   | What It Checks                       |
 | -------------------------- | ------------------------------------ |
-| `markdownlint.yml`         | Markdown style and formatting        |
 | `links.yml`                | Broken links in documentation        |
 | `component-validation.yml` | Plugin component structure           |
 | `version-check.yml`        | Version consistency across manifests |
 | `validate-workflows.yml`   | GitHub Actions syntax                |
-| `claude-pr-review.yml`     | AI-powered code review               |
 
 All checks must pass before merging. Fix any failures before requesting review.
 
