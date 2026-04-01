@@ -668,6 +668,21 @@ MCP servers can notify Claude Code of tool changes at runtime via `list_changed`
 
 Design plugin MCP tools to return concise results. Paginate or summarize large outputs.
 
+### MCP Tool Result Truncation (CC 2.1.89)
+
+When MCP tools return large outputs that exceed limits, Claude Code truncates the result. Handle truncated outputs effectively:
+
+**For structured data queries:** Use direct file queries or more specific filters to reduce output size rather than fetching everything and truncating.
+
+**For analysis tasks:** Dispatch a subagent to process large MCP outputs. The subagent can read the full data, analyze it, and return a concise summary.
+
+**Best practices:**
+
+- Design MCP tools to support pagination or filtering parameters
+- Return metadata about truncation (e.g., "showing 100 of 5000 results")
+- Provide "get details" tools for drilling into specific items
+- Use structured output formats that degrade gracefully when truncated
+
 ### MCP Description Limits
 
 Tool descriptions and server instructions are capped at **2KB each**. This prevents OpenAPI-generated servers with verbose schemas from bloating the context window. Keep tool descriptions concise and focused on usage rather than exhaustive parameter documentation.

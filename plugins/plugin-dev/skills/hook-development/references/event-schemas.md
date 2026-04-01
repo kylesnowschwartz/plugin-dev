@@ -1,8 +1,8 @@
 # Hook Event Schemas Reference
 
-Complete input and output JSON schemas for all 25 Claude Code hook events.
+Complete input and output JSON schemas for all 26 Claude Code hook events.
 
-**Last verified:** 2026-03-31 against official docs, Python SDK (`claude-agent-sdk`), and TypeScript SDK.
+**Last verified:** 2026-04-01 against official docs, Python SDK (`claude-agent-sdk`), and TypeScript SDK.
 
 ## Common Fields
 
@@ -575,6 +575,43 @@ Same semantics as Stop: blocking causes the subagent to continue working with `r
 
 ## Teams
 
+### TaskCreated
+
+**When:** A new task is created in an agent team.
+
+**Input:**
+
+```json
+{
+  "session_id": "string",
+  "transcript_path": "string",
+  "cwd": "string",
+  "permission_mode": "string",
+  "hook_event_name": "TaskCreated",
+  "task_id": "string",
+  "task_subject": "string",
+  "task_description": "string (optional)",
+  "teammate_name": "string (optional)",
+  "team_name": "string (optional)"
+}
+```
+
+**Output:**
+
+```json
+{
+  "decision": "block",
+  "reason": "string (explanation for blocking task creation)"
+}
+```
+
+Set `decision: "block"` to prevent the task from being created.
+
+**Matchers:** Not supported.
+**Hook types:** Command, HTTP, Prompt, Agent
+
+---
+
 ### TeammateIdle
 
 **When:** An agent team teammate is about to go idle.
@@ -923,10 +960,10 @@ Observability only. No decision control.
 
 Not all events are typed in both SDKs. As of March 2026:
 
-**Python SDK** (`claude-agent-sdk`) types 10 of 25 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
+**Python SDK** (`claude-agent-sdk`) types 10 of 26 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
 
 **TypeScript SDK** (`@anthropic-ai/claude-agent-sdk`) is closer to parity with the CLI. Events added over time: TeammateIdle and TaskCompleted (v2.1.34), ConfigChange (v0.2.49), Elicitation and ElicitationResult (v0.2.76).
 
-**CLI** supports all 25 events.
+**CLI** supports all 26 events.
 
 Events only available in CLI (not yet in either SDK): WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88).

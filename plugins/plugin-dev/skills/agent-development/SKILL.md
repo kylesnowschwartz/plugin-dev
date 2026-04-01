@@ -310,6 +310,16 @@ permissionMode: acceptEdits
 
 **Security note:** Use restrictive modes (`plan`, `acceptEdits`) for untrusted agents. `bypassPermissions` should only be used for fully trusted agents.
 
+**Autonomous agent restrictions (CC 2.1.89):** When agents run with `dontAsk` or `bypassPermissions`, Claude Code's security monitor blocks certain dangerous operations:
+
+- **Irreversible Local Destruction** — mv/cp/Write/Edit onto existing untracked or out-of-repo paths (no git recovery)
+- **Create Public Surface** — Creating public repos, changing repo visibility, publishing to public registries
+- **Expose Local Services** — Tunneling, port forwarding, mounting host paths into containers
+- **Credential Leakage** — Committing credentials to public repos (even if trusted)
+- **Unauthorized Persistence** — Cron jobs, systemd units, startup scripts, git hooks
+
+These restrictions apply to autonomous agents regardless of permission mode. Design agents to avoid these patterns or expect the operation to be blocked.
+
 See `references/permission-modes-rules.md` for complete permission mode details and rule syntax.
 
 ### maxTurns (optional)

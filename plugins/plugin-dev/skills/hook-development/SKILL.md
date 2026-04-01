@@ -1,6 +1,6 @@
 ---
 name: hook-development
-description: This skill should be used when the user asks to "create a hook", "add a PreToolUse/PostToolUse/Stop hook", "validate tool use", "implement prompt-based hooks", "use ${CLAUDE_PLUGIN_ROOT}", "set up event-driven automation", "block dangerous commands", "scoped hooks", "frontmatter hooks", "hook in skill", "hook in agent", "agent hook type", "async hooks", "once handler", "statusMessage", "hook decision control", or mentions hook events (PreToolUse, PermissionRequest, PermissionDenied, PostToolUse, PostToolUseFailure, Stop, StopFailure, SubagentStop, SubagentStart, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, PostCompact, Notification, ConfigChange, TeammateIdle, TaskCompleted, CwdChanged, FileChanged, WorktreeCreate, WorktreeRemove, InstructionsLoaded, Elicitation, ElicitationResult). Provides comprehensive guidance for creating and implementing Claude Code plugin hooks with focus on advanced prompt-based hooks API.
+description: This skill should be used when the user asks to "create a hook", "add a PreToolUse/PostToolUse/Stop hook", "validate tool use", "implement prompt-based hooks", "use ${CLAUDE_PLUGIN_ROOT}", "set up event-driven automation", "block dangerous commands", "scoped hooks", "frontmatter hooks", "hook in skill", "hook in agent", "agent hook type", "async hooks", "once handler", "statusMessage", "hook decision control", or mentions hook events (PreToolUse, PermissionRequest, PermissionDenied, PostToolUse, PostToolUseFailure, Stop, StopFailure, SubagentStop, SubagentStart, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, PostCompact, Notification, ConfigChange, TaskCreated, TeammateIdle, TaskCompleted, CwdChanged, FileChanged, WorktreeCreate, WorktreeRemove, InstructionsLoaded, Elicitation, ElicitationResult). Provides comprehensive guidance for creating and implementing Claude Code plugin hooks with focus on advanced prompt-based hooks API.
 ---
 
 # Hook Development for Claude Code Plugins
@@ -9,14 +9,14 @@ description: This skill should be used when the user asks to "create a hook", "a
 
 Hooks are event-driven automation that execute in response to Claude Code events. Use hooks to validate operations, enforce policies, add context, and integrate external tools into workflows.
 
-Claude Code has **25 hook events** across these categories:
+Claude Code has **26 hook events** across these categories:
 
 - **Session Lifecycle** -- SessionStart, InstructionsLoaded, SessionEnd
 - **User Input** -- UserPromptSubmit
 - **Tool Lifecycle** -- PreToolUse, PermissionRequest, PermissionDenied, PostToolUse, PostToolUseFailure
 - **Turn Control** -- Stop, StopFailure
 - **Subagents** -- SubagentStart, SubagentStop
-- **Teams** -- TeammateIdle, TaskCompleted
+- **Teams** -- TeammateIdle, TaskCompleted, TaskCreated
 - **Context Management** -- PreCompact, PostCompact
 - **Configuration** -- ConfigChange
 - **Environment** -- CwdChanged, FileChanged
@@ -26,6 +26,8 @@ Claude Code has **25 hook events** across these categories:
 
 For complete input/output JSON schemas for every event, see **`references/event-schemas.md`**.
 
+> **CC 2.1.89:** PreToolUse hooks can return `"defer"` permissionDecision to pause tool calls in headless sessions for later decision. Hook outputs exceeding 50K characters are automatically saved to disk with a preview shown in the UI.
+>
 > **CC 2.1.88:** Added PermissionDenied hook event. PreToolUse/PostToolUse `file_path` now provides absolute paths for Write/Edit/Read tools. Hook `if` filtering properly matches compound commands (e.g., `ls && git push`) and commands with env var prefixes (e.g., `FOO=bar git push`).
 
 ## Hook Types
@@ -319,7 +321,7 @@ Execute before any tool runs. Use to approve, deny, or modify tool calls.
 {
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
-    "permissionDecision": "allow|deny|ask",
+    "permissionDecision": "allow|deny|ask|defer",
     "permissionDecisionReason": "Explanation",
     "updatedInput": { "file_path": "/modified/path" },
     "additionalContext": "Extra context for Claude"
@@ -330,6 +332,8 @@ Execute before any tool runs. Use to approve, deny, or modify tool calls.
 > **Deprecated:** The old top-level `decision: "approve|block"` fields still work but are superseded by `hookSpecificOutput.permissionDecision`. Use `permissionDecision` for new hooks.
 >
 > **AskUserQuestion pattern (CC 2.1.85):** PreToolUse hooks can satisfy `AskUserQuestion` tool calls by returning `updatedInput` alongside `permissionDecision: "allow"`. This enables headless integrations that collect answers via their own UI rather than requiring interactive user input.
+>
+> **Defer pattern (CC 2.1.89):** PreToolUse hooks can return `permissionDecision: "defer"` to pause the tool call for later decision. This is useful in headless sessions where external systems need to approve operations asynchronously.
 
 #### PermissionRequest
 
@@ -548,6 +552,33 @@ Execute when a subagent finishes responding. Use to validate subagent output bef
 **Gotcha:** Stop hooks defined in a subagent's context automatically convert to SubagentStop events.
 
 ### Teams
+
+#### TaskCreated
+
+Execute when a new task is created in an agent team. Use to log task creation, validate task parameters, or coordinate task assignment.
+
+**Matchers:** Not supported
+**Hook types:** Command, HTTP, Prompt, Agent
+**Decision control:** Can block task creation with `decision: "block"` and `reason`
+
+**Input includes:** `task_id`, `task_subject`, `task_description` (optional), `teammate_name` (optional), `team_name` (optional)
+
+```json
+{
+  "TaskCreated": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/log-task.sh"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Difference from TaskCompleted:** TaskCreated fires when a task is spawned; TaskCompleted fires when a task finishes.
 
 #### TeammateIdle
 
@@ -992,6 +1023,7 @@ Not all events support all four hook types:
 | StopFailure        | Yes     | Yes  | Yes    | Yes   |
 | SubagentStart      | Yes     | Yes  | Yes    | Yes   |
 | SubagentStop       | Yes     | Yes  | Yes    | Yes   |
+| TaskCreated        | Yes     | Yes  | Yes    | Yes   |
 | TeammateIdle       | Yes     | Yes  | Yes    | Yes   |
 | TaskCompleted      | Yes     | Yes  | Yes    | Yes   |
 | PreCompact         | Yes     | Yes  | Yes    | Yes   |
@@ -1183,7 +1215,7 @@ echo "$output" | jq .
 
 ## Quick Reference
 
-### All 25 Hook Events
+### All 26 Hook Events
 
 | Event              | Category      | Matchers                    | Decision Control              |
 | ------------------ | ------------- | --------------------------- | ----------------------------- |
@@ -1200,6 +1232,7 @@ echo "$output" | jq .
 | StopFailure        | Turn          | Error types                 | None (observability)          |
 | SubagentStart      | Subagent      | Agent type names            | Context injection             |
 | SubagentStop       | Subagent      | Agent type names            | Block stop                    |
+| TaskCreated        | Teams         | None                        | Block task creation           |
 | TeammateIdle       | Teams         | None                        | Reject idle (exit 2), stop    |
 | TaskCompleted      | Teams         | None                        | Reject completion (exit 2)    |
 | PreCompact         | Context       | manual, auto                | None (observability)          |
@@ -1232,7 +1265,7 @@ echo "$output" | jq .
 
 For detailed patterns and advanced techniques, consult:
 
-- **`references/event-schemas.md`** -- Complete input/output JSON schemas for all 25 events
+- **`references/event-schemas.md`** -- Complete input/output JSON schemas for all 26 events
 - **`references/patterns.md`** -- Proven patterns including temporarily active and configuration-driven hooks
 - **`references/migration.md`** -- Migrating from basic to advanced hooks
 - **`references/advanced.md`** -- Advanced use cases and techniques
@@ -1276,7 +1309,7 @@ Development tools in `scripts/`:
 
 To implement hooks in a plugin:
 
-1. Identify events to hook into (see [Quick Reference](#all-25-hook-events))
+1. Identify events to hook into (see [Quick Reference](#all-26-hook-events))
 2. Decide hook type: prompt (flexible), agent (multi-step), command (deterministic), or HTTP (external)
 3. Write hook configuration in `hooks/hooks.json`
 4. For command hooks, create hook scripts

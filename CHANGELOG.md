@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-04-01
+
+### Added
+
+- **hook-development**: Documented PreToolUse "defer" permissionDecision for pausing tool calls in headless sessions (CC 2.1.89)
+- **hook-development**: Documented hook output >50K characters saved to disk with preview (CC 2.1.89)
+- **hook-development**: Documented TaskCreated hook event (26th event) for logging and blocking task creation in agent teams (CC 2.1.84, now documented)
+- **mcp-integration**: Added MCP Tool Result Truncation guidance for handling large MCP outputs (CC 2.1.89)
+- **agent-development**: Documented security monitor blocked categories for autonomous agents including Irreversible Local Destruction, Create Public Surface, Expose Local Services, Credential Leakage, and Unauthorized Persistence (CC 2.1.89)
+
+### Changed
+
+- **hook-development**: Updated event count from 25 to 26 across skill and reference documentation
+
 ## [0.9.0] - 2026-03-31
 
 ### Added
@@ -334,7 +348,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.6.1...v0.7.0
