@@ -1,8 +1,8 @@
 # Hook Event Schemas Reference
 
-Complete input and output JSON schemas for all 24 Claude Code hook events.
+Complete input and output JSON schemas for all 25 Claude Code hook events.
 
-**Last verified:** 2026-03-20 against official docs, Python SDK (`claude-agent-sdk`), and TypeScript SDK.
+**Last verified:** 2026-03-31 against official docs, Python SDK (`claude-agent-sdk`), and TypeScript SDK.
 
 ## Common Fields
 
@@ -227,6 +227,8 @@ Note: `permission_mode` is not present on SessionStart.
 
 `tool_input` fields vary by tool. The above shows common fields; MCP tools have server-defined inputs.
 
+> **CC 2.1.88:** The `file_path` field for Write, Edit, and Read tools now provides **absolute paths**.
+
 **Output:**
 
 ```json
@@ -314,6 +316,42 @@ Note: `permission_mode` is not present on SessionStart.
 - `interrupt`: If true, stops Claude entirely (deny only)
 
 **Known issue:** `additionalContext` is parsed but silently dropped ([anthropics/claude-code#28035](https://github.com/anthropics/claude-code/issues/28035)).
+
+**Matchers:** Tool names (same as PreToolUse)
+**Hook types:** Command, HTTP, Prompt, Agent
+
+---
+
+### PermissionDenied
+
+**When:** After auto mode classifier denies a tool call (CC 2.1.88).
+
+**Input:**
+
+```json
+{
+  "session_id": "string",
+  "transcript_path": "string",
+  "cwd": "string",
+  "permission_mode": "string",
+  "hook_event_name": "PermissionDenied",
+  "tool_name": "string",
+  "tool_input": {}
+}
+```
+
+**Output:**
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PermissionDenied",
+    "retry": true
+  }
+}
+```
+
+- `retry`: If `true`, requests Claude to retry the denied operation
 
 **Matchers:** Tool names (same as PreToolUse)
 **Hook types:** Command, HTTP, Prompt, Agent
@@ -623,6 +661,8 @@ Normal exit allows the task completion to proceed.
 
 Use `additionalContext` to inject information that should be considered during compaction.
 
+> **CC 2.1.88:** Added partial compaction capability. Claude Code can now compact only a portion of the conversation rather than the entire context, with a structured summary format and analysis process.
+
 **Matchers:** `manual`, `auto`
 **Hook types:** Command, HTTP, Prompt, Agent
 
@@ -883,10 +923,10 @@ Observability only. No decision control.
 
 Not all events are typed in both SDKs. As of March 2026:
 
-**Python SDK** (`claude-agent-sdk`) types 10 of 24 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
+**Python SDK** (`claude-agent-sdk`) types 10 of 25 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
 
 **TypeScript SDK** (`@anthropic-ai/claude-agent-sdk`) is closer to parity with the CLI. Events added over time: TeammateIdle and TaskCompleted (v2.1.34), ConfigChange (v0.2.49), Elicitation and ElicitationResult (v0.2.76).
 
-**CLI** supports all 24 events.
+**CLI** supports all 25 events.
 
-Events only available in CLI (not yet in either SDK): WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure.
+Events only available in CLI (not yet in either SDK): WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88).

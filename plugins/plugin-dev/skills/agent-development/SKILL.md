@@ -247,6 +247,7 @@ tools: Read, Write, Grep, Bash
 - Read-only analysis: `Read, Grep, Glob`
 - Code generation: `Read, Write, Grep`
 - Testing: `Read, Bash, Grep`
+- Configuration: `Config` (CC 2.1.88) - get/set Claude Code settings
 - Full access: Omit field entirely
 
 > **Important:** Agents use `tools` while Skills use `allowed-tools`. The field names differ between component types. For skill tool restrictions, see the `skill-development` skill.

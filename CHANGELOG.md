@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-03-31
+
+### Added
+
+- **hook-development**: Documented PermissionDenied hook event (25th event) for handling auto mode classifier denials with retry capability (CC 2.1.88)
+- **hook-development**: Documented `file_path` absolute path behavior for Write/Edit/Read tools in PreToolUse/PostToolUse hooks (CC 2.1.88)
+- **hook-development**: Documented `if` field fix for compound commands and env var prefixes (CC 2.1.88)
+- **hook-development**: Documented partial compaction capability with structured summary format (CC 2.1.88)
+- **agent-development**: Documented Config tool for getting/setting Claude Code settings (CC 2.1.88)
+
+### Changed
+
+- **hook-development**: Updated event count from 24 to 25 across skill and reference documentation
+
 ## [0.8.0] - 2026-03-29
 
 ### Added
@@ -320,7 +334,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.8.0...v0.9.0
+[0.8.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.6.1...v0.7.0
+[0.6.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.6.0...v0.6.1
+[0.6.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.3.1...v0.3.2
