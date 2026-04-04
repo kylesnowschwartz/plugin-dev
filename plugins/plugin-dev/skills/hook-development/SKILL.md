@@ -319,7 +319,7 @@ Execute before any tool runs. Use to approve, deny, or modify tool calls.
 {
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
-    "permissionDecision": "allow|deny|ask",
+    "permissionDecision": "allow|deny|ask|defer",
     "permissionDecisionReason": "Explanation",
     "updatedInput": { "file_path": "/modified/path" },
     "additionalContext": "Extra context for Claude"
@@ -330,6 +330,8 @@ Execute before any tool runs. Use to approve, deny, or modify tool calls.
 > **Deprecated:** The old top-level `decision: "approve|block"` fields still work but are superseded by `hookSpecificOutput.permissionDecision`. Use `permissionDecision` for new hooks.
 >
 > **AskUserQuestion pattern (CC 2.1.85):** PreToolUse hooks can satisfy `AskUserQuestion` tool calls by returning `updatedInput` alongside `permissionDecision: "allow"`. This enables headless integrations that collect answers via their own UI rather than requiring interactive user input.
+>
+> **Defer pattern (CC 2.1.89):** Return `permissionDecision: "defer"` to pause tool execution in headless sessions. The session can be resumed later with `-p --resume`. Use `defer` when you need external approval or want to batch decisions for later processing.
 
 #### PermissionRequest
 

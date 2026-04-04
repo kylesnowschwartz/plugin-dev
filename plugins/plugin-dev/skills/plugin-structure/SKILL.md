@@ -34,6 +34,7 @@ plugin-name/
 ├── hooks/
 │   └── hooks.json           # Event handler configuration
 ├── .mcp.json                # MCP server definitions
+├── bin/                     # Plugin executables (CC 2.1.91)
 └── scripts/                 # Helper scripts and utilities
 ```
 
@@ -368,6 +369,42 @@ For detailed LSP configuration, see the `lsp-integration` skill.
 ```
 
 **Usage**: Plugins can define consistent output formatting for their domain. See `references/output-styles.md` for detailed style file format.
+
+### Plugin Executables (bin/)
+
+**Location**: `bin/` directory at plugin root
+**Format**: Executable files (compiled binaries, scripts with shebang)
+**Auto-discovery**: Executables in `bin/` can be invoked as bare commands from the Bash tool
+**Added**: CC 2.1.91
+
+**Example structure**:
+
+```
+plugin-name/
+├── bin/
+│   ├── my-tool           # Compiled binary
+│   └── helper.sh         # Shell script with #!/bin/bash
+```
+
+**Usage**:
+
+```bash
+# In hooks, MCP servers, or when Claude uses Bash tool:
+my-tool --flag value
+helper.sh arg1 arg2
+```
+
+**Requirements**:
+
+- Files must have execute permissions (`chmod +x`)
+- Scripts must have proper shebang (`#!/bin/bash`, `#!/usr/bin/env python3`, etc.)
+- Binaries must be compatible with target platform
+
+**Use cases**:
+
+- Ship compiled tools (formatters, linters, converters)
+- Provide standalone utilities without requiring dependencies
+- Bundle platform-specific binaries
 
 ## Portable Path References
 

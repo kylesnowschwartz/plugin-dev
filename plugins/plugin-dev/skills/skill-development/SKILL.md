@@ -296,6 +296,8 @@ Recent commits:
 
 **Security note:** Commands execute in the user's environment. Only use trusted commands.
 
+**Disable shell execution (CC 2.1.91):** Organizations can disable inline shell execution in skills, custom slash commands, and plugin commands via the `disableSkillShellExecution` setting. When enabled, `[BANG]`command`` blocks are not executed. Design skills to work gracefully when shell execution is unavailable.
+
 ### Progressive Disclosure Design Principle
 
 Skills use a three-level loading system to manage context efficiently:
