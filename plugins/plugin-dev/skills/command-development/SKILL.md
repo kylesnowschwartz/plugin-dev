@@ -398,6 +398,8 @@ For advanced patterns, environment-specific configurations, and plugin integrati
 
 The `[BANG]` syntax performs **load-time context injection**: commands execute when the skill or command is loaded, and their output becomes static text in the prompt Claude receives. This is different from Claude choosing to run commands at runtime via the Bash tool. Use `[BANG]` for gathering context (git status, environment variables, config files) that informs Claude's starting state, not for actions Claude should perform during the task.
 
+**Disable shell execution (CC 2.1.91):** Organizations can disable inline shell execution in skills, custom slash commands, and plugin commands via the `disableSkillShellExecution` setting. When enabled, `[BANG]`command`` blocks are not executed. Design commands to work gracefully when shell execution is unavailable.
+
 ### Commands and Skills: Same Mechanism, Different Complexity
 
 Commands and skills are both invoked via the same **Skill tool**. The difference is organizational complexity:

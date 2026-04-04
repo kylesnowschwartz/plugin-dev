@@ -1,217 +1,202 @@
 # Upstream Change Manifest
-## CC Version Range: 2.1.87 - 2.1.88
-## Generated: 2026-03-31
-## Sources: changelog [x], system-prompts [x], claude-code-guide [skipped]
-
-Note: claude-code-guide subagent not available in this environment. Triangulation degraded to two sources.
+## CC Version Range: 2.1.89 - 2.1.92
+## Generated: 2026-04-04
+## Sources: changelog [OK], system-prompts [OK], claude-code-guide [failed - agent not available in CI]
 
 ---
 
 ### Must Update
 
-- [ ] **NEW: Config tool added** (CC 2.1.88)
-  - Source: system-prompts
+- [ ] **PreToolUse hooks can return `"defer"` permission decision** (CC 2.1.89)
+  - Source: changelog, system-prompts (implied by deferred tool handling)
   - Confidence: high
-  - Affects: agent-development skill (tool references)
-  - Details: New tool for getting and setting Claude Code configuration settings. Plugin-dev documentation should be updated to include this new tool in tool references and agent toolset descriptions.
-  - Raw: "**NEW:** Tool Description: Config - Added tool for getting and setting Claude Code configuration settings."
+  - Affects: hook-development skill (SKILL.md line 322)
+  - Details: Headless sessions can now pause tool execution and resume later with `-p --resume`. The `defer` decision allows hooks to put tools on hold rather than immediately allowing or denying. This is a new permission decision type alongside `allow`, `deny`, and `ask`.
+  - Raw changelog: "Added `\"defer\"` permission decision to `PreToolUse` hooks -- headless sessions can pause and resume with `-p --resume`"
+  - Gap: SKILL.md line 322 shows `permissionDecision: "allow|deny|ask"` -- needs `defer` added
 
-- [ ] **TeammateTool path changed** (CC 2.1.88)
-  - Source: system-prompts
+- [ ] **MCP tool result persistence override via `_meta` annotation** (CC 2.1.91)
+  - Source: changelog only
   - Confidence: high
-  - Affects: agent-development skill (teams section)
-  - Details: Team file path changed from `~/.claude/teams/{team-name}.json` to `~/.claude/teams/{team-name}/config.json`. Any documentation referencing team file locations needs updating.
-  - Raw: "Tool Description: TeammateTool - Updated the team file path from `~/.claude/teams/{team-name}.json` to `~/.claude/teams/{team-name}/config.json`."
+  - Affects: mcp-integration skill (SKILL.md MCP Output Limits section)
+  - Details: MCP servers can now return larger results (up to 500K characters) by setting `_meta["anthropic/maxResultSizeChars"]` in the tool result annotation. Useful for large database schemas or similar payloads.
+  - Raw changelog: "Added MCP tool result persistence override via `_meta[\"anthropic/maxResultSizeChars\"]` annotation (up to 500K)"
+  - Gap: Not documented in mcp-integration/SKILL.md
 
-- [ ] **NEW: Partial compaction instructions** (CC 2.1.88)
-  - Source: system-prompts
+- [ ] **`disableSkillShellExecution` setting** (CC 2.1.91)
+  - Source: changelog only
   - Confidence: high
-  - Affects: hook-development skill (PreCompact/PostCompact), skill-development skill (context management)
-  - Details: Added instructions for compacting only a portion of the conversation with a structured summary format. This is a new capability that may warrant documentation.
-  - Raw: "**NEW:** System Prompt: Partial compaction instructions - Added instructions for compacting only a portion of the conversation, with a structured summary format and analysis process."
+  - Affects: skill-development skill (Dynamic Content section) and command-development skill
+  - Details: New setting that disables inline shell execution in skills, custom slash commands, and plugin commands. This is a security control for environments that want skills but not arbitrary shell execution.
+  - Raw changelog: "`disableSkillShellExecution` setting to disable inline shell execution in skills, custom slash commands, and plugin commands"
+  - Gap: Not documented in skill-development/SKILL.md or command-development/SKILL.md
 
-- [ ] **REMOVED: System section (tool permission mode)** (CC 2.1.88)
-  - Source: system-prompts
+- [ ] **Plugins can ship executables under `bin/` directory** (CC 2.1.91)
+  - Source: changelog only
   - Confidence: high
-  - Affects: hook-development skill (terminology review)
-  - Details: Removed the system section describing tool permission mode behavior and denied tool call guidance. Any references to this in plugin-dev docs should be reviewed.
-  - Raw: "**REMOVED:** System Prompt: System section - Removed the system section describing tool permission mode behavior and denied tool call guidance."
-
-- [ ] **PreToolUse/PostToolUse file_path now absolute** (CC 2.1.88)
-  - Source: CC changelog (PROMOTED from No Action)
-  - Confidence: high
-  - Affects: hook-development skill (event-schemas.md, hook-input-schemas.md)
-  - Details: Fixed PreToolUse/PostToolUse hooks not providing `file_path` as an absolute path for Write/Edit/Read tools. Hook scripts that process file_path now receive absolute paths. This is a behavior change affecting hook script logic.
-  - Raw: "Fixed PreToolUse/PostToolUse hooks not providing `file_path` as an absolute path for Write/Edit/Read tools"
-
-- [ ] **NEW: PermissionDenied hook introduced** (CC 2.1.88)
-  - Source: CC changelog (PROMOTED from No Action)
-  - Confidence: high
-  - Affects: hook-development skill (new hook event to document)
-  - Details: Introduced `PermissionDenied` hook that activates following auto mode classifier denials, allowing models to request retry via `{retry: true}` response. This is a NEW hook event (25th event) that must be added to hook-development documentation.
-  - Raw: "Introduced `PermissionDenied` hook that activates following auto mode classifier denials, allowing models to request retry via `{retry: true}` response"
-
-- [ ] **Hook `if` filtering fix for compound commands** (CC 2.1.88)
-  - Source: CC changelog (PROMOTED from No Action)
-  - Confidence: high
-  - Affects: hook-development skill (advanced.md, `if` field documentation)
-  - Details: Fixed hooks' `if` condition filtering to properly match compound commands like `ls && git push` and commands with environment variable prefixes such as `FOO=bar git push`. Existing documentation should note this behavior.
-  - Raw: "Fixed hooks' `if` condition filtering to properly match compound commands like `ls && git push` and commands with environment variable prefixes such as `FOO=bar git push`"
+  - Affects: plugin-structure skill (Directory Structure section)
+  - Details: Plugins can now include executables in a `bin/` subdirectory and invoke them as bare commands from the Bash tool. This enables plugins to ship compiled tools or scripts.
+  - Raw changelog: "Plugins can ship executables under `bin/` and invoke them as bare commands from Bash tool"
+  - Gap: Not documented in plugin-structure/SKILL.md
 
 ---
 
 ### May Update
 
-- [ ] **Git status prompt simplified** (CC 2.1.88)
-  - Source: system-prompts
-  - Confidence: medium
-  - Affects: git-related skill examples
-  - Details: Stripped inline variable template (branch, status, recent commits); now contains only the introductory note that git status is a point-in-time snapshot.
-  - Raw: "System Prompt: Git status - Stripped the inline variable template (branch, status, recent commits); now contains only the introductory note that git status is a point-in-time snapshot."
+- [ ] **`MCP_CONNECTION_NONBLOCKING=true` env var** (CC 2.1.89)
+  - Source: changelog only
+  - Confidence: low
+  - Affects: mcp-integration skill (headless/CI mode patterns)
+  - Details: For `-p` mode, this env var skips waiting for MCP connections entirely.
+  - Raw changelog: "`MCP_CONNECTION_NONBLOCKING=true` for `-p` mode skips MCP connection wait entirely"
 
-- [ ] **Fork usage guidelines updated** (CC 2.1.88)
-  - Source: system-prompts
+- [ ] **MCP tool truncation guidance updated** (CC 2.1.92)
+  - Source: system-prompts only
   - Confidence: medium
-  - Affects: agent documentation
-  - Details: Incorporated fork-specific prompt-writing guidance about writing directives that specify scope rather than re-explaining background.
-  - Raw: "System Prompt: Fork usage guidelines - Incorporated fork-specific prompt-writing guidance (previously in the subagent prompts section) about writing directives that specify scope rather than re-explaining background."
+  - Affects: mcp-integration skill (subagent guidance)
+  - Details: Changed subagent file-reading guidance from "Read ALL of [file]" to instruct reading in sequential chunks using offset/limit until 100% of the file has been read, then summarizing.
+  - System-prompts: "System Prompt: MCP Tool Result Truncation -- Changed subagent file-reading guidance..."
 
-- [ ] **Writing subagent prompts collapsed** (CC 2.1.88)
-  - Source: system-prompts
-  - Confidence: medium
-  - Affects: agent-creator skill
-  - Details: Collapsed separate context-inheriting vs fresh-agent sections into a single flow that defaults to fresh-agent briefing style with conditional notes for subagent types.
-  - Raw: "System Prompt: Writing subagent prompts - Collapsed the separate context-inheriting vs fresh-agent sections into a single flow that defaults to the fresh-agent briefing style, with conditional notes when a subagent type is present."
-
-- [ ] **Plan mode reminder conditional on agent availability** (CC 2.1.88)
-  - Source: system-prompts
-  - Confidence: medium
-  - Affects: plan-mode documentation
-  - Details: Subagent exploration suggestion is now conditional on whether agents are actually available.
-  - Raw: "System Reminder: Plan mode is active (iterative) - Made the subagent exploration suggestion conditional on whether agents are actually available, instead of always appending it."
-
-- [ ] **Agent tool prompt guidance moved** (CC 2.1.88)
-  - Source: system-prompts
-  - Confidence: medium
-  - Affects: agent-creator skill
-  - Details: Removed instruction to provide clear, detailed prompts for agents without subagent types (guidance now lives in fork/subagent prompt-writing sections).
-  - Raw: "Tool Description: Agent (usage notes) - Removed the instruction to provide clear, detailed prompts for agents without subagent types (guidance now lives in the fork/subagent prompt-writing sections)."
-
-- [ ] **PowerShell tool description expanded** (CC 2.1.88)
-  - Source: system-prompts (DEMOTED from Must Update)
-  - Confidence: medium
-  - Affects: Windows-specific documentation (none exists in plugin-dev)
-  - Details: Significantly expanded PowerShell syntax guidance. Windows-specific; no existing PowerShell documentation in plugin-dev to update.
-  - Raw: "Tool Description: PowerShell - Significantly expanded syntax guidance..."
-
-- [ ] **NEW: PowerShell 5.1 system prompt** (CC 2.1.88)
-  - Source: system-prompts (DEMOTED from Must Update)
-  - Confidence: medium
-  - Affects: Windows-specific documentation (none exists in plugin-dev)
-  - Details: Added system prompt for Windows PowerShell 5.1. Windows-specific; no existing PowerShell documentation in plugin-dev.
-  - Raw: "**NEW:** System Prompt: PowerShell edition for 5.1..."
+- [ ] **ReadFile tool supports relative paths** (CC 2.1.91)
+  - Source: system-prompts only
+  - Confidence: low
+  - Affects: skill script examples (minor style preference)
+  - Details: ReadFile now supports relative paths as a preferred alternative (for brevity) to absolute-path-only requirement. Line read limit and additional notes are now configurable.
+  - System-prompts: "Tool Description: ReadFile -- Added support for relative file paths (preferred for brevity)..."
 
 ---
 
 ### No Action
 
-- v2.1.88: Flicker-free rendering via CLAUDE_CODE_NO_FLICKER=1 environment variable (UI/rendering)
-- v2.1.88: Named subagents in mention suggestions (UI feature)
-- v2.1.88: Fixed prompt cache issues in extended sessions (bug fix)
-- v2.1.88: Fixed nested file re-injection in long conversations (bug fix)
-- v2.1.88: Line-ending handling for Edit/Write tools on Windows (bug fix)
-- v2.1.88: Structured output schema caching improvements (performance)
-- v2.1.88: Memory leaks related to large JSON inputs (bug fix)
-- v2.1.88: Rate-limit error messaging improvements (UX)
-- v2.1.88: LSP server recovery after crashes (bug fix)
-- v2.1.88: Voice mode fixes on macOS/Windows (platform-specific bug fix)
-- v2.1.88: UI rendering artifacts and text truncation fixes (UI bug fix)
-- v2.1.88: Prompt history corruption at 4KB boundaries fix (bug fix)
-- v2.1.88: Statistics tracking historical data fix (bug fix)
-- v2.1.88: Notification clearing and message synchronization (bug fix)
-- v2.1.88: Verify skill substantially condensed (CC's built-in verify skill, not plugin-dev)
-- v2.1.88: Ultraplan same-session implementation (internal CC feature, not plugin-dev relevant)
-- v2.1.88: Plugin permission fix on macOS/Linux since v2.1.83 (bug fix)
-- v2.1.87: No system prompt changes
+**Demoted from Must Update (Stage 2 verification):**
+- PermissionDenied hook fires after auto mode classifier denials (CC 2.1.89) -- already documented in hook-development/SKILL.md lines 385-423
+- `/tag` and `/vim` commands removed (CC 2.1.92) -- built-in commands, not plugin-dev scope
+- Write tool guidance changed: always prefer Edit (CC 2.1.92) -- tool description, not plugin-dev scope
+- Hook condition evaluator specialized for stop conditions (CC 2.1.92) -- internal implementation detail
+- Sleep tool removed (CC 2.1.92) -- built-in tool, not plugin-dev scope
+- Agent Design Patterns skill added (CC 2.1.91) -- built-in CC skill, not plugin-dev scope
+
+**Demoted from May Update (Stage 2 verification):**
+- Named subagents in `@` mention typeahead (CC 2.1.89) -- UX feature, no plugin API impact
+- `/powerup` command added (CC 2.1.90) -- built-in command, not plugin-dev scope
+- `CLAUDE_CODE_PLUGIN_KEEP_MARKETPLACE_ON_FAILURE` env var (CC 2.1.90) -- operational env var
+- `.husky` added to protected directories (CC 2.1.90) -- permissions detail, not plugin-dev scope
+- `forceRemoteSettingsRefresh` policy setting (CC 2.1.92) -- managed settings, not plugin-dev scope
+- Edit tool guidelines made configurable (CC 2.1.91) -- not plugin-dev scope
+- Computer Use MCP skill added (CC 2.1.89) -- built-in CC skill
+- Remote plan mode (ultraplan) prompt added (CC 2.1.89) -- built-in CC feature
+- Buddy Mode prompt added (CC 2.1.89) -- built-in CC feature
+- Security monitor prompt significantly expanded (CC 2.1.89-2.1.90) -- internal security
+
+**Original No Action items:**
+- Fix for rate-limit options dialog infinite loop (CC 2.1.90)
+- Subagent spawning fix after tmux window changes (CC 2.1.92)
+- Stop hooks fix for small fast model `ok:false` (CC 2.1.92)
+- Tool input validation fixes for streaming (CC 2.1.92)
+- API 400 error fix for whitespace-only thinking blocks (CC 2.1.92)
+- Write tool diff computation 60% faster (CC 2.1.92)
+- Bedrock setup wizard added (CC 2.1.92)
+- Per-model cost breakdown in `/cost` (CC 2.1.92)
+- `/release-notes` interactive version picker (CC 2.1.92)
+- Remote Control session name improvements (CC 2.1.92)
+- Footer hint for uncached tokens after cache expiration (CC 2.1.92)
+- Linux sandbox `apply-seccomp` fix (CC 2.1.92)
+- Transcript chain fix for `--resume` (CC 2.1.91)
+- `cmd+delete` fix for various terminals (CC 2.1.91)
+- Plan mode fix for remote sessions (CC 2.1.91)
+- JSON schema validation fix for `permissions.defaultMode: "auto"` (CC 2.1.91)
+- Edit tool using shorter anchors (CC 2.1.91)
+- Faster `stripAnsi` on Bun (CC 2.1.91)
+- Multi-line prompt support in deep links (CC 2.1.91)
+- Various PreToolUse hook fixes for JSON stdout (CC 2.1.90)
+- Auto mode boundary respect fixes (CC 2.1.90)
+- PowerShell security hardening (CC 2.1.90)
+- SSE transport performance fix (CC 2.1.90)
+- `/resume` parallel session loading (CC 2.1.90)
+- DNS cache commands removed from auto-allow (CC 2.1.90)
+- CLAUDE_CODE_NO_FLICKER env var (CC 2.1.89)
+- Edit/Read/Write symlink target checking fix (CC 2.1.89)
+- Various voice mode fixes (CC 2.1.89)
+- CRLF handling fixes (CC 2.1.89)
+- StructuredOutput schema cache fix (CC 2.1.89)
+- LSP server restart on crash (CC 2.1.89)
+- Autocompact thrash loop detection (CC 2.1.89)
+- Nested CLAUDE.md re-injection fix (CC 2.1.89)
+- Hooks `if` condition fix for compound commands (CC 2.1.89)
+- Thinking summaries disabled by default (CC 2.1.89)
+- Team memory content display removed (CC 2.1.92)
+- /pr-comments slash command removed (CC 2.1.91)
+- Update Magic Docs agent prompt removed (CC 2.1.91)
+- Memory attachment guidance updates (CC 2.1.90-2.1.91)
+- Verification specialist prompt expansions (CC 2.1.89-2.1.90)
+- Prompt caching documentation updates (CC 2.1.89)
 
 ---
 
-## Summary
+## Notes
 
-**Versions analyzed:** 2.1.87, 2.1.88
+1. **Degraded triangulation**: The claude-code-guide agent was not available in this CI environment, so cross-referencing against official docs was not performed. Changes are confirmed via changelog and system-prompts sources only.
 
-**Token delta (2.1.88):** -1,627 tokens (net reduction due to verify skill condensing and removed system section)
+2. **High-priority items for plugin-dev**:
+   - The `defer` permission decision is a significant addition to the hooks system
+   - PermissionDenied hook expansion affects auto-mode integration
+   - Plugin `bin/` directory support is a new plugin capability
+   - `disableSkillShellExecution` setting affects how skills execute
+   - Write tool "always prefer Edit" guidance may affect our examples
+   - Sleep tool removal affects tool documentation
 
-**Key themes in 2.1.88:**
-1. New Config tool for settings management
-2. New PermissionDenied hook event (ADDED by verification)
-3. Team file path restructuring
-4. PreToolUse/PostToolUse file_path now absolute (ADDED by verification)
-5. Partial compaction feature
-6. Enhanced Windows/PowerShell support (May Update)
-7. Removed tool permission mode system section
+3. **System-prompts changelog is more authoritative** for prompt/tool description changes, while the GitHub changelog captures user-facing features and settings.
 
-**Risk assessment:** The PermissionDenied hook and file_path absolute path fix are the highest priority items as they directly affect hook development documentation. The team file path change and Config tool addition also require updates.
+4. **Token delta summary**:
+   - 2.1.89: +3,986 tokens (MCP truncation, remote plan mode, buddy mode, computer use MCP skill)
+   - 2.1.90: +815 tokens (memory attachment, security monitor expansion)
+   - 2.1.91: +2,043 tokens (Agent Design Patterns skill, tool description updates)
+   - 2.1.92: -167 tokens (hook evaluator specialization, Sleep tool removal, Write tool guidance)
 
 ---
 
 ## Stage 2: Verification Results
-### Verified: 2026-03-31
+### Verified: 2026-04-04
 
 #### Must Update Verification
-- [x] **NEW: Config tool added** (CC 2.1.88) -- confirmed in system-prompts CHANGELOG line 13. Gap exists: no mention of Config tool in plugin-dev tool documentation. Affects: agent-development (tool references).
-- [x] **TeammateTool path changed** (CC 2.1.88) -- confirmed in system-prompts CHANGELOG line 23. Gap exists: plugin-dev agent-development skill does not document team file paths. Affects: agent-development (teams section).
-- [x] **NEW: Partial compaction instructions** (CC 2.1.88) -- confirmed in system-prompts CHANGELOG line 11. Gap exists: no documentation of partial compaction. Affects: hook-development (PreCompact/PostCompact), skill-development (context management).
-- [x] **REMOVED: System section (tool permission mode)** (CC 2.1.88) -- confirmed in system-prompts CHANGELOG line 14. Gap exists: hook-development references "tool permission mode" terminology. Review needed.
-- [x] **Verify skill substantially condensed** (CC 2.1.88) -- confirmed in system-prompts CHANGELOG line 15. This is an internal CC change to CC's built-in verify skill, NOT the plugin-dev verify skill. No gap exists in plugin-dev. **Reclassified to No Action** -- plugin-dev has no "verify skill" to align with.
-- [x] **PowerShell tool description expanded** (CC 2.1.88) -- confirmed in system-prompts CHANGELOG line 22. No existing PowerShell documentation in plugin-dev (grep returned no matches). This is a Windows-specific addition. **May Update** level -- only relevant for Windows users.
-- [x] **NEW: PowerShell 5.1 system prompt** (CC 2.1.88) -- confirmed in system-prompts CHANGELOG line 12. Same as above -- no existing PowerShell docs. **May Update** level.
-- [x] **Ultraplan can now implement in same session** (CC 2.1.88) -- confirmed in system-prompts CHANGELOG line 20. No existing ultraplan documentation in plugin-dev. Low impact for plugin developers. **Demoted to No Action** -- ultraplan is an internal CC feature, not directly affecting plugin development.
+- ✓ **PreToolUse hooks can return `"defer"` permission decision** (CC 2.1.89) -- confirmed in changelog, gap exists in hook-development/SKILL.md line 322 (only shows `allow|deny|ask`, missing `defer`)
+- ✗ **PermissionDenied hook now fires after auto mode classifier denials** (CC 2.1.89) -- REJECTED: already documented at hook-development/SKILL.md lines 385-423 (added in previous 2.1.88 sync)
+- ✓ **MCP tool result persistence override via `_meta` annotation** (CC 2.1.91) -- confirmed in changelog, gap exists in mcp-integration/SKILL.md (no mention of maxResultSizeChars)
+- ✓ **`disableSkillShellExecution` setting** (CC 2.1.91) -- confirmed in changelog, gap exists in skill-development/SKILL.md (not documented)
+- ✓ **Plugins can ship executables under `bin/` directory** (CC 2.1.91) -- confirmed in changelog, gap exists in plugin-structure/SKILL.md (not documented)
+- ↓ **`/tag` and `/vim` commands removed** (CC 2.1.92) -- demoted to No Action: built-in commands not documented in plugin-dev
+- ↓ **Write tool guidance changed: always prefer Edit** (CC 2.1.92) -- demoted to No Action: not plugin-dev scope (tool descriptions)
+- ↓ **Hook condition evaluator specialized for stop conditions** (CC 2.1.92) -- demoted to No Action: internal implementation detail, no plugin API surface change
+- ↓ **Sleep tool removed** (CC 2.1.92) -- demoted to No Action: not plugin-dev scope (built-in tools)
+- ↓ **Agent Design Patterns skill added** (CC 2.1.91) -- demoted to No Action: built-in CC skill, not plugin-dev documentation scope
+
+#### Skill Mapping Corrections
+- ! **skill-anatomy** -- INCORRECT: skill does not exist; should be `skill-development`
+- ! **plugin-json-schema** -- INCORRECT: skill does not exist; should be `plugin-structure`
+- ! **slash-commands** -- INCORRECT: skill does not exist; should be `command-development`
+- ! **build-with-claude-api** -- INCORRECT: skill does not exist in plugin-dev (built-in CC skill)
 
 #### Missed Items (promoted from No Action)
-- ! **PreToolUse/PostToolUse file_path now absolute** (CC 2.1.88) -- missed from changelog! CC changelog says "Fixed PreToolUse/PostToolUse hooks not providing `file_path` as an absolute path for Write/Edit/Read tools." This is directly relevant to hook-development docs.
-  - Affects: hook-development (tool input schemas, event-schemas.md)
-  - Details: Hook scripts that process file_path from Write/Edit/Read tools now receive absolute paths. This is a behavior change that affects hook script logic.
-
-- ! **PermissionDenied hook introduced** (CC 2.1.88) -- partially captured but listed as "No Action". The CC changelog states "Introduced `PermissionDenied` hook that activates following auto mode classifier denials, allowing models to request retry via `{retry: true}` response." This is a NEW hook event that should be documented.
-  - Affects: hook-development (new hook event)
-  - Details: New hook event PermissionDenied was introduced. The current hook-development skill lists 24 events; this adds a 25th. Must be documented.
-
-- ! **Plugin permission fix v2.1.83** (CC 2.1.86, 2.1.88) -- The CC changelog mentions "Official marketplace plugin scripts were failing with permission errors on macOS/Linux starting in v2.1.83; this is now resolved" in both 2.1.86 and 2.1.88. This is worth noting for compatibility but is a bug fix, not a documentation gap.
-  - Affects: None (bug fix)
-  - **Kept as No Action** -- bug fix, no docs needed
-
-- ! **Hook `if` filtering for compound commands** (CC 2.1.88) -- CC changelog: "Fixed hooks' `if` condition filtering to properly match compound commands like `ls && git push` and commands with environment variable prefixes such as `FOO=bar git push`." This is relevant to hook-development.
-  - Affects: hook-development (advanced.md, `if` field documentation)
-  - Details: The `if` field now properly handles compound commands. Existing docs may need clarification.
-  - **Promoted to Must Update** -- behavior clarification for existing feature
+- None identified. Scanned changelog for: hook, plugin, agent, skill, command, MCP, LSP, tool, permission, subagent, frontmatter, manifest, plugin.json, PreToolUse, PostToolUse, SessionStart, Stop. All relevant items were captured.
 
 #### May Update Resolution
-- = **Git status prompt simplified** (CC 2.1.88) -- kept as May Update. Internal CC change, no plugin-dev impact.
-- = **Fork usage guidelines updated** (CC 2.1.88) -- kept as May Update. Could inform agent-development examples but not critical.
-- = **Writing subagent prompts collapsed** (CC 2.1.88) -- kept as May Update. Could inform agent-creator agent but not critical.
-- = **Plan mode reminder conditional** (CC 2.1.88) -- kept as May Update. Internal CC behavior.
-- = **Agent tool prompt guidance moved** (CC 2.1.88) -- kept as May Update. Could inform agent-development but not critical.
-- downarrow **PowerShell tool description expanded** -- demoted from Must Update to May Update. Windows-specific, no existing docs to update.
-- downarrow **PowerShell 5.1 system prompt** -- demoted from Must Update to May Update. Windows-specific, no existing docs to update.
+- ↓ **Named subagents in `@` mention typeahead** (CC 2.1.89) -- demoted to No Action: UX feature, no plugin API impact
+- = **`MCP_CONNECTION_NONBLOCKING=true` env var** (CC 2.1.89) -- kept as May Update: could document in mcp-integration references
+- ↓ **`/powerup` command added** (CC 2.1.90) -- demoted to No Action: built-in command, not plugin-dev scope
+- ↓ **`CLAUDE_CODE_PLUGIN_KEEP_MARKETPLACE_ON_FAILURE` env var** (CC 2.1.90) -- demoted to No Action: operational env var, not plugin development
+- ↓ **`.husky` added to protected directories** (CC 2.1.90) -- demoted to No Action: permissions detail, not plugin-dev scope
+- ↓ **`forceRemoteSettingsRefresh` policy setting** (CC 2.1.92) -- demoted to No Action: managed settings, not plugin-dev scope
+- = **MCP tool truncation guidance updated** (CC 2.1.92) -- kept as May Update: could document in mcp-integration subagent guidance
+- = **ReadFile tool supports relative paths** (CC 2.1.91) -- kept as May Update: could affect skill script examples
+- ↓ **Edit tool guidelines made configurable** (CC 2.1.91) -- demoted to No Action: not plugin-dev scope
+- ↓ **Computer Use MCP skill added** (CC 2.1.89) -- demoted to No Action: built-in CC skill, not plugin-dev scope
+- ↓ **Remote plan mode (ultraplan) prompt added** (CC 2.1.89) -- demoted to No Action: built-in CC feature
+- ↓ **Buddy Mode prompt added** (CC 2.1.89) -- demoted to No Action: built-in CC feature
+- ↓ **Security monitor prompt significantly expanded** (CC 2.1.89-2.1.90) -- demoted to No Action: internal security, not plugin API
 
 #### Summary
-- Must Update: 7 items (4 confirmed original, 3 promoted from No Action, 2 demoted to May Update)
-  - Config tool added
-  - TeammateTool path changed
-  - Partial compaction instructions
-  - REMOVED: System section (tool permission mode)
-  - PreToolUse/PostToolUse file_path now absolute (NEW)
-  - PermissionDenied hook introduced (NEW)
-  - Hook `if` filtering for compound commands (NEW)
-- May Update: 7 items (5 original, 2 demoted from Must Update)
-- Confidence: HIGH -- sources independently verified, all changelog entries cross-referenced
-
-#### Notes
-- The manifest correctly identified the version range 2.1.87-2.1.88
-- v2.1.87 had no system prompt changes (confirmed)
-- The "Verify skill" item was incorrectly classified -- it refers to CC's built-in verify skill, not a plugin-dev skill
-- Two significant plugin-relevant changes were in the CC changelog "No Action" section that should have been flagged:
-  1. PreToolUse/PostToolUse file_path absolute path fix
-  2. PermissionDenied hook introduction
-- The `if` field compound command fix enhances existing documented feature
+- Must Update: 4 items confirmed (defer decision, MCP maxResultSizeChars, disableSkillShellExecution, plugin bin/)
+- Must Update: 6 items demoted to No Action (not plugin-dev scope)
+- May Update: 3 items remaining (MCP_CONNECTION_NONBLOCKING, MCP truncation guidance, ReadFile relative paths)
+- Skill Mapping: 4 corrections needed (skill names were incorrect in original manifest)
+- Confidence: HIGH -- Changes verified against primary sources; skill file gaps confirmed by reading actual SKILL.md files

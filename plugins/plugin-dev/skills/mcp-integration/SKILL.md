@@ -666,6 +666,17 @@ MCP servers can notify Claude Code of tool changes at runtime via `list_changed`
 - Default maximum: 25,000 tokens
 - Configure with `MAX_MCP_OUTPUT_TOKENS` environment variable
 
+**Large result override (CC 2.1.91):** MCP servers can return larger results (up to 500K characters) by setting `_meta["anthropic/maxResultSizeChars"]` in the tool result annotation. Useful for large database schemas or similar payloads:
+
+```json
+{
+  "content": [...],
+  "_meta": {
+    "anthropic/maxResultSizeChars": 500000
+  }
+}
+```
+
 Design plugin MCP tools to return concise results. Paginate or summarize large outputs.
 
 ### MCP Description Limits
