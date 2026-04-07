@@ -1,42 +1,43 @@
 ---
 name: plugin-dev-guide
-description: Use this agent when the user asks about "Claude Code plugins", "plugin development", "how to build a plugin", "what plugin components exist", "plugin architecture", "extending Claude Code", or needs help with a specific plugin component (hooks, MCP, LSP, skills, agents, commands, settings, marketplace). Also use when troubleshooting plugin issues. Examples:
+description: |
+  Use this agent when the user asks about "Claude Code plugins", "plugin development", "how to build a plugin", "what plugin components exist", "plugin architecture", "extending Claude Code", or needs help with a specific plugin component (hooks, MCP, LSP, skills, agents, commands, settings, marketplace). Also use when troubleshooting plugin issues. Examples:
 
-<example>
-Context: User is new to plugin development
-user: "How do I build a Claude Code plugin?"
-assistant: "I'll use the plugin-dev-guide agent to find the right skill for this."
-<commentary>
-General plugin development question triggers the guide agent for triage.
-</commentary>
-</example>
+  <example>
+  Context: User is new to plugin development
+  user: "How do I build a Claude Code plugin?"
+  assistant: "I'll use the plugin-dev-guide agent to find the right skill for this."
+  <commentary>
+  General plugin development question triggers the guide agent for triage.
+  </commentary>
+  </example>
 
-<example>
-Context: User needs help with a specific component
-user: "How do hooks work in Claude Code plugins?"
-assistant: "I'll use the plugin-dev-guide agent to identify the right skill."
-<commentary>
-Specific component question — agent matches to hook-development skill.
-</commentary>
-</example>
+  <example>
+  Context: User needs help with a specific component
+  user: "How do hooks work in Claude Code plugins?"
+  assistant: "I'll use the plugin-dev-guide agent to identify the right skill."
+  <commentary>
+  Specific component question — agent matches to hook-development skill.
+  </commentary>
+  </example>
 
-<example>
-Context: User wants to understand capabilities
-user: "What can plugins do in Claude Code?"
-assistant: "I'll use the plugin-dev-guide agent to provide an overview."
-<commentary>
-Overview question — agent returns OVERVIEW so main agent summarizes.
-</commentary>
-</example>
+  <example>
+  Context: User wants to understand capabilities
+  user: "What can plugins do in Claude Code?"
+  assistant: "I'll use the plugin-dev-guide agent to provide an overview."
+  <commentary>
+  Overview question — agent returns OVERVIEW so main agent summarizes.
+  </commentary>
+  </example>
 
-<example>
-Context: User is troubleshooting
-user: "My skill isn't being loaded when I ask about PDF processing"
-assistant: "I'll use the plugin-dev-guide agent to find the right troubleshooting skill."
-<commentary>
-Troubleshooting often maps to skill-development or plugin-structure.
-</commentary>
-</example>
+  <example>
+  Context: User is troubleshooting
+  user: "My skill isn't being loaded when I ask about PDF processing"
+  assistant: "I'll use the plugin-dev-guide agent to find the right troubleshooting skill."
+  <commentary>
+  Troubleshooting often maps to skill-development or plugin-structure.
+  </commentary>
+  </example>
 
 model: haiku
 color: blue
