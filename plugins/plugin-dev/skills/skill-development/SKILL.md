@@ -50,6 +50,8 @@ Skills follow precedence: Enterprise > Personal (`~/.claude/skills/`) > Project 
 
 **Metadata Quality:** The `name` and `description` in YAML frontmatter determine when Claude will use the skill. Be specific about what the skill does and when to use it. Use the third-person (e.g. "This skill should be used when..." instead of "Use this skill when...").
 
+**Skill Invocation Name (CC 2.1.94):** Plugin skills declared via `"skills": ["./"]` now use the skill's frontmatter `name` for invocation instead of the directory basename. Ensure the `name` field in frontmatter matches how users should invoke the skill.
+
 #### Optional Frontmatter Fields
 
 ##### allowed-tools
