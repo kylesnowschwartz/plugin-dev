@@ -99,7 +99,7 @@ Use `context: fork` for:
 
 ##### agent
 
-Specify which agent type handles the skill when `context: fork` is set:
+Specify which agent type handles the forked skill. The agent provides the **execution environment** (system prompt, tools, behavioral rules). The skill body provides the **task** (what to do). The forked agent does not inherit your conversation history.
 
 ```yaml
 ---
@@ -108,15 +108,39 @@ description: Explore codebase patterns...
 context: fork
 agent: Explore
 ---
+Find all React components that accept a `userId` prop and trace how they fetch user data.
 ```
+
+In this example, the `Explore` agent's system prompt controls behavior and available tools. The skill body ("Find all React components...") becomes the task prompt the agent receives.
 
 **Values:**
 
-- `Explore` - Fast agent for codebase exploration
+- `Explore` - Fast, read-only agent for codebase exploration
 - `Plan` - Architect agent for implementation planning
-- `general` - General-purpose agent (default if `context: fork`)
+- `general-purpose` - Full-capability agent (default when `context: fork` is set)
+- Custom agent name - Any agent defined in `.claude/agents/` or by a plugin
+
+When using a custom agent, you control both sides: the agent definition sets the system prompt, tools, MCP servers, and hooks. The skill sets the task and triggering conditions. This lets one agent serve many skills, and the same skill shape could target different agents.
+
+**Design guidance:** Put *what to do* in the skill. Put *how to behave* in the agent definition.
 
 Requires `context: fork` to be set.
+
+##### Skill + Agent vs. Direct Agent Tool Call
+
+Both approaches delegate work to a sub-agent, but they serve different design needs:
+
+| Dimension | Skill `context: fork` | Direct Agent tool call |
+|---|---|---|
+| **Interface** | Declarative YAML + markdown body | Imperative prompt string |
+| **Triggering** | Automatic (description matching) | Manual (caller decides when) |
+| **Context** | Inherits parent context, shares prompt cache | Fresh start, no inherited context |
+| **Task prompt** | SKILL.md body (static) | Whatever you pass at runtime (dynamic) |
+| **System prompt** | From agent type or agent definition | From `subagent_type` |
+
+**Use skill `context: fork`** when the task instructions are stable, the trigger is predictable, and you want automatic invocation with cache sharing.
+
+**Use direct Agent calls** when you need dynamic prompts computed at runtime, parallel orchestration (spawning N agents from a loop), or worktree isolation for parallel git branches.
 
 ##### skills
 

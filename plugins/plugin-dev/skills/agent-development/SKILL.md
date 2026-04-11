@@ -400,7 +400,18 @@ Some frontmatter fields are specific to skills and do not apply to agents:
 | `disable-model-invocation` | Block programmatic Skill tool usage    | Agents use Task tool, not Skill tool                    |
 | `allowed-tools`            | Restrict tool access (skill syntax)    | Agents use `tools` field instead (different field name) |
 
-**Key distinction:** Skills provide knowledge and guidance that loads into context. Agents are autonomous subprocesses that execute independently. This architectural difference explains why context-forking options don't apply to agents—they're already isolated processes.
+**Key distinction:** Skills provide knowledge and guidance that loads into context. Agents are autonomous subprocesses that execute independently. This architectural difference explains why context-forking options don't apply to agents — they're already isolated processes.
+
+### How Agents Compose with Skills
+
+A skill with `context: fork` and `agent: your-agent-name` creates a clean separation:
+
+- **Agent definition** (the `.md` file in `agents/`) → becomes the **system prompt**. This controls behavior, tools, MCP servers, and hooks.
+- **Skill body** (the SKILL.md content) → becomes the **task prompt**. This is the work the agent receives.
+
+The forked agent does not inherit conversation history. One agent can serve many skills, each providing a different task. This is the declarative alternative to spawning agents directly via the Agent tool — use it when the task instructions are stable and you want automatic trigger matching with prompt cache sharing. For dynamic prompts or parallel orchestration, use direct Agent tool calls instead.
+
+See the `skill-development` skill for the full comparison table.
 
 ## System Prompt Design
 
