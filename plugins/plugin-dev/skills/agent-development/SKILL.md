@@ -248,6 +248,7 @@ tools: Read, Write, Grep, Bash
 - Code generation: `Read, Write, Grep`
 - Testing: `Read, Bash, Grep`
 - Configuration: `Config` (CC 2.1.88) - get/set Claude Code settings
+- Background monitoring: `Monitor` (CC 2.1.98) - stream stdout events from long-running scripts as chat notifications
 - Full access: Omit field entirely
 
 > **Important:** Agents use `tools` while Skills use `allowed-tools`. The field names differ between component types. For skill tool restrictions, see the `skill-development` skill.
@@ -519,6 +520,10 @@ Run the validation script at `${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh`
 ```
 
 This variable resolves to the plugin's installation directory at runtime, ensuring paths work regardless of where the plugin is installed.
+
+### Absolute File Paths Required (CC 2.1.97)
+
+Agent threads always require absolute file paths unconditionally. When agents use file operations (Read, Write, Edit, etc.), all paths must be absolute—relative paths are not supported in agent contexts. Use `${CLAUDE_PLUGIN_ROOT}` or construct absolute paths from known locations.
 
 ### Namespacing
 

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.2] - 2026-04-10
+
+### Added
+
+- **agent-development**: Documented Monitor tool for streaming background events as chat notifications (CC 2.1.98)
+- **agent-development**: Documented that agent threads always require absolute file paths unconditionally (CC 2.1.97)
+- **skill-development**: Documented that plugin skills use frontmatter `name` for invocation instead of directory basename (CC 2.1.94)
+
+### Changed
+
+- **claude-code-compatibility**: Updated to CC 2.1.98 with notes on plugin skill hooks and CLAUDE_PLUGIN_ROOT fixes (CC 2.1.94)
+
 ## [0.10.1] - 2026-04-07
 
 ### Fixed
@@ -350,7 +362,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.1...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.2...HEAD
+[0.10.2]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.1...v0.10.2
 [0.10.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.8.0...v0.9.0
