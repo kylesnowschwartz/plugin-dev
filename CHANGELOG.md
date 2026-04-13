@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.3] - 2026-04-13
+
+### Added
+
+- **agent-development**: Documented fork output restriction — agents cannot read/tail their own output files unconditionally (CC 2.1.101)
+- **agent-development**: Documented resolved subagent MCP tool inheritance from dynamically-injected servers (CC 2.1.101)
+- **agent-development**: Documented resolved worktree access issue for sub-agents in isolated worktrees (CC 2.1.101)
+- **hook-development**: Documented `permissions.deny` now properly overrides PreToolUse hook `permissionDecision: "ask"` (CC 2.1.101)
+- **hook-development**: Documented hook event name resilience — unrecognized names no longer break entire settings file (CC 2.1.101)
+- **hook-development**: Documented enterprise `allowManagedHooksOnly` support for force-enabled plugin hooks (CC 2.1.101)
+- **skill-development**: Documented resolved `context: fork` and `agent` frontmatter bug fix (CC 2.1.101)
+- **mcp-integration**: Documented resolved subagent MCP tool inheritance bug fix (CC 2.1.101)
+
+### Changed
+
+- **claude-code-compatibility**: Updated to CC 2.1.104 with notes on fork restrictions, hook resilience, and multiple bug fixes (CC 2.1.99-2.1.104)
+
 ## [0.10.2] - 2026-04-10
 
 ### Added
@@ -362,7 +379,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.2...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.3...HEAD
+[0.10.3]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.2...v0.10.3
 [0.10.2]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.1...v0.10.2
 [0.10.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.9.0...v0.10.0

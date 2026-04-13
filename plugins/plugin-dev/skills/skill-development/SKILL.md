@@ -97,6 +97,8 @@ Use `context: fork` for:
 - Skills that might pollute the main context
 - Expensive operations you want isolated
 
+> **Resolved (CC 2.1.101):** Skills with `context: fork` and `agent` frontmatter are now properly honored. Previously these frontmatter fields were ignored in certain configurations.
+
 ##### agent
 
 Specify which agent type handles the forked skill. The agent provides the **execution environment** (system prompt, tools, behavioral rules). The skill body provides the **task** (what to do). The forked agent does not inherit your conversation history.

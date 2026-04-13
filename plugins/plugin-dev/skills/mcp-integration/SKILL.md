@@ -426,6 +426,8 @@ Analysis Process:
 
 **Use for:** Multi-step MCP workflows without user interaction.
 
+> **Resolved (CC 2.1.101):** Subagents now properly inherit MCP tools from dynamically-injected servers. Previously, subagents didn't inherit these tools, which could cause MCP tool calls to fail in autonomous agent workflows.
+
 ### Pattern 3: Multi-Server Plugin
 
 Integrate multiple MCP servers:

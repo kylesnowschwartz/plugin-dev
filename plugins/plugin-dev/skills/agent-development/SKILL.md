@@ -635,7 +635,13 @@ Background agents that need an unapproved permission will fail. Plan tool restri
 
 **MCP limitation:** MCP tools are unavailable in background subagents. If your agent relies on MCP tools (from the plugin's `.mcp.json`), it must run in foreground mode. Design agents that may run in background to use only built-in tools.
 
+> **Resolved (CC 2.1.101):** Subagents now properly inherit MCP tools from dynamically-injected servers. Previously, subagents didn't inherit these tools.
+
+**Worktree access (CC 2.1.101):** Sub-agents in isolated worktrees now have proper Read/Edit access to their own worktree files. Previously they were incorrectly denied access.
+
 **Resuming agents:** Each Task invocation creates a fresh agent. To continue with full prior context, ask Claude to "resume that agent" — it will restore the previous transcript.
+
+**Fork output restriction:** Agents and forks cannot read or tail their own output files. This restriction is unconditional — there is no exception even if the user explicitly requests a progress check. Design agents to communicate through their return value, not by reading fork output logs.
 
 **Restricting spawnable agents:** Use `Task(agent_type1, agent_type2)` syntax in settings.json allow rules to control which agent types can be spawned. Omitting `Task` entirely prevents subagent spawning.
 

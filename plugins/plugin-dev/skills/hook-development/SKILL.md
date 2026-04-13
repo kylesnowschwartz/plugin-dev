@@ -1227,6 +1227,9 @@ echo "$output" | jq .
 8. **Subagent Stop hooks auto-convert.** Stop hooks in subagent context become SubagentStop.
 9. **HTTP hooks need 2xx for decisions.** Non-2xx status codes are treated as non-blocking errors.
 10. **`disableAllHooks` cannot disable managed hooks.** Policy-managed hooks always run.
+11. **`permissions.deny` overrides hook decisions (CC 2.1.101).** The `permissions.deny` rules now properly override PreToolUse hook `permissionDecision: "ask"`. Previously this was broken.
+12. **Unrecognized event names are resilient (CC 2.1.101).** Unrecognized hook event names no longer cause the entire settings file to be ignored — only the unrecognized event is skipped.
+13. **Enterprise force-enabled plugins (CC 2.1.101).** Plugin hooks from force-enabled plugins run even when org has `allowManagedHooksOnly` enabled.
 
 ## Additional Resources
 
