@@ -2,5 +2,6 @@
 https://claude.ai
 https://claude.ai/code
 
-# Changelog comparison links (tags may not exist yet during release PRs)
+# Changelog links (tags may not exist yet during release PRs)
 https://github.com/kylesnowschwartz/plugin-dev/compare/.*
+https://github.com/kylesnowschwartz/plugin-dev/releases/tag/.*
