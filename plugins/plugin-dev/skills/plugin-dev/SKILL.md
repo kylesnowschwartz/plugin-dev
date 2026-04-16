@@ -23,14 +23,6 @@ Comprehensive guide for developing Claude Code plugins. Read the relevant refere
 
 Each topic directory also contains additional references/, examples/, and scripts/ for detailed content. Read those when the overview alone is insufficient.
 
-## Available Commands
-
-| Command | Purpose |
-|---------|---------|
-| `/plugin-dev:start` | Entry point - choose plugin or marketplace creation |
-| `/plugin-dev:create-plugin` | 8-phase guided plugin creation workflow |
-| `/plugin-dev:create-marketplace` | 8-phase guided marketplace creation workflow |
-
 ## Available Agents
 
 | Agent | Purpose |

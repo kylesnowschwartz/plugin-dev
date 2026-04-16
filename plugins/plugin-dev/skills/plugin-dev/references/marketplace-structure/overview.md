@@ -325,7 +325,6 @@ Use the `plugin-validator` agent with marketplace support for comprehensive vali
 
 - **plugin-structure** - For individual plugin `plugin.json` details
 - **plugin-validator** agent - For validating marketplace structure
-- **`/plugin-dev:create-marketplace`** - Guided marketplace creation workflow
 
 ## Working Example
 
