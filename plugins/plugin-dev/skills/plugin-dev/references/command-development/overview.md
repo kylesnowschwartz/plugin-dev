@@ -1,7 +1,7 @@
 
 # Command Development for Claude Code
 
-> **Note:** The `.claude/commands/` directory is a legacy format. For new plugins, prefer the `skills/<name>/SKILL.md` directory format. Both are loaded identically by Claude Code -- the only difference is file layout. The skills format supports progressive disclosure via `references/` and `examples/` subdirectories. See the `skill-development` skill for the preferred format.
+> **Note:** The `.claude/commands/` directory is a legacy format. For new plugins, prefer the `skills/<name>/SKILL.md` directory format. Both are loaded identically by Claude Code -- the only difference is file layout. The skills format supports progressive disclosure via `references/` and `examples/` subdirectories. See the Skill Development reference for the preferred format.
 
 ## Overview
 
@@ -411,7 +411,7 @@ Commands and skills are both invoked via the same **Skill tool**. The difference
 - `disable-model-invocation: true` → User-only (for side effects: deploy, commit)
 - Default → Both Claude and user can invoke
 
-**When to graduate a command to a skill**: If you need scripts, reference files, or progressive disclosure, convert the command to a skill. See the `skill-development` skill for guidance.
+**When to graduate a command to a skill**: If you need scripts, reference files, or progressive disclosure, convert the command to a skill. See the Skill Development reference for guidance.
 
 ## Command Organization
 

@@ -60,7 +60,7 @@ For complete format with all options, see [Agent File Structure](#agent-file-str
 | **Commands** | User-initiated actions      | Explicit `/command` invocation   | `/deploy production`                |
 | **Skills**   | Knowledge and guidance      | Model-invoked based on context   | Domain expertise for PDF processing |
 
-> **See also:** For command development, load the `command-development` skill. For skill development, load the `skill-development` skill.
+> **See also:** For command development, see the Command Development reference. For skill development, see the Skill Development reference.
 
 ### Choose Agents When
 
@@ -407,7 +407,7 @@ A skill with `context: fork` and `agent: your-agent-name` creates a clean separa
 
 The forked agent does not inherit conversation history. One agent can serve many skills, each providing a different task. This is the declarative alternative to spawning agents directly via the Agent tool — use it when the task instructions are stable and you want automatic trigger matching with prompt cache sharing. For dynamic prompts or parallel orchestration, use direct Agent tool calls instead.
 
-See the `skill-development` skill for the full comparison table.
+See the Skill Development reference (`references/skill-development/overview.md`) for the full comparison table.
 
 ## System Prompt Design
 

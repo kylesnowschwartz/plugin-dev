@@ -381,7 +381,7 @@ Path(s) to output style definition files or directories.
 
 **Behavior**: Supplements default `output-styles/` directory (does not replace)
 
-Output style files are markdown with YAML frontmatter (`name`, `description`, `keep-coding-instructions`). See the plugin-structure skill's `references/output-styles.md` for the complete frontmatter schema.
+Output style files are markdown with YAML frontmatter (`name`, `description`, `keep-coding-instructions`). See `references/output-styles.md` for the complete frontmatter schema.
 
 **Use cases**:
 
