@@ -18,11 +18,13 @@ Plugins can store user-configurable settings and state in `.claude/plugin-name.l
 ### Basic Template
 
 ```markdown
+---
 enabled: true
 setting1: value1
 setting2: value2
 numeric_setting: 42
 list_setting: ["item1", "item2"]
+---
 
 # Additional Context
 
@@ -39,11 +41,13 @@ This markdown body can contain:
 **.claude/my-plugin.local.md:**
 
 ```markdown
+---
 enabled: true
 strict_mode: false
 max_retries: 3
 notification_level: info
 coordinator_session: team-leader
+---
 
 # Plugin Configuration
 
@@ -95,8 +99,10 @@ See `examples/read-settings-hook.sh` for complete working example.
 Commands can read settings files to customize behavior:
 
 ```markdown
+---
 description: Process data with plugin
 allowed-tools: Read, Bash
+---
 
 # Process Command
 
@@ -114,8 +120,10 @@ Steps:
 Agents can reference settings in their instructions:
 
 ```markdown
+---
 name: configured-agent
 description: Agent that adapts to project settings
+---
 
 Check for plugin settings at `.claude/my-plugin.local.md`.
 If present, parse YAML frontmatter and adapt behavior according to:
@@ -201,12 +209,14 @@ Store agent-specific state and configuration:
 **.claude/multi-agent-swarm.local.md:**
 
 ```markdown
+---
 agent_name: auth-agent
 task_number: 3.5
 pr_number: 1234
 coordinator_session: team-leader
 enabled: true
 dependencies: ["Task 3.4"]
+---
 
 # Task Assignment
 
@@ -234,10 +244,12 @@ tmux send-keys -t "$COORDINATOR" "Agent $AGENT_NAME completed task" Enter
 **.claude/my-plugin.local.md:**
 
 ```markdown
+---
 validation_level: strict
 max_file_size: 1000000
 allowed_extensions: [".js", ".ts", ".tsx"]
 enable_logging: true
+---
 
 # Validation Configuration
 
@@ -296,6 +308,7 @@ enabled: true
 mode: standard
 max_retries: 3
 
+---
 
 # Plugin Configuration
 
@@ -392,7 +405,9 @@ SAFE_VALUE=$(echo "$USER_INPUT" | sed 's/"/\\"/g')
 
 # Write to file
 cat > "$STATE_FILE" <<EOF
+---
 user_setting: "$SAFE_VALUE"
+---
 EOF
 ```
 
@@ -425,6 +440,7 @@ Settings files should be:
 **.claude/multi-agent-swarm.local.md:**
 
 ```markdown
+---
 agent_name: auth-implementation
 task_number: 3.5
 pr_number: 1234
@@ -432,6 +448,7 @@ coordinator_session: team-leader
 enabled: true
 dependencies: ["Task 3.4"]
 additional_instructions: Use JWT tokens, not sessions
+---
 
 # Task: Implement Authentication
 
@@ -451,9 +468,11 @@ Coordinate with auth-agent on shared types.
 **.claude/ralph-loop.local.md:**
 
 ```markdown
+---
 iteration: 1
 max_iterations: 10
 completion_promise: "All tests passing and build successful"
+---
 
 Fix all the linting errors in the project.
 Make sure tests pass after each fix.

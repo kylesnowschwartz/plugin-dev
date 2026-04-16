@@ -22,6 +22,7 @@ Agents are autonomous subprocesses that handle complex, multi-step tasks indepen
 Minimal working agent (copy-paste ready):
 
 ```markdown
+---
 name: my-reviewer
 description: Use this agent when the user asks to review code. Examples:
 
@@ -36,6 +37,7 @@ Code review request triggers the agent.
 
 model: inherit
 color: blue
+---
 
 You are a code reviewer. Analyze code for issues and provide feedback.
 
@@ -86,6 +88,7 @@ For complete format with all options, see [Agent File Structure](#agent-file-str
 ### Complete Format
 
 ```markdown
+---
 name: agent-identifier
 description: Use this agent when [triggering conditions]. Examples:
 
@@ -105,6 +108,7 @@ assistant: "[How assistant should respond and use this agent]"
 model: inherit
 color: blue
 tools: Read, Write, Grep
+---
 
 You are [agent role description]...
 

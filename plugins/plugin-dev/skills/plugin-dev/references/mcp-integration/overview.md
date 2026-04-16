@@ -302,13 +302,17 @@ For plugins bundling many-tool MCP servers, document which tools are most common
 Pre-allow specific MCP tools in command frontmatter:
 
 ```markdown
+---
 allowed-tools: mcp__plugin_asana_asana__asana_create_task, mcp__plugin_asana_asana__asana_search_tasks
+---
 ```
 
 **Wildcard (use sparingly):**
 
 ```markdown
+---
 allowed-tools: mcp__plugin_asana_asana__*
+---
 ```
 
 **Best practice:** Pre-allow specific tools, not wildcards, for security.
@@ -388,6 +392,7 @@ Commands use MCP tools with user interaction:
 ```markdown
 # Command: create-item.md
 
+---
 
 allowed-tools: `mcp__plugin_name_server__create_item`
 

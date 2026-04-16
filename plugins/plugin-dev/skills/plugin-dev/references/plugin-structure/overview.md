@@ -160,8 +160,10 @@ commands/
 **File format**:
 
 ```markdown
+---
 name: command-name
 description: Command description
+---
 
 Command implementation instructions...
 ```
@@ -186,10 +188,12 @@ agents/
 **File format**:
 
 ```markdown
+---
 description: Agent role and expertise
 capabilities:
   - Specific task 1
   - Specific task 2
+---
 
 Detailed agent instructions and knowledge...
 ```
@@ -221,8 +225,10 @@ skills/
 **SKILL.md format**:
 
 ```markdown
+---
 name: Skill Name
 description: When to use this skill
+---
 
 Skill instructions and guidance...
 ```
@@ -230,9 +236,11 @@ Skill instructions and guidance...
 **Tool restrictions** (optional): Skills can include `allowed-tools` in frontmatter to limit tool access:
 
 ```yaml
+---
 name: safe-reader
 description: Read-only file access skill
 allowed-tools: Read, Grep, Glob # Optional: restricts available tools
+---
 ```
 
 Use for read-only workflows, security-sensitive tasks, or limited-scope operations.
@@ -715,6 +723,7 @@ claude plugin install npm-package-name
 claude plugin install pip-package-name
 ```
 
+---
 
 ## Additional Resources
 

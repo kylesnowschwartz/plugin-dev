@@ -12,7 +12,7 @@ Guide the user through creating a complete, high-quality Claude Code plugin from
 ## Core Principles
 
 - **Ask clarifying questions**: Identify all ambiguities about plugin purpose, triggering, scope, and components. Ask specific, concrete questions rather than making assumptions. Wait for user answers before proceeding with implementation.
-- **Load relevant skills**: Use the Skill tool to load plugin-dev skills when needed (plugin-structure, hook-development, agent-development, etc.)
+- **Load plugin-dev skill**: Use the Skill tool to load the plugin-dev skill when needed — it covers all component types via its routing index
 - **Use specialized agents**: Leverage agent-creator, plugin-validator, and skill-reviewer agents for AI-assisted development
 - **Follow best practices**: Apply patterns from plugin-dev's own implementation
 - **Progressive disclosure**: Create lean skills with references/examples
@@ -49,11 +49,11 @@ Guide the user through creating a complete, high-quality Claude Code plugin from
 
 **Goal**: Determine what plugin components are needed
 
-**MUST load plugin-structure skill** using Skill tool before this phase.
+**MUST load plugin-dev skill** using Skill tool before this phase.
 
 **Actions**:
 
-1. Load plugin-structure skill to understand component types
+1. Load plugin-dev skill to understand component types
 2. Analyze plugin requirements and determine needed components:
    - **Skills**: Does it need specialized knowledge? (hooks API, MCP patterns, etc.)
    - **Commands**: User-initiated actions? (deploy, configure, analyze)
@@ -171,21 +171,13 @@ git commit -m "feat: initial plugin structure"
 
 **Goal**: Create each component following best practices
 
-**LOAD RELEVANT SKILLS** before implementing each component type:
-
-- Skills: Load skill-development skill
-- Commands: Load command-development skill
-- Agents: Load agent-development skill
-- Hooks: Load hook-development skill
-- MCP: Load mcp-integration skill
-- LSP: Load lsp-integration skill
-- Settings: Load plugin-settings skill
+**LOAD plugin-dev skill** before implementing components. The skill's routing index covers all component types — read the relevant reference for each:
 
 **Actions for each component**:
 
 ### For Skills
 
-1. Load skill-development skill using Skill tool
+1. Ensure plugin-dev skill is loaded
 2. For each skill:
    - Ask user for concrete usage examples (or use from Phase 3)
    - Plan resources (scripts/, references/, examples/)
@@ -201,7 +193,7 @@ git commit -m "feat: initial plugin structure"
 
 ### For Commands
 
-1. Load command-development skill using Skill tool
+1. Ensure plugin-dev skill is loaded
 2. For each command:
    - Write command markdown with frontmatter
    - Include clear description and argument-hint
@@ -212,7 +204,7 @@ git commit -m "feat: initial plugin structure"
 
 ### For Agents
 
-1. Load agent-development skill using Skill tool
+1. Ensure plugin-dev skill is loaded
 2. For each agent, use agent-creator agent:
    - Provide description of what agent should do
    - Agent-creator generates: identifier, whenToUse with examples, systemPrompt
@@ -222,7 +214,7 @@ git commit -m "feat: initial plugin structure"
 
 ### For Hooks
 
-1. Load hook-development skill using Skill tool
+1. Ensure plugin-dev skill is loaded
 2. For each hook:
    - Create hooks/hooks.json with hook configuration
    - Prefer prompt-based hooks for complex logic
@@ -232,7 +224,7 @@ git commit -m "feat: initial plugin structure"
 
 ### For MCP
 
-1. Load mcp-integration skill using Skill tool
+1. Ensure plugin-dev skill is loaded
 2. Create .mcp.json configuration with:
    - Server type (stdio for local, SSE for hosted)
    - Command and args (with ${CLAUDE_PLUGIN_ROOT})
@@ -243,7 +235,7 @@ git commit -m "feat: initial plugin structure"
 
 ### For LSP
 
-1. Load lsp-integration skill using Skill tool
+1. Ensure plugin-dev skill is loaded
 2. Add lspServers configuration to plugin.json:
    - Server command and args
    - extensionToLanguage mapping
@@ -254,7 +246,7 @@ git commit -m "feat: initial plugin structure"
 
 ### For Settings
 
-1. Load plugin-settings skill using Skill tool
+1. Ensure plugin-dev skill is loaded
 2. Create settings template in README
 3. Create example .claude/plugin-name.local.md file (as documentation)
 4. Implement settings reading in hooks/commands as needed
@@ -360,7 +352,7 @@ git commit -m "feat: initial plugin structure"
    - If no, skip to step 4
 
 3. **Marketplace integration** (if publishing):
-   - Load marketplace-structure skill using Skill tool
+   - Load plugin-dev skill using Skill tool
    - Determine target marketplace:
      - Ask: "Which marketplace? (existing marketplace path, create new, or skip)"
    - If existing marketplace:
@@ -416,7 +408,7 @@ git commit -m "feat: initial plugin structure"
 ### Throughout All Phases
 
 - **Use Task tools** to track progress at every phase (TaskCreate, TaskUpdate, TaskList)
-- **Load skills with Skill tool** when working on specific component types
+- **Load plugin-dev skill** when working on specific component types
 - **Use specialized agents** (agent-creator, plugin-validator, skill-reviewer)
 - **Ask for user confirmation** at key decision points
 - **Follow plugin-dev's own patterns** as reference examples
@@ -439,10 +431,8 @@ git commit -m "feat: initial plugin structure"
 
 ### Skills to Load by Phase
 
-- **Phase 2**: plugin-structure
-- **Phase 5**: skill-development, command-development, agent-development, hook-development, mcp-integration, lsp-integration, plugin-settings (as needed)
+- **Phase 2+**: plugin-dev (covers all component types via routing index)
 - **Phase 6**: (agents will use skills automatically)
-- **Phase 8**: marketplace-structure (if publishing to marketplace)
 
 ### Quality Standards
 

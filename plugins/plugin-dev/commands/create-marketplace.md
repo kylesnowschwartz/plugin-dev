@@ -12,7 +12,7 @@ Guide the user through creating a complete plugin marketplace from initial conce
 ## Core Principles
 
 - **Ask clarifying questions**: Identify all ambiguities about marketplace purpose, plugins, distribution strategy. Ask specific questions rather than making assumptions. Wait for user answers before proceeding.
-- **Load marketplace-structure skill**: Use the Skill tool to load the marketplace-structure skill for schema and pattern guidance
+- **Load plugin-dev skill**: Use the Skill tool to load the plugin-dev skill for schema and pattern guidance
 - **Use plugin-validator agent**: Leverage the plugin-validator agent for comprehensive marketplace validation
 - **Follow best practices**: Apply patterns from this repository's own marketplace.json
 - **Use Task tools**: Track all progress throughout all phases using TaskCreate, TaskUpdate, and TaskList
@@ -48,11 +48,11 @@ Guide the user through creating a complete plugin marketplace from initial conce
 
 **Goal**: Determine which plugins to include and their sources
 
-**MUST load marketplace-structure skill** using Skill tool before this phase.
+**MUST load plugin-dev skill** using Skill tool before this phase.
 
 **Actions**:
 
-1. Load marketplace-structure skill for schema guidance
+1. Load plugin-dev skill for schema guidance
 2. List plugins to include in marketplace:
    - For each plugin: name, source type, brief description
 3. Categorize by source type:
@@ -361,7 +361,7 @@ git commit -m "feat: initial marketplace structure"
 ### Throughout All Phases
 
 - **Use Task tools** to track progress at every phase (TaskCreate, TaskUpdate, TaskList)
-- **Load marketplace-structure skill** for schema reference
+- **Load plugin-dev skill** for schema reference
 - **Use plugin-validator agent** for validation
 - **Ask for user confirmation** at key decision points
 - **Follow this repository's marketplace.json** as reference

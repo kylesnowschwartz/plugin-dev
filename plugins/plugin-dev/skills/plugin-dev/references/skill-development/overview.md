@@ -54,9 +54,11 @@ Skills follow precedence: Enterprise > Personal (`~/.claude/skills/`) > Project 
 Optionally restrict which tools Claude can use when the skill is active:
 
 ```yaml
+---
 name: code-reviewer
 description: Review code for best practices...
 allowed-tools: Read, Grep, Glob
+---
 ```
 
 Use `allowed-tools` for:
@@ -72,9 +74,11 @@ When specified, Claude can only use the listed tools without needing permission.
 Control how the skill's context is loaded:
 
 ```yaml
+---
 name: analysis-skill
 description: Perform deep code analysis...
 context: fork
+---
 ```
 
 **Values:**
@@ -93,10 +97,12 @@ Use `context: fork` for:
 Specify which agent type handles the forked skill. The agent provides the **execution environment** (system prompt, tools, behavioral rules). The skill body provides the **task** (what to do). The forked agent does not inherit your conversation history.
 
 ```yaml
+---
 name: exploration-skill
 description: Explore codebase patterns...
 context: fork
 agent: Explore
+---
 Find all React components that accept a `userId` prop and trace how they fetch user data.
 ```
 
@@ -136,11 +142,13 @@ Both approaches delegate work to a sub-agent, but they serve different design ne
 Load other skills into the forked agent's context:
 
 ```yaml
+---
 name: comprehensive-review
 description: Full code review with testing...
 context: fork
 agent: general
 skills: testing-patterns, security-audit
+---
 ```
 
 Requires `context: fork` to be set. Only skills from the same plugin can be loaded.
@@ -150,9 +158,11 @@ Requires `context: fork` to be set. Only skills from the same plugin can be load
 Control whether the skill appears in the slash command menu:
 
 ```yaml
+---
 name: internal-review-standards
 description: Apply internal code review standards...
 user-invocable: false
+---
 ```
 
 **Default:** `true` (skills are visible in the `/` menu)
@@ -169,9 +179,11 @@ Use `user-invocable: false` for skills that Claude should use automatically but 
 Prevent Claude from programmatically invoking the skill via the Skill tool:
 
 ```yaml
+---
 name: dangerous-operation
 description: Perform dangerous operation...
 disable-model-invocation: true
+---
 ```
 
 **Default:** `false` (programmatic invocation allowed)
