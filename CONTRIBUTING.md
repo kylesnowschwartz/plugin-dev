@@ -221,7 +221,7 @@ When creating or modifying commands:
    ---
    description: Brief description
    argument-hint: [optional-argument]
-   allowed-tools: AskUserQuestion, Bash(gh:*), Read
+   allowed-tools: AskUserQuestion, Bash(gh *), Read
    ---
    ```
 

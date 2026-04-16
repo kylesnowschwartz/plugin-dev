@@ -114,7 +114,7 @@ Add configuration using YAML frontmatter:
 ```markdown
 ---
 description: Review code for security issues
-allowed-tools: Read, Grep, Bash(git:*)
+allowed-tools: Read, Grep, Bash(git *)
 model: sonnet
 ---
 
@@ -145,14 +145,14 @@ description: Review pull request for code quality
 
 ```yaml
 ---
-allowed-tools: Read, Write, Edit, Bash(git:*)
+allowed-tools: Read, Write, Edit, Bash(git *)
 ---
 ```
 
 **Patterns:**
 
 - `Read, Write, Edit` - Specific tools
-- `Bash(git:*)` - Bash with git commands only
+- `Bash(git *)` - Bash with git commands only
 - `*` - All tools (rarely needed)
 
 **Use when:** Command requires specific tool access
@@ -498,7 +498,7 @@ Please provide a PR number. Usage: /review-pr [number]
 
 ### Bash Commands
 
-1. **Limit scope:** Use `Bash(git:*)` not `Bash(*)`
+1. **Limit scope:** Use `Bash(git *)` not `Bash(*)`
 2. **Safe commands:** Avoid destructive operations
 3. **Handle errors:** Consider command failures
 4. **Keep fast:** Long-running commands slow invocation
@@ -517,7 +517,7 @@ Please provide a PR number. Usage: /review-pr [number]
 ```markdown
 ---
 description: Review code changes
-allowed-tools: Read, Bash(git:*)
+allowed-tools: Read, Bash(git *)
 ---
 
 Files changed: `git diff --name-only`
@@ -531,7 +531,7 @@ Review each file for code quality, bugs, test coverage, documentation needs.
 ---
 description: Run tests for specific file
 argument-hint: [test-file]
-allowed-tools: Bash(npm:*)
+allowed-tools: Bash(npm *)
 ---
 
 Run tests: `npm test $1`
@@ -544,7 +544,7 @@ Analyze results and suggest fixes for failures.
 ---
 description: Complete PR workflow
 argument-hint: [pr-number]
-allowed-tools: Bash(gh:*), Read
+allowed-tools: Bash(gh *), Read
 ---
 
 PR #$1 Workflow:
@@ -602,7 +602,7 @@ Plugin commands have access to `${CLAUDE_PLUGIN_ROOT}`, an environment variable 
 ```markdown
 ---
 description: Analyze using plugin script
-allowed-tools: Bash(node:*)
+allowed-tools: Bash(node *)
 ---
 
 Run analysis: `node ${CLAUDE_PLUGIN_ROOT}/scripts/analyze.js $1`

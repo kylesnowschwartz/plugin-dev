@@ -86,7 +86,7 @@ allowed-tools: Read, Write, Edit
 ```
 
 ```yaml
-allowed-tools: Read, Write, Bash(git:*)
+allowed-tools: Read, Write, Bash(git *)
 ```
 
 **Tool Patterns:**
@@ -100,9 +100,9 @@ allowed-tools: Read, Grep, Edit
 **Bash with command filter:**
 
 ```yaml
-allowed-tools: Bash(git:*)           # Only git commands
-allowed-tools: Bash(npm:*)           # Only npm commands
-allowed-tools: Bash(docker:*)        # Only docker commands
+allowed-tools: Bash(git *)           # Only git commands
+allowed-tools: Bash(npm *)           # Only npm commands
+allowed-tools: Bash(docker *)        # Only docker commands
 ```
 
 **All tools (not recommended):**
@@ -122,18 +122,18 @@ allowed-tools: "*"
 2. **Clarity:** Document required tools
 
    ```yaml
-   allowed-tools: Bash(git:*), Read
+   allowed-tools: Bash(git *), Read
    ```
 
 3. **Bash execution:** Enable bash command output
    ```yaml
-   allowed-tools: Bash(git status:*), Bash(git diff:*)
+   allowed-tools: Bash(git status *), Bash(git diff *)
    ```
 
 **Best practices:**
 
 - Be as restrictive as possible
-- Use command filters for Bash (e.g., `git:*` not `*`)
+- Use command filters for Bash (e.g., `git *` not `*`)
 - Only specify when different from conversation permissions
 - Document why specific tools are needed
 
@@ -388,7 +388,7 @@ Description and tools:
 ```markdown
 ---
 description: Review Git changes
-allowed-tools: Bash(git:*), Read
+allowed-tools: Bash(git *), Read
 ---
 
 Current changes: `git diff --name-only`
@@ -408,7 +408,7 @@ All common fields:
 ---
 description: Deploy application to environment
 argument-hint: [app-name] [environment] [version]
-allowed-tools: Bash(kubectl:*), Bash(helm:*), Read
+allowed-tools: Bash(kubectl *), Bash(helm *), Read
 model: sonnet
 ---
 
@@ -432,7 +432,7 @@ Restricted invocation:
 description: Approve production deployment
 argument-hint: [deployment-id]
 disable-model-invocation: true
-allowed-tools: Bash(gh:*)
+allowed-tools: Bash(gh *)
 ---
 
 <!--
@@ -476,7 +476,7 @@ model: sonnet
 allowed-tools: Bash # ❌ Missing command filter
 ```
 
-**Fix:** Use `Bash(git:*)` format
+**Fix:** Use `Bash(git *)` format
 
 **Invalid model name:**
 

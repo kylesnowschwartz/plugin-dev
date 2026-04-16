@@ -11,7 +11,7 @@ Basic slash command patterns for common use cases.
 ```markdown
 ---
 description: Review code for quality and issues
-allowed-tools: Read, Bash(git:*)
+allowed-tools: Read, Bash(git *)
 ---
 
 Review the code in this repository for:
@@ -97,7 +97,7 @@ Prioritize issues by severity.
 ---
 description: Run tests for specific file
 argument-hint: [test-file]
-allowed-tools: Bash(npm:*), Bash(jest:*)
+allowed-tools: Bash(npm *), Bash(jest *)
 ---
 
 Run tests for $1:
@@ -179,7 +179,7 @@ Format as Markdown suitable for project documentation.
 ```markdown
 ---
 description: Summarize Git repository status
-allowed-tools: Bash(git:*)
+allowed-tools: Bash(git *)
 ---
 
 Repository Status Summary:
@@ -215,7 +215,7 @@ Provide:
 ---
 description: Deploy to specified environment
 argument-hint: [environment] [version]
-allowed-tools: Bash(kubectl:*), Read
+allowed-tools: Bash(kubectl *), Read
 ---
 
 Deploy to $1 environment using version $2
@@ -448,7 +448,7 @@ Analyze but don't modify...
 
 ```markdown
 ---
-allowed-tools: Bash(git:*)
+allowed-tools: Bash(git *)
 ---
 
 `git status`
@@ -505,7 +505,7 @@ Compare @$1 with @$2...
 
 ```markdown
 ---
-allowed-tools: Bash(git:*), Read
+allowed-tools: Bash(git *), Read
 ---
 
 Context: `git status`

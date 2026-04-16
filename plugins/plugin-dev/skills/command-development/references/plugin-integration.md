@@ -82,7 +82,7 @@ Combine agents, skills, and scripts:
 ---
 description: Comprehensive review workflow
 argument-hint: [file]
-allowed-tools: Bash(node:*), Read
+allowed-tools: Bash(node *), Read
 ---
 
 Target: @$1
@@ -153,7 +153,7 @@ Provide example configuration
 ```markdown
 ---
 description: Run plugin analyzer
-allowed-tools: Bash(test:*)
+allowed-tools: Bash(test *)
 ---
 
 Validate plugin setup:

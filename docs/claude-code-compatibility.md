@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.98 (2026-04-10)
-Plugin-dev version: 0.10.2
+Last audited: Claude Code 2.1.110 (2026-04-16)
+Plugin-dev version: 0.10.3
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.10.3 | 2.1.99-2.1.110 | 2026-04-16 | Allowed-tools syntax change (colon to space), PreCompact hook blocking capability, monitors manifest key |
 | v0.10.2 | 2.1.94-2.1.98 | 2026-04-10 | Monitor tool for background events, agent absolute path requirement, skill invocation name change, plugin skill hook/CLAUDE_PLUGIN_ROOT fixes |
 | v0.10.0 | 2.1.89-2.1.92 | 2026-04-04 | PreToolUse `defer` decision, MCP maxResultSizeChars (500K), disableSkillShellExecution setting, plugin bin/ directory |
 | v0.9.0 | 2.1.87-2.1.88 | 2026-03-31 | PermissionDenied hook (25th event), file_path absolute paths, `if` compound command fix, partial compaction, Config tool |

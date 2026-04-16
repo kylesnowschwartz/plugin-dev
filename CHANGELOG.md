@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.3] - 2026-04-16
+
+### Changed
+
+- **BREAKING: Allowed-tools syntax change** - Updated all documentation to use space-separated format (`Bash(git *)`) instead of colon-separated format (`Bash(git:*)`) per Claude Code 2.1.108
+- **command-development**: Updated allowed-tools examples across SKILL.md, references, and examples
+- **plugin-structure**: Updated allowed-tools examples in github-actions.md and headless-ci-mode.md
+- **/create-plugin, /create-marketplace**: Updated allowed-tools frontmatter
+- **docs**: Updated allowed-tools examples in workflow-security.md and CONTRIBUTING.md
+
+### Note
+
+- CI workflow files (`.github/workflows/claude.yml`, `.github/workflows/component-validation.yml`) still use old colon-separated syntax. Update these manually if the repository has `workflows` write permission configured.
+
+### Added
+
+- **hook-development**: Documented PreCompact hook blocking capability with exit code 2 or `{"decision":"block"}` (CC 2.1.105)
+- **plugin-structure**: Documented `monitors` manifest key for background monitoring scripts with "silence is not success" guidance (CC 2.1.105)
+
 ## [0.10.2] - 2026-04-10
 
 ### Added
@@ -362,7 +381,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.2...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.3...HEAD
+[0.10.3]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.2...v0.10.3
 [0.10.2]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.1...v0.10.2
 [0.10.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.9.0...v0.10.0

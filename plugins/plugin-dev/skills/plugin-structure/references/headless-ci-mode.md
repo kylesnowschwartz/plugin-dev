@@ -168,7 +168,7 @@ This plugin works in headless mode. Example:
 
 \`\`\`bash
 claude -p "Run security audit" \
- --allowedTools "Read,Grep,Glob,Bash(npm:\*)" \
+ --allowedTools "Read,Grep,Glob,Bash(npm \*)" \
  --max-turns 20 \
  --output-format json
 \`\`\`

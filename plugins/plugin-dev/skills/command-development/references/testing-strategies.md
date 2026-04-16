@@ -264,7 +264,7 @@ rm /tmp/test-file*.txt /tmp/large-file.bin
 cat > .claude/commands/test-bash.md << 'EOF'
 ---
 description: Test bash execution
-allowed-tools: Bash(echo:*), Bash(date:*)
+allowed-tools: Bash(echo *), Bash(date *)
 ---
 
 Current date: `date`
@@ -284,7 +284,7 @@ EOF
 cat > .claude/commands/test-forbidden.md << 'EOF'
 ---
 description: Test forbidden command
-allowed-tools: Bash(echo:*)
+allowed-tools: Bash(echo *)
 ---
 
 Trying forbidden: `ls -la /`

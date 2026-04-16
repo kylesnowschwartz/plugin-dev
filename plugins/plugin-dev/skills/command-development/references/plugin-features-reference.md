@@ -96,7 +96,7 @@ Reference files within your plugin:
 ```markdown
 ---
 description: Analyze using plugin script
-allowed-tools: Bash(node:*), Read
+allowed-tools: Bash(node *), Read
 ---
 
 Run analysis: [BANG]`node ${CLAUDE_PLUGIN_ROOT}/scripts/analyze.js`
@@ -119,7 +119,7 @@ Read template: @/path/to/plugins/plugin-name/templates/report.md
 ```markdown
 ---
 description: Run custom linter from plugin
-allowed-tools: Bash(node:*)
+allowed-tools: Bash(node *)
 ---
 
 Lint results: [BANG]`node ${CLAUDE_PLUGIN_ROOT}/bin/lint.js $1`
@@ -186,7 +186,7 @@ Review results and report status.
    ```markdown
    ---
    description: Use plugin config if exists
-   allowed-tools: Bash(test:*), Read
+   allowed-tools: Bash(test *), Read
    ---
 
    [BANG]`test -f ${CLAUDE_PLUGIN_ROOT}/config.json && echo "exists" || echo "missing"`
@@ -410,7 +410,7 @@ Commands can be designed to work with plugin hooks:
 ```markdown
 ---
 description: Commit with pre-commit validation
-allowed-tools: Bash(git:*)
+allowed-tools: Bash(git *)
 ---
 
 Stage changes: [BANG]`git add $1`
@@ -530,7 +530,7 @@ Verify plugin resources available:
 ```markdown
 ---
 description: Run analysis with plugin tools
-allowed-tools: Bash(test:*)
+allowed-tools: Bash(test *)
 ---
 
 Validate plugin setup:
