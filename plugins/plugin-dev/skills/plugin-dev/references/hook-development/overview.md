@@ -1256,7 +1256,7 @@ Working examples in `examples/`:
 
 ### Utility Scripts
 
-> **Prerequisites**: These scripts require `jq` for JSON validation. See the [main README](../../../../README.md#for-utility-scripts) for setup.
+> **Prerequisites**: These scripts require `jq` for JSON validation. Install with `brew install jq` (macOS) or your package manager.
 
 Development tools in `scripts/`:
 
