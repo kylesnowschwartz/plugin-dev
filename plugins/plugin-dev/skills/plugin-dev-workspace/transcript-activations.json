@@ -1,0 +1,207 @@
+[
+  {
+    "skill": "plugin-dev:agent-development",
+    "user_prompt": "Use what we've learned on this project to build a claude code sub agent with /plugin-dev that knows how to verify and QA our tmux project using tmux. Any chance there's a cucumber-like integration testing framework for tmux?",
+    "project": "-Users-kyle-Code-meta-claude-opensessions"
+  },
+  {
+    "skill": "plugin-dev:agent-development",
+    "user_prompt": "I think that our /plugin-dev-guide command should use a subagent to do discovery to avoid polluting the main context window. Let's make a agent using our skills. It should both use the map of plugin-dev skills available via this plugin but ALSO use the instruction set in @/Users/kyle/Code/meta-claude/claude-code-system-prompts/system-prompts/agent-prompt-claude-guide-agent.md !\n\nThat way, we get the best of both.",
+    "project": "-Users-kyle-Code-meta-claude-plugin-dev"
+  },
+  {
+    "skill": "plugin-dev:agent-development",
+    "user_prompt": "Base directory for this skill: /Users/kyle/.claude/plugins/marketplaces/plugin-dev-marketplace/plugins/plugin-dev/skills/plugin-dev-guide\n\n# Plugin Development Guide\n\nThis meta-skill provides an overview of Claude Code plugin development and routes to specialized skills based on the task at hand.\n\nYour goal is to match the user request (or recent conversation context) to the appropriate skill below, then invoke it using the Skill tool.\n\n## Plugin Development Skills Overview\n\nThe plugin-dev toolkit provides 9 specialized skills and 3 slash commands for building Claude Code plugins, plus this guide. Each handles a specific domain of plugin development.\n\n### Skill Quick Reference\n\n| Skill                          | Purpose                                             |\n| -------                        | ---------                                           |\n| /plugin-structure              | Directory layout, manifest, component organization  |\n| /command-development           | Slash commands with frontmatter                     |\n| /agent-development             | Autonomous subagents                                |\n| /skill-development             | Creating skills with progressive disclosure         |\n| /hook-development              | Event-driven automation                             |\n| /mcp-integration               | Model Context Protocol servers                      |\n| /lsp-integration               | Language Server Protocol for code intelligence      |\n| /plugin-settings               | User configuration via .local.md                    |\n| /marketplace-structure         | Plugin marketplace creation                         |\n| /plugin-dev:start              | Entry point \u2014 choose plugin or marketplace creation |\n| /plugin-dev:create-plugin      | 8-phase guided plugin creation workflow             |\n| /plugin-dev:create-marketplace | 8-phase guided marketplace creation workflow        |\n\n## When to Use Each Skill\n\n### Starting a New Plugin\n\n**Skill: `pl",
+    "project": "-Users-kyle-Code-my-projects-claude-code-hero"
+  },
+  {
+    "skill": "plugin-dev:agent-development",
+    "user_prompt": "I'm actually liking option B the best - the decomposability of the skills gives us the the benefit of progressive disclosure, and the ability to use the skills ad-hoc.\n\nWe can use the newly added 'initial prompt' field in the agent frontmatter (see /plugin-dev:hook-development ) the agent body is the 'system prompt' of the agent.\n\nI also like the idea of ending the session with a curated handoff, then the user can re-launch with orchestrator --auto <handoff_doc> which will kick off work nicely.",
+    "project": "-Users-kyle-Code-my-projects-ralph-ban"
+  },
+  {
+    "skill": "plugin-dev:command-development",
+    "user_prompt": "Sounds like a bug that needs fixing - I doubt your analysis is correct, if it failed once it will fail again, and AI agents will need to 'correct' it every time. use /plugin-dev to solve the issue",
+    "project": "-Users-kyle-Code-Envato-non-market-ai-engineering-domain"
+  },
+  {
+    "skill": "plugin-dev:command-development",
+    "user_prompt": "@plugins/sc-hooks/commands/sc-copy-prompt.md has a special pattern. I think it's got a documented name somwhere in our codebase. it uses the plugins/sc-hooks/hooks/handlers/copy_message_handler.rb handler.\n\nIt's a pattern that blocks the actual prompt from triggering any API calls, but performs a code action.\n\nIs it documented or named anywhere in the codebase or agent history files?",
+    "project": "-Users-kyle-Code-my-projects-SimpleClaude"
+  },
+  {
+    "skill": "plugin-dev:command-development",
+    "user_prompt": "plan mode active",
+    "project": "-Users-kyle-Code-my-projects-SimpleClaude"
+  },
+  {
+    "skill": "plugin-dev:command-development",
+    "user_prompt": "Better. I also just QA'd the music /command and I saw that it executes an API call - what does /plugin-dev-guide say about executing /commands that perform an action programatically without hitting the API?",
+    "project": "-Users-kyle-Code-my-projects-claude-code-hero"
+  },
+  {
+    "skill": "plugin-dev:command-development",
+    "user_prompt": "yes - use plugin-dev skills",
+    "project": "-Users-kyle-Code-my-projects-claude-code-hero"
+  },
+  {
+    "skill": "plugin-dev:command-development",
+    "user_prompt": "Let's add a convenience /command called `rb-auto-toggle` that toggles the config file safely for the given session.",
+    "project": "-Users-kyle-Code-my-projects-ralph-ban"
+  },
+  {
+    "skill": "plugin-dev:hook-development",
+    "user_prompt": "Proceed with updating step 1 with the findings, then let's move on with the next step",
+    "project": "-Users-kyle-Code-Envato-non-market-Envato-AI-Engineering-Team-x-workflow-claude"
+  },
+  {
+    "skill": "plugin-dev:hook-development",
+    "user_prompt": "This is an issue we certainly need to address - I doubt we're following the /plugin-dev contract if we get 4 hook errors every time if something isn't configured properly. Failing open is the right path",
+    "project": "-Users-kyle-Code-meta-claude-opensessions"
+  },
+  {
+    "skill": "plugin-dev:hook-development",
+    "user_prompt": "lol \" Claude Code doesn't expose a PermissionRequest \" what are you fucking talking about? /plugin-dev",
+    "project": "-Users-kyle-Code-meta-claude-opensessions"
+  },
+  {
+    "skill": "plugin-dev:hook-development",
+    "user_prompt": "Base directory for this skill: /Users/kyle/Code/meta-claude/plugin-dev/plugins/plugin-dev/skills/plugin-dev-guide\n\n# Plugin Development Guide\n\nSpawn the `plugin-dev:plugin-dev-guide` agent (subagent_type: `plugin-dev:plugin-dev-guide`) with the user's question as the prompt. Pass `what's the advanced json api for stop hooks?` as the agent's task.\n\nWhen the agent reports back, follow its recommendation:\n\n1. **Skill recommended** \u2014 invoke that skill using the Skill tool (e.g., `Skill(\"plugin-dev:mcp-integration\")`)\n2. **OVERVIEW** \u2014 the user wants a general overview; summarize the available skills, commands, and agents from the tables below\n3. **NO_MATCH** \u2014 no plugin-dev skill covers this topic; answer directly or ask for clarification\n4. **Also-relevant skills mentioned** \u2014 note these to the user as follow-up options\n5. **Agent fails or returns unrecognized output** \u2014 fall back to asking the user which area they need help with, listing the skill domains: plugin structure, commands, agents, skills, hooks, MCP, LSP, settings, marketplace\n\n## Available Commands\n\n| Command                          | Purpose                                             |\n| -------------------------------- | --------------------------------------------------- |\n| `/plugin-dev:start`              | Entry point - choose plugin or marketplace creation |\n| `/plugin-dev:create-plugin`      | 8-phase guided plugin creation workflow             |\n| `/plugin-dev:create-marketplace` | 8-phase guided marketplace creation workflow        |\n\n## Available Agents\n\n| Agent                | Purpose                                    |\n| -------------------- | ------------------------------------------ |\n| **plugin-validator** | Validates plugin structure and manifests   |\n| **skill-reviewer**   | Reviews skill quality and triggering       |\n| **agent-creator**    | Generates new agents from descriptions     |\n\nwhat's the advanced json api for stop hooks?",
+    "project": "-Users-kyle-Code-meta-claude-plugin-dev"
+  },
+  {
+    "skill": "plugin-dev:hook-development",
+    "user_prompt": "What about Yaml frontmatter plugin hooks?",
+    "project": "-Users-kyle-Code-my-projects-claude-code-hero"
+  },
+  {
+    "skill": "plugin-dev:hook-development",
+    "user_prompt": "I think the reactivity is important to the permission prompt - if the user accepts 'for this session' it wont fire again, but if they don't we should be prepared for it to fire multiple times",
+    "project": "-Users-kyle-Code-my-projects-claude-code-hero"
+  },
+  {
+    "skill": "plugin-dev:hook-development",
+    "user_prompt": "use /plugin-dev-guide to find the right hook to use for this lesson - I'm not sure UserPromptSubmit is the best (though it would work)",
+    "project": "-Users-kyle-Code-my-projects-claude-code-hero"
+  },
+  {
+    "skill": "plugin-dev:hook-development",
+    "user_prompt": "Whoa sick okay - let's create a sessionstart hook for claude-code hero that instructs the agent to output CLAUDE CODE HERO in figlet style before anything, this will give the user the feeling of playing a game!",
+    "project": "-Users-kyle-Code-my-projects-claude-code-hero"
+  },
+  {
+    "skill": "plugin-dev:hook-development",
+    "user_prompt": "sure let's see what yo got /plugin-dev:hook-development",
+    "project": "-Users-kyle-Code-my-projects-claude-code-hero"
+  },
+  {
+    "skill": "plugin-dev:hook-development",
+    "user_prompt": "Base directory for this skill: /Users/kyle/.claude/plugins/cache/plugin-dev-marketplace/plugin-dev/0.4.1/skills/plugin-dev-guide\n\n# Plugin Development Guide\n\nThis meta-skill provides an overview of Claude Code plugin development and routes to specialized skills based on the task at hand.\n\nYour goal is to match the user request (or recent conversation context) to the appropriate skill below, then invoke it using the Skill tool.\n\n## Plugin Development Skills Overview\n\nThe plugin-dev toolkit provides 9 specialized skills and 3 slash commands for building Claude Code plugins, plus this guide. Each handles a specific domain of plugin development.\n\n### Skill Quick Reference\n\n| Skill                          | Purpose                                             |\n| -------                        | ---------                                           |\n| /plugin-structure              | Directory layout, manifest, component organization  |\n| /command-development           | Slash commands with frontmatter                     |\n| /agent-development             | Autonomous subagents                                |\n| /skill-development             | Creating skills with progressive disclosure         |\n| /hook-development              | Event-driven automation                             |\n| /mcp-integration               | Model Context Protocol servers                      |\n| /lsp-integration               | Language Server Protocol for code intelligence      |\n| /plugin-settings               | User configuration via .local.md                    |\n| /marketplace-structure         | Plugin marketplace creation                         |\n| /plugin-dev:start              | Entry point \u2014 choose plugin or marketplace creation |\n| /plugin-dev:create-plugin      | 8-phase guided plugin creation workflow             |\n| /plugin-dev:create-marketplace | 8-phase guided marketplace creation workflow        |\n\n## When to Use Each Skill\n\n### Starting a New Plugin\n\n**Skill: `plugin-stru",
+    "project": "-Users-kyle-Code-my-projects-ralph-ban"
+  },
+  {
+    "skill": "plugin-dev:hook-development",
+    "user_prompt": "Base directory for this skill: /Users/kyle/.claude/plugins/marketplaces/plugin-dev-marketplace/plugins/plugin-dev/skills/plugin-dev-guide\n\n# Plugin Development Guide\n\nSpawn the `plugin-dev:plugin-dev-guide` agent (subagent_type: `plugin-dev:plugin-dev-guide`) with the user's question as the prompt. Pass `I just realized that we may have built our 'waiting for permissions' widget completely insanely. Claude should have 'notification' hooks we can use, no?` as the agent's task.\n\nWhen the agent reports back, follow its recommendation:\n\n1. **Skill recommended** \u2014 invoke that skill using the Skill tool (e.g., `Skill(\"plugin-dev:mcp-integration\")`)\n2. **OVERVIEW** \u2014 the user wants a general overview; summarize the available skills, commands, and agents from the tables below\n3. **NO_MATCH** \u2014 no plugin-dev skill covers this topic; answer directly or ask for clarification\n4. **Also-relevant skills mentioned** \u2014 note these to the user as follow-up options\n5. **Agent fails or returns unrecognized output** \u2014 fall back to asking the user which area they need help with, listing the skill domains: plugin structure, commands, agents, skills, hooks, MCP, LSP, settings, marketplace\n\n## Available Commands\n\n| Command                          | Purpose                                             |\n| -------------------------------- | --------------------------------------------------- |\n| `/plugin-dev:start`              | Entry point - choose plugin or marketplace creation |\n| `/plugin-dev:create-plugin`      | 8-phase guided plugin creation workflow             |\n| `/plugin-dev:create-marketplace` | 8-phase guided marketplace creation workflow        |\n\n## Available Agents\n\n| Agent                          | Purpose                                        |\n| ------------------------------ | ---------------------------------------------- |\n| **plugin-validator**           | Validates plugin structure and manifests        |\n| **skill-reviewer**             | Reviews skill quality and t",
+    "project": "-Users-kyle-Code-my-projects-tail-claude-hud"
+  },
+  {
+    "skill": "plugin-dev:marketplace-structure",
+    "user_prompt": "How do I install the plugin properly?",
+    "project": "-Users-kyle-Code-Envato-non-market-ai-engineering-domain"
+  },
+  {
+    "skill": "plugin-dev:marketplace-structure",
+    "user_prompt": "Base directory for this skill: /Users/kyle/.claude/plugins/marketplaces/plugin-dev-marketplace/plugins/plugin-dev/skills/plugin-dev-guide\n\n# Plugin Development Guide\n\nThis meta-skill provides an overview of Claude Code plugin development and routes to specialized skills based on the task at hand.\n\nYour goal is to match the user request (or recent conversation context) to the appropriate skill below, then invoke it using the Skill tool.\n\n## Plugin Development Skills Overview\n\nThe plugin-dev toolkit provides 9 specialized skills and 3 slash commands for building Claude Code plugins, plus this guide. Each handles a specific domain of plugin development.\n\n### Skill Quick Reference\n\n| Skill                          | Purpose                                             |\n| -------                        | ---------                                           |\n| /plugin-structure              | Directory layout, manifest, component organization  |\n| /command-development           | Slash commands with frontmatter                     |\n| /agent-development             | Autonomous subagents                                |\n| /skill-development             | Creating skills with progressive disclosure         |\n| /hook-development              | Event-driven automation                             |\n| /mcp-integration               | Model Context Protocol servers                      |\n| /lsp-integration               | Language Server Protocol for code intelligence      |\n| /plugin-settings               | User configuration via .local.md                    |\n| /marketplace-structure         | Plugin marketplace creation                         |\n| /plugin-dev:start              | Entry point \u2014 choose plugin or marketplace creation |\n| /plugin-dev:create-plugin      | 8-phase guided plugin creation workflow             |\n| /plugin-dev:create-marketplace | 8-phase guided marketplace creation workflow        |\n\n## When to Use Each Skill\n\n### Starting a New Plugin\n\n**Skill: `pl",
+    "project": "-Users-kyle-Code-my-projects-claude-code-hero"
+  },
+  {
+    "skill": "plugin-dev:plugin-dev-guide",
+    "user_prompt": "the behavior you outlined for UserPromptSubmit no longer looks correct to me. Should we combine the current UserPromptSubmit and Stop hooks into a single Stop hook? /plugin-dev:plugin-dev-guide",
+    "project": "-Users-kyle-Code-my-projects-ralph-ban"
+  },
+  {
+    "skill": "plugin-dev:plugin-dev-guide",
+    "user_prompt": "Couple of concerns with the plan:\n# /rb-brainstorm\n- We should try to move away from 'slash commands' and move towards 'skills' use /plugin-dev:plugin-dev-guide to help guide you\n- ensure .agent-history/ is always made with -p, critical that we don't accidentlly overwrite a directory that already exists\n- `bl list` could be a very large amount of content from the done column, we should add some kind of pagination or partial view \n- the Q&A should specifically emulate the /sc-context-wizard approach with AskUserQuestion tooling, but also incorporate Superpowers brainstorming skill\n- I'm suspicious of the allowed tools list - honestly we might just want to start with no limitations at all\n\n# /rb-planning\n\nYour plan doesn't seem to mention using 'bl' to create cards at all. Did you mean to leave that out? is it implied? Obviously this is ralph-ban, so we need to create cards.",
+    "project": "-Users-kyle-Code-my-projects-ralph-ban"
+  },
+  {
+    "skill": "plugin-dev:plugin-dev-guide",
+    "user_prompt": "Ok - let's be thorough I don't want to raise a nonsense issue. Let's find out what 'fine-grained control' means in actual practice, with evidence from code, and then use /plugin-dev to map 1 to 1 how we can solve this with native CC",
+    "project": "-Users-kyle-Code-my-projects-tail-claude"
+  },
+  {
+    "skill": "plugin-dev:plugin-settings",
+    "user_prompt": "Base directory for this skill: /Users/kyle/.claude/plugins/marketplaces/plugin-dev-marketplace/plugins/plugin-dev/skills/plugin-dev-guide\n\n# Plugin Development Guide\n\nThis meta-skill provides an overview of Claude Code plugin development and routes to specialized skills based on the task at hand.\n\nYour goal is to match the user request (or recent conversation context) to the appropriate skill below, then invoke it using the Skill tool.\n\n## Plugin Development Skills Overview\n\nThe plugin-dev toolkit provides 9 specialized skills and 3 slash commands for building Claude Code plugins, plus this guide. Each handles a specific domain of plugin development.\n\n### Skill Quick Reference\n\n| Skill                          | Purpose                                             |\n| -------                        | ---------                                           |\n| /plugin-structure              | Directory layout, manifest, component organization  |\n| /command-development           | Slash commands with frontmatter                     |\n| /agent-development             | Autonomous subagents                                |\n| /skill-development             | Creating skills with progressive disclosure         |\n| /hook-development              | Event-driven automation                             |\n| /mcp-integration               | Model Context Protocol servers                      |\n| /lsp-integration               | Language Server Protocol for code intelligence      |\n| /plugin-settings               | User configuration via .local.md                    |\n| /marketplace-structure         | Plugin marketplace creation                         |\n| /plugin-dev:start              | Entry point \u2014 choose plugin or marketplace creation |\n| /plugin-dev:create-plugin      | 8-phase guided plugin creation workflow             |\n| /plugin-dev:create-marketplace | 8-phase guided marketplace creation workflow        |\n\n## When to Use Each Skill\n\n### Starting a New Plugin\n\n**Skill: `pl",
+    "project": "-Users-kyle-Code-my-projects-claude-code-hero"
+  },
+  {
+    "skill": "plugin-dev:plugin-structure",
+    "user_prompt": "## Task: Build a Claude Code plugin that encodes the X Workflow methodology\n\n### What the X Workflow is\n\nA 5-stage scientific methodology for AI-assisted development. Every task flows through these stages in order, with human review gates between each:\n\n1. **Problem Discovery** -- observe, gather data, analyze causes, generate hypotheses, define the problem precisely\n2. **Search for Solutions** -- research existing approaches, brainstorm, model candidates, recommend\n3. **Specification** -- document the solution with problem statement, constraints, hypothesis, black box diagrams, functional and technical spec\n4. **Implementation** -- execute against the spec, no design decisions, only execution\n5. **Data Analysis** -- validate results against the original hypothesis and constraints\n\nThree agent roles map to these stages:\n- **Researcher** (stages 1-2): discovers and explores. Cannot write code or specs.\n- **Specifier** (stage 3): writes specifications from research. Cannot write implementation code.\n- **Implementer** (stages 4-5): builds against the spec and validates. Cannot make design decisions.\n\n### What the plugin should provide\n\n- **Agents**: researcher, specifier, implementer -- each with detailed system prompts encoding their role, methodology steps, constraints, and output conventions\n- **Skills**: structured problem discovery technique (5-step), diagram generation (Mermaid conventions and templates)\n- **Governance rule or instructions**: the 5-stage methodology, stage gates (human review between stages), micro-generation (one section at a time, stop for review), role boundaries, journaling conventions\n- **Journal structure**: each task gets `journal/[task-id]/` with numbered artifacts (01-discovery.md, 02-solutions.md, 03-spec.md, 04-analysis.md, handoff.json)\n- **Spec conventions**: 10-section structure (Problem, Background, Constraints, Hypothesis, Solution Proposal, Theory of Operation, Black Box, Flow Diagram, Functional Spec, Technical Spec)\n- **Handoff",
+    "project": "-Users-kyle-Code-Envato-non-market-Envato-AI-Engineering-Team-x-workflow-claude"
+  },
+  {
+    "skill": "plugin-dev:plugin-structure",
+    "user_prompt": "no that's wrong. check /plugin-dev skills and research properly",
+    "project": "-Users-kyle-Code-Envato-non-market-ai-engineering-domain"
+  },
+  {
+    "skill": "plugin-dev:plugin-structure",
+    "user_prompt": "for FINDING-002 I think we can leave this plugin as 'opt in' completely - we don't need the mcp AND cli both\ndefinitely update to use ${CLAUDE_PLUGIN_ROOT} everywhere or absolute paths, relative paths are breaking paths according to /plugin-dev right?\nMaybe just remove the plugin count altogether - updating it sucks and it's not valuable info\nLet's not worry about guidance for now\nWe could consider renaming it via the envato-prefix convention but it's low value\ndefinitely fix the executability of the scripts",
+    "project": "-Users-kyle-Code-Envato-non-market-ai-engineering-domain-ai-engineering-team"
+  },
+  {
+    "skill": "plugin-dev:plugin-structure",
+    "user_prompt": "how does the new userConfig setting work in plugin dev?",
+    "project": "-Users-kyle-Code-meta-claude-plugin-dev"
+  },
+  {
+    "skill": "plugin-dev:plugin-structure",
+    "user_prompt": "Base directory for this skill: /Users/kyle/.claude/plugins/marketplaces/plugin-dev-marketplace/plugins/plugin-dev/skills/skill-development\n\n# Skill Development for Claude Code Plugins\n\nThis skill provides guidance for creating effective skills for Claude Code plugins.\n\n## About Skills\n\nSkills are modular, self-contained packages that extend Claude's capabilities by providing\nspecialized knowledge, workflows, and tools. Think of them as \"onboarding guides\" for specific\ndomains or tasks\u2014they transform Claude from a general-purpose agent into a specialized agent\nequipped with procedural knowledge that no model can fully possess.\n\n### What Skills Provide\n\n1. Specialized workflows - Multi-step procedures for specific domains\n2. Tool integrations - Instructions for working with specific file formats or APIs\n3. Domain expertise - Company-specific knowledge, schemas, business logic\n4. Bundled resources - Scripts, references, and assets for complex and repetitive tasks\n5. Visual output generation \u2014 Scripts that produce HTML/interactive visualizations\n\n### Anatomy of a Skill\n\nEvery skill consists of a required SKILL.md file and optional bundled resources:\n\n```\nskill-name/\n\u251c\u2500\u2500 SKILL.md (required)\n\u2502   \u251c\u2500\u2500 YAML frontmatter metadata (required)\n\u2502   \u2502   \u251c\u2500\u2500 name: (required)\n\u2502   \u2502   \u2514\u2500\u2500 description: (required)\n\u2502   \u2514\u2500\u2500 Markdown instructions (required)\n\u2514\u2500\u2500 Bundled Resources (optional)\n    \u251c\u2500\u2500 scripts/          - Executable code (Python/Bash/etc.)\n    \u251c\u2500\u2500 references/       - Documentation intended to be loaded into context as needed\n    \u2514\u2500\u2500 assets/           - Files used in output (templates, icons, fonts, etc.)\n```\n\nBoth skills and commands are invoked via the Skill tool and share the same underlying mechanism. Commands are essentially simple skills stored as single `.md` files without bundled resources. See `references/commands-vs-skills.md` for a comparison.\n\n### Skill Precedence\n\nSkills follow precedence: Enterprise > Personal (`~/.claude/skills/`) > Project (`.claude/skills/`) > P",
+    "project": "-Users-kyle-Code-my-projects-SimpleClaude"
+  },
+  {
+    "skill": "plugin-dev:plugin-structure",
+    "user_prompt": "don't do that - instead fix my config",
+    "project": "-Users-kyle-Code-my-projects-claude-code-hero"
+  },
+  {
+    "skill": "plugin-dev:plugin-structure",
+    "user_prompt": "Base directory for this skill: /Users/kyle/.claude/plugins/marketplaces/plugin-dev-marketplace/plugins/plugin-dev/skills/plugin-settings\n\n# Plugin Settings Pattern for Claude Code Plugins\n\n## Overview\n\nPlugins can store user-configurable settings and state in `.claude/plugin-name.local.md` files within the project directory. This pattern uses YAML frontmatter for structured configuration and markdown content for prompts or additional context.\n\n**Key characteristics:**\n\n- File location: `.claude/plugin-name.local.md` in project root\n- Structure: YAML frontmatter + markdown body\n- Purpose: Per-project plugin configuration and state\n- Usage: Read from hooks, commands, and agents\n- Lifecycle: User-managed (not in git, should be in `.gitignore`)\n\n## File Structure\n\n### Basic Template\n\n```markdown\n---\nenabled: true\nsetting1: value1\nsetting2: value2\nnumeric_setting: 42\nlist_setting: [\"item1\", \"item2\"]\n---\n\n# Additional Context\n\nThis markdown body can contain:\n\n- Task descriptions\n- Additional instructions\n- Prompts to feed back to Claude\n- Documentation or notes\n```\n\n### Example: Plugin State File\n\n**.claude/my-plugin.local.md:**\n\n```markdown\n---\nenabled: true\nstrict_mode: false\nmax_retries: 3\nnotification_level: info\ncoordinator_session: team-leader\n---\n\n# Plugin Configuration\n\nThis plugin is configured for standard validation mode.\nContact @team-lead with questions.\n```\n\n## Reading Settings Files\n\n### From Hooks (Bash Scripts)\n\n#### Pattern: Check existence and parse frontmatter\n\n```bash\n#!/bin/bash\nset -euo pipefail\n\n# Define state file path\nSTATE_FILE=\".claude/my-plugin.local.md\"\n\n# Quick exit if file doesn't exist\nif [[ ! -f \"$STATE_FILE\" ]]; then\n  exit 0  # Plugin not configured, skip\nfi\n\n# Parse YAML frontmatter (between --- markers)\nFRONTMATTER=$(sed -n '/^---$/,/^---$/{ /^---$/d; p; }' \"$STATE_FILE\")\n\n# Extract individual fields\nENABLED=$(echo \"$FRONTMATTER\" | grep '^enabled:' | sed 's/enabled: *//' | sed 's/^\"\\(.*\\)\"$/\\1/')\nSTRICT_MODE=$(echo \"$FRONTMATTER\" | gr",
+    "project": "-Users-kyle-Code-my-projects-claude-code-hero"
+  },
+  {
+    "skill": "plugin-dev:skill-development",
+    "user_prompt": "Hold up sorry I need to be more clear with the brief. This is a generalizable tmux testing agent. It's goal is to take a code change set as done by an implementer agent, and QA it. Not necessarily tied to bun or opensessions. I'll be using this in a new project that is go-based.",
+    "project": "-Users-kyle-Code-meta-claude-opensessions"
+  },
+  {
+    "skill": "plugin-dev:skill-development",
+    "user_prompt": "Open a new feature branch - and explore this direction.",
+    "project": "-Users-kyle-Code-meta-claude-plugin-dev"
+  },
+  {
+    "skill": "plugin-dev:skill-development",
+    "user_prompt": "Base directory for this skill: /Users/kyle/.claude/plugins/marketplaces/plugin-dev-marketplace/plugins/plugin-dev/skills/command-development\n\n# Command Development for Claude Code\n\n> **Note:** The `.claude/commands/` directory is a legacy format. For new plugins, prefer the `skills/<name>/SKILL.md` directory format. Both are loaded identically by Claude Code -- the only difference is file layout. The skills format supports progressive disclosure via `references/` and `examples/` subdirectories. See the `skill-development` skill for the preferred format.\n\n## Overview\n\nSlash commands are frequently-used prompts defined as Markdown files that Claude executes during interactive sessions. Understanding command structure, frontmatter options, and dynamic features enables creating powerful, reusable workflows.\n\n**Key concepts:**\n\n- Markdown file format for commands\n- YAML frontmatter for configuration\n- Dynamic arguments and file references\n- Bash execution for context\n- Command organization and namespacing\n\n## Command Basics\n\n### What is a Slash Command?\n\nA slash command is a Markdown file containing a prompt that Claude executes when invoked. Commands provide:\n\n- **Reusability**: Define once, use repeatedly\n- **Consistency**: Standardize common workflows\n- **Sharing**: Distribute across team or projects\n- **Efficiency**: Quick access to complex prompts\n\n### Critical: Commands are Instructions FOR Claude\n\n**Commands are written for agent consumption, not human consumption.**\n\nWhen a user invokes `/command-name`, the command content becomes Claude's instructions. Write commands as directives TO Claude about what to do, not as messages TO the user.\n\n**Correct approach (instructions for Claude):**\n\n```markdown\nReview this code for security vulnerabilities including:\n\n- SQL injection\n- XSS attacks\n- Authentication issues\n\nProvide specific line numbers and severity ratings.\n```\n\n**Incorrect approach (messages to user):**\n\n```markdown\nThis command will review your code for secu",
+    "project": "-Users-kyle-Code-my-projects-SimpleClaude"
+  },
+  {
+    "skill": "plugin-dev:skill-development",
+    "user_prompt": "look up the claude-code skills-creator or skills-evaluator - they have a series of eval tools we could maybe use to help us get better results.",
+    "project": "-Users-kyle-Code-my-projects-SimpleClaude"
+  },
+  {
+    "skill": "plugin-dev:skill-development",
+    "user_prompt": "Write a simpleclaude SKILL.md using /plugin-dev in the style of SimpleClaude for taking a repo, project, or other artifact and performing a Clean-Room Design of it to the user's specifications. Apply a staged approach of discovery-specify-implement-verify. Add it to the sc-extras plugin",
+    "project": "-Users-kyle-Code-my-projects-SimpleClaude"
+  },
+  {
+    "skill": "plugin-dev:skill-development",
+    "user_prompt": "Base directory for this skill: /Users/kyle/.claude/plugins/cache/plugin-dev-marketplace/plugin-dev/0.4.1/skills/plugin-dev-guide\n\n# Plugin Development Guide\n\nThis meta-skill provides an overview of Claude Code plugin development and routes to specialized skills based on the task at hand.\n\nYour goal is to match the user request (or recent conversation context) to the appropriate skill below, then invoke it using the Skill tool.\n\n## Plugin Development Skills Overview\n\nThe plugin-dev toolkit provides 9 specialized skills and 3 slash commands for building Claude Code plugins, plus this guide. Each handles a specific domain of plugin development.\n\n### Skill Quick Reference\n\n| Skill                          | Purpose                                             |\n| -------                        | ---------                                           |\n| /plugin-structure              | Directory layout, manifest, component organization  |\n| /command-development           | Slash commands with frontmatter                     |\n| /agent-development             | Autonomous subagents                                |\n| /skill-development             | Creating skills with progressive disclosure         |\n| /hook-development              | Event-driven automation                             |\n| /mcp-integration               | Model Context Protocol servers                      |\n| /lsp-integration               | Language Server Protocol for code intelligence      |\n| /plugin-settings               | User configuration via .local.md                    |\n| /marketplace-structure         | Plugin marketplace creation                         |\n| /plugin-dev:start              | Entry point \u2014 choose plugin or marketplace creation |\n| /plugin-dev:create-plugin      | 8-phase guided plugin creation workflow             |\n| /plugin-dev:create-marketplace | 8-phase guided marketplace creation workflow        |\n\n## When to Use Each Skill\n\n### Starting a New Plugin\n\n**Skill: `plugin-stru",
+    "project": "-Users-kyle-Code-my-projects-ralph-ban"
+  },
+  {
+    "skill": "plugin-dev:update-from-upstream",
+    "user_prompt": "activate upstream sync skills and let's sync with the latest version",
+    "project": "-Users-kyle-Code-meta-claude-plugin-dev"
+  }
+]

@@ -1,0 +1,158 @@
+[
+  {
+    "query": "I want to build a claude code sub agent that knows how to verify and QA our tmux project. Any chance there's a cucumber-like integration testing framework for tmux?",
+    "should_trigger": true,
+    "source": "transcript",
+    "topic": "agent-development"
+  },
+  {
+    "query": "I think our guide command should use a subagent to do discovery to avoid polluting the main context window. Let's make an agent. It should use the map of plugin-dev skills but ALSO use the instruction set from the claude-guide-agent system prompt",
+    "should_trigger": true,
+    "source": "transcript",
+    "topic": "agent-development"
+  },
+  {
+    "query": "@plugins/sc-hooks/commands/sc-copy-prompt.md has a special pattern. It uses the plugins/sc-hooks/hooks/handlers/copy_message_handler.rb handler. It's a pattern that blocks the actual prompt from triggering any API calls, but performs a code action. Is it documented or named anywhere?",
+    "should_trigger": true,
+    "source": "transcript",
+    "topic": "command-development"
+  },
+  {
+    "query": "Let's add a convenience /command called `rb-auto-toggle` that toggles the config file safely for the given session.",
+    "should_trigger": true,
+    "source": "transcript",
+    "topic": "command-development"
+  },
+  {
+    "query": "What about YAML frontmatter plugin hooks?",
+    "should_trigger": true,
+    "source": "transcript",
+    "topic": "hook-development"
+  },
+  {
+    "query": "let's create a sessionstart hook for claude-code-hero that instructs the agent to output CLAUDE CODE HERO in figlet style before anything, this will give the user the feeling of playing a game!",
+    "should_trigger": true,
+    "source": "transcript",
+    "topic": "hook-development"
+  },
+  {
+    "query": "I think the reactivity is important to the permission prompt - if the user accepts 'for this session' it wont fire again, but if they don't we should be prepared for it to fire multiple times",
+    "should_trigger": true,
+    "source": "transcript",
+    "topic": "hook-development"
+  },
+  {
+    "query": "How do I install the plugin properly?",
+    "should_trigger": true,
+    "source": "transcript",
+    "topic": "marketplace-structure"
+  },
+  {
+    "query": "Build a Claude Code plugin that encodes the X Workflow methodology - a 5-stage scientific methodology for AI-assisted development. It needs agents for researcher, specifier, and implementer roles, skills for structured problem discovery, and a journal structure for each task",
+    "should_trigger": true,
+    "source": "transcript",
+    "topic": "plugin-structure"
+  },
+  {
+    "query": "how does the new userConfig setting work in plugin dev?",
+    "should_trigger": true,
+    "source": "transcript",
+    "topic": "plugin-structure"
+  },
+  {
+    "query": "This is a generalizable tmux testing agent. Its goal is to take a code change set done by an implementer agent, and QA it. Not necessarily tied to bun or opensessions. I'll be using this in a new project that is go-based.",
+    "should_trigger": true,
+    "source": "transcript",
+    "topic": "skill-development"
+  },
+  {
+    "query": "Write a SKILL.md for taking a repo, project, or other artifact and performing a Clean-Room Design of it to the user's specifications. Apply a staged approach of discovery-specify-implement-verify.",
+    "should_trigger": true,
+    "source": "transcript",
+    "topic": "skill-development"
+  },
+  {
+    "query": "I need to add an MCP server to my plugin that connects to our internal Grafana instance over SSE. Where does the .mcp.json config go relative to plugin.json?",
+    "should_trigger": true,
+    "source": "synthetic",
+    "topic": "mcp-integration"
+  },
+  {
+    "query": "I'm trying to add pyright as an LSP server in my plugin for better Python type checking. What do I put in plugin.json under lspServers?",
+    "should_trigger": true,
+    "source": "synthetic",
+    "topic": "lsp-integration"
+  },
+  {
+    "query": "my plugin needs per-project configuration - like which linting rules to apply. I heard there's a .local.md pattern for storing plugin settings. How does that work?",
+    "should_trigger": true,
+    "source": "synthetic",
+    "topic": "plugin-settings"
+  },
+  {
+    "query": "we're setting up a private marketplace at work to distribute our team's plugins internally. How do I configure marketplace.json and what goes in the sources array?",
+    "should_trigger": true,
+    "source": "synthetic",
+    "topic": "marketplace-structure"
+  },
+  {
+    "query": "can you help me write a python script that processes CSV files and outputs a summary report? nothing to do with claude, just regular data processing",
+    "should_trigger": false,
+    "source": "synthetic",
+    "topic": "none"
+  },
+  {
+    "query": "how do I set up MCP servers in my claude code settings.json? not in a plugin, just for my personal setup. I want to add the filesystem MCP server",
+    "should_trigger": true,
+    "source": "synthetic",
+    "topic": "mcp-integration"
+  },
+  {
+    "query": "I'm trying to configure my .claude/settings.json to allow npm commands without prompting. How do I add a permission rule?",
+    "should_trigger": false,
+    "source": "synthetic",
+    "topic": "none"
+  },
+  {
+    "query": "write me a PreToolUse hook in my settings.json that blocks any Write tool calls to files in the /etc directory",
+    "should_trigger": true,
+    "source": "synthetic",
+    "topic": "hook-development"
+  },
+  {
+    "query": "I need to create a GitHub Actions workflow that runs my test suite on every PR. Just a standard CI pipeline, nothing claude-related",
+    "should_trigger": false,
+    "source": "synthetic",
+    "topic": "none"
+  },
+  {
+    "query": "how does the Claude API's tool_use feature work? I'm building a chatbot with the anthropic python SDK and want to add function calling",
+    "should_trigger": false,
+    "source": "synthetic",
+    "topic": "none"
+  },
+  {
+    "query": "I want to create a CLAUDE.md file for my project that documents our coding conventions and test patterns. Can you help me write one?",
+    "should_trigger": false,
+    "source": "synthetic",
+    "topic": "none"
+  },
+  {
+    "query": "can you help me debug this typescript error? I'm getting 'Property does not exist on type' in my React component",
+    "should_trigger": false,
+    "source": "synthetic",
+    "topic": "none"
+  },
+  {
+    "query": "I'm building a VS Code extension that adds custom commands to the command palette. How do I register a command in package.json?",
+    "should_trigger": false,
+    "source": "synthetic",
+    "topic": "none"
+  },
+  {
+    "query": "what's the difference between a claude code skill and a command? like when would I use one vs the other for my personal workflow, not distributing to anyone",
+    "should_trigger": true,
+    "source": "synthetic",
+    "topic": "skill-development"
+  }
+]

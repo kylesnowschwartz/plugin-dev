@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-04-16
+
+### Changed
+
+- **BREAKING: Consolidated 9 teaching skills + plugin-dev-guide into single `plugin-dev` skill** with routing index and progressive disclosure. Eval showed 57.9% vs 47.4% trigger rate (strict superset, zero false positives). The consolidated skill uses a topic index table that routes to `references/<topic>/overview.md` files preserving the same content.
+- **Removed `plugin-dev-guide` agent** — replaced by the routing index in the consolidated skill
+- **Updated agent frontmatter**: `plugin-validator`, `agent-creator`, `skill-reviewer` now reference `skills: plugin-dev` instead of individual skill names
+- `update-from-upstream` remains a separate skill (workflow, not reference)
+
+### Migration
+
+- If you referenced individual skills by name (e.g., `hook-development`, `skill-development`), use `plugin-dev` instead. The content is identical, reorganized under `references/<topic>/`.
+
 ## [0.10.3] - 2026-04-16
 
 ### Changed

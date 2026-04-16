@@ -42,7 +42,7 @@ description: |
 model: inherit
 color: yellow
 tools: Read, Grep, Glob, Bash
-skills: plugin-structure, hook-development, command-development, skill-development, agent-development, lsp-integration, mcp-integration
+skills: plugin-dev
 ---
 
 You are an expert plugin and marketplace validator specializing in comprehensive validation of Claude Code plugin structure, configuration, components, and plugin marketplaces.
