@@ -78,7 +78,7 @@ You execute this stage directly. Work through the verified manifest:
 
 ### For each "Must Update" item
 
-1. Read the target SKILL.md (or reference doc) at `plugins/plugin-dev/skills/<skill-name>/SKILL.md`
+1. Read the target reference doc at `plugins/plugin-dev/skills/plugin-dev/references/<topic>/overview.md` (or its sub-references)
 2. Determine the edit type:
    - **Add** — new capability, event, field: add a new section or bullet in the appropriate place
    - **Modify** — changed behavior: update existing description
