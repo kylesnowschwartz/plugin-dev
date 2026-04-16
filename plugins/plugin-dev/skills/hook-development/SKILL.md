@@ -605,11 +605,11 @@ Execute when a task is marked as completed. Use to validate task output or enfor
 
 #### PreCompact
 
-Execute before context compaction. Use to inject critical information that should survive compaction.
+Execute before context compaction. Use to inject critical information that should survive compaction, or block compaction when critical context would be lost.
 
 **Matchers:** `manual`, `auto`
 **Hook types:** Command, HTTP, Prompt, Agent
-**Decision control:** None (observability only)
+**Decision control:** Block compaction (exit 2 or `{"decision":"block"}`, CC 2.1.105)
 
 **Input includes:** `trigger` ("manual"|"auto"), `custom_instructions`
 
@@ -1204,7 +1204,7 @@ echo "$output" | jq .
 | SubagentStop       | Subagent      | Agent type names            | Block stop                    |
 | TeammateIdle       | Teams         | None                        | Reject idle (exit 2), stop    |
 | TaskCompleted      | Teams         | None                        | Reject completion (exit 2)    |
-| PreCompact         | Context       | manual, auto                | None (observability)          |
+| PreCompact         | Context       | manual, auto                | Block compaction (exit 2)     |
 | PostCompact        | Context       | manual, auto                | None (observability)          |
 | ConfigChange       | Config        | Settings sources            | Block (except policy)         |
 | CwdChanged         | Environment   | None                        | None (env vars, watchPaths)   |

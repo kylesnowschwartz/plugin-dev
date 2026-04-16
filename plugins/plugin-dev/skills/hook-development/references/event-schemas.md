@@ -657,9 +657,13 @@ Normal exit allows the task completion to proceed.
 }
 ```
 
-**Output:** Observability only. No decision control.
+**Output:**
 
-Use `additionalContext` to inject information that should be considered during compaction.
+As of CC 2.1.105, PreCompact supports blocking compaction:
+
+- Exit code 2 or `{"decision": "block"}` blocks compaction
+- Use to preserve critical context when compaction would lose important state
+- `additionalContext` injects information to be considered during compaction
 
 > **CC 2.1.88:** Added partial compaction capability. Claude Code can now compact only a portion of the conversation rather than the entire context, with a structured summary format and analysis process.
 

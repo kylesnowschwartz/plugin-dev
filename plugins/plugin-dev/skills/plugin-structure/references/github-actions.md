@@ -115,7 +115,7 @@ Pass CLI flags through `claude_args`:
 claude_args: >-
   --max-turns 20
   --model claude-sonnet-4-5-20250929
-  --allowedTools "Read,Grep,Glob,Bash(npm:*)"
+  --allowedTools "Read,Grep,Glob,Bash(npm *)"
 ```
 
 ### Custom Trigger Phrases

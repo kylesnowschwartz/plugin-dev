@@ -123,7 +123,7 @@ check_frontmatter() {
         echo "⚠️  Warning: allowed-tools: * grants all tools (consider restricting)"
         ((warning_count++))
       elif [[ "$tools" =~ Bash\(\*\) ]]; then
-        echo "⚠️  Warning: Bash(*) is very permissive (consider Bash(git:*) or similar)"
+        echo "⚠️  Warning: Bash(*) is very permissive (consider Bash(git *) or similar)"
         ((warning_count++))
       else
         echo "✅ allowed-tools: $tools"

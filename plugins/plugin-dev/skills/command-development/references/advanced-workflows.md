@@ -16,7 +16,7 @@ Commands that guide users through multi-step processes:
 ---
 description: Complete PR review workflow
 argument-hint: [pr-number]
-allowed-tools: Bash(gh:*), Read, Grep
+allowed-tools: Bash(gh *), Read, Grep
 ---
 
 # PR Review Workflow for #$1
@@ -76,7 +76,7 @@ Commands that maintain state between invocations:
 ```markdown
 ---
 description: Initialize deployment workflow
-allowed-tools: Write, Bash(git:*)
+allowed-tools: Write, Bash(git *)
 ---
 
 # Initialize Deployment
@@ -118,7 +118,7 @@ State saved. Run `/deploy-test` to continue.
 ```markdown
 ---
 description: Run deployment tests
-allowed-tools: Read, Bash(npm:*)
+allowed-tools: Read, Bash(npm *)
 ---
 
 Reading deployment state from `.claude/deployment-state.local.md`...
@@ -145,7 +145,7 @@ Commands that adapt based on conditions:
 ---
 description: Smart deployment workflow
 argument-hint: [environment]
-allowed-tools: Bash(git:*), Bash(npm:*), Read
+allowed-tools: Bash(git *), Bash(npm *), Read
 ---
 
 # Deploy to $1
@@ -418,7 +418,7 @@ Feature marked complete.
 ```markdown
 ---
 description: Generate release notes
-allowed-tools: Read, Bash(git:*)
+allowed-tools: Read, Bash(git *)
 ---
 
 Checking for completed features...
@@ -679,7 +679,7 @@ If any step fails, resume with:
 ---
 description: Initialize deployment
 argument-hint: [environment]
-allowed-tools: Write, Bash(git:*)
+allowed-tools: Write, Bash(git *)
 ---
 
 # Initialize Deployment to $1

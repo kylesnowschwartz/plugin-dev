@@ -162,9 +162,9 @@ Skill(deploy)      # Only deploy with no arguments
 **Prefix match (with arguments):**
 
 ```
-Skill(review-pr:*)     # review-pr with any arguments
-Skill(git:*)           # All items starting with git
-Skill(plugin-name:*)   # All items from specific plugin
+Skill(review-pr *)     # review-pr with any arguments
+Skill(git *)           # All items starting with git
+Skill(plugin-name *)   # All items from specific plugin
 ```
 
 **Deny all:**
@@ -177,7 +177,7 @@ Add `Skill` to deny rules to prevent all programmatic invocation.
 
 ```json
 {
-  "allow": ["Skill(review:*)", "Skill(test:*)"]
+  "allow": ["Skill(review *)", "Skill(test *)"]
 }
 ```
 
@@ -185,7 +185,7 @@ Add `Skill` to deny rules to prevent all programmatic invocation.
 
 ```json
 {
-  "deny": ["Skill(deploy-prod:*)", "Skill(delete:*)"]
+  "deny": ["Skill(deploy-prod *)", "Skill(delete *)"]
 }
 ```
 
@@ -310,7 +310,7 @@ Some commands work well when invoked by Claude:
 ```yaml
 ---
 description: Get current git status summary
-allowed-tools: Bash(git:*)
+allowed-tools: Bash(git *)
 ---
 
 # Git Status
@@ -335,7 +335,7 @@ Some commands should remain manual:
 ---
 description: Force push to protected branch (DANGEROUS)
 disable-model-invocation: true
-allowed-tools: Bash(git:*)
+allowed-tools: Bash(git *)
 ---
 # Force Push
 

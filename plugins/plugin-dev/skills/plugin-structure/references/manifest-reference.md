@@ -389,6 +389,42 @@ Output style files are markdown with YAML frontmatter (`name`, `description`, `k
 - Bundling multiple style options for users to choose from
 - Offering specialized output modes for different workflows
 
+#### monitors
+
+**Type**: Object
+**Added**: CC 2.1.105
+**Example**: See below
+
+Background monitoring scripts that run independently and stream events as chat notifications via the Monitor tool.
+
+**Configuration**:
+
+```json
+{
+  "monitors": {
+    "build-watcher": {
+      "command": "bash",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/watch-build.sh"],
+      "description": "Watches for build failures"
+    }
+  }
+}
+```
+
+**Important: Silence is NOT success.** Unlike hooks where no output means success, monitors must actively output events to the Monitor tool. A silent monitor provides no value — design monitors to regularly emit status updates or event notifications.
+
+**When to use monitors vs hooks**:
+
+| Use Case                     | Monitors | Hooks   |
+| ---------------------------- | -------- | ------- |
+| Long-running background task | ✅       | ❌      |
+| Event-driven response        | ❌       | ✅      |
+| File system watching         | ✅       | ❌      |
+| Tool validation              | ❌       | ✅      |
+| Streaming output             | ✅       | ❌      |
+
+**Output format**: Monitors should emit JSON objects to stdout that the Monitor tool can process and display as chat notifications.
+
 ## Path Resolution
 
 ### Relative Path Rules
