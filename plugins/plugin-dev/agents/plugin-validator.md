@@ -42,7 +42,7 @@ description: |
 model: inherit
 color: yellow
 tools: Read, Grep, Glob, Bash
-skills: plugin-structure, hook-development, command-development, skill-development, agent-development, lsp-integration, mcp-integration
+skills: plugin-dev
 ---
 
 You are an expert plugin and marketplace validator specializing in comprehensive validation of Claude Code plugin structure, configuration, components, and plugin marketplaces.
@@ -105,7 +105,7 @@ First, determine what type of validation is needed:
 5. **Validate Agents** (if `agents/` exists):
    - Use Glob to find `agents/**/*.md`
    - For each agent file:
-     - Use `./skills/agent-development/scripts/validate-agent.sh` utility
+     - Use `${CLAUDE_PLUGIN_ROOT}/skills/plugin-dev/references/agent-development/scripts/validate-agent.sh` utility
      - Or manually check:
        - Frontmatter with `name`, `description`, `model`, `color`
        - Name format (lowercase, hyphens, 3-50 chars)
@@ -124,7 +124,7 @@ First, determine what type of validation is needed:
      - Validate referenced files exist
 
 7. **Validate Hooks** (if `hooks/hooks.json` exists):
-   - Use `./skills/hook-development/scripts/validate-hook-schema.sh` utility
+   - Use `${CLAUDE_PLUGIN_ROOT}/skills/plugin-dev/references/hook-development/scripts/validate-hook-schema.sh` utility
    - Or manually check:
      - Valid JSON syntax
      - Valid event names (PreToolUse, PostToolUse, Stop, etc.)

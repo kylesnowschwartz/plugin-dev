@@ -101,7 +101,7 @@ Current branch: [BANG]`git branch --show-current`
 - When adding new documentation with bash patterns, use `[BANG]`
 - Audit command: `rg '!\`' plugins/plugin-dev/skills/ --glob '\*.md' | rg -v '\[BANG\]'`
 - See [CONTRIBUTING.md](CONTRIBUTING.md) for documentation guidelines
-- Reference: [command-development skill](plugins/plugin-dev/skills/command-development/SKILL.md) lines 340-378
+- Reference: [command-development reference](plugins/plugin-dev/skills/plugin-dev/references/command-development/overview.md) lines 340-378
 
 **History**: Fixed in PR #142 (v0.2.0)
 

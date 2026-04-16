@@ -62,8 +62,8 @@ Dispatch the `update-manifest-verifier` agent with this prompt:
 Independently verify the change manifest at .agent-history/upstream-changes.md.
 
 Re-fetch the CC changelog yourself (do not trust Stage 1's data). Check every
-item for correctness, scan for missed changes, and validate skill mappings by
-reading the actual SKILL.md files.
+item for correctness, scan for missed changes, and validate topic mappings by
+reading the reference docs at skills/plugin-dev/references/<topic>/overview.md.
 
 Follow your agent instructions exactly.
 ```
@@ -78,7 +78,7 @@ You execute this stage directly. Work through the verified manifest:
 
 ### For each "Must Update" item
 
-1. Read the target SKILL.md (or reference doc) at `plugins/plugin-dev/skills/<skill-name>/SKILL.md`
+1. Read the target reference doc at `plugins/plugin-dev/skills/plugin-dev/references/<topic>/overview.md` (or its sub-references)
 2. Determine the edit type:
    - **Add** — new capability, event, field: add a new section or bullet in the appropriate place
    - **Modify** — changed behavior: update existing description
