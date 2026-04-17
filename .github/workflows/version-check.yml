@@ -6,96 +6,52 @@ on:
       - "plugins/plugin-dev/.claude-plugin/plugin.json"
       - ".claude-plugin/marketplace.json"
       - "CLAUDE.md"
-  workflow_dispatch: # Manual trigger for pre-release checks
+  workflow_dispatch:
 
-# Cancel any in-progress check for the same PR when new commits are pushed
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   check-versions:
-    # Skip bots
-    if: |
-      github.actor != 'dependabot[bot]' &&
-      github.actor != 'claude[bot]'
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 2
     permissions:
       contents: read
-      id-token: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 1
+          persist-credentials: false
 
-      - name: Check version consistency
-        uses: anthropics/claude-code-action@f64219702d7454cf29fe32a74104be6ed43dc637 # v1.0.34
-        id: version-check
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          prompt: |
-            Check version consistency across all plugin version files.
-
-            ## Files to Check
-
-            1. `plugins/plugin-dev/.claude-plugin/plugin.json` - Extract `version` field (source of truth)
-            2. `.claude-plugin/marketplace.json` - Extract BOTH:
-               - `metadata.version` field
-               - `plugins[0].version` field
-            3. `CLAUDE.md` - Extract version from "What This Is" section (pattern: `**Version**: vX.Y.Z`)
-
-            ## Instructions
-
-            1. Read plugin.json and extract the version (this is the expected version)
-            2. Read marketplace.json and extract both version fields
-            3. Read CLAUDE.md and extract version from the "**Version**:" line
-            4. Compare all versions against the plugin.json version
-            5. Return structured JSON with results
-          claude_args: |
-            --allowedTools "Read"
-            --json-schema '{"type":"object","properties":{"plugin_json_version":{"type":"string","description":"Version from plugin.json"},"marketplace_metadata_version":{"type":"string","description":"Version from marketplace.json metadata.version"},"marketplace_plugin_version":{"type":"string","description":"Version from marketplace.json plugins[0].version"},"claude_md_version":{"type":"string","description":"Version from CLAUDE.md Quick Reference"},"all_match":{"type":"boolean","description":"True if all versions match plugin.json"},"expected_version":{"type":"string","description":"The expected version (from plugin.json)"},"mismatches":{"type":"array","description":"List of files with mismatched versions","items":{"type":"string"}}},"required":["plugin_json_version","all_match","expected_version","mismatches"]}'
-
-      - name: Report version status
-        if: always() && steps.version-check.outputs.structured_output != ''
-        env:
-          VERSION_OUTPUT: ${{ steps.version-check.outputs.structured_output }}
+      - name: Compare versions
         run: |
+          expected=$(jq -r '.version' plugins/plugin-dev/.claude-plugin/plugin.json)
+          mp_meta=$(jq -r '.metadata.version' .claude-plugin/marketplace.json)
+          mp_plug=$(jq -r '.plugins[0].version' .claude-plugin/marketplace.json)
+          cm=$(grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' CLAUDE.md | head -1 | sed 's/^v//')
+
           {
-            echo "## Version Consistency Check Results"
-            echo '```json'
-            echo "$VERSION_OUTPUT" | jq .
-            echo '```'
+            echo "## Version Consistency Check"
+            echo ""
+            echo "| File | Version |"
+            echo "| --- | --- |"
+            echo "| plugin.json (source of truth) | $expected |"
+            echo "| marketplace.json metadata.version | $mp_meta |"
+            echo "| marketplace.json plugins[0].version | $mp_plug |"
+            echo "| CLAUDE.md | $cm |"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Fail if mismatched
-        if: always() && steps.version-check.outputs.structured_output != ''
-        env:
-          VERSION_OUTPUT: ${{ steps.version-check.outputs.structured_output }}
-        run: |
-          # Validate JSON output before processing
-          if ! all_match=$(echo "$VERSION_OUTPUT" | jq -r '.all_match' 2>/dev/null); then
-            echo "Error: Invalid JSON output from version check step"
-            echo "Raw output:"
-            echo "$VERSION_OUTPUT"
+          fail=0
+          [ "$mp_meta" != "$expected" ] && { echo "marketplace.json metadata.version ($mp_meta) does not match plugin.json ($expected)"; fail=1; }
+          [ "$mp_plug" != "$expected" ] && { echo "marketplace.json plugins[0].version ($mp_plug) does not match plugin.json ($expected)"; fail=1; }
+          [ "$cm" != "$expected" ]      && { echo "CLAUDE.md ($cm) does not match plugin.json ($expected)"; fail=1; }
+
+          if [ "$fail" = "1" ]; then
+            echo ""
+            echo "Update all version files to match plugin.json ($expected)."
             exit 1
           fi
 
-          if [ "$all_match" != "true" ]; then
-            expected=$(echo "$VERSION_OUTPUT" | jq -r '.expected_version')
-            echo "❌ Version mismatch detected!"
-            echo ""
-            echo "Expected version: $expected"
-            echo ""
-            echo "Mismatches:"
-            echo "$VERSION_OUTPUT" | jq -r '.mismatches[]' | while read -r mismatch; do
-              echo "  - $mismatch"
-            done
-            echo ""
-            echo "Please update all version files to match plugin.json version ($expected)"
-            exit 1
-          fi
-
-          expected=$(echo "$VERSION_OUTPUT" | jq -r '.expected_version')
-          echo "✅ All versions match: $expected"
+          echo "All versions match: $expected"
