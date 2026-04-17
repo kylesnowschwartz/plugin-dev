@@ -24,7 +24,7 @@
 - [ ] Agents (plugin-validator, skill-reviewer, agent-creator)
 - [ ] Hooks (event-driven automation)
 - [ ] Marketplace (marketplace.json, distribution)
-- [ ] Documentation (README.md, CLAUDE.md, SECURITY.md)
+- [ ] Documentation (README.md, CLAUDE.md)
 - [ ] Configuration (plugin.json)
 - [ ] Issue/PR templates
 - [ ] Other (please specify):

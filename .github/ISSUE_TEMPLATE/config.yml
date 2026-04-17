@@ -1,21 +1,9 @@
 blank_issues_enabled: false
 contact_links:
-  # 1. Documentation first - many issues are answered here
-  - name: Documentation & Troubleshooting
+  - name: Documentation
     url: https://github.com/kylesnowschwartz/plugin-dev/blob/main/README.md
-    about: Full documentation, usage examples, and troubleshooting guide (docs/troubleshooting.md)
+    about: Start with the README — most questions are answered there.
 
-  # 2. Contributing Guidelines - for those wanting to contribute
-  - name: Contributing Guidelines
-    url: https://github.com/kylesnowschwartz/plugin-dev/blob/main/CONTRIBUTING.md
-    about: Learn how to contribute, coding standards, and pull request process
-
-  # 3. GitHub Discussions - preferred for questions
-  - name: GitHub Discussions
-    url: https://github.com/kylesnowschwartz/plugin-dev/discussions
-    about: Ask questions, share ideas, and get help from the community
-
-  # 4. Claude Code Documentation - official plugin development docs
   - name: Claude Code Documentation
     url: https://code.claude.com/docs/en/overview
-    about: Official Claude Code documentation for plugin development
+    about: Official Claude Code documentation for plugin development.

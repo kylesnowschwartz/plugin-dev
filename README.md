@@ -37,8 +37,7 @@ Originally developed by [Daisy Hollman](mailto:daisy@anthropic.com) at Anthropic
 
 ## Docs
 
-- [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Code of conduct](CODE_OF_CONDUCT.md)
-- [Claude Code compatibility](docs/claude-code-compatibility.md) · [Component patterns](docs/component-patterns.md) · [Troubleshooting](docs/troubleshooting.md)
+- [Claude Code compatibility](docs/claude-code-compatibility.md) · [CI/CD](docs/ci-cd.md) · [Release procedure](docs/release-procedure.md)
 - Issues: [GitHub Issues](https://github.com/kylesnowschwartz/plugin-dev/issues)
 
 ## License

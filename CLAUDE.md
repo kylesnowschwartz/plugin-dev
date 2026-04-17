@@ -64,15 +64,21 @@ uvx yamllint .github/workflows/
 - **Descriptions**: Third-person ("This skill should be used when...")
 - **Versions**: Sync across plugin.json, marketplace.json, CLAUDE.md
 
+## `[BANG]` Placeholder Rule
+
+Inline bash execution (`!` + backtick) inside fenced code blocks can execute during skill load ([Claude Code #12781](https://github.com/anthropics/claude-code/issues/12781)). Documentation that shows those patterns uses `[BANG]` instead of `!`. Do NOT "fix" `[BANG]` back to `!`. Audit with:
+
+```bash
+rg '!`' plugins/plugin-dev/skills/ --glob '*.md' | rg -v '\[BANG\]'
+```
+
 ## On-Demand Documentation
 
-| Topic              | File                                                     |
-| ------------------ | -------------------------------------------------------- |
-| Version releases   | [docs/release-procedure.md](docs/release-procedure.md)   |
-| Component patterns | [docs/component-patterns.md](docs/component-patterns.md) |
-| CI/CD workflows    | [docs/ci-cd.md](docs/ci-cd.md)                           |
-| Troubleshooting    | [docs/troubleshooting.md](docs/troubleshooting.md)       |
-| Workflow security  | [docs/workflow-security.md](docs/workflow-security.md)   |
+| Topic                   | File                                                                 |
+| ----------------------- | -------------------------------------------------------------------- |
+| Version releases        | [docs/release-procedure.md](docs/release-procedure.md)               |
+| CI/CD workflows         | [docs/ci-cd.md](docs/ci-cd.md)                                       |
+| Upstream compatibility  | [docs/claude-code-compatibility.md](docs/claude-code-compatibility.md) |
 
 ## Quick Fixes
 
@@ -80,7 +86,6 @@ uvx yamllint .github/workflows/
 | -------------------- | ---------------------------------- |
 | Plugin not loading   | Use `plugins/plugin-dev`, not root |
 | Skill not triggering | Add trigger phrases to description |
-| Validation fails     | Run component validator script     |
 
 ## Validation Agents
 
@@ -94,4 +99,3 @@ uvx yamllint .github/workflows/
 - **changelog-differ**: Discovers upstream changes (Stage 1)
 - **update-manifest-verifier**: Validates change manifest (Stage 2)
 - **update-reviewer**: Verifies applied updates (Stage 4)
-- Compatibility tracking: [docs/claude-code-compatibility.md](docs/claude-code-compatibility.md)
