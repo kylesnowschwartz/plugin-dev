@@ -356,7 +356,9 @@ Keep descriptions concise but include trigger phrases. Skills with longer descri
 
 The `/skills` menu truncates descriptions at **250 characters**. Descriptions longer than this are cut off in the menu listing (though the full description is still used for auto-discovery matching). Place the most important trigger phrases early in the description so they remain visible.
 
-Skills are listed **alphabetically** in the `/skills` menu. Name skills with discoverability in mind — a skill named `api-testing` appears near the top, while `zsh-config` appears at the bottom.
+Skills are listed **alphabetically** and in the `/skills` menu. Name skills with discoverability in mind — a skill named `api-testing` appears near the top, while `zsh-config` appears at the bottom.
+
+**Token Count Sorting (CC 2.1.111):** Press `t` in the `/skills` menu to sort by token count. This helps identify large skills that consume significant context budget. Optimize large skills by moving content to references/ or using progressive disclosure.
 
 ### Context Management for Plugins
 

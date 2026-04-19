@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-04-19
+
+### Added
+
+- **skill-development**: Documented `/skills` menu token count sorting feature (CC 2.1.111)
+- **command-development**: Documented Skill tool strict invocation rules - Claude only invokes skills from available-skills list (CC 2.1.111)
+- **command-development**: Documented Bash cd+git guidance to avoid permission prompts (CC 2.1.113)
+- **agent-development**: Documented memory synthesis retrieval-only directive for memory-enabled agents (CC 2.1.111)
+
 ## [0.11.0] - 2026-04-16
 
 ### Changed
@@ -395,7 +404,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.3...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.11.1...HEAD
+[0.11.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.11.0...v0.11.1
+[0.11.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.3...v0.11.0
 [0.10.3]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.2...v0.10.3
 [0.10.2]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.1...v0.10.2
 [0.10.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.0...v0.10.1

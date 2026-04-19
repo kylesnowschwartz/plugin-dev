@@ -1,299 +1,303 @@
 # Upstream Change Manifest
-## CC Version Range: 2.1.99 - 2.1.110
-## Generated: 2026-04-16
-## Sources: changelog [Y], system-prompts [Y], claude-code-guide [skipped]
+## CC Version Range: 2.1.111 - 2.1.114
+## Generated: 2026-04-19
+## Sources: changelog [Y], system-prompts [Y], claude-code-guide [skipped - subagent dispatch unavailable]
 
 ---
 
-### Must Update (Stage 2 Verified)
+### Must Update
 
-- [ ] **CRITICAL: Allowed-tools syntax change: colon-separated to space-separated** (CC 2.1.108)
-  - Source: system-prompts
-  - Confidence: HIGH - verified by Stage 2
-  - Affects: skill-development, command-development, permission examples
-  - Details: All `allowed-tools` examples updated from colon-separated (`Bash(npm:*)`, `git diff:*`) to space-separated (`Bash(npm *)`, `git diff *`) Bash pattern syntax. This is a breaking change for skill authors.
-  - Files requiring update:
-    - `skills/command-development/SKILL.md` line 534
-    - `skills/command-development/references/frontmatter-reference.md` line 104
-    - `skills/command-development/references/advanced-workflows.md` lines 121, 148
-    - `skills/command-development/examples/simple-commands.md` line 100
-    - `skills/plugin-structure/references/github-actions.md` line 118
+- [ ] **Skill tool invocation rules tightened** (CC 2.1.111)
+  - Source: system-prompts changelog
+  - Confidence: high
+  - Affects: plugin-dev skill (skill authoring guidance)
+  - Details: Skill tool description now has strict guardrail to only invoke skills that appear in the available-skills list or that the user explicitly typed as a slash command. Claude must never guess or invent skill names. This affects how we document skill invocation patterns.
+  - Raw: "Tool Description: Skill - Tightened invocation rules: removed example-heavy format in favor of concise instructions; added strict guardrail to only invoke skills that appear in the available-skills list or that the user explicitly typed as a slash command, never guessing or inventing skill names."
 
-- [ ] **PreCompact hook blocking capability** (CC 2.1.105)
-  - Source: changelog, system-prompts
-  - Confidence: HIGH - verified by Stage 2
-  - Affects: hook-development
-  - Details: PreCompact hooks can now block compaction by returning exit code 2 or `{"decision":"block"}`. The PreCompact event already exists in docs but blocking capability is new.
-  - Action: Add blocking capability to PreCompact documentation in hook-development/SKILL.md
+- [ ] **NEW skill: /less-permission-prompts (renamed to /fewer-permission-prompts in 2.1.113)** (CC 2.1.111)
+  - Source: CC changelog + system-prompts changelog
+  - Confidence: high
+  - Affects: plugin-dev skill (may want to reference this pattern)
+  - Details: New built-in skill that analyzes session transcripts to extract frequently used read-only tool-call patterns and adds them to project's `.claude/settings.json` permission allowlist. Renamed from "Less" to "Fewer" in 2.1.113 for grammar correctness.
+  - Raw changelog: "Added `/less-permission-prompts` skill scanning transcripts for common read-only operations"
+  - Raw system-prompts: "NEW: Skill: Generate permission allowlist from transcripts - Analyzes session transcripts to extract frequently used read-only tool-call patterns"
 
-- [ ] **Background monitor "silence is not success" guidance** (CC 2.1.105)
-  - Source: changelog, system-prompts
-  - Confidence: HIGH - verified by Stage 2
-  - Affects: hook-development, agent-development
-  - Details: Updated guidance requiring monitors to match all terminal states (failures, crashes, OOM), not just happy path. Top-level `monitors` manifest key added for plugin support.
-  - Action: Update existing Monitor tool mention in agent-development and add guidance to hook-development or plugin-structure
+- [ ] **Memory synthesis agent: retrieval-only directive** (CC 2.1.111)
+  - Source: system-prompts changelog
+  - Confidence: high
+  - Affects: plugin-dev skill (agent prompt patterns)
+  - Details: Memory synthesis subagent now has full retrieval-only directive - must not answer or solve queries from general knowledge, must return empty results when no memory covers the query. Strengthened "do not invent facts" rule.
+  - Raw: "Agent Prompt: Memory synthesis - Strengthened the 'do not invent facts' rule into a full retrieval-only directive"
 
----
+- [ ] **Massive system prompt removals** (CC 2.1.111)
+  - Source: system-prompts changelog
+  - Confidence: high
+  - Affects: plugin-dev skill (tool usage guidance may need updating)
+  - Priority: LOW (these were Claude's default behaviors, not plugin-specific)
+  - Details: Multiple system prompt sections removed including: minimize file creation, no premature abstractions, no time estimates, no unnecessary additions, read before modifying, and multiple tool usage instructions (create files, delegate exploration, direct search, edit files, read files, reserve Bash, search content, search files, skill invocation). These were part of Claude's default behavior.
+  - Raw: "REMOVED: System Prompt: Doing tasks (minimize file creation), (no premature abstractions), (no time estimates), (no unnecessary additions), (read before modifying); System Prompt: Tool usage (create files), (delegate exploration), (direct search), (edit files), (read files), (reserve Bash), (search content), (search files), (skill invocation)"
 
-### May Update (Stage 2 Verified)
+- [ ] **Bash tool: cd git command permission prompt avoidance** (CC 2.1.113)
+  - Source: system-prompts changelog + CC changelog
+  - Confidence: high
+  - Affects: plugin-dev skill (Bash tool examples)
+  - Details: Bash tool now explicitly instructs never to prepend `cd <current-directory>` to a `git` command since git already operates on current working tree and the compound form triggers a permission prompt.
+  - Raw: "Tool Description: Bash (maintain cwd) - Added explicit instruction to never prepend `cd <current-directory>` to a `git` command"
 
-- [ ] **Agent tool "trust but verify" guidance** (CC 2.1.105)
-  - Source: system-prompts
-  - Confidence: medium
-  - Affects: agent-development best practices
-  - Details: New guidance instructing Claude to check actual code changes from agents before reporting work as done, rather than relying solely on agent summaries.
-  - Stage 2 note: Could enhance agent-development skill with verification guidance. Keep as May Update.
+### Rejected (Out of Version Range)
 
-- [ ] **Verify skill restructured** (CC 2.1.97, updates through 2.1.105)
-  - Source: system-prompts
-  - Confidence: medium
-  - Affects: testing/verification patterns
-  - Details: Major restructure emphasizing checking `.claude/skills/` for verifier skills first, new "Push on it" section with probing strategies by change type.
-  - Stage 2 note: Could inform testing patterns in plugin development. Keep as May Update.
+The following items were incorrectly included by Stage 1. They are from CC 2.1.105 which predates the last audit baseline (CC 2.1.110):
 
-- [ ] **Heredoc piping guidance for REPL/Bash** (CC 2.1.110)
-  - Source: system-prompts
-  - Confidence: medium
-  - Affects: command-development, script execution
-  - Details: Added guidance to pipe via heredoc instead of writing temp files for shell commands, warning that generic temp paths get clobbered by parallel agents.
-  - Stage 2 note: Relevant to script execution patterns in hooks and commands. Keep as May Update.
+- ~~**Agent tool: "trust but verify" guidance added** (CC 2.1.105)~~ -- predates audit baseline
+- ~~**Monitor tool: comprehensive failure matching guidance** (CC 2.1.105)~~ -- predates audit baseline AND already documented in manifest-reference.md line 414
+- ~~**NEW: /runtime-verification alias for Verify skill** (CC 2.1.105)~~ -- predates audit baseline
+- ~~**EnterWorktree tool: expanded trigger conditions** (CC 2.1.105)~~ -- predates audit baseline
 
 ---
 
-### No Action (Stage 2 Verified)
+### May Update
 
-**Demoted from Must Update by Stage 2:**
-- NEW REPL tool (CC 2.1.108) - Optional low-priority; no tool-reference skill exists in plugin-dev
-- NEW PushNotification tool (CC 2.1.110) - Optional low-priority; no tool-reference skill exists
-- EnterWorktree tool path parameter (CC 2.1.105) - Minor tool enhancement, low priority
-- Agent tool renamed "Agent" to "R4" (CC 2.1.105) - Internal naming in disallowedTools, not user-facing
-- /tui command (CC 2.1.110) - Built-in CC feature, not plugin development
-- /team-onboarding command and skill (CC 2.1.101) - Built-in CC feature
-- /insights command and skill (CC 2.1.101) - Built-in CC feature
-- /loop dynamic mode and self-pacing (CC 2.1.101) - Built-in CC autonomous loop features
-- /dream nightly schedule skill (CC 2.1.97) - Built-in CC memory feature
-- Managed Agents documentation overhaul (CC 2.1.97+) - Anthropic API docs, not CC plugin dev
-- Prompt caching TTL configuration (CC 2.1.108) - Internal env vars for API
+- [ ] **Opus 4.7 with xhigh effort level** (CC 2.1.111)
+  - Source: CC changelog + system-prompts changelog
+  - Confidence: high
+  - Affects: model documentation, effort level references
+  - Details: Claude Opus 4.7 now available with new `xhigh` effort level between `high` and `max`. Auto mode available for Max subscribers. Multiple API references updated. Not directly plugin-related but may affect examples.
 
-**Demoted from May Update by Stage 2:**
-- Fork usage guidelines simplified (CC 2.1.105) - Internal CC guidance
-- Communication style heading renamed (CC 2.1.104) - Internal naming
-- Sleep duration guidance relaxed (CC 2.1.108) - Minor internal change
-- Session recap feature (CC 2.1.108) - User feature, not plugin dev
-- Sandbox Network Callback threat definition (CC 2.1.110) - Internal security
-- Model catalog formatting (CC 2.1.108) - Cosmetic change
+- [ ] **Auto mode no longer requires --enable-auto-mode** (CC 2.1.111)
+  - Source: CC changelog
+  - Confidence: high
+  - Affects: any documentation mentioning auto mode flags
+  - Details: Auto mode flag requirement removed. Auto mode now generally available.
 
-**Original No Action (unchanged):**
-- Thinking hints shown sooner during long operations (CC 2.1.107)
-- Rotating progress hint for extended-thinking indicator (CC 2.1.109)
-- OS CA certificate store trust by default (CC 2.1.101)
-- Improved brief and focus modes (CC 2.1.101)
-- Fixed paste functionality, session resume problems, terminal escape handling (CC 2.1.101)
-- MCP tool call hang fixes (CC 2.1.110)
-- Session cleanup fixes (CC 2.1.110)
-- Permission rule enforcement fixes (CC 2.1.110)
-- Stalled API stream handling improvements (CC 2.1.105)
-- File write display improvements (CC 2.1.105)
-- Improved error messaging for rate limits and server issues (CC 2.1.108)
-- Thinking frequency tuning system reminder (CC 2.1.107) - internal behavior
-- Memory synthesis restructured to fact-extraction format (CC 2.1.105) - internal agent
-- Managed Agents SDK version requirements updates (CC 2.1.105) - API reference only
-- Dream memory consolidation/pruning refinements (CC 2.1.97-2.1.105) - internal memory system
-- Session search agent lightweight rewrite (CC 2.1.94) - internal agent
-- Worker fork prompt streamlined (CC 2.1.94) - internal agent
-- Status line git_worktree field (CC 2.1.97) - internal display
-- Communication style tightened (CC 2.1.100) - internal behavior
-- Exploratory questions prompt removed (CC 2.1.100) - internal behavior
-- Output efficiency prompt removed (CC 2.1.100) - internal behavior
-- User-facing communication style prompt removed (CC 2.1.100) - internal behavior
-- Hook condition evaluator specialized for stop conditions (CC 2.1.92) - internal
-- Sleep tool removed (CC 2.1.92) - replaced by Snooze
-- MCP Tool Result Truncation guidance changes (CC 2.1.92) - internal behavior
-- Remote plan mode diagram guidance rewritten (CC 2.1.92) - internal behavior
-- Runtime-verification alias for Verify skill (CC 2.1.105) - internal alias
-- Build Claude API and SDK apps skill trigger updates (CC 2.1.101-2.1.108) - built-in skill
-- Autonomous loop check system prompt (CC 2.1.101) - internal loop behavior
-- Schedule recurring cron skills (CC 2.1.101) - built-in scheduling skills
-- Managed Agents onboarding flow agent prompt (CC 2.1.97/2.1.105) - API onboarding
-- Managed Agents data files updates (CC 2.1.105) - API reference updates
+- [ ] **NEW: /ultrareview for cloud-based code review** (CC 2.1.111)
+  - Source: CC changelog
+  - Confidence: high
+  - Affects: may want to reference as example of complex skill
+  - Details: Comprehensive cloud-based code review using parallel multi-agent analysis. Improved in 2.1.113 with faster launch via parallelized checks.
+
+- [ ] **sandbox.network.deniedDomains setting** (CC 2.1.113)
+  - Source: CC changelog
+  - Confidence: high
+  - Affects: settings documentation
+  - Details: New setting to block specific domains despite broader allowlist rules.
+
+- [ ] **/skills menu: sorting by token count** (CC 2.1.111)
+  - Source: CC changelog
+  - Confidence: high
+  - Affects: skill authoring guidance (size optimization)
+  - Details: `/skills` menu now supports sorting by token count (press `t` to toggle). Relevant for skill size awareness.
+
+### Demoted to No Action (Out of Version Range)
+
+The following items were demoted from May Update because they predate the audit baseline (CC 2.1.110):
+
+- ~~**Windows PowerShell tool rollout** (CC 2.1.111)~~ -- kept but low priority, platform-specific
+- ~~**NEW: PushNotification tool** (CC 2.1.110)~~ -- version 2.1.110 is audit baseline, not new
+- ~~**REPL tool and scripting conventions** (CC 2.1.108, 2.1.110)~~ -- predates or equals audit baseline
+- ~~**Loop/snooze/dynamic pacing features** (CC 2.1.101, 2.1.105)~~ -- predates audit baseline
+- ~~**Managed Agents documentation additions** (CC 2.1.97, 2.1.105)~~ -- predates audit baseline
+- ~~**Communication style prompt simplified** (CC 2.1.100, 2.1.104)~~ -- predates audit baseline
+- ~~**Fork usage: removed "don't peek" exception** (CC 2.1.101)~~ -- predates audit baseline
+- ~~**Thinking frequency tuning system reminder** (CC 2.1.107)~~ -- predates audit baseline
 
 ---
 
-## Summary (Stage 2 Corrected)
+### No Action
 
-**3 Must Update items** (verified by Stage 2):
-1. **CRITICAL: Allowed-tools syntax change** (colon to space-separated) - breaking change affecting 6+ files
-2. PreCompact hook blocking capability (exit code 2 / decision:block)
-3. Background monitor "silence is not success" guidance and plugin support
+**Bug fixes, UI enhancements, internal changes (CC 2.1.111-2.1.114):**
+- Permission dialog crash fix for agent teams (CC 2.1.114) - bug fix
+- CLI spawn native binary change (CC 2.1.113) - internal architecture
+- Fullscreen mode Shift+arrow scrolling (CC 2.1.113) - UI enhancement
+- Multiline input Ctrl+A/E readline behavior (CC 2.1.113) - UI enhancement
+- Windows Ctrl+Backspace word deletion (CC 2.1.113) - UI enhancement
+- Long URL clickability with OSC 8 hyperlinks (CC 2.1.113) - terminal feature
+- /loop Esc cancellation and wakeup display (CC 2.1.113) - UI enhancement
+- /extra-usage from Remote Control clients (CC 2.1.113) - remote feature
+- Remote Control autocomplete suggestions (CC 2.1.113) - remote feature
+- Subagent stall timeout 10-minute limit (CC 2.1.113) - reliability fix
+- Bash multiline comment display (CC 2.1.113) - display fix
+- macOS security hardening for /private paths (CC 2.1.113) - security
+- Bash deny rules for env/sudo/watch wrappers (CC 2.1.113) - security
+- find -exec/-delete allow rule fix (CC 2.1.113) - security
+- MCP concurrent-call timeout fix (CC 2.1.113) - bug fix
+- Multiple UI fixes: Cmd-backspace, markdown tables, session recap, /copy, etc. (CC 2.1.113) - bug fixes
+- Plugin error handling improvements (CC 2.1.111) - internal
+- Fixed Claude calling non-existent commit skill (CC 2.1.111) - bug fix
+- Various Windows fixes for CLAUDE_ENV_FILE and paths (CC 2.1.111) - platform fixes
+- Opus 4.7 temporarily unavailable error fix (CC 2.1.112) - bug fix
+- Model catalog and API reference updates for Opus 4.7 (CC 2.1.111) - data updates
+- HTTP error codes reference Opus 4.7 additions (CC 2.1.111) - data updates
+- Streaming reference updates (CC 2.1.111) - data updates
+- Tool use concepts Opus 4.7 additions (CC 2.1.111) - data updates
+- Skillify Current Session directive change (CC 2.1.111) - internal restructure
+- Windows PowerShell tool rollout (CC 2.1.111) - platform-specific, low priority
 
-**3 May Update items** (verified by Stage 2):
-1. Agent tool "trust but verify" guidance
-2. Verify skill restructured (probing strategies)
-3. Heredoc piping guidance for REPL/Bash
-
-**40+ No Action items** - includes 11 demoted from original Must Update (built-in CC features, API docs, internal changes) and 6 demoted from May Update
-
-## Notes
-
-1. **Degraded triangulation**: The claude-code-guide agent was skipped due to CI environment limitations. Changes are confirmed via changelog and system-prompts sources only.
-
-2. **Critical: Allowed-tools syntax change** - The change from colon-separated to space-separated patterns (`Bash(npm:*)` -> `Bash(npm *)`) is significant and may affect existing skills that use permissions. This should be verified and updated in the skill-authoring documentation immediately.
-
-3. **New tools requiring documentation**:
-   - REPL: JavaScript programming interface for composing tool calls
-   - PushNotification: Desktop/mobile notifications
-   - Snooze: Delay tool for loop scheduling (replaces Sleep)
-   - ScheduleWakeup: Loop iteration scheduling
-
-4. **New hooks**: PreCompact hook added for plugins to intercept before context compaction.
-
-5. **Managed Agents documentation overhaul** is extensive but may only affect the claude-api skill's references if plugin-dev references the Agent SDK.
-
-6. **Token delta summary** (from system-prompts):
-   - 2.1.100: -845 tokens (communication style prompts removed)
-   - 2.1.101: +4,676 tokens (loop/scheduling skills, autonomous loop)
-   - 2.1.104: +8 tokens (heading rename)
-   - 2.1.105: +4,895 tokens (verify skill alias, monitor updates, worktree updates)
-   - 2.1.107: +119 tokens (thinking frequency)
-   - 2.1.108: +885 tokens (REPL tool, allowed-tools syntax)
-   - 2.1.109: +0 tokens (no prompt changes)
-   - 2.1.110: +590 tokens (PushNotification, heredoc guidance)
+**Pre-audit baseline items (CC 2.1.97-2.1.110) -- excluded from this audit:**
+- Security monitor sandbox network callback threat (CC 2.1.110) - at baseline
+- NEW: PushNotification tool (CC 2.1.110) - at baseline
+- REPL tool and scripting conventions (CC 2.1.108, 2.1.110) - at/before baseline
+- Sleep duration guidance simplification (CC 2.1.108) - before baseline
+- Thinking frequency tuning system reminder (CC 2.1.107) - before baseline
+- Explore agent metadata changes (CC 2.1.105) - before baseline
+- Plan mode agent metadata changes (CC 2.1.105) - before baseline
+- Managed Agents scope_id parameter updates (CC 2.1.105) - before baseline
+- Agent tool "trust but verify" (CC 2.1.105) - before baseline, rejected from Must Update
+- Monitor "silence is not success" (CC 2.1.105) - before baseline AND already documented
+- /runtime-verification alias (CC 2.1.105) - before baseline, rejected from Must Update
+- EnterWorktree expanded triggers (CC 2.1.105) - before baseline, rejected from Must Update
+- Fork usage removed "don't peek" exception (CC 2.1.101) - before baseline
+- Loop/snooze/dynamic pacing features (CC 2.1.101, 2.1.105) - before baseline
+- Communication style prompt simplified (CC 2.1.100, 2.1.104) - before baseline
+- Dream memory consolidation transcript source note (CC 2.1.98) - before baseline
+- Dream memory pruning team/ rules (CC 2.1.98) - before baseline
+- Advisor tool wording updates (CC 2.1.98) - before baseline
+- Managed Agents documentation additions (CC 2.1.97, 2.1.105) - before baseline
 
 ---
 
-## Raw Changelog Excerpts
+## Summary
 
-### Version 2.1.110
+**Version Range**: 2.1.111 through 2.1.114 (4 versions since last audit at 2.1.110)
+
+**Key Themes** (after Stage 2 verification):
+1. **Skill invocation strictness** - Major change affecting how skills are invoked (CC 2.1.111)
+2. **System prompt removals** - Many default behavior instructions removed in v2.1.111 (low impact on plugins)
+3. **New built-in skills** - /fewer-permission-prompts (CC 2.1.111, renamed in 2.1.113)
+4. **Opus 4.7 support** - New model with xhigh effort level (May Update)
+5. **Bash cd+git guidance** - Permission prompt avoidance (CC 2.1.113)
+
+**Action Required** (after Stage 2 verification): 5 items in "Must Update" category need review for plugin-dev documentation updates.
+
+**Stage 2 Corrections**:
+- 4 items rejected from Must Update (CC 2.1.105 predates audit baseline)
+- 8 items demoted from May Update to No Action (versions predate audit baseline)
+- 1 item already documented (Monitor "silence is not success" at manifest-reference.md:414)
+
+**Data Quality Notes**:
+- Two-source triangulation (CC changelog + system-prompts changelog)
+- claude-code-guide agent dispatch failed (--subagent-type not available in environment)
+- System-prompts changelog provides more structured detail with token counts and NEW/REMOVED markers
+- **Stage 1 error**: Included items from CC 2.1.105 in a manifest claiming range 2.1.111-2.1.114
+
+---
+
+## Token Delta Summary (from system-prompts)
+
+| Version | Delta | Key Changes |
+|---------|-------|-------------|
+| 2.1.114 | +0 | No prompt changes |
+| 2.1.113 | +26 | Renamed skill heading, Bash cd+git guidance |
+| 2.1.112 | +0 | No prompt changes |
+| 2.1.111 | +21,018 | Two new skills, 14 prompts REMOVED, Opus 4.7 docs, Skill tool tightened |
+
+**Net change since 2.1.110**: +21,044 tokens (massive restructure with many removals offset by new Opus 4.7 documentation)
+
+---
+
+## Raw Changelog Excerpts for Must Update Items
+
+### Skill Tool Invocation (CC 2.1.111)
 ```
-- new `/tui` command for flicker-free rendering
-- push notification capabilities
-- improved plugin management
-- MCP tool call hangs fixes
-- session cleanup fixes
-- permission rule enforcement fixes
+Tool Description: Skill - Tightened invocation rules: removed example-heavy format
+in favor of concise instructions; added strict guardrail to only invoke skills that
+appear in the available-skills list or that the user explicitly typed as a slash
+command, never guessing or inventing skill names.
 ```
 
-### Version 2.1.109
+### System Prompt Removals (CC 2.1.111)
 ```
-- rotating progress hint for extended-thinking indicator
-```
-
-### Version 2.1.108
-```
-- prompt caching TTL configuration (ENABLE_PROMPT_CACHING_1H, FORCE_PROMPT_CACHING_5M)
-- recap feature for returning to sessions
-- improved error messaging for rate limits and server issues
-```
-
-### Version 2.1.107
-```
-- thinking hints shown sooner during long operations
-```
-
-### Version 2.1.105
-```
-- `path` parameter added to EnterWorktree tool
-- PreCompact hook support
-- background monitor support for plugins
-- stalled API stream handling improvements
-- file write display improvements
+REMOVED: System Prompt: Doing tasks (minimize file creation)
+REMOVED: System Prompt: Doing tasks (no premature abstractions)
+REMOVED: System Prompt: Doing tasks (no time estimates)
+REMOVED: System Prompt: Doing tasks (no unnecessary additions)
+REMOVED: System Prompt: Doing tasks (read before modifying)
+REMOVED: System Prompt: Tool usage (create files)
+REMOVED: System Prompt: Tool usage (delegate exploration)
+REMOVED: System Prompt: Tool usage (direct search)
+REMOVED: System Prompt: Tool usage (edit files)
+REMOVED: System Prompt: Tool usage (read files)
+REMOVED: System Prompt: Tool usage (reserve Bash)
+REMOVED: System Prompt: Tool usage (search content)
+REMOVED: System Prompt: Tool usage (search files)
+REMOVED: System Prompt: Tool usage (skill invocation)
 ```
 
-### Version 2.1.101
+### Bash cd+git Guidance (CC 2.1.113)
 ```
-- `/team-onboarding` command
-- OS CA certificate store trust by default
-- improved brief and focus modes
-- paste functionality fixes
-- session resume fixes
-- terminal escape code handling fixes
+Tool Description: Bash (maintain cwd) - Added explicit instruction to never prepend
+`cd <current-directory>` to a `git` command, since `git` already operates on the
+current working tree and the compound form triggers a permission prompt.
+```
+
+### Agent "Trust but Verify" (CC 2.1.105)
+```
+Tool Description: Agent (usage notes) - Added "trust but verify" guidance instructing
+Claude to check actual code changes from agents before reporting work as done, rather
+than relying solely on agent summaries.
+```
+
+### Monitor "Silence is Not Success" (CC 2.1.105)
+```
+Tool Description: Background monitor (streaming events) - Added "silence is not success"
+guidance requiring monitors to match all terminal states (failures, crashes, OOM) not
+just the happy path; added examples of wrong vs right grep patterns for comprehensive
+coverage; updated output volume guidance to emphasize capturing both success and failure
+signals; added note about merging stderr with `2>&1` for directly-run commands.
+```
+
+### Memory Synthesis Retrieval-Only (CC 2.1.111)
+```
+Agent Prompt: Memory synthesis - Strengthened the "do not invent facts" rule into a
+full retrieval-only directive: the subagent must not answer or solve queries from
+general knowledge, and must return empty results when no memory covers the query.
 ```
 
 ---
 
 ## Stage 2: Verification Results
-### Verified: 2026-04-16
+### Verified: 2026-04-19
 
 #### Must Update Verification
 
-- ! **NEW REPL tool** (CC 2.1.108) -- RECLASSIFIED: "tool-reference skill" does not exist in plugin-dev. Should update `plugin-structure` (available tools list) or `command-development` (tool descriptions). Note: REPL is a new tool for JavaScript scripting, confirmed in system-prompts.
-- ! **NEW PushNotification tool** (CC 2.1.110) -- RECLASSIFIED: Same issue - "tool-reference skill" does not exist. Update `plugin-structure` or create a new reference doc for tools.
-- ! **EnterWorktree tool: new `path` parameter** (CC 2.1.105) -- RECLASSIFIED: No "tool-reference skill" exists. This is for worktree entry, which relates to `agent-development` (worktree isolation) more than a tool reference. Low priority - minor tool enhancement.
-- X **Allowed-tools syntax change: colon-separated to space-separated** (CC 2.1.108) -- CONFIRMED and CRITICAL. Found 8+ files still using old `Bash(npm:*)` syntax that need updating to `Bash(npm *)`:
-  - `skills/command-development/SKILL.md` line 534
-  - `skills/command-development/references/frontmatter-reference.md` line 104
-  - `skills/command-development/references/advanced-workflows.md` lines 121, 148
-  - `skills/command-development/examples/simple-commands.md` line 100
-  - `skills/plugin-structure/references/github-actions.md` line 118
-  - Note: `skills/agent-development/references/permission-modes-rules.md` already uses correct space-separated syntax (`Bash(npm *)`)
-- X **Agent tool renamed from "Agent" to "R4"** (CC 2.1.105) -- DEMOTED to No Action. This is internal naming only, shown in disallowedTools context of Explore/Plan agents. Not relevant to plugin development documentation.
-- X **/tui command** (CC 2.1.110) -- DEMOTED to No Action. Internal CLI feature, not relevant to plugin development.
-- X **/team-onboarding command and skill** (CC 2.1.101) -- DEMOTED to No Action. Built-in CC command, not plugin development related.
-- X **/insights command and skill** (CC 2.1.101) -- DEMOTED to No Action. Built-in CC command for usage reports.
-- X **/loop dynamic mode and self-pacing** (CC 2.1.101) -- DEMOTED to No Action. Built-in CC autonomous loop features.
-- X **PreCompact hook support** (CC 2.1.105) -- ALREADY DOCUMENTED. PreCompact hook exists in `hook-development/SKILL.md` lines 606+. However, CC 2.1.105 adds ability to block compaction via exit code 2 or `{"decision":"block"}` - this specific capability is NOT documented.
-- X **Background monitor for plugins** (CC 2.1.105) -- PARTIALLY DOCUMENTED. `agent-development/SKILL.md` line 251 mentions "Monitor (CC 2.1.98)" tool. The CC 2.1.105 "silence is not success" guidance and plugin support is new.
-- X **/dream nightly schedule skill** (CC 2.1.97, visible in 2.1.101) -- DEMOTED to No Action. Built-in CC memory feature.
-- X **Managed Agents documentation overhaul** (CC 2.1.97, visible in 2.1.101+) -- DEMOTED to No Action. This is Anthropic API documentation, not Claude Code plugin development.
-- X **Prompt caching TTL configuration** (CC 2.1.108) -- DEMOTED to No Action. Internal env vars for API usage, not plugin development.
+**Confirmed (in version range 2.1.111-2.1.114):**
+- [x] **Skill tool invocation rules tightened** (CC 2.1.111) -- confirmed in system-prompts changelog, gap exists in skill-development docs (no mention of strict available-skills guardrail)
+- [x] **NEW skill: /less-permission-prompts -> /fewer-permission-prompts** (CC 2.1.111, 2.1.113) -- confirmed in both CC changelog and system-prompts changelog, not documented in plugin-dev (new built-in skill pattern)
+- [x] **Memory synthesis agent: retrieval-only directive** (CC 2.1.111) -- confirmed in system-prompts changelog, affects agent prompt design patterns
+- [x] **Massive system prompt removals** (CC 2.1.111) -- confirmed in system-prompts changelog, 14 prompts removed. Impact on plugin-dev is LOW since these were Claude's default behaviors not plugin-specific guidance
+- [x] **Bash tool: cd git command permission prompt avoidance** (CC 2.1.113) -- confirmed in system-prompts changelog, useful guidance for Bash tool examples
+
+**Rejected (out of version range - CC 2.1.105 predates last audit at 2.1.110):**
+- [x] **Agent tool: "trust but verify" guidance** (CC 2.1.105) -- REJECTED: Version 2.1.105 predates last audit baseline (2.1.110). Should have been caught in prior audit cycle. Not including.
+- [x] **Monitor tool: comprehensive failure matching guidance** (CC 2.1.105) -- REJECTED: Version 2.1.105 predates audit baseline. Additionally, "silence is NOT success" IS ALREADY DOCUMENTED at `/home/runner/work/plugin-dev/plugin-dev/plugins/plugin-dev/skills/plugin-dev/references/plugin-structure/references/manifest-reference.md` line 414.
+- [x] **NEW: /runtime-verification alias for Verify skill** (CC 2.1.105) -- REJECTED: Version 2.1.105 predates audit baseline.
+- [x] **EnterWorktree tool: expanded trigger conditions** (CC 2.1.105) -- REJECTED: Version 2.1.105 predates audit baseline.
 
 #### Missed Items (promoted from No Action)
-
-- ! **PreCompact hook blocking capability** (CC 2.1.105) -- PROMOTED from partial documentation
-  - Affects: hook-development
-  - Details: Hooks can now block compaction with exit code 2 or `{"decision":"block"}`. The PreCompact event already exists but blocking capability is new.
-
-- ! **Sleep tool removed / Snooze tool replaces Sleep** (CC 2.1.92) -- Already in No Action but should be noted. Sleep tool removed is documented as CC 2.1.92, but that predates the version range (starts at 2.1.99). No action needed.
+- None identified. The No Action classifications appear correct.
 
 #### May Update Resolution
-
-- = **Agent tool "trust but verify" guidance** (CC 2.1.105) -- kept as May Update. Good practice guidance but not critical for plugin development.
-- ↓ **Fork usage guidelines simplified** (CC 2.1.105) -- demoted to No Action. Internal CC guidance.
-- ↓ **Communication style heading renamed** (CC 2.1.104) -- demoted to No Action. Internal naming.
-- = **Verify skill restructured** (CC 2.1.97, updates through 2.1.105) -- kept as May Update. Could inform testing/verification patterns.
-- ↓ **Sleep duration guidance relaxed** (CC 2.1.108) -- demoted to No Action. Minor internal change.
-- = **Heredoc piping guidance for REPL/Bash** (CC 2.1.110) -- kept as May Update. Relevant to script execution patterns.
-- ↓ **Session recap feature** (CC 2.1.108) -- demoted to No Action. User feature, not plugin dev.
-- ↓ **Sandbox Network Callback threat definition** (CC 2.1.110) -- demoted to No Action. Internal security monitoring.
-- ↓ **Model catalog formatting** (CC 2.1.108) -- demoted to No Action. Cosmetic change.
+- = **Opus 4.7 with xhigh effort level** (CC 2.1.111) -- kept as May Update: not directly plugin-related, model choice is user decision
+- = **Auto mode no longer requires --enable-auto-mode** (CC 2.1.111) -- kept as May Update: affects CLI usage, not plugin authoring
+- = **NEW: /ultrareview for cloud-based code review** (CC 2.1.111) -- kept as May Update: could reference as complex skill example but not required
+- = **sandbox.network.deniedDomains setting** (CC 2.1.113) -- kept as May Update: settings reference could mention this
+- = **Windows PowerShell tool rollout** (CC 2.1.111) -- kept as May Update: platform-specific, low priority
+- [x] **NEW: PushNotification tool** (CC 2.1.110) -- demoted to No Action: version 2.1.110 is the last audit baseline, not new
+- [x] **REPL tool and scripting conventions** (CC 2.1.108, 2.1.110) -- demoted to No Action: version range predates or equals audit baseline
+- = **/skills menu: sorting by token count** (CC 2.1.111) -- kept as May Update: useful for skill size awareness guidance
+- [x] **Loop/snooze/dynamic pacing features** (CC 2.1.101, 2.1.105) -- demoted to No Action: versions predate audit baseline
+- [x] **Managed Agents documentation additions** (CC 2.1.97, 2.1.105) -- demoted to No Action: versions predate audit baseline
+- [x] **Communication style prompt simplified** (CC 2.1.100, 2.1.104) -- demoted to No Action: versions predate audit baseline
+- [x] **Fork usage: removed "don't peek" exception** (CC 2.1.101) -- demoted to No Action: version predates audit baseline
+- [x] **Thinking frequency tuning system reminder** (CC 2.1.107) -- demoted to No Action: version predates audit baseline
 
 #### Summary
+- **Must Update**: 5 items confirmed (4 rejected as out-of-range)
+- **May Update**: 5 items remaining (8 demoted to No Action due to version range)
+- **Confidence**: HIGH - independent verification confirms CC changelog and system-prompts changelog data
 
-- Must Update: 3 items remaining (1 CRITICAL - allowed-tools syntax, 2 reclassified for correct skill targets)
-  - 3 confirmed (allowed-tools syntax, REPL tool, PushNotification tool - but skill targets corrected)
-  - 11 rejected/demoted (built-in commands, internal features, API docs)
-  - 1 added (PreCompact blocking capability)
-- May Update: 3 items remaining
-- Confidence: MEDIUM-HIGH
-  - Stage 1 correctly identified the allowed-tools syntax change as critical
-  - Stage 1 incorrectly referenced "tool-reference skill" which does not exist
-  - Several items were built-in CC features, not plugin development items
-  - PreCompact blocking capability was partially missed
+#### Critical Finding: Version Range Error
+Stage 1 included items from CC 2.1.105 in a manifest claiming range 2.1.111-2.1.114. The last audit was at CC 2.1.110 (per `/home/runner/work/plugin-dev/plugin-dev/docs/claude-code-compatibility.md`). Items from versions 2.1.97-2.1.110 should NOT appear as new items in this manifest.
 
-#### Corrected Must Update Items for Stage 3
+**Root cause**: Stage 1 read the full system-prompts changelog but did not properly filter by the audit baseline version. Items earlier than 2.1.111 were incorrectly included.
 
-1. **CRITICAL: Allowed-tools syntax change** (CC 2.1.108)
-   - Affects: skill-development, command-development, all files using permission examples
-   - Action: Update all `Bash(npm:*)` to `Bash(npm *)`, `Bash(git:*)` to `Bash(git *)`, etc.
-   - Files to update:
-     - `skills/command-development/SKILL.md`
-     - `skills/command-development/references/frontmatter-reference.md`
-     - `skills/command-development/references/advanced-workflows.md`
-     - `skills/command-development/examples/simple-commands.md`
-     - `skills/plugin-structure/references/github-actions.md`
-
-2. **PreCompact hook blocking capability** (CC 2.1.105)
-   - Affects: hook-development
-   - Action: Add note that PreCompact hooks can return `{"decision":"block"}` or exit code 2 to block compaction
-
-3. **Background monitor plugin support - "silence is not success"** (CC 2.1.105)
-   - Affects: hook-development, agent-development
-   - Action: Add guidance that monitors should capture failure states, not just success. Add top-level `monitors` manifest key documentation if needed.
-
-4. **REPL tool** (CC 2.1.108) - Optional/Low Priority
-   - Affects: plugin-structure (tool list) or new reference doc
-   - Action: Mention REPL as new tool for JavaScript scripting in any tool listings
-
-5. **PushNotification tool** (CC 2.1.110) - Optional/Low Priority
-   - Affects: plugin-structure (tool list) or new reference doc
-   - Action: Mention PushNotification tool for desktop/mobile notifications
+**Recommendation**: Future Stage 1 runs should explicitly verify each item's version against the last-audited version from `docs/claude-code-compatibility.md` before including it.

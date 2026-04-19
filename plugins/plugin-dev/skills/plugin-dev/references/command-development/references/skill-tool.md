@@ -52,6 +52,16 @@ Claude uses the Skill tool when:
 
 **Example:** If a user says "review my code changes," Claude might use the Skill tool to invoke `/review` if such a command exists and is available.
 
+### Strict Invocation Rules (CC 2.1.111)
+
+Claude follows strict guardrails when using the Skill tool:
+
+- **Only invoke listed skills**: Claude will only invoke skills that appear in the `available-skills` list or that the user explicitly typed as a slash command
+- **Never guess or invent**: Claude must never guess or invent skill names that aren't explicitly listed
+- **User-typed commands**: If a user types `/my-command`, Claude can invoke it even if it's not in the discovery list
+
+This prevents Claude from attempting to invoke non-existent skills and ensures predictable behavior.
+
 ## Visibility Requirements
 
 ### description Field Required

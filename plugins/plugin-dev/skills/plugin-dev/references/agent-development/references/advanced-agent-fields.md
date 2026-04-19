@@ -51,6 +51,16 @@ When `memory` is set:
 - Use `project` or `local` for codebase-specific learning
 - Include memory management instructions in the agent's system prompt (e.g., "After completing a task, update your MEMORY.md with key learnings")
 
+### Memory Synthesis Retrieval-Only Directive (CC 2.1.111)
+
+When agents with memory are queried about their stored knowledge, the memory synthesis process follows a strict retrieval-only directive:
+
+- **No general knowledge**: Agents must not answer queries from general knowledge—only from stored memories
+- **Empty results allowed**: If no memory covers the query, return empty results rather than inventing facts
+- **Strict boundaries**: The "do not invent facts" rule is now enforced as a hard requirement
+
+This ensures memory-enabled agents only return information they've explicitly stored, maintaining data integrity.
+
 ## mcpServers
 
 Scope MCP servers to the agent, controlling which external services it can access.
