@@ -137,6 +137,16 @@ allowed-tools: "*"
 - Only specify when different from conversation permissions
 - Document why specific tools are needed
 
+**Bash cd+git Guidance (CC 2.1.113):** Never prepend `cd <current-directory>` to a `git` command. Git already operates on the current working tree, and the compound form (`cd /path && git status`) triggers an unnecessary permission prompt. Use git commands directly:
+
+```bash
+# Good - direct git command
+git status
+
+# Bad - compound form triggers permission prompt
+cd /current/path && git status
+```
+
 ### model
 
 **Type:** String
