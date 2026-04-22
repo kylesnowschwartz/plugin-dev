@@ -217,6 +217,15 @@ permissionMode: delegate
 
 Teammates inherit the team lead's permission settings. If the lead runs with `--dangerously-skip-permissions`, all teammates inherit that too. Plan permission modes accordingly — a permissive lead creates permissive teammates.
 
+### SendMessageTool Attachments (CC 2.1.116)
+
+When team members send messages with attachments, the `attachments` field accepts two formats:
+
+- **File path string**: A path to a file on the working filesystem (e.g., `"/path/to/file.txt"`)
+- **Attachment object**: The exact `{file_uuid, file_name, size, is_image}` object returned by device tools like `attach_file`
+
+This allows teammates to share both local files and user-uploaded files passed through verbatim.
+
 ### Context Isolation
 
 Teammates load CLAUDE.md, MCP servers, and skills from the project, but do NOT inherit the lead's conversation history. Each teammate starts with a fresh context window; the spawn prompt provides initial task context.

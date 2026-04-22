@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.114 (2026-04-19)
-Plugin-dev version: 0.11.1
+Last audited: Claude Code 2.1.117 (2026-04-22)
+Plugin-dev version: 0.11.2
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.11.2 | 2.1.115-2.1.117 | 2026-04-22 | Agent frontmatter mcpServers/hooks fire with --agent, background job behavior guidance, SendMessageTool attachments format, plugin install dependency handling, auto-update dependency install |
 | v0.11.1 | 2.1.111-2.1.114 | 2026-04-19 | Skill tool strict invocation rules, memory synthesis retrieval-only directive, Bash cd+git guidance, /skills token sort |
 | v0.10.3 | 2.1.99-2.1.110 | 2026-04-16 | Allowed-tools syntax change (colon to space), PreCompact hook blocking capability, monitors manifest key |
 | v0.10.2 | 2.1.94-2.1.98 | 2026-04-10 | Monitor tool for background events, agent absolute path requirement, skill invocation name change, plugin skill hook/CLAUDE_PLUGIN_ROOT fixes |

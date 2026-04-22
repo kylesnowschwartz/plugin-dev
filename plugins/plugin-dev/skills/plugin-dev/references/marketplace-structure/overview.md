@@ -221,6 +221,8 @@ Organizations can restrict plugin sources via managed settings:
 
 Organizations can block specific plugins via `managed-settings.json`. Blocked plugins cannot be installed or enabled and are hidden from marketplace views. This is separate from marketplace restrictions — even plugins from approved marketplaces can be individually blocked.
 
+**Marketplace blocking enforcement (CC 2.1.117):** Marketplace blocking is now enforced at install time. Plugins from blocked marketplaces (`blockedMarketplaces` in managed settings) cannot be installed via `plugin install`.
+
 Plugin developers distributing to enterprise users should document the plugin name clearly so admins can add it to their allow list if needed.
 
 ### Private Repository Authentication

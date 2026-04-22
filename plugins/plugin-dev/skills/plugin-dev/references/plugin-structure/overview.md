@@ -625,7 +625,11 @@ Cached content refreshes when:
 
 - Claude Code session restarts
 - Plugin is reinstalled or updated
-- User runs `/plugins refresh` (if available)
+- User runs `/reload-plugins`
+
+### Dependency Auto-Install (CC 2.1.116)
+
+`/reload-plugins` and background plugin auto-update now auto-install missing plugin dependencies from marketplaces you've already added. If a plugin declares dependencies on other plugins, they will be fetched automatically during refresh or auto-update cycles.
 
 ### Why External Paths Fail
 
@@ -715,6 +719,11 @@ claude --verbose          # Additional debugging
 ```
 
 Use `/plugins` in the TUI to view installed plugins and their status.
+
+### Plugin Install Improvements (CC 2.1.117)
+
+- **Dependency handling**: `plugin install` now automatically handles missing dependencies, installing required plugins from configured marketplaces
+- **Marketplace blocking enforced**: Plugins from blocked marketplaces (configured via `blockedMarketplaces` in managed settings) cannot be installed
 
 ### Additional Source Types
 

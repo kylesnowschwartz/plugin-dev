@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.2] - 2026-04-22
+
+### Added
+
+- **agent-development**: Documented agent frontmatter `mcpServers` loading for main-thread sessions with `--agent` (CC 2.1.117)
+- **agent-development**: Documented agent frontmatter `hooks` firing when running as main session agent via `--agent` (CC 2.1.116)
+- **agent-development**: Documented background job behavior guidance - narrate progress, restate results in text, signal completion status (CC 2.1.117)
+- **agent-development**: Documented SendMessageTool expanded `attachments` format - file path strings or attachment objects (CC 2.1.116)
+- **plugin-structure**: Documented `plugin install` dependency handling and marketplace blocking enforcement (CC 2.1.117)
+- **plugin-structure**: Documented `/reload-plugins` and auto-update now install missing plugin dependencies (CC 2.1.116)
+- **marketplace-structure**: Documented marketplace blocking enforcement at install time (CC 2.1.117)
+
 ## [0.11.1] - 2026-04-19
 
 ### Added
@@ -404,7 +416,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.11.1...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.11.2...HEAD
+[0.11.2]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.11.1...v0.11.2
 [0.11.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.11.0...v0.11.1
 [0.11.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.3...v0.11.0
 [0.10.3]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.2...v0.10.3
