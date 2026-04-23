@@ -346,7 +346,11 @@ mcpServers:
   slack:
 ```
 
-Reference an already-configured server by name, or provide inline config. Restricts which MCP servers the agent can access. See `references/advanced-agent-fields.md` for configuration examples.
+Reference an already-configured server by name, or provide inline config. Restricts which MCP servers the agent can access.
+
+**Main-thread agent loading (CC 2.1.117):** When an agent is launched as the main session agent via `--agent`, its frontmatter `mcpServers` now load for the main-thread session. Previously, agent-scoped MCP servers only loaded when the agent ran as a subagent. This extends MCP configuration to standalone agent sessions.
+
+See `references/advanced-agent-fields.md` for configuration examples.
 
 ### hooks (optional)
 
@@ -361,7 +365,11 @@ hooks:
           command: "${CLAUDE_PLUGIN_ROOT}/scripts/validate-bash.sh"
 ```
 
-Supports all hook events. Note: `Stop` hooks in agent frontmatter are auto-converted to `SubagentStop` at runtime. Hooks activate when the agent starts and deactivate when it finishes. See `references/advanced-agent-fields.md` for full details.
+Supports all hook events. Note: `Stop` hooks in agent frontmatter are auto-converted to `SubagentStop` at runtime. Hooks activate when the agent starts and deactivate when it finishes.
+
+**Main-thread agent hook firing (CC 2.1.116):** Agent frontmatter `hooks:` now fire when running as the main session agent via `--agent`. Previously, agent frontmatter hooks only fired when the agent ran as a subagent. This extends hook functionality to standalone agent sessions.
+
+See `references/advanced-agent-fields.md` for full details.
 
 ### initialPrompt (optional)
 
@@ -628,6 +636,14 @@ Agents can run in foreground (blocking) or background (concurrent) mode:
 - **Background**: Runs concurrently; permissions must be pre-approved at spawn time since the user can't be prompted
 
 Background agents that need an unapproved permission will fail. Plan tool restrictions accordingly.
+
+### Background Job Behavior (CC 2.1.117)
+
+When designing agents that run as background jobs or forks:
+
+- **Narrate progress**: Emit periodic status updates so users can track progress
+- **Restate results in text**: Include final results in message text, not just tool calls, so classifiers can extract them for inbox summaries
+- **Signal completion status**: Explicitly signal `done`, `blocked`, or `failed` status when finishing
 
 **MCP limitation:** MCP tools are unavailable in background subagents. If your agent relies on MCP tools (from the plugin's `.mcp.json`), it must run in foreground mode. Design agents that may run in background to use only built-in tools.
 
