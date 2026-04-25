@@ -6,7 +6,7 @@ Guidance for Claude Code working in this repository.
 
 Plugin marketplace containing the **plugin-dev** plugin - a toolkit for developing Claude Code plugins. Provides 2 skills (1 consolidated + upstream sync) and 6 agents.
 
-**Version**: v0.11.2 | [CHANGELOG.md](CHANGELOG.md)
+**Version**: v0.12.0 | [CHANGELOG.md](CHANGELOG.md)
 
 ## MCP Tool Requirements (CRITICAL)
 

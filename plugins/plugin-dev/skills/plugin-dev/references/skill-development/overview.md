@@ -366,6 +366,16 @@ After auto-compaction, skill descriptions survive (they're re-injected), but ski
 
 When multiple plugins are installed, their skill descriptions share the same budget. Design descriptions to be distinctive and concise.
 
+### Previously Invoked Skills (CC 2.1.119)
+
+After conversation compaction, skills invoked before compaction are restored as context only via a "Previously invoked skills" reminder. This reminder warns not to re-execute setup actions or treat prior inputs as current instructions. The old "Invoked skills" reminder was replaced by this more explicit context-only framing.
+
+**Implications for skill design:**
+
+- Skills should be idempotent where possible
+- Setup actions (file creation, initialization) should check if already done
+- Skills should not assume prior context survives compaction unchanged
+
 ## Plugin-Specific Considerations
 
 ### Skill Location in Plugins
