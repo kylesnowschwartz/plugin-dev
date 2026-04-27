@@ -631,6 +631,10 @@ Cached content refreshes when:
 
 `/reload-plugins` and background plugin auto-update now auto-install missing plugin dependencies from marketplaces you've already added. If a plugin declares dependencies on other plugins, they will be fetched automatically during refresh or auto-update cycles.
 
+### Version Constraint Auto-Update (CC 2.1.119)
+
+When a plugin depends on another plugin with a version constraint (e.g., `>=1.0.0`), the dependent plugin now auto-updates to the highest satisfying git tag rather than being locked to the original installation version. This ensures plugins stay up-to-date within compatible version ranges.
+
 ### Why External Paths Fail
 
 **Important:** Paths outside the plugin directory may not work reliably because:

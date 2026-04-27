@@ -243,9 +243,10 @@ tools: Read, Write, Grep, Bash
 - Read-only analysis: `Read, Grep, Glob`
 - Code generation: `Read, Write, Grep`
 - Testing: `Read, Bash, Grep`
-- Configuration: `Config` (CC 2.1.88) - get/set Claude Code settings
 - Background monitoring: `Monitor` (CC 2.1.98) - stream stdout events from long-running scripts as chat notifications
 - Full access: Omit field entirely
+
+> **Note:** The Config tool was removed in CC 2.1.118. Use the `/config` slash command instead for getting/setting Claude Code settings.
 
 > **Important:** Agents use `tools` while Skills use `allowed-tools`. The field names differ between component types. For skill tool restrictions, see the `skill-development` skill.
 
@@ -575,6 +576,14 @@ claude --agents "code-reviewer,test-generator"
 - Testing agent behavior without triggering
 - Workflows requiring specific agents
 - Debugging agent system prompts
+
+### Print Mode Frontmatter Enforcement (CC 2.1.119)
+
+Agent frontmatter `tools:` and `disallowedTools:` restrictions now work in print mode (`-p` / `--print`), not just interactive mode. This is important for headless agent usage where you want tool restrictions to apply even when running non-interactively.
+
+### Agent permissionMode via CLI (CC 2.1.119)
+
+When launching an agent via `--agent <name>`, Claude Code now respects the agent's frontmatter `permissionMode` for built-in agents. This means permission modes defined in agent definitions are honored when launched via the CLI flag.
 
 ### Test System Prompt
 

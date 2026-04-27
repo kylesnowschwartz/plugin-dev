@@ -26,7 +26,7 @@ For complete input/output JSON schemas for every event, see **`references/event-
 
 ## Hook Types
 
-Four hook types are available. Not all events support all types.
+Five hook types are available. Not all events support all types.
 
 ### Prompt-Based Hooks (Recommended)
 
@@ -72,6 +72,23 @@ Execute bash commands for deterministic checks:
 
 **Use for:** Fast deterministic validations, file system operations, external tool integrations.
 
+### MCP Tool Hooks (CC 2.1.118)
+
+Directly invoke an MCP tool without spawning an agent:
+
+```json
+{
+  "type": "mcp_tool",
+  "server": "my-mcp-server",
+  "tool": "validate_operation",
+  "timeout": 30
+}
+```
+
+**Use for:** Validation via MCP-provided tools, external service integration without agent overhead, leveraging existing MCP infrastructure.
+
+**Benefits:** Lower latency than agent hooks, direct tool invocation, reuses MCP server configuration.
+
 ### HTTP Hooks
 
 Send event data to an HTTP endpoint:
@@ -88,7 +105,7 @@ Send event data to an HTTP endpoint:
 
 **Use for:** External service integration, centralized logging, webhook-driven workflows.
 
-**Prompt hooks** work on most events (see [Hook Type Support by Event](#hook-type-support-by-event) for the full matrix). SessionStart and WorktreeRemove are restricted to command hooks only. WorktreeCreate supports command and HTTP hooks.
+**Prompt hooks** work on most events (see [Hook Type Support by Event](#hook-type-support-by-event) for the full matrix). SessionStart and WorktreeRemove are restricted to command hooks only. WorktreeCreate supports command and HTTP hooks. **MCP tool hooks** (CC 2.1.118) follow the same event support as command hooks.
 
 **Response format:** Prompt hooks return the standard hook output JSON (`decision`, `reason`, `systemMessage`). For events with event-specific behavior (PreToolUse, PermissionRequest, Elicitation), include `hookSpecificOutput` with event-appropriate fields — see each event's documentation below and `references/event-schemas.md`.
 
@@ -134,7 +151,7 @@ Each hook entry in a matcher group supports these fields:
 
 ```json
 {
-  "type": "command|http|prompt|agent",
+  "type": "command|http|prompt|agent|mcp_tool",
   "command": "string (command type only)",
   "url": "string (http type only)",
   "headers": { "X-Key": "$ENV_VAR" },
@@ -444,6 +461,8 @@ Execute after a tool completes successfully. Use to react to results, provide fe
 ```
 
 **MCP-specific output:** For MCP tools, `hookSpecificOutput.updatedMCPToolOutput` lets you modify the tool's response before Claude sees it.
+
+> **CC 2.1.119:** PostToolUse and PostToolUseFailure hooks now include `duration_ms` field in the input, showing how long the tool execution took. Useful for performance monitoring hooks.
 
 #### PostToolUseFailure
 

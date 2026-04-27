@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-04-25
+
+### Added
+
+- **hook-development**: Documented `type: "mcp_tool"` hook type for direct MCP tool invocation without spawning an agent (CC 2.1.118)
+- **hook-development**: Documented `duration_ms` field in PostToolUse and PostToolUseFailure hook inputs for performance monitoring (CC 2.1.119)
+- **agent-development**: Documented print mode (`-p`/`--print`) frontmatter enforcement for `tools:` and `disallowedTools:` (CC 2.1.119)
+- **agent-development**: Documented `--agent <name>` CLI flag now honors agent's frontmatter `permissionMode` (CC 2.1.119)
+- **skill-development**: Documented "Previously invoked skills" compaction reminder that replaces old "Invoked skills" reminder with explicit context-only framing (CC 2.1.119)
+- **plugin-structure**: Documented version constraint auto-update - dependent plugins now auto-update to highest satisfying git tag (CC 2.1.119)
+
+### Changed
+
+- **agent-development**: Removed Config tool from common tool sets (removed in CC 2.1.118) - use `/config` command instead
+
 ## [0.11.2] - 2026-04-22
 
 ### Added
@@ -416,7 +431,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.11.2...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.11.2...v0.12.0
 [0.11.2]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.11.1...v0.11.2
 [0.11.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.11.0...v0.11.1
 [0.11.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.10.3...v0.11.0
