@@ -387,12 +387,14 @@ Note: `permission_mode` is not present on SessionStart.
   "hookSpecificOutput": {
     "hookEventName": "PostToolUse",
     "additionalContext": "string (optional)",
-    "updatedMCPToolOutput": "any (MCP tools only)"
+    "updatedToolOutput": "any (CC 2.1.121, any tool)",
+    "updatedMCPToolOutput": "any (MCP tools only, legacy)"
   }
 }
 ```
 
-- `updatedMCPToolOutput`: For MCP tools, replaces the tool's response before Claude sees it
+- `updatedToolOutput`: Replace tool output for **any** tool (CC 2.1.121). Use this for general tool output modification.
+- `updatedMCPToolOutput`: Replace tool output for **MCP tools only** (legacy, still works). Prefer `updatedToolOutput` for new hooks.
 
 **Matchers:** Tool names (same as PreToolUse)
 **Hook types:** Command, HTTP, Prompt, Agent

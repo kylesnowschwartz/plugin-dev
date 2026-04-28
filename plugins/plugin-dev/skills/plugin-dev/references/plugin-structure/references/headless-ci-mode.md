@@ -191,3 +191,19 @@ CI runs can accumulate significant API costs. Help users control spending:
 - Recommend `--max-turns` values for common workflows
 - Use `haiku` model for simple analysis skills
 - Document expected token usage for key workflows
+
+## Subagent Forking in Headless Mode (CC 2.1.121)
+
+By default, subagent forking is disabled in non-interactive sessions. To enable subagent spawning in headless/CI contexts:
+
+```bash
+CLAUDE_CODE_FORK_SUBAGENT=1 claude -p "Run analysis with subagents"
+```
+
+**Use cases:**
+
+- CI pipelines that spawn specialized agents for parallel work
+- Automated workflows requiring multi-agent coordination
+- Testing agent-based plugins in headless environments
+
+**Note:** Enabling subagent forking increases resource usage and may extend execution time. Use judiciously in cost-conscious CI environments.
