@@ -460,7 +460,10 @@ Execute after a tool completes successfully. Use to react to results, provide fe
 }
 ```
 
-**MCP-specific output:** For MCP tools, `hookSpecificOutput.updatedMCPToolOutput` lets you modify the tool's response before Claude sees it.
+**Tool output replacement (CC 2.1.121):** PostToolUse hooks can replace the tool's output before Claude sees it:
+
+- `hookSpecificOutput.updatedToolOutput` — Replace output for **any** tool (new in CC 2.1.121)
+- `hookSpecificOutput.updatedMCPToolOutput` — Replace output for **MCP tools only** (legacy, still works)
 
 > **CC 2.1.119:** PostToolUse and PostToolUseFailure hooks now include `duration_ms` field in the input, showing how long the tool execution took. Useful for performance monitoring hooks.
 

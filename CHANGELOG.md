@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-04-28
+
+### Added
+
+- **mcp-integration**: Documented `alwaysLoad` configuration option to bypass lazy loading and tool-search deferral (CC 2.1.121)
+- **mcp-integration**: Documented MCP server auto-retry (up to 3 times) for transient startup errors (CC 2.1.121)
+- **plugin-structure**: Documented `claude plugin prune` command for removing orphaned auto-installed dependencies (CC 2.1.121)
+- **hook-development**: Documented PostToolUse `updatedToolOutput` field for replacing output from ANY tool, not just MCP tools (CC 2.1.121)
+- **plugin-structure**: Documented `CLAUDE_CODE_FORK_SUBAGENT=1` environment variable for enabling subagent forking in headless/CI sessions (CC 2.1.121)
+
 ## [0.12.0] - 2026-04-25
 
 ### Added
@@ -431,7 +441,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.11.2...v0.12.0
 [0.11.2]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.11.1...v0.11.2
 [0.11.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.11.0...v0.11.1

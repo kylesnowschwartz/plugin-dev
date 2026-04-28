@@ -506,6 +506,8 @@ Handle MCP server unavailability:
 - Inform user of connection issues
 - Check server URL and configuration
 
+**Auto-retry (CC 2.1.121):** MCP servers now auto-retry up to 3 times for transient startup errors, reducing spurious connection failures.
+
 ### Tool Call Errors
 
 Handle failed MCP operations:
@@ -531,6 +533,28 @@ MCP servers connect on-demand:
 - Not all servers connect at startup
 - First tool use triggers connection
 - Connection pooling managed automatically
+
+### Always Load (CC 2.1.121)
+
+Use `alwaysLoad: true` to bypass lazy loading and tool-search deferral:
+
+```json
+{
+  "my-server": {
+    "command": "node",
+    "args": ["${CLAUDE_PLUGIN_ROOT}/servers/server.js"],
+    "alwaysLoad": true
+  }
+}
+```
+
+**Use cases:**
+
+- Servers whose tools are needed immediately at session start
+- Servers that should always be available regardless of context
+- Avoiding tool-search delays for critical integrations
+
+**Note:** Use sparingly — loading all servers unconditionally increases startup time and resource usage.
 
 ### Batching
 

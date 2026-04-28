@@ -724,6 +724,16 @@ claude --verbose          # Additional debugging
 
 Use `/plugins` in the TUI to view installed plugins and their status.
 
+### Plugin Pruning (CC 2.1.121)
+
+Remove orphaned auto-installed dependencies after uninstalling plugins:
+
+```bash
+claude plugin prune
+```
+
+**Use case:** When you uninstall a plugin that had auto-installed dependencies, those dependencies may remain. Running `plugin prune` cleans up these orphaned dependencies to free disk space and reduce clutter.
+
 ### Plugin Install Improvements (CC 2.1.117)
 
 - **Dependency handling**: `plugin install` now automatically handles missing dependencies, installing required plugins from configured marketplaces
