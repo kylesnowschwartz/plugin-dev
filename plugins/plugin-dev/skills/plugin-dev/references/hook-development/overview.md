@@ -715,6 +715,8 @@ Execute when a watched file changes on disk.
 
 **Input includes:** `file_path` (absolute), `event` (`"change"`, `"add"`, or `"unlink"`)
 
+**File modification budget-exceeded reminder (CC 2.1.124):** When a user or linter changes a file but the diff is omitted because other modified files exceeded the snippet budget, Claude receives a system reminder directing it to read the file if current content is needed. Hooks processing FileChanged events should be aware that detailed diff content may not always be available in Claude's context.
+
 ```json
 {
   "FileChanged": [
@@ -930,6 +932,8 @@ Available in all command hooks:
 - `$CLAUDE_PLUGIN_ROOT` -- Plugin directory (use for portable paths)
 - `$CLAUDE_ENV_FILE` -- SessionStart only: write `export VAR=value` lines here to persist env vars
 - `$CLAUDE_CODE_REMOTE` -- Set if running in remote context
+
+**Windows PowerShell consideration (CC 2.1.126):** When the PowerShell tool is enabled on Windows, Claude treats PowerShell as the primary shell instead of Bash. Hook scripts using Bash-specific syntax may not execute correctly for Windows users. Consider providing cross-platform hook implementations or documenting Windows-specific alternatives.
 
 **Always use `${CLAUDE_PLUGIN_ROOT}` in hook commands for portability:**
 

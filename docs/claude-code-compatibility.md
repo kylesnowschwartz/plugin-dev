@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.121 (2026-04-28)
-Plugin-dev version: 0.13.0
+Last audited: Claude Code 2.1.126 (2026-05-01)
+Plugin-dev version: 0.13.1
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.13.1 | 2.1.122-2.1.126 | 2026-05-01 | `claude project purge` command, file modification budget-exceeded reminder, deferred tools fix for `context:fork` skills, PowerShell primary shell on Windows |
 | v0.13.0 | 2.1.121 | 2026-04-28 | MCP `alwaysLoad` option, `claude plugin prune` command, PostToolUse `updatedToolOutput` for any tool, `CLAUDE_CODE_FORK_SUBAGENT=1` for headless subagents, MCP auto-retry on transient errors |
 | v0.12.0 | 2.1.118-2.1.120 | 2026-04-25 | Hooks `type: mcp_tool`, hook `duration_ms` input, print mode frontmatter enforcement, Config tool removed, auto mode `$defaults`, previously invoked skills compaction, plugin version constraint auto-update, agent `--agent` honors permissionMode |
 | v0.11.2 | 2.1.115-2.1.117 | 2026-04-22 | Agent frontmatter mcpServers/hooks fire with --agent, background job behavior guidance, SendMessageTool attachments format, plugin install dependency handling, auto-update dependency install |

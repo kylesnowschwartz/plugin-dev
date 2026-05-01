@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-05-01
+
+### Added
+
+- **command-development**: Documented `claude project purge [path]` command for deleting all Claude Code project state (CC 2.1.126)
+- **command-development**: Documented Windows PowerShell primary shell consideration for cross-platform commands (CC 2.1.126)
+- **hook-development**: Documented file modification budget-exceeded system reminder for FileChanged context (CC 2.1.124)
+- **hook-development**: Documented Windows PowerShell primary shell consideration for cross-platform hooks (CC 2.1.126)
+- **skill-development**: Documented deferred tools (WebSearch, WebFetch) fix for `context: fork` skills now available on first turn (CC 2.1.126)
+
 ## [0.13.0] - 2026-04-28
 
 ### Added
@@ -441,7 +451,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.13.1...HEAD
+[0.13.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.13.0...v0.13.1
 [0.13.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.11.2...v0.12.0
 [0.11.2]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.11.1...v0.11.2

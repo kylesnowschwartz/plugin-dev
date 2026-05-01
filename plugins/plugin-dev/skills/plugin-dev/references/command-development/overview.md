@@ -76,6 +76,12 @@ The first example tells Claude what to do. The second tells the user what will h
 - Label: Shown as "(plugin-name)" in `/help`
 - Use for: Plugin-specific functionality
 
+### State Management Commands
+
+Claude Code provides built-in commands for managing project state:
+
+- **`claude project purge [path]`** (CC 2.1.126) — Deletes all Claude Code state for a project. Supports `--dry-run`, `-y/--yes`, `-i/--interactive`, and `--all` flags. Different from `claude plugin prune` (which removes orphaned plugin dependencies) — this removes ALL project state including conversation history and settings.
+
 ## File Format
 
 ### Basic Structure
@@ -497,6 +503,15 @@ Please provide a PR number. Usage: /review-pr [number]
 2. **Safe commands:** Avoid destructive operations
 3. **Handle errors:** Consider command failures
 4. **Keep fast:** Long-running commands slow invocation
+5. **Cross-platform:** Consider Windows PowerShell users (see below)
+
+### Windows PowerShell Consideration (CC 2.1.126)
+
+When the PowerShell tool is enabled on Windows, Claude treats PowerShell as the primary shell instead of Bash. Plugin commands using Bash-specific syntax may fail for Windows users. Design commands with cross-platform compatibility:
+
+- Use portable shell constructs where possible
+- Document Windows-specific alternatives in command descriptions
+- Consider providing separate commands for Bash and PowerShell workflows
 
 ### Documentation
 
