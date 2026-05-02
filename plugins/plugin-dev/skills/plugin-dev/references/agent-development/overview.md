@@ -372,6 +372,8 @@ Supports all hook events. Note: `Stop` hooks in agent frontmatter are auto-conve
 
 See `references/advanced-agent-fields.md` for full details.
 
+> **Caveat -- `${CLAUDE_PLUGIN_ROOT}` and `--agent` loading:** Frontmatter hooks resolve `${CLAUDE_PLUGIN_ROOT}` only when the agent file is loaded through plugin discovery. When the same file is loaded via the `--agent` CLI flag from `.claude/agents/` or `~/.claude/agents/`, the variable is unbound and the hook fails with "Hook command references ${CLAUDE_PLUGIN_ROOT} but the hook is not associated with a plugin." Use `${CLAUDE_PROJECT_DIR}` with a project-relative path for hooks that may run under `--agent`. See `references/hook-development/overview.md` (Scoped Hooks section) for the full diagnostic. Related: issues [#24529](https://github.com/anthropics/claude-code/issues/24529), [#50357](https://github.com/anthropics/claude-code/issues/50357).
+
 ### initialPrompt (optional)
 
 Auto-submit a prompt as the first user turn when the agent runs as the main session agent:

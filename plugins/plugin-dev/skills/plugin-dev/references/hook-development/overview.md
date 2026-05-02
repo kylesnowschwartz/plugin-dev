@@ -217,6 +217,29 @@ These hooks are lifecycle-bound -- they activate when the skill/agent loads and 
 
 See `references/advanced.md` for details.
 
+#### Caveat: `${CLAUDE_PLUGIN_ROOT}` resolution depends on the loader
+
+Frontmatter hooks resolve `${CLAUDE_PLUGIN_ROOT}` **only** when the host file is loaded through plugin discovery (i.e., the file Claude Code loads is the one declared by a plugin's `plugin.json`). When the same `.md` file is loaded via the `--agent` CLI flag from `.claude/agents/` or `~/.claude/agents/` -- a separate, non-plugin discovery path -- the variable is unbound at hook-exec time and Claude Code emits:
+
+> Hook command references ${CLAUDE_PLUGIN_ROOT} but the hook is not associated with a plugin. This variable is only available in hooks defined in a plugin's hooks/hooks.json file...
+
+This surface became newly reachable when CC 2.1.116 enabled main-thread agent frontmatter hooks via `--agent`. The behavior is observed at runtime; it is not specified in the official Claude Code documentation.
+
+**Workaround.** For frontmatter hooks that may run under `--agent` (rather than only as plugin-discovered subagents), substitute `${CLAUDE_PROJECT_DIR}` and use a project-relative path:
+
+```yaml
+hooks:
+  PreToolUse:
+    - matcher: Agent
+      hooks:
+        - type: command
+          command: "bash ${CLAUDE_PROJECT_DIR}/path/to/script.sh"
+```
+
+`${CLAUDE_PROJECT_DIR}` is bound regardless of which loader read the agent file.
+
+**Related issues:** [#24529](https://github.com/anthropics/claude-code/issues/24529), [#27145](https://github.com/anthropics/claude-code/issues/27145), [#50357](https://github.com/anthropics/claude-code/issues/50357) (the last documents the same loader-divergence pattern for the `isolation: worktree` frontmatter field).
+
 ## Hook Events
 
 ### Session Lifecycle
@@ -931,7 +954,7 @@ Available in all command hooks:
 - `$CLAUDE_ENV_FILE` -- SessionStart only: write `export VAR=value` lines here to persist env vars
 - `$CLAUDE_CODE_REMOTE` -- Set if running in remote context
 
-**Always use `${CLAUDE_PLUGIN_ROOT}` in hook commands for portability:**
+**For plugin-loaded hooks, always use `${CLAUDE_PLUGIN_ROOT}` for portability:**
 
 ```json
 {
@@ -939,6 +962,8 @@ Available in all command hooks:
   "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh"
 }
 ```
+
+> **Caveat for agent-frontmatter hooks loaded via `--agent`:** `${CLAUDE_PLUGIN_ROOT}` is loader-bound, not file-bound -- it resolves only when the host file is loaded through plugin discovery. Agents loaded via the `--agent` CLI flag from `.claude/agents/` or `~/.claude/agents/` see it unbound. For that case, use `${CLAUDE_PROJECT_DIR}` with a project-relative path. See [Caveat: `${CLAUDE_PLUGIN_ROOT}` resolution depends on the loader](#caveat-claude_plugin_root-resolution-depends-on-the-loader) for the full diagnostic.
 
 ## Matchers
 
@@ -1245,6 +1270,7 @@ echo "$output" | jq .
 8. **Subagent Stop hooks auto-convert.** Stop hooks in subagent context become SubagentStop.
 9. **HTTP hooks need 2xx for decisions.** Non-2xx status codes are treated as non-blocking errors.
 10. **`disableAllHooks` cannot disable managed hooks.** Policy-managed hooks always run.
+11. **`${CLAUDE_PLUGIN_ROOT}` is loader-bound in frontmatter hooks.** Hooks declared in agent or skill YAML frontmatter resolve `${CLAUDE_PLUGIN_ROOT}` only when the host file is loaded through plugin discovery. Agents loaded via the `--agent` CLI flag from `.claude/agents/` see it unbound; use `${CLAUDE_PROJECT_DIR}` with a project-relative path instead. See [Scoped Hooks in Skill/Agent Frontmatter](#scoped-hooks-in-skillagent-frontmatter) for the full caveat.
 
 ## Additional Resources
 
