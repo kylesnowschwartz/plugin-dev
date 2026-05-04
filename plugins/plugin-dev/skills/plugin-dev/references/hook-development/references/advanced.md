@@ -547,6 +547,8 @@ hooks:
 ---
 ```
 
+> **Caveat -- `${CLAUDE_PLUGIN_ROOT}` resolves only under plugin-loaded discovery.** When the host skill or agent file is loaded via the `--agent` CLI flag from `.claude/agents/` or `~/.claude/agents/` -- a non-plugin discovery path -- `${CLAUDE_PLUGIN_ROOT}` is unbound and the hook fails with "Hook command references ${CLAUDE_PLUGIN_ROOT} but the hook is not associated with a plugin." For frontmatter hooks that may run under `--agent`, substitute `${CLAUDE_PROJECT_DIR}` with a project-relative path. See `references/hook-development/overview.md` (Scoped Hooks section) for the full diagnostic and related upstream issues.
+
 ### Supported Events
 
 Only a subset of hook events apply in frontmatter scope:

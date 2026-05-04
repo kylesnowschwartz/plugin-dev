@@ -115,6 +115,8 @@ hooks:
           prompt: "Verify all tasks are complete before stopping."
 ```
 
+> **Caveat -- `${CLAUDE_PLUGIN_ROOT}` and `--agent` loading:** This variable resolves only when the agent file is loaded through plugin discovery. Agents loaded via the `--agent` CLI flag from `.claude/agents/` or `~/.claude/agents/` see it unbound, and the hook fails with "Hook command references ${CLAUDE_PLUGIN_ROOT} but the hook is not associated with a plugin." Use `${CLAUDE_PROJECT_DIR}` with a project-relative path for hooks that may run under `--agent`. See `references/hook-development/overview.md` (Scoped Hooks section) for the full diagnostic. Related: issues [#24529](https://github.com/anthropics/claude-code/issues/24529), [#50357](https://github.com/anthropics/claude-code/issues/50357).
+
 ### Supported Events
 
 All hook events are supported in agent frontmatter. Key behavior difference:
