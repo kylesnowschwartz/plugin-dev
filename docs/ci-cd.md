@@ -45,4 +45,4 @@ The repository includes templates in `.github/`:
 - `documentation.yml` - Documentation improvements
 - `question.yml` - Questions and discussions
 
-**Pull Request Template**: Component-specific checklists with validation requirements. See [CONTRIBUTING.md](../CONTRIBUTING.md) for PR guidelines.
+**Pull Request Template**: Component-specific checklists with validation requirements.
