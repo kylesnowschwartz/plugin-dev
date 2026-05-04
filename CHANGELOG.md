@@ -7,9 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-05-01
+
 ### Added
 
+- **command-development**: Documented `claude project purge [path]` command for deleting all Claude Code project state (CC 2.1.126)
+- **command-development**: Documented Windows PowerShell primary shell consideration for cross-platform commands (CC 2.1.126)
+- **hook-development**: Documented file modification budget-exceeded system reminder for FileChanged context (CC 2.1.124)
+- **hook-development**: Documented Windows PowerShell primary shell consideration for cross-platform hooks (CC 2.1.126)
+- **skill-development**: Documented deferred tools (WebSearch, WebFetch) fix for `context: fork` skills now available on first turn (CC 2.1.126)
 - **Loader-binding caveat for `${CLAUDE_PLUGIN_ROOT}` in frontmatter hooks.** Documented the observed runtime behavior: `${CLAUDE_PLUGIN_ROOT}` resolves only when an agent or skill file is loaded through plugin discovery; agents loaded via the `--agent` CLI flag from `.claude/agents/` see the variable unbound and the hook fails with "Hook command references ${CLAUDE_PLUGIN_ROOT} but the hook is not associated with a plugin." Workaround is to use `${CLAUDE_PROJECT_DIR}` with a project-relative path. Surface became newly reachable in CC 2.1.116 (main-thread frontmatter hooks via `--agent`). Caveat added to `references/hook-development/overview.md` (Scoped Hooks section + Environment Variables + Critical Gotchas), `references/hook-development/references/advanced.md`, `references/agent-development/overview.md` (hooks field), and `references/agent-development/references/advanced-agent-fields.md`. Cross-references upstream issues [#24529](https://github.com/anthropics/claude-code/issues/24529), [#27145](https://github.com/anthropics/claude-code/issues/27145), [#50357](https://github.com/anthropics/claude-code/issues/50357).
+
 
 ## [0.13.0] - 2026-04-28
 
@@ -445,7 +453,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.13.1...HEAD
+[0.13.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.13.0...v0.13.1
 [0.13.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.11.2...v0.12.0
 [0.11.2]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.11.1...v0.11.2

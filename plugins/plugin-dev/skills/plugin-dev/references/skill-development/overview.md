@@ -92,6 +92,8 @@ Use `context: fork` for:
 - Skills that might pollute the main context
 - Expensive operations you want isolated
 
+**Deferred tools (CC 2.1.126):** Skills with `context: fork` now correctly receive access to deferred tools (WebSearch, WebFetch, etc.) on their first turn. Previously, these tools were unavailable until the second turn in forked contexts.
+
 ##### agent
 
 Specify which agent type handles the forked skill. The agent provides the **execution environment** (system prompt, tools, behavioral rules). The skill body provides the **task** (what to do). The forked agent does not inherit your conversation history.
