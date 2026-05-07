@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-05-07
+
+### Added
+
+- **plugin-structure**: Documented `--plugin-url` flag for loading plugin archives from URLs (CC 2.1.129)
+- **plugin-structure**: Documented `--plugin-dir` now accepts `.zip` archives in addition to directories (CC 2.1.128)
+- **plugin-structure**: Documented `experimental` key requirement for `themes` and `monitors` in plugin.json (CC 2.1.129) — **breaking change** for plugins using these features
+- **skill-development**: Documented `skillOverrides` setting with `off`, `user-invocable-only`, and `name-only` options (CC 2.1.129)
+- **mcp-integration**: Documented `workspace` as reserved MCP server name (CC 2.1.128)
+- **hook-development**: Documented `CLAUDE_CODE_SESSION_ID` environment variable for session tracking (CC 2.1.132)
+- **agent-development**: Documented `CLAUDE_CODE_LOOP_PERSISTENT` environment variable guidance for autonomous work loops (CC 2.1.129)
+- **agent-development**: Documented background job agent built-in instructions replacing previous background-job behavior system prompt (CC 2.1.128)
+
 ## [0.13.1] - 2026-05-01
 
 ### Added
@@ -453,7 +466,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.13.1...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.13.1...v0.14.0
 [0.13.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.13.0...v0.13.1
 [0.13.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.11.2...v0.12.0

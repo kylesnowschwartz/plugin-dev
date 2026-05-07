@@ -955,6 +955,7 @@ Available in all command hooks:
 - `$CLAUDE_PLUGIN_ROOT` -- Plugin directory (use for portable paths)
 - `$CLAUDE_ENV_FILE` -- SessionStart only: write `export VAR=value` lines here to persist env vars
 - `$CLAUDE_CODE_REMOTE` -- Set if running in remote context
+- `$CLAUDE_CODE_SESSION_ID` -- Current session identifier (CC 2.1.132). Useful for hooks that need to track or correlate events across a session.
 
 **Windows PowerShell consideration (CC 2.1.126):** When the PowerShell tool is enabled on Windows, Claude treats PowerShell as the primary shell instead of Bash. Hook scripts using Bash-specific syntax may not execute correctly for Windows users. Consider providing cross-platform hook implementations or documenting Windows-specific alternatives.
 

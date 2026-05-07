@@ -41,6 +41,29 @@ Both skills and commands are invoked via the Skill tool and share the same under
 
 Skills follow precedence: Enterprise > Personal (`~/.claude/skills/`) > Project (`.claude/skills/`) > Plugin skills. Higher-priority skills with the same name shadow lower-priority ones. Use distinctive, namespaced names for plugin skills to avoid collisions.
 
+### skillOverrides Setting (CC 2.1.129)
+
+Users can control skill behavior globally via the `skillOverrides` setting in their settings.json:
+
+```json
+{
+  "skillOverrides": "user-invocable-only"
+}
+```
+
+**Values:**
+
+- `off` - Disable all skills entirely (skills won't load or trigger)
+- `user-invocable-only` - Only allow skills that users explicitly invoke via `/skillname`
+- `name-only` - Show skill names in menus but don't load full descriptions (reduces context usage)
+
+**Implications for plugin developers:**
+
+- Skills may not trigger automatically if users have restrictive `skillOverrides` settings
+- Design skills to work well when user-invoked (clear `/skillname` entry point)
+- Keep skill names descriptive since they may be the only visible identifier
+- Test skills with `skillOverrides: "user-invocable-only"` to ensure they work when explicitly invoked
+
 #### SKILL.md (required)
 
 **Metadata Quality:** The `name` and `description` in YAML frontmatter determine when Claude will use the skill. Be specific about what the skill does and when to use it. Use the third-person (e.g. "This skill should be used when..." instead of "Use this skill when...").

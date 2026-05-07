@@ -395,6 +395,37 @@ initialPrompt: "Scan the codebase for lint errors, test failures, and report a s
 - Daily standup or health-check agents
 - Automated validation that runs on session start
 
+### Autonomous Loop Guidance (CC 2.1.129)
+
+When the `CLAUDE_CODE_LOOP_PERSISTENT` environment variable is set, Claude Code provides timer-invocation guidance for autonomous work loops. This affects agents running in persistent/background modes.
+
+**Guidance includes:**
+
+- When to continue established work vs. stop
+- How to maintain current PRs and in-progress tasks
+- When to broaden scope before stopping
+- Requirements for authorization before irreversible actions
+
+**Relevance for plugin agents:** If your plugin provides agents intended for autonomous or scheduled execution (e.g., daily review agents, monitoring agents), be aware that users may run them with `CLAUDE_CODE_LOOP_PERSISTENT=1`. Design agents to:
+
+- Check for in-progress work before starting new tasks
+- Handle resumption gracefully
+- Avoid irreversible actions without explicit authorization
+
+### Background Job Agent Behavior (CC 2.1.128)
+
+Claude Code includes built-in background-agent instructions that replace the previous background-job behavior system prompt. When agents run in background mode, they receive guidance to:
+
+- **Narrate progress** — Provide status updates during long-running operations
+- **Restate results in text** — Include final results in message text, not just tool calls, so classifiers can extract them
+- **Delegate noisy investigations** — Hand off verbose exploration to focused sub-tasks
+- **Signal completion status explicitly** — End with clear status markers:
+  - `result:` — Task completed successfully
+  - `needs input:` — Blocked, waiting for user input
+  - `failed:` — Task failed with error
+
+**Relevance for plugin agents:** If your agent may run in background mode (via `/loop`, scheduled tasks, or `run_in_background`), design the system prompt to complement this built-in guidance. Avoid conflicting instructions about progress reporting.
+
 ### Fields NOT Available for Agents
 
 Some frontmatter fields are specific to skills and do not apply to agents:

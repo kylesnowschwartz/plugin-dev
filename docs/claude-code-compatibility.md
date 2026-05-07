@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.126 (2026-05-01)
-Plugin-dev version: 0.13.1
+Last audited: Claude Code 2.1.132 (2026-05-07)
+Plugin-dev version: 0.14.0
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.14.0 | 2.1.127-2.1.132 | 2026-05-07 | `--plugin-url` flag, `--plugin-dir` accepts .zip, `themes`/`monitors` under `experimental` key, `skillOverrides` setting, MCP `workspace` reserved name, `CLAUDE_CODE_SESSION_ID` env var, `CLAUDE_CODE_LOOP_PERSISTENT` guidance, background job agent built-in instructions |
 | v0.13.1 | 2.1.122-2.1.126 | 2026-05-01 | `claude project purge` command, file modification budget-exceeded reminder, deferred tools fix for `context:fork` skills, PowerShell primary shell on Windows |
 | v0.13.0 | 2.1.121 | 2026-04-28 | MCP `alwaysLoad` option, `claude plugin prune` command, PostToolUse `updatedToolOutput` for any tool, `CLAUDE_CODE_FORK_SUBAGENT=1` for headless subagents, MCP auto-retry on transient errors |
 | v0.12.0 | 2.1.118-2.1.120 | 2026-04-25 | Hooks `type: mcp_tool`, hook `duration_ms` input, print mode frontmatter enforcement, Config tool removed, auto mode `$defaults`, previously invoked skills compaction, plugin version constraint auto-update, agent `--agent` honors permissionMode |

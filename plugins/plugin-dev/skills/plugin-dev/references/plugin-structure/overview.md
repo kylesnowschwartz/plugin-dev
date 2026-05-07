@@ -365,6 +365,46 @@ For detailed LSP configuration, see the `lsp-integration` skill.
 
 **Usage**: Plugins can define consistent output formatting for their domain. See `references/output-styles.md` for detailed style file format.
 
+### Experimental Features (CC 2.1.129)
+
+Experimental plugin features must be declared under the `"experimental"` key in plugin.json:
+
+```json
+{
+  "name": "my-plugin",
+  "version": "1.0.0",
+  "experimental": {
+    "themes": ["./themes/"],
+    "monitors": ["./monitors/"]
+  }
+}
+```
+
+**Currently experimental:**
+
+- **themes** - Custom UI themes for Claude Code
+- **monitors** - Background monitoring scripts (see `references/advanced-topics.md`)
+
+**Breaking change:** Prior to CC 2.1.129, `themes` and `monitors` were declared at the plugin.json root level. They must now be nested under `"experimental"`. Plugins using the old format will fail to load these features.
+
+**Migration:**
+
+```json
+// Before (CC < 2.1.129)
+{
+  "themes": ["./themes/"],
+  "monitors": ["./monitors/"]
+}
+
+// After (CC >= 2.1.129)
+{
+  "experimental": {
+    "themes": ["./themes/"],
+    "monitors": ["./monitors/"]
+  }
+}
+```
+
 ### Plugin Executables (bin/)
 
 **Location**: `bin/` directory at plugin root
@@ -662,6 +702,32 @@ Or use `--plugin-dir` for testing without installation:
 ```bash
 claude --plugin-dir /path/to/plugin
 ```
+
+### Plugin Loading Options (CC 2.1.128-2.1.129)
+
+Claude Code supports multiple ways to load plugins for development and distribution:
+
+**Local directory:**
+
+```bash
+claude --plugin-dir /path/to/plugin
+```
+
+**ZIP archive (CC 2.1.128):**
+
+```bash
+claude --plugin-dir /path/to/plugin.zip
+```
+
+Zip archives are unpacked automatically. Useful for distributing self-contained plugin bundles.
+
+**Remote URL (CC 2.1.129):**
+
+```bash
+claude --plugin-url https://example.com/plugin-archive.tar.gz
+```
+
+Fetches and loads plugins directly from URLs. Supports tar.gz and zip formats. Enables remote plugin distribution without requiring local installation or marketplace publishing.
 
 ## Troubleshooting
 
