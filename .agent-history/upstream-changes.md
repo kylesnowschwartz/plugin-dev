@@ -1,245 +1,179 @@
 # Upstream Change Manifest
-## CC Version Range: 2.1.122 - 2.1.126
-## Generated: 2026-05-01
-## Sources: changelog [Y], system-prompts [Y], claude-code-guide [skipped - empty output]
+## CC Version Range: 2.1.127 - 2.1.132
+## Generated: 2026-05-07
+## Sources: changelog [Y], system-prompts [Y], claude-code-guide [skipped - CI environment]
 
 ---
 
 ### Must Update
 
-- [ ] **New `claude project purge [path]` command** (CC 2.1.126)
-  - Source: changelog
-  - Confidence: HIGH (verified Stage 2)
-  - Affects: command-development (command reference)
-  - Details: Deletes all Claude Code state for a project. Supports `--dry-run`, `-y/--yes`, `-i/--interactive`, and `--all` flags. Different from `claude plugin prune` (which removes orphaned plugin dependencies) - this removes ALL project state.
-  - Raw: "Added `claude project purge [path]` to delete all Claude Code state for a project"
+- [x] **--plugin-url flag for loading plugins from URLs** (CC 2.1.129) ✅ Applied to plugin-structure/overview.md
+  - Source: CC changelog
+  - Confidence: high
+  - Affects: plugin-loading skill, plugin-validator agent
+  - Details: New `--plugin-url` flag allows loading plugin archives directly from URLs. This is a significant plugin system enhancement that enables remote plugin distribution. Plugin developers need to know about this capability for distributing plugins without requiring local installation.
+  - Raw: "Added the `--plugin-url` flag for loading plugin archives from URLs"
 
-- [ ] **New file modification budget-exceeded reminder** (CC 2.1.124)
-  - Source: system-prompts
-  - Confidence: HIGH (verified Stage 2)
-  - Affects: hook-development (FileChanged event context)
-  - Details: New system reminder tells the agent when a user or linter changed a file but the diff was omitted because other modified files exceeded the snippet budget. Directs agent to read the file if current content is needed. Relevant for PostToolUse/FileChanged hook documentation.
-  - Raw: "NEW: System Reminder: File modification detected (budget exceeded)"
+- [x] **--plugin-dir now accepts .zip archives** (CC 2.1.128) ✅ Applied to plugin-structure/overview.md
+  - Source: CC changelog
+  - Confidence: high
+  - Affects: plugin-loading skill, plugin-validator agent
+  - Details: The `--plugin-dir` flag now accepts `.zip` archives in addition to directories. This changes how plugins can be distributed and loaded, enabling zip-based plugin distribution.
+  - Raw: "`--plugin-dir` now accepts `.zip` archives"
 
-- [ ] **Deferred tools fix for context:fork subagents** (CC 2.1.126)
-  - Source: changelog
-  - Confidence: HIGH (verified Stage 2 - promoted from No Action)
-  - Affects: skill-development (context:fork documentation)
-  - Details: Fixed deferred tools (WebSearch, WebFetch, etc.) not being available to skills with `context: fork` and other subagents on their first turn. This was a bug affecting documented plugin-dev functionality.
-  - Raw: "Fixed deferred tools (WebSearch, WebFetch, etc.) not being available to skills with `context: fork` and other subagents on their first turn"
+- [x] **Plugin manifest: themes and monitors under "experimental" key** (CC 2.1.129) ✅ Applied to plugin-structure/overview.md
+  - Source: CC changelog
+  - Confidence: high
+  - Affects: plugin-manifest skill, plugin.json reference
+  - Details: The `themes` and `monitors` fields in plugin.json must now be placed under an `"experimental"` key. This is a breaking change for plugins using these features. Documentation must be updated to reflect this new manifest structure.
+  - Raw: "Plugin manifests now expect `themes` and `monitors` under `\"experimental\"`"
 
-- [ ] **PowerShell as primary shell on Windows** (CC 2.1.126)
-  - Source: changelog
-  - Confidence: HIGH (verified Stage 2 - promoted from No Action)
-  - Affects: hook-development, command-development (Windows considerations)
-  - Details: When PowerShell tool is enabled on Windows, Claude now treats PowerShell as the primary shell instead of defaulting to Bash. Plugin developers writing hooks/commands should consider cross-platform compatibility.
-  - Raw: "Windows: when the PowerShell tool is enabled, Claude now treats PowerShell as the primary shell instead of defaulting to Bash"
+- [x] **skillOverrides setting with off/user-invocable-only/name-only options** (CC 2.1.129) ✅ Applied to skill-development/overview.md
+  - Source: CC changelog
+  - Confidence: high
+  - Affects: skill-format skill, plugin configuration documentation
+  - Details: New `skillOverrides` setting allows users to control how skills behave: `off` disables skills entirely, `user-invocable-only` restricts to user-invoked skills, `name-only` shows only skill names without full descriptions. Plugin developers should understand these modes for skill design.
+  - Raw: "Added `skillOverrides` setting: `off`, `user-invocable-only`, `name-only`"
+
+- [x] **MCP workspace reserved server name** (CC 2.1.128) ✅ Applied to mcp-integration/overview.md
+  - Source: CC changelog
+  - Confidence: high
+  - Affects: mcp-integration skill
+  - Details: The name "workspace" is now reserved for MCP servers. Plugins or configurations using "workspace" as an MCP server name may conflict with this reservation.
+  - Raw: "MCP `workspace` is now a reserved server name"
+
+- [x] **CLAUDE_CODE_SESSION_ID environment variable** (CC 2.1.132) ✅ Applied to hook-development/overview.md
+  - Source: CC changelog
+  - Confidence: high
+  - Affects: environment-variables reference, hook scripts
+  - Details: New environment variable `CLAUDE_CODE_SESSION_ID` exposes the current session ID. Useful for hook scripts that need to track or identify sessions.
+  - Raw: "Added CLAUDE_CODE_SESSION_ID env var"
+
+- [x] **CLAUDE_CODE_LOOP_PERSISTENT environment variable guidance** (CC 2.1.129) ✅ Applied to agent-development/overview.md
+  - Source: system-prompts changelog
+  - Confidence: high
+  - Affects: environment-variables reference, autonomous agent guidance
+  - Details: New system prompt guidance for `CLAUDE_CODE_LOOP_PERSISTENT` environment variable covering autonomous work loops, timer-invocation guidance, when to continue established work, maintain current PRs, broaden scope before stopping, and authorization for irreversible actions.
+  - Raw: "NEW: System Prompt: Autonomous loop persistence guidance (CLAUDE_CODE_LOOP_PERSISTENT) - Adds timer-invocation guidance for autonomous work loops"
+
+- [x] **Background job agent instructions (NEW built-in)** (CC 2.1.128) ✅ Applied to agent-development/overview.md
+  - Source: system-prompts changelog
+  - Confidence: high
+  - Affects: agent skill, subagent documentation
+  - Details: New built-in background-agent instructions replacing the previous background-job behavior system prompt. Includes progress narration, tool-result restatement, noisy-investigation delegation, and explicit status signals (`result:`, `needs input:`, `failed:`).
+  - Raw: "Agent Prompt: Background job agent instructions - Replaces the background-job behavior system prompt with built-in background-agent instructions"
+
+- [x] **RemoteTrigger tool description (NEW)** (CC 2.1.128) ⏭️ Skipped - Claude.ai cloud API tool, not CLI plugin-relevant
+  - Source: system-prompts changelog
+  - Confidence: high
+  - Affects: tools reference
+  - Details: New tool description for RemoteTrigger - the claude.ai remote-trigger API tool for listing, reading, creating, updating, and running scheduled remote agent routines without exposing OAuth tokens.
+  - Raw: "Tool Description: RemoteTrigger prompt - Describes the claude.ai remote-trigger API tool"
 
 ---
 
 ### May Update
 
-*All items demoted to No Action during Stage 2 verification. See No Action section for details.*
+- [ ] **Edit tool line-number prefix format hardcoded** (CC 2.1.128)
+  - Source: system-prompts changelog
+  - Confidence: medium
+  - Affects: edit-tool reference (if any)
+  - Details: Edit tool description now hardcodes the Read-output line-number prefix format as "line number + tab" in indentation-preservation guidance. Useful context for plugin developers writing tool guidance.
+  - Raw: "Tool Description: Edit - Hardcodes the Read-output line-number prefix format as 'line number + tab'"
 
 ---
 
 ### No Action
 
-**Demoted from Must Update (Stage 2 verification):**
-- Malware analysis reminder removed (CC 2.1.126) - No gap exists in plugin-dev docs (only sample script name found)
-- REPL await clarification (CC 2.1.124) - Not documented in plugin-dev, internal Claude behavior
-- Plan mode phase-four restructuring (CC 2.1.122) - Not documented in plugin-dev, internal prompt restructuring
-- /schedule confidence threshold (CC 2.1.122) - Not documented in plugin-dev, Claude feature
-
-**Demoted from May Update (Stage 2 verification):**
-- Model picker uses gateway /v1/models (CC 2.1.126) - User/deployment config, not plugin API
-- --dangerously-skip-permissions bypasses protected directories (CC 2.1.126) - Deployment concern
-- OAuth code paste support (CC 2.1.126) - Authentication UX
-- Red spinner for permission stalls (CC 2.1.126) - UI change
-- OpenTelemetry invocation_trigger (CC 2.1.126) - Observability, not plugin API
-- ANTHROPIC_BEDROCK_SERVICE_TIER (CC 2.1.122) - Deployment configuration
-- Diagnostics formatting change (CC 2.1.122) - Internal prompt change
-- Debugging skill daemon context (CC 2.1.122) - Internal Claude skill behavior
-
-**Original No Action (confirmed):**
-- Image paste auto-downscaling fix (CC 2.1.126) - Bug fix, no plugin impact
-- OAuth login fixes for slow/proxied connections (CC 2.1.126) - Bug fix, no plugin impact
-- Stream idle timeout errors after Mac sleep (CC 2.1.126) - Bug fix, no plugin impact
-- Terminal rendering issues fix including Japanese/Korean text (CC 2.1.126) - Bug fix, no plugin impact
-- OAuth authentication loop fix with CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1 (CC 2.1.123) - Bug fix, no plugin impact
-- PR URLs in /resume search locate creating sessions (CC 2.1.122) - Feature improvement, no plugin impact
-- OpenTelemetry numeric attributes as numbers not strings (CC 2.1.122) - Internal fix, no plugin impact
-- /branch fork tool_use validation errors fix (CC 2.1.122) - Bug fix, no plugin impact
-- /model not showing Effort for Bedrock inference profiles fix (CC 2.1.122) - Bug fix, no plugin impact
-- Vertex AI/Bedrock structured outputs fix (CC 2.1.122) - Bug fix, no plugin impact
-- count_tokens endpoint 400 for proxied users fix (CC 2.1.122) - Bug fix, no plugin impact
-- Harness instructions restructuring (CC 2.1.124) - Internal prompt organization, no plugin impact
-- No system prompt changes in 2.1.123 (CC 2.1.123) - OAuth fix only release
+- VS Code extension fix (CC 2.1.131) - IDE-specific, not plugin-relevant
+- Mantle endpoint auth fix (CC 2.1.131) - Internal infrastructure
+- Background agent state classifier expansion (CC 2.1.129) - Internal agent behavior
+- Verification specialist prompt removal (CC 2.1.129) - Internal prompt management
+- Session memory update instructions removal (CC 2.1.128) - Internal prompt management
+- Session memory template removal (CC 2.1.128) - Internal prompt management
+- Background job behavior prompt removal (CC 2.1.128) - Replaced by new built-in instructions
+- Claude API SDK references updates (CC 2.1.128) - API documentation, not CLI plugins
+- Model catalog deprecation updates (CC 2.1.128) - Model selection, not plugin system
+- Proactive schedule offer gate (CC 2.1.132) - Scheduling behavior, not plugin system
+- Onboarding guide workflow changes (CC 2.1.132) - Onboarding flow, not plugin system
+- Security monitor CronCreate/CronDelete/CronList/RemoteTrigger allowances (CC 2.1.132) - Security monitor internals
+- Status line input/output token clarification (CC 2.1.132) - UI detail, not plugin system
+- CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN env var (CC 2.1.132) - Terminal rendering, not plugin-relevant [demoted from May Update]
+- CLAUDE_CODE_FORCE_SYNC_OUTPUT env var (CC 2.1.129) - Terminal output mode, not plugin-relevant [demoted from May Update]
+- CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE env var (CC 2.1.129) - Package manager, not plugin-relevant [demoted from May Update]
+- SDK hosts persistent localSettings suggestion (CC 2.1.128) - SDK-specific, not CLI plugins [demoted from May Update]
+- Bash allow rules fix for in-project paths (CC 2.1.129) - Bug fix, no doc change needed [demoted from May Update]
+- Managed Agents skill limit 64->20 (CC 2.1.132) - Cloud API, not CLI plugins [demoted from May Update]
+- Managed Agents multiagent/outcomes/webhooks (CC 2.1.132) - Cloud API, not CLI plugins [demoted from May Update]
+- Agent thread notes final message (CC 2.1.128) - Internal agent guidance, not plugin-relevant [demoted from May Update]
+- Previously invoked skills reminder (CC 2.1.119) - Already documented in skill-development [demoted from May Update]
 
 ---
 
-## Token Delta Summary (from system-prompts)
+## Summary
 
-| Version | Delta | Key Changes |
-|---------|-------|-------------|
-| 2.1.126 | -87 | Malware analysis reminder removed |
-| 2.1.124 | +166 | File modification budget reminder (NEW), harness restructuring, REPL await clarification |
-| 2.1.123 | +0 | No prompt changes |
-| 2.1.122 | -122 | Plan mode phase-four removed, schedule confidence raised, diagnostics formatting |
+**Critical plugin system changes (Must Update):**
+1. New `--plugin-url` flag for remote plugin loading
+2. `--plugin-dir` now accepts `.zip` archives
+3. Plugin manifest structure change: `themes`/`monitors` under `"experimental"`
+4. New `skillOverrides` setting for skill behavior control
+5. MCP `workspace` reserved server name
+6. New `CLAUDE_CODE_SESSION_ID` environment variable
+7. New `CLAUDE_CODE_LOOP_PERSISTENT` guidance
+8. New background job agent built-in instructions
+9. New RemoteTrigger tool
 
-**Net change since 2.1.121**: -43 tokens (slight reduction)
+**Token delta from system-prompts:**
+- 2.1.132: +6,720 tokens
+- 2.1.131: +0 tokens
+- 2.1.129: +1,335 tokens
+- 2.1.128: +1,406 tokens
+- Total for range: +9,461 tokens
 
----
-
-## Notes
-
-1. **Two-source triangulation only**: The claude-code-guide agent dispatch returned empty output, so this manifest relies on changelog + system-prompts triangulation only. Changes confirmed by both sources have high confidence; single-source changes have medium confidence.
-
-2. **Version gap**: System-prompts shows 2.1.124 but no 2.1.125 entry. The changelog shows 2.1.126 as the latest. This suggests 2.1.125 may not exist or had no public changes.
-
-3. **No prompt changes in 2.1.123**: System-prompts confirms no changes to prompts in v2.1.123 (OAuth auth loop fix only).
-
-4. **Key patterns observed**:
-   - New CLI command: `claude project purge`
-   - System prompt removals (malware reminder, plan mode phase-four standalone)
-   - Behavior threshold changes (schedule offer confidence 70% -> 85%)
-   - REPL tool clarification for await semantics
-
----
-
-## Summary (Stage 2 corrected)
-
-| Category | Count | Notes |
-|----------|-------|-------|
-| Must Update | 4 | 2 confirmed, 2 promoted from changelog |
-| May Update | 0 | All demoted to No Action |
-| No Action | 25 | 4 demoted from Must Update, 8 demoted from May Update, 13 original |
-
-**Version Range**: 2.1.122 - 2.1.126 (5 versions since last audit at 2.1.121)
-
-**High-priority items for plugin-dev** (Stage 2 verified):
-1. **`claude project purge [path]`** (CC 2.1.126) - new command for removing all project state
-2. **File modification budget-exceeded reminder** (CC 2.1.124) - new system reminder affecting hook context
-3. **Deferred tools fix for context:fork subagents** (CC 2.1.126) - affects skill development guidance
-4. **PowerShell as primary shell on Windows** (CC 2.1.126) - affects hook/command development
-
-**Documentation targets** (Stage 2 verified):
-1. Command reference - add `claude project purge [path]` with flags
-2. Hook development - document file modification budget-exceeded reminder context for FileChanged events
-3. Skill development - note deferred tools (WebSearch, WebFetch) now available on first turn for context:fork skills
-4. Hook/command development - note PowerShell may be primary shell on Windows when enabled
+**Notes:**
+- claude-code-guide agent cross-reference was skipped (CI environment limitation)
+- All "Must Update" items confirmed from at least one authoritative source
+- Plugin manifest structure change (`themes`/`monitors` under `"experimental"`) is a potential breaking change for existing plugins using these features
+- Version 2.1.127 and 2.1.130 do not appear in either changelog (likely internal releases with no public changes)
 
 ---
 
 ## Stage 2: Verification Results
-### Verified: 2026-05-01
+### Verified: 2026-05-07
 
 #### Must Update Verification
-
-- **VERIFIED** `claude project purge [path]` (CC 2.1.126) -- confirmed in CC changelog: "Added `claude project purge [path]` to delete all Claude Code state for a project, supporting `--dry-run`, `-y/--yes`, `-i/--interactive`, and `--all` flags". Gap exists: no command reference documentation in plugin-dev.
-  - Affects: command-development (command reference docs)
-
-- **VERIFIED** Malware analysis reminder removed (CC 2.1.126) -- confirmed in system-prompts CHANGELOG line 11: "**REMOVED:** System Reminder: Malware analysis after Read tool call". Gap status: searched plugin-dev for "malware" - only found in `component-patterns.md` as a sample script name (`scan-malware.sh`). No documentation about the malware analysis reminder exists to update.
-  - Affects: None (no gap exists) - DEMOTE to No Action
-
-- **VERIFIED** File modification budget-exceeded reminder (CC 2.1.124) -- confirmed in system-prompts CHANGELOG line 17: "**NEW:** System Reminder: File modification detected (budget exceeded)". Gap exists: hook-development does not document this new system reminder. This is relevant for PostToolUse/FileChanged hooks.
-  - Affects: hook-development (new system reminder context)
-
-- **REJECTED** REPL await clarification (CC 2.1.124) -- confirmed in system-prompts CHANGELOG line 19. However, plugin-dev does NOT document REPL tool usage (searched for "REPL" - no relevant hits). This is an internal Claude behavior, not a plugin-dev concern.
-  - Affects: None - DEMOTE to No Action
-
-- **REJECTED** Plan mode phase-four restructuring (CC 2.1.122) -- confirmed in system-prompts CHANGELOG line 31. However, this is internal Claude prompt restructuring. Plugin-dev only documents plan mode superficially in `advanced-agent-fields.md` (permission modes for teams), not the phase structure. No gap.
-  - Affects: None - DEMOTE to No Action
-
-- **REJECTED** /schedule confidence threshold (CC 2.1.122) -- confirmed in system-prompts CHANGELOG line 33. However, plugin-dev does NOT document /schedule behavior (searched - no hits). This is a Claude feature, not a plugin system feature.
-  - Affects: None - DEMOTE to No Action
+- [Y] **--plugin-url flag for loading plugins from URLs** (CC 2.1.129) — confirmed in CC changelog, gap exists in plugin-structure/overview.md (no mention of --plugin-url)
+- [Y] **--plugin-dir now accepts .zip archives** (CC 2.1.128) — confirmed in CC changelog, gap exists in plugin-structure/overview.md (only mentions directories at line 663)
+- [Y] **Plugin manifest: themes and monitors under "experimental" key** (CC 2.1.129) — confirmed in CC changelog, gap exists in plugin-structure/overview.md (no mention of experimental key for themes/monitors)
+- [Y] **skillOverrides setting with off/user-invocable-only/name-only options** (CC 2.1.129) — confirmed in CC changelog, gap exists in skill-development/overview.md (no mention of skillOverrides setting)
+- [Y] **MCP workspace reserved server name** (CC 2.1.128) — confirmed in CC changelog, gap exists in mcp-integration/overview.md (no mention of "workspace" being reserved)
+- [Y] **CLAUDE_CODE_SESSION_ID environment variable** (CC 2.1.132) — confirmed in CC changelog, gap exists in hook-development/overview.md (not listed in Environment Variables section)
+- [Y] **CLAUDE_CODE_LOOP_PERSISTENT environment variable guidance** (CC 2.1.129) — confirmed in system-prompts changelog, gap exists (not documented anywhere in plugin-dev)
+- [Y] **Background job agent instructions (NEW built-in)** (CC 2.1.128) — confirmed in system-prompts changelog, partial gap: CC 2.1.117 behavior documented in agent-development/overview.md lines 651-659, but 2.1.128 replacement adds more specific guidance (result:/needs input:/failed: status signals)
+- [Y] **RemoteTrigger tool description (NEW)** (CC 2.1.128) — confirmed in system-prompts changelog, gap exists (no RemoteTrigger tool documentation)
 
 #### Missed Items (promoted from No Action)
-
-- **PROMOTED** Deferred tools fix for context:fork subagents (CC 2.1.126) -- CC changelog states: "Fixed deferred tools (WebSearch, WebFetch, etc.) not being available to skills with `context: fork` and other subagents on their first turn". This directly affects skill development with `context: fork`, which IS documented in plugin-dev.
-  - Affects: skill-development
-  - Details: Skills using `context: fork` should now correctly have access to deferred tools (WebSearch, WebFetch) on first turn. This was a bug fix but represents behavioral change worth noting.
-
-- **PROMOTED** PowerShell as primary shell (CC 2.1.126) -- CC changelog states: "Windows: when the PowerShell tool is enabled, Claude now treats PowerShell as the primary shell instead of defaulting to Bash". This affects command hooks and scripts in plugin development on Windows.
-  - Affects: hook-development, command-development
-  - Details: Windows plugin developers should be aware that Claude may now use PowerShell by default. Hook scripts and commands using Bash syntax should account for this.
+None identified. The "No Action" items were correctly classified as not plugin-relevant.
 
 #### May Update Resolution
-
-- **DEMOTED** Model picker uses gateway /v1/models (CC 2.1.126) -- This is user/deployment configuration, not plugin development. Plugin-dev does not document model picker behavior.
-  - Status: No Action
-
-- **DEMOTED** --dangerously-skip-permissions bypasses protected directories (CC 2.1.126) -- Already partially documented in `advanced-agent-fields.md` (mentions the flag). The extension to protected directories is a deployment/testing concern, not core plugin development.
-  - Status: No Action
-
-- **DEMOTED** OAuth code paste support (CC 2.1.126) -- Authentication UX, not plugin-related.
-  - Status: No Action
-
-- **DEMOTED** Red spinner for permission stalls (CC 2.1.126) -- UI change, not plugin API.
-  - Status: No Action
-
-- **DEMOTED** OpenTelemetry invocation_trigger (CC 2.1.126) -- Observability/telemetry, not core plugin system.
-  - Status: No Action
-
-- **DEMOTED** ANTHROPIC_BEDROCK_SERVICE_TIER (CC 2.1.122) -- Deployment configuration, not plugin development.
-  - Status: No Action
-
-- **DEMOTED** Diagnostics formatting change (CC 2.1.122) -- Internal prompt change, diagnostics handled by LSP integration which IS documented, but this change doesn't affect the plugin API.
-  - Status: No Action
-
-- **DEMOTED** Debugging skill daemon context (CC 2.1.122) -- Internal Claude skill behavior, not plugin API.
-  - Status: No Action
+- [v] **CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN environment variable** — demoted to No Action: terminal rendering configuration, not plugin-relevant
+- [v] **CLAUDE_CODE_FORCE_SYNC_OUTPUT environment variable** — demoted to No Action: terminal output mode, not plugin-relevant
+- [v] **CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE environment variable** — demoted to No Action: package manager behavior, not plugin-relevant
+- [v] **SDK hosts receive persistent localSettings suggestion** — demoted to No Action: SDK-specific, not CLI plugin-relevant
+- [v] **Bash allow rules fix for in-project paths** — demoted to No Action: bug fix, documented behavior unchanged
+- [^] **Edit tool line-number prefix format hardcoded** — kept as May Update: useful for plugin developers writing Edit tool guidance, but not critical
+- [v] **Managed Agents skill limit changed from 64 to 20** — demoted to No Action: Managed Agents is cloud API, not CLI plugins
+- [v] **Managed Agents multiagent sessions, outcomes, webhooks (NEW)** — demoted to No Action: Managed Agents is cloud API, not CLI plugins
+- [v] **Agent thread notes - return reports in final message** — demoted to No Action: internal agent behavior guidance, not plugin-relevant
+- [v] **Previously invoked skills reminder** — demoted to No Action: already documented at skill-development/overview.md lines 371-379 (CC 2.1.119 section)
 
 #### Summary
-
-- **Must Update**: 4 items (2 confirmed from original 6, 2 promoted from changelog)
-  - `claude project purge [path]` (confirmed)
-  - File modification budget-exceeded reminder (confirmed)
-  - Deferred tools fix for context:fork (promoted)
-  - PowerShell primary shell on Windows (promoted)
-- **Rejected from Must Update**: 4 items demoted to No Action
-  - Malware analysis reminder removed (no gap)
-  - REPL await clarification (not documented)
-  - Plan mode phase-four (not documented)
-  - /schedule confidence (not documented)
-- **May Update**: 0 items remaining (all demoted)
-- **Confidence**: HIGH - dual-source verification (CC changelog + system-prompts) with gap analysis against plugin-dev docs
+- Must Update: 9 items (9 confirmed, 0 rejected, 0 added)
+- May Update: 1 item remaining (Edit tool line-number prefix format)
+- No Action: 10 items demoted from May Update
+- Confidence: HIGH — all Must Update items verified against primary sources, skill mappings correct
 
 #### Notes
-
-1. The original manifest included several items that affect Claude's internal behavior but NOT the plugin system. These have been demoted.
-
-2. Two items were missed in Stage 1 that DO affect plugin development:
-   - Deferred tools fix (affects `context: fork` skills)
-   - PowerShell primary shell (affects Windows hook/command development)
-
-3. The CC changelog contains more detail than the WebFetch summary captured. Direct reading revealed important behavioral changes.
-
-4. Version gap: 2.1.125 confirmed missing from both CC changelog and system-prompts (no such version exists).
-
----
-
-## Data Quality Notes
-
-- Two-source triangulation (CC changelog + system-prompts changelog) - both sources accessible
-- claude-code-guide agent dispatch failed (empty output after multiple retries)
-- System-prompts changelog provides structured detail with token counts and NEW/REMOVED markers
-- Confidence is HIGH for system-prompts items due to explicit change markers
-- Confidence is MEDIUM for changelog-only items due to WebFetch summarization (no raw text)
-- This is a relatively small delta covering 5 versions with net -43 tokens
-
----
-
-## Comparison to Previous Audit
-
-Previous audit (2.1.121) had:
-- 4 Must Update items
-- 1 May Update item
-- -13 tokens net change
-
-This audit (2.1.122-2.1.126) has:
-- 6 Must Update items
-- 8 May Update items
-- -43 tokens net change
-
-The version range is larger (5 versions vs 1) but still represents routine maintenance with some targeted feature additions. The `claude project purge` command and malware reminder removal are the most significant plugin-relevant changes.
+- The "Affects" mappings were validated by reading the target reference files
+- No significant issues found (0% rejection rate, 0 missed items)
+- Stage 1 analysis was accurate and comprehensive

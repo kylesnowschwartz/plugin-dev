@@ -24,6 +24,10 @@ MCP server configurations follow scope precedence: Local > Project > User.
 
 Plugin-bundled MCP servers auto-start and interact with user/project MCP configs.
 
+### Reserved Server Names (CC 2.1.128)
+
+The server name `workspace` is reserved by Claude Code. Do not use `"workspace"` as an MCP server name in plugin configurations — it will conflict with Claude Code's internal workspace server.
+
 ## MCP Server Configuration Methods
 
 Plugins can bundle MCP servers in two ways:
