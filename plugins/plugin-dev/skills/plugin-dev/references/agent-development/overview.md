@@ -248,6 +248,8 @@ tools: Read, Write, Grep, Bash
 
 > **Note:** The Config tool was removed in CC 2.1.118. Use the `/config` slash command instead for getting/setting Claude Code settings.
 
+> **Bash Tool Guidance (CC 2.1.133):** Claude Code now guides agents to prefer dedicated tools (Read, Grep, Glob) over Bash for file operations like `find`, `grep`, and `cat` unless explicitly instructed otherwise. When designing agents, consider whether dedicated tools can replace Bash commands for better user experience and token efficiency.
+
 > **Important:** Agents use `tools` while Skills use `allowed-tools`. The field names differ between component types. For skill tool restrictions, see the `skill-development` skill.
 
 ### disallowedTools (optional)
@@ -573,6 +575,19 @@ This variable resolves to the plugin's installation directory at runtime, ensuri
 ### Absolute File Paths Required (CC 2.1.97)
 
 Agent threads always require absolute file paths unconditionally. When agents use file operations (Read, Write, Edit, etc.), all paths must be absolute—relative paths are not supported in agent contexts. Use `${CLAUDE_PLUGIN_ROOT}` or construct absolute paths from known locations.
+
+### Worktree Base Reference (CC 2.1.133)
+
+The `worktree.baseRef` setting controls the base reference for new worktrees created via `--worktree`, `EnterWorktree`, or agent-isolation worktrees:
+
+- **`fresh`** (default): Branch from `origin/<default-branch>` — starts with clean upstream state
+- **`head`**: Branch from current local HEAD — preserves local changes
+
+This affects agents using `isolation: "worktree"` in their frontmatter. The setting is configured in user or project settings.
+
+### Subagent Skill Discovery (CC 2.1.133)
+
+**Resolved:** Subagents now correctly discover project, user, and plugin skills via the Skill tool. Prior to CC 2.1.133, subagents could not invoke skills, which limited their ability to leverage plugin-provided knowledge. If your agents depend on skills, ensure users are on CC 2.1.133 or later.
 
 ### Namespacing
 

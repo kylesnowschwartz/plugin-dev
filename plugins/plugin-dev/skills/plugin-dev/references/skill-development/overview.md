@@ -391,6 +391,10 @@ After auto-compaction, skill descriptions survive (they're re-injected), but ski
 
 When multiple plugins are installed, their skill descriptions share the same budget. Design descriptions to be distinctive and concise.
 
+### Subagent Skill Discovery (CC 2.1.133)
+
+**Resolved:** Subagents now correctly discover project, user, and plugin skills via the Skill tool. Prior to CC 2.1.133, subagents could not invoke skills, which limited their ability to leverage plugin-provided knowledge. Skills used by agents should work correctly on CC 2.1.133 or later.
+
 ### Previously Invoked Skills (CC 2.1.119)
 
 After conversation compaction, skills invoked before compaction are restored as context only via a "Previously invoked skills" reminder. This reminder warns not to re-execute setup actions or treat prior inputs as current instructions. The old "Invoked skills" reminder was replaced by this more explicit context-only framing.
@@ -569,6 +573,7 @@ Good for: Complex domains with validation utilities
 - Reference supporting files clearly
 - Provide working examples
 - Create utility scripts for common operations
+- Prefer dedicated tools (Read, Grep, Glob) over Bash commands (CC 2.1.133)
 
 **DON'T:**
 

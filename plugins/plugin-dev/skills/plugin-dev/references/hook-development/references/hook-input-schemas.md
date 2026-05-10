@@ -13,6 +13,7 @@ Every hook receives these fields:
 | `cwd`             | string | Current working directory      |
 | `permission_mode` | string | Current permission mode        |
 | `hook_event_name` | string | Event that triggered this hook |
+| `effort.level`    | string | Active effort level (CC 2.1.133). Also available as `$CLAUDE_EFFORT` env var. |
 
 ## Event-Specific Input Fields
 
