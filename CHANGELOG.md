@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-05-10
+
+### Added
+
+- **hook-development**: Documented `effort.level` hook input field and `$CLAUDE_EFFORT` environment variable for effort-aware hooks (CC 2.1.133)
+- **hook-development**: Documented `worktree.baseRef` setting (`fresh` | `head`) for WorktreeCreate events (CC 2.1.133)
+- **agent-development**: Documented `worktree.baseRef` setting for agent-isolation worktrees (CC 2.1.133)
+- **agent-development**: Documented subagent skill discovery fix — subagents now correctly discover project, user, and plugin skills (CC 2.1.133)
+- **agent-development**: Documented Bash tool guidance to prefer dedicated tools (Read, Grep, Glob) over Bash commands (CC 2.1.133)
+- **skill-development**: Documented subagent skill discovery fix (CC 2.1.133)
+- **skill-development**: Added "prefer dedicated tools" to best practices (CC 2.1.133)
+
 ## [0.14.0] - 2026-05-07
 
 ### Added
@@ -466,7 +478,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.15.0...HEAD
+[0.15.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.13.1...v0.14.0
 [0.13.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.13.0...v0.13.1
 [0.13.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.12.0...v0.13.0

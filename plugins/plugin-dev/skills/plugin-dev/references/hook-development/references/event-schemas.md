@@ -14,11 +14,16 @@ Complete input and output JSON schemas for all 25 Claude Code hook events.
   "transcript_path": "string (path to transcript JSONL)",
   "cwd": "string (current working directory)",
   "hook_event_name": "string (event discriminant)",
-  "permission_mode": "default|plan|acceptEdits|dontAsk|bypassPermissions"
+  "permission_mode": "default|plan|acceptEdits|dontAsk|bypassPermissions",
+  "effort": {
+    "level": "string (CC 2.1.133)"
+  }
 }
 ```
 
 `permission_mode` is present on most events but not all (notably absent from SessionStart and InstructionsLoaded).
+
+> **CC 2.1.133:** Hooks now receive the active effort level via the `effort.level` JSON input field and `$CLAUDE_EFFORT` environment variable. Enables hooks to adapt behavior based on effort settings.
 
 When running inside a subagent, these additional fields are present:
 

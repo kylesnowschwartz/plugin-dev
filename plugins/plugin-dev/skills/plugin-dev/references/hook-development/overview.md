@@ -773,6 +773,8 @@ Execute when a git worktree is created (via `--worktree` flag or subagent `isola
 **Hook types:** Command, HTTP
 **Decision control:** Hook must return the **absolute path** to the created worktree directory. Command hooks print the path on stdout. HTTP hooks return it via `hookSpecificOutput.worktreePath`.
 
+> **worktree.baseRef setting (CC 2.1.133):** The `worktree.baseRef` setting controls the base reference for new worktrees. Options are `fresh` (default, branch from `origin/<default-branch>`) and `head` (branch from current local HEAD). Hooks processing WorktreeCreate events can check this setting to understand the worktree's origin point.
+
 ```json
 {
   "WorktreeCreate": [
@@ -956,6 +958,7 @@ Available in all command hooks:
 - `$CLAUDE_ENV_FILE` -- SessionStart only: write `export VAR=value` lines here to persist env vars
 - `$CLAUDE_CODE_REMOTE` -- Set if running in remote context
 - `$CLAUDE_CODE_SESSION_ID` -- Current session identifier (CC 2.1.132). Useful for hooks that need to track or correlate events across a session.
+- `$CLAUDE_EFFORT` -- Current effort level (CC 2.1.133). Also available in hook input JSON as `effort.level`. Enables hooks to adapt behavior based on the active effort setting.
 
 **Windows PowerShell consideration (CC 2.1.126):** When the PowerShell tool is enabled on Windows, Claude treats PowerShell as the primary shell instead of Bash. Hook scripts using Bash-specific syntax may not execute correctly for Windows users. Consider providing cross-platform hook implementations or documenting Windows-specific alternatives.
 
