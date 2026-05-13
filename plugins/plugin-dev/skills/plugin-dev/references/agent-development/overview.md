@@ -238,6 +238,8 @@ tools: Read, Write, Grep, Bash
 
 **Best practice:** Limit tools to minimum needed (principle of least privilege)
 
+> **Case-insensitive matching (CC 2.1.140):** Tool type values are now matched case-insensitively and separator-insensitively. For example, `"Code Reviewer"` resolves to `code-reviewer`, and `Bash` matches `bash`. This applies to both `tools` and `disallowedTools` fields.
+
 **Common tool sets:**
 
 - Read-only analysis: `Read, Grep, Glob`
@@ -585,6 +587,21 @@ The `worktree.baseRef` setting controls the base reference for new worktrees cre
 
 This affects agents using `isolation: "worktree"` in their frontmatter. The setting is configured in user or project settings.
 
+### Security Monitor Paths (CC 2.1.140)
+
+Claude Code's security monitor enforces special handling for agent configuration paths. The Self-Modification rule explicitly monitors these paths:
+
+- `.claude/settings*.json` — Settings files
+- `CLAUDE.md`, `CLAUDE.local.md`, `.claude.json` — Instruction files
+- `.claude/rules/` — Rules directory
+- `.claude/hooks/`, `.claude/commands/`, `.claude/agents/`, `.claude/skills/` — Component directories
+- `.claude/output-styles/`, `.claude/workflows/`, `.claude/routines/` — Additional config
+- `.claude/scheduled_tasks.json`, `.claude/loop.md`, `.mcp.json` — Scheduling and MCP config
+
+**Exception:** Files under `.claude/worktrees/<name>/` are treated as ordinary project files, not agent-config files.
+
+**Plugin developers:** Understand that modifications to these paths by your agents may trigger additional security checks. Design agents to avoid unnecessary modifications to configuration paths unless that's their explicit purpose.
+
 ### Subagent Skill Discovery (CC 2.1.133)
 
 **Resolved:** Subagents now correctly discover project, user, and plugin skills via the Skill tool. Prior to CC 2.1.133, subagents could not invoke skills, which limited their ability to leverage plugin-provided knowledge. If your agents depend on skills, ensure users are on CC 2.1.133 or later.
@@ -684,6 +701,20 @@ Ensure system prompt is complete:
 - ❌ Grant unnecessary tool access
 - ❌ Write vague system prompts
 - ❌ Skip testing
+
+## Agent Tool Patterns (CC 2.1.140)
+
+Claude Code provides authoritative guidance for agent design patterns. Key patterns for plugin agent development:
+
+- **Delegation**: Use agents for complex, multi-step tasks that benefit from autonomous execution
+- **Fork behavior**: Agents run in isolated contexts and don't see parent conversation history
+- **Resumption**: Agents can be resumed with their full prior context using the agent ID
+- **Worktree isolation**: Agents with `isolation: "worktree"` operate in separate git worktrees
+- **Background execution**: Background agents run concurrently but cannot prompt for permissions
+- **Parallel launches**: Multiple agents can be launched simultaneously for parallel execution
+- **Context restrictions**: Agents have limited access to parent context; provide all necessary information in the prompt
+
+When designing plugin agents, consider these patterns to ensure reliable autonomous operation.
 
 ## Execution Modes
 

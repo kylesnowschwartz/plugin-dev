@@ -82,6 +82,10 @@ Claude Code provides built-in commands for managing project state:
 
 - **`claude project purge [path]`** (CC 2.1.126) — Deletes all Claude Code state for a project. Supports `--dry-run`, `-y/--yes`, `-i/--interactive`, and `--all` flags. Different from `claude plugin prune` (which removes orphaned plugin dependencies) — this removes ALL project state including conversation history and settings.
 
+### Completion Conditions
+
+- **`/goal`** (CC 2.1.139) — Set completion conditions for the current session. When a goal is set, Claude works toward satisfying the specified conditions. Use this for defining success criteria for complex tasks or workflows. Plugin developers can reference this command in documentation when designing workflows that benefit from explicit completion criteria.
+
 ## File Format
 
 ### Basic Structure

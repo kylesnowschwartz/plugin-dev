@@ -213,6 +213,17 @@ All MCP configurations support environment variable substitution:
 }
 ```
 
+**${CLAUDE_PROJECT_DIR}** - Project root directory (CC 2.1.139):
+
+MCP stdio servers now receive `CLAUDE_PROJECT_DIR` in their environment. Plugin configs can reference `${CLAUDE_PROJECT_DIR}` in MCP server commands for project-relative paths:
+
+```json
+{
+  "command": "node",
+  "args": ["${CLAUDE_PROJECT_DIR}/.config/my-server.js"]
+}
+```
+
 **User environment variables** - From user's shell:
 
 ```json

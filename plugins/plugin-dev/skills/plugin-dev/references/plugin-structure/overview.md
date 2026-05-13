@@ -737,6 +737,7 @@ Fetches and loads plugins directly from URLs. Supports tar.gz and zip formats. E
 - Check YAML frontmatter syntax (commands, agents, skills)
 - Ensure skill has `SKILL.md` (not `README.md` or other name)
 - Confirm plugin is enabled in Claude Code settings
+- **Check for ignored folders (CC 2.1.140):** When `plugin.json` explicitly sets a component key (e.g., `"commands": "./my-commands"`), the default directory (`commands/`) is silently ignored. Use `/doctor`, `claude plugin list`, or `/plugin` to see warnings about ignored folders
 
 **Path resolution errors**:
 

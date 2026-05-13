@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-05-13
+
+### Added
+
+- **hook-development**: Documented hook `args` field for passing custom arguments to hooks (CC 2.1.139)
+- **hook-development**: Documented `continueOnBlock` option for PostToolUse hooks to feed rejection reasons back and continue (CC 2.1.139)
+- **agent-development**: Documented agent tool type case-insensitive and separator-insensitive matching (CC 2.1.140)
+- **agent-development**: Documented security monitor explicit paths that trigger Self-Modification rule checks (CC 2.1.140)
+- **agent-development**: Documented Agent tool simplified usage patterns for plugin developers (CC 2.1.140)
+- **mcp-integration**: Documented `CLAUDE_PROJECT_DIR` environment variable available to MCP stdio servers (CC 2.1.139)
+- **command-development**: Documented `/goal` command for setting completion conditions (CC 2.1.139)
+- **plugin-structure**: Documented plugin warning for silently ignored component folders when plugin.json overrides defaults (CC 2.1.140)
+
 ## [0.15.0] - 2026-05-10
 
 ### Added
@@ -478,7 +491,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.13.1...v0.14.0
 [0.13.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.13.0...v0.13.1

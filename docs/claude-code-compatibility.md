@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.138 (2026-05-10)
-Plugin-dev version: 0.15.0
+Last audited: Claude Code 2.1.140 (2026-05-13)
+Plugin-dev version: 0.16.0
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.16.0 | 2.1.139-2.1.140 | 2026-05-13 | Hook `args` field, `continueOnBlock` for PostToolUse, agent tool case-insensitivity, security monitor explicit paths, agent tool usage patterns, MCP `CLAUDE_PROJECT_DIR`, `/goal` command, plugin folder warning |
 | v0.15.0 | 2.1.133-2.1.138 | 2026-05-10 | `effort.level` hook input + `$CLAUDE_EFFORT` env var, `worktree.baseRef` setting, subagent skill discovery fix, Bash tool dedicated tools guidance |
 | v0.14.0 | 2.1.127-2.1.132 | 2026-05-07 | `--plugin-url` flag, `--plugin-dir` accepts .zip, `themes`/`monitors` under `experimental` key, `skillOverrides` setting, MCP `workspace` reserved name, `CLAUDE_CODE_SESSION_ID` env var, `CLAUDE_CODE_LOOP_PERSISTENT` guidance, background job agent built-in instructions |
 | v0.13.1 | 2.1.122-2.1.126 | 2026-05-01 | `claude project purge` command, file modification budget-exceeded reminder, deferred tools fix for `context:fork` skills, PowerShell primary shell on Windows |

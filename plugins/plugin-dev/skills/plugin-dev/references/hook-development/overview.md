@@ -159,6 +159,7 @@ Each hook entry in a matcher group supports these fields:
   "prompt": "string (prompt/agent type only)",
   "model": "string (prompt/agent, optional)",
   "if": "string (permission rule syntax, optional)",
+  "args": "any (custom arguments, optional)",
   "timeout": 600,
   "statusMessage": "Validating...",
   "once": false,
@@ -167,6 +168,7 @@ Each hook entry in a matcher group supports these fields:
 ```
 
 - `if`: Conditional execution using permission rule syntax (e.g., `Bash(git *)` runs the hook only for git commands). When set, the hook fires only when the tool call matches the pattern. Combines with `matcher` for precise targeting — `matcher` selects the event, `if` filters within it. Added in CC 2.1.85. CC 2.1.88 fixed filtering to properly match compound commands (e.g., `ls && git push`) and commands with env var prefixes (e.g., `FOO=bar git push`).
+- `args`: Custom arguments passed to the hook (CC 2.1.139). Enables hooks to receive additional configuration from the manifest. Useful for parameterizing hook behavior without changing the hook script.
 - `timeout`: Max execution time in seconds. Defaults vary by type (command: 60s, prompt: 30s, http: 30s, agent: 60s)
 - `statusMessage`: Shown in the UI while the hook runs
 - `once`: Run only once per session (not per event occurrence)
@@ -489,6 +491,21 @@ Execute after a tool completes successfully. Use to react to results, provide fe
 - `hookSpecificOutput.updatedMCPToolOutput` — Replace output for **MCP tools only** (legacy, still works)
 
 > **CC 2.1.119:** PostToolUse and PostToolUseFailure hooks now include `duration_ms` field in the input, showing how long the tool execution took. Useful for performance monitoring hooks.
+>
+> **`continueOnBlock` option (CC 2.1.139):** PostToolUse hooks can set `continueOnBlock: true` in their configuration to feed rejection reasons back to Claude and continue the turn instead of halting. This enables hooks to provide feedback without blocking the workflow:
+>
+> ```json
+> {
+>   "matcher": "Edit",
+>   "hooks": [
+>     {
+>       "type": "command",
+>       "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/validate-edit.sh",
+>       "continueOnBlock": true
+>     }
+>   ]
+> }
+> ```
 
 #### PostToolUseFailure
 
