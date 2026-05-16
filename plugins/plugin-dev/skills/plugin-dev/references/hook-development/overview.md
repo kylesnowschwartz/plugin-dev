@@ -153,6 +153,7 @@ Each hook entry in a matcher group supports these fields:
 {
   "type": "command|http|prompt|agent|mcp_tool",
   "command": "string (command type only)",
+  "args": ["arg1", "arg2"],
   "url": "string (http type only)",
   "headers": { "X-Key": "$ENV_VAR" },
   "allowedEnvVars": ["ENV_VAR"],
@@ -166,6 +167,7 @@ Each hook entry in a matcher group supports these fields:
 }
 ```
 
+- `args`: Array of command arguments for exec-form spawning (CC 2.1.139). When provided, the command is executed directly without shell interpolation, which is safer for hooks that pass user-controlled data. Example: `"args": ["--file", "$FILE_PATH"]`. The `command` field becomes the executable path when `args` is present.
 - `if`: Conditional execution using permission rule syntax (e.g., `Bash(git *)` runs the hook only for git commands). When set, the hook fires only when the tool call matches the pattern. Combines with `matcher` for precise targeting — `matcher` selects the event, `if` filters within it. Added in CC 2.1.85. CC 2.1.88 fixed filtering to properly match compound commands (e.g., `ls && git push`) and commands with env var prefixes (e.g., `FOO=bar git push`).
 - `timeout`: Max execution time in seconds. Defaults vary by type (command: 60s, prompt: 30s, http: 30s, agent: 60s)
 - `statusMessage`: Shown in the UI while the hook runs
@@ -488,6 +490,25 @@ Execute after a tool completes successfully. Use to react to results, provide fe
 - `hookSpecificOutput.updatedToolOutput` — Replace output for **any** tool (new in CC 2.1.121)
 - `hookSpecificOutput.updatedMCPToolOutput` — Replace output for **MCP tools only** (legacy, still works)
 
+**Continue on block (CC 2.1.139):** PostToolUse hooks support `continueOnBlock` option. When set on the hook entry and the hook returns `decision: "block"`, the rejection reason is fed back to Claude as context instead of stopping execution entirely. This allows the hook to provide corrective feedback while letting Claude continue working.
+
+```json
+{
+  "PostToolUse": [
+    {
+      "matcher": "Write",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/check-style.sh",
+          "continueOnBlock": true
+        }
+      ]
+    }
+  ]
+}
+```
+
 > **CC 2.1.119:** PostToolUse and PostToolUseFailure hooks now include `duration_ms` field in the input, showing how long the tool execution took. Useful for performance monitoring hooks.
 
 #### PostToolUseFailure
@@ -535,6 +556,20 @@ Execute when the main agent finishes responding. Use to validate completeness be
 ```
 
 When `decision` is `"block"`, `reason` is required and Claude receives it as feedback to continue working.
+
+**Impossible response (CC 2.1.143):** Stop condition evaluators can return a third response shape for conditions that can never be satisfied:
+
+```json
+{
+  "ok": false,
+  "impossible": true,
+  "reason": "The required API endpoint does not exist in this codebase"
+}
+```
+
+Use `impossible` when the goal is self-contradictory, requires a missing capability, or the assistant has exhausted all approaches. The evaluator independently verifies impossibility rather than trusting the assistant's self-assessment.
+
+**Block cap (CC 2.1.143):** Stop hooks have an 8-block safety cap. Turns end with a warning after 8 consecutive blocks to prevent infinite loops. Override with `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` environment variable if needed.
 
 **Input includes:** `stop_hook_active` (boolean), `last_assistant_message` (string)
 
@@ -893,6 +928,7 @@ Execute when Claude Code sends notifications. Use for logging, external alerting
   "decision": "block",
   "reason": "Feedback for Claude when blocking",
   "systemMessage": "Warning shown to user",
+  "terminalSequence": "\u001b]9;Task completed\u0007",
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "additionalContext": "Extra context injected for Claude"
@@ -908,6 +944,10 @@ All fields are optional. Behavior by field:
 - `decision`: Set to `"block"` to block the operation
 - `reason`: Required when `decision` is `"block"` -- fed back to Claude
 - `systemMessage`: Warning displayed to the user
+- `terminalSequence`: Emit terminal escape sequences for desktop notifications, window titles, or bells (CC 2.1.141). The sequence is written directly to the terminal. Common uses:
+  - Desktop notification: `"\u001b]9;Message\u0007"` (iTerm2/Konsole)
+  - Window title: `"\u001b]0;Title\u0007"`
+  - Terminal bell: `"\u0007"`
 - `hookSpecificOutput`: Event-specific fields (see `references/event-schemas.md`)
 
 ### Exit Codes
