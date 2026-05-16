@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-05-16
+
+### Added
+
+- **agent-development**: Documented SendUserFile tool for surfacing generated deliverable files with captions (CC 2.1.142)
+- **agent-development**: Documented Agent tool simplified usage notes covering delegation, fork behavior, resumption, worktree isolation, background execution, parallel launches, and context restrictions (CC 2.1.140)
+- **agent-development**: Documented Self-Modification protected paths for security monitor (CC 2.1.140)
+- **agent-development**: Documented `worktree.bgIsolation: "none"` setting for background sessions to edit working copy directly (CC 2.1.143)
+- **hook-development**: Documented `args` field for exec-form command spawning without shell interpolation (CC 2.1.139)
+- **hook-development**: Documented `continueOnBlock` option for PostToolUse hooks to feed rejection back to Claude (CC 2.1.139)
+- **hook-development**: Documented `terminalSequence` output field for desktop notifications, window titles, and bells (CC 2.1.141)
+- **hook-development**: Documented Stop hook `impossible` response shape for conditions that can never be satisfied (CC 2.1.143)
+- **hook-development**: Documented Stop hook 8-block cap to prevent infinite loops with `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` override (CC 2.1.143)
+
 ## [0.15.0] - 2026-05-10
 
 ### Added
@@ -478,7 +492,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.15.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.16.0...HEAD
+[0.16.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.14.0...v0.15.0
 [0.14.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.13.1...v0.14.0
 [0.13.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.13.0...v0.13.1

@@ -414,6 +414,46 @@ When the `CLAUDE_CODE_LOOP_PERSISTENT` environment variable is set, Claude Code 
 - Handle resumption gracefully
 - Avoid irreversible actions without explicit authorization
 
+### SendUserFile Tool (CC 2.1.142)
+
+The SendUserFile tool surfaces generated deliverable files to users with enhanced visibility. When agents create reports, exports, or other artifact files, use SendUserFile instead of just writing them silently:
+
+```json
+{
+  "file_path": "/path/to/report.pdf",
+  "caption": "Analysis report for Q4 metrics",
+  "status": "normal"
+}
+```
+
+**Parameters:**
+
+- `file_path`: Absolute path to the generated file
+- `caption`: Optional description shown to the user
+- `status`: `"normal"` (default) or `"proactive"` (for unsolicited deliverables)
+
+**Use cases for plugin agents:**
+
+- Report generators: Surface the final PDF/HTML report
+- Export tools: Highlight generated export files
+- Build artifacts: Call out compiled outputs or packages
+
+Hooks can match `SendUserFile` via PreToolUse/PostToolUse for validation or logging of deliverable generation.
+
+### Agent Tool Usage Notes (CC 2.1.140)
+
+The Agent tool (Task tool in SDK parlance) includes simplified usage guidance that clarifies:
+
+- **When to delegate**: Use subagents for tasks requiring focused context or parallel execution
+- **Fork behavior**: Each Agent invocation starts fresh; context is not automatically inherited
+- **Resumption**: Ask Claude to "resume that agent" to restore prior transcript context
+- **Worktree isolation**: Background agents may run in isolated worktrees (controlled by `worktree.bgIsolation`)
+- **Background execution**: Use `run_in_background` parameter for concurrent agent work
+- **Parallel launches**: Send multiple Agent calls in one message for concurrent execution
+- **Context restrictions**: Background agents cannot prompt for permissions
+
+Plugin authors creating skills that spawn agents should reference this guidance when designing orchestration patterns.
+
 ### Background Job Agent Behavior (CC 2.1.128)
 
 Claude Code includes built-in background-agent instructions that replace the previous background-job behavior system prompt. When agents run in background mode, they receive guidance to:
@@ -576,6 +616,22 @@ This variable resolves to the plugin's installation directory at runtime, ensuri
 
 Agent threads always require absolute file paths unconditionally. When agents use file operations (Read, Write, Edit, etc.), all paths must be absolute—relative paths are not supported in agent contexts. Use `${CLAUDE_PLUGIN_ROOT}` or construct absolute paths from known locations.
 
+### Self-Modification Protected Paths (CC 2.1.140)
+
+The security monitor enforces Self-Modification rules on agent-config paths. Modifying these paths triggers enhanced security scrutiny:
+
+- `.claude/settings*.json`
+- `CLAUDE.md`, `CLAUDE.local.md`, `.claude.json`
+- `.claude/rules/`, `.claude/hooks/`, `.claude/commands/`
+- `.claude/agents/`, `.claude/skills/`, `.claude/output-styles/`
+- `.claude/workflows/`, `.claude/routines/`
+- `.claude/scheduled_tasks.json`, `.claude/loop.md`
+- `.mcp.json`
+
+**Exception:** Files under `.claude/worktrees/<name>/` are treated as ordinary project files, not Self-Modification.
+
+Plugin agents that modify user configuration should be aware users may see additional security prompts. Design agents to explain why config changes are needed before attempting them.
+
 ### Worktree Base Reference (CC 2.1.133)
 
 The `worktree.baseRef` setting controls the base reference for new worktrees created via `--worktree`, `EnterWorktree`, or agent-isolation worktrees:
@@ -584,6 +640,15 @@ The `worktree.baseRef` setting controls the base reference for new worktrees cre
 - **`head`**: Branch from current local HEAD — preserves local changes
 
 This affects agents using `isolation: "worktree"` in their frontmatter. The setting is configured in user or project settings.
+
+### Background Session Worktree Isolation (CC 2.1.143)
+
+The `worktree.bgIsolation` setting controls whether background sessions automatically enter worktrees:
+
+- **`"worktree"`** (default): Background sessions enter a worktree via `EnterWorktree` before editing
+- **`"none"`**: Background sessions edit the working copy directly without entering a worktree
+
+Use `"none"` when background agents need to modify the main working directory directly (e.g., for refactoring tasks that should affect the current branch). Configure in user or project settings.
 
 ### Subagent Skill Discovery (CC 2.1.133)
 
