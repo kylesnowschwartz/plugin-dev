@@ -1,288 +1,185 @@
 # Upstream Change Manifest
-## CC Version Range: 2.1.139 - 2.1.143
-## Generated: 2026-05-16
-## Sources: changelog [x], system-prompts [x], claude-code-guide [skipped - timed out in CI]
+## CC Version Range: 2.1.144 - 2.1.144
+## Generated: 2026-05-19
+## Sources: changelog [OK], system-prompts [PARTIAL - not yet updated to 2.1.144], claude-code-guide [skipped - single version with no plugin-system changes]
+
+---
+
+**Note:** The system-prompts repository has not yet been updated with 2.1.144 extractions. The latest available system-prompts version is 2.1.143, which was already audited in the previous sync (v0.16.0). This manifest is based on the official CC changelog only. Confidence is lower than typical due to single-source triangulation.
 
 ---
 
 ### Must Update
 
-- [ ] **NEW: SendUserFile tool** (CC 2.1.142)
-  - Source: system-prompts
-  - Confidence: high
-  - Affects: hook-development (new tool to match), agent-development (agents generating deliverables)
-  - Details: New tool for surfacing generated deliverable files to the user with optional captions and normal or proactive status. Plugin developers creating skills that generate artifacts (reports, files, exports) should be aware of this tool for better user experience.
-  - Raw: "**NEW:** Tool Description: SendUserFile - Describes the SendUserFile tool for surfacing generated deliverable files to the user, with optional captions and normal or proactive status."
-
-- [ ] **NEW: Agent tool simplified usage notes** (CC 2.1.140)
-  - Source: system-prompts
-  - Confidence: high
-  - Affects: agent-development reference
-  - Details: New simplified usage notes added to Agent tool description covering: when to delegate, fork behavior, resumption, worktree isolation, background execution, parallel launches, and context restrictions. This provides clearer reference for plugin authors using the Agent tool in skills or creating agent definitions.
-  - Raw: "**NEW:** Tool Description: Agent (simple usage notes) - Simplified usage notes for the Agent tool covering when to delegate, fork behavior, resumption, worktree isolation, background execution, parallel launches, and context restrictions."
-
-- [ ] **Security monitor: explicit agent-config paths for Self-Modification rule** (CC 2.1.140)
-  - Source: system-prompts
-  - Confidence: high
-  - Affects: agent-development (agents modifying config), hook-development (hooks targeting config files)
-  - Details: The security monitor now has an explicit enumerated list of agent-config paths that trigger Self-Modification rules. These paths are now explicitly documented:
-    - `.claude/settings*.json`
-    - `CLAUDE.md`, `CLAUDE.local.md`, `.claude.json`
-    - `.claude/rules/`, `.claude/hooks/`, `.claude/commands/`
-    - `.claude/agents/`, `.claude/skills/`, `.claude/output-styles/`
-    - `.claude/workflows/`, `.claude/routines/`
-    - `.claude/scheduled_tasks.json`, `.claude/loop.md`
-    - `.mcp.json`
-
-    Exception carved out: Files under `.claude/worktrees/<name>/` are now treated as ordinary project files, not Self-Modification. This is important for plugin developers to understand what paths are protected.
-  - Raw: "Agent Prompt: Security monitor for autonomous agent actions (second part) - Expands the Self-Modification rule from a vague description to an explicit list of agent-config paths..."
-
-- [ ] **Hook condition evaluator: new 'impossible' response shape** (CC 2.1.143)
-  - Source: system-prompts
-  - Confidence: high
-  - Affects: hook-development (Stop hook documentation)
-  - Details: The hook condition evaluator for stop conditions now supports a third response shape beyond `{"ok": true}` and `{"ok": false}`:
-    ```json
-    {"ok": false, "impossible": true, "reason": "..."}
-    ```
-    This is for conditions that can never be satisfied: self-contradictory goals, missing capability, or when the assistant has exhausted all approaches. The evaluator independently verifies impossibility rather than trusting the assistant's self-assessment.
-  - Raw: "Agent Prompt: Hook condition evaluator (stop) - Adds a third response shape..."
-
-- [ ] **Hook terminalSequence output field** (CC 2.1.141) [PROMOTED by Stage 2]
-  - Source: changelog (WebFetch)
-  - Confidence: high
-  - Affects: hook-development (output format section)
-  - Details: Hooks can now emit desktop notifications, window titles, and bells via new `terminalSequence` JSON field in hook output. Enables plugin hooks to provide visual/audio feedback to users.
-  - Raw: "Hooks can now emit desktop notifications, window titles, and bells via new `terminalSequence` JSON field"
-
-- [ ] **Hook args field (exec form)** (CC 2.1.139) [PROMOTED by Stage 2]
-  - Source: changelog (WebFetch)
-  - Confidence: high
-  - Affects: hook-development (hook entry schema section)
-  - Details: New `args: string[]` field for command hooks allows exec-form command spawning without shell interpolation. Safer than shell-based command strings for hooks that need to pass arguments.
-  - Raw: "Added hook `args: string[]` field (exec form) for direct command spawning without shell"
-
-- [ ] **continueOnBlock for PostToolUse hooks** (CC 2.1.139) [PROMOTED by Stage 2]
-  - Source: changelog (WebFetch)
-  - Confidence: high
-  - Affects: hook-development (PostToolUse section)
-  - Details: New `continueOnBlock` option for PostToolUse hooks. When set, the hook can block and provide a rejection reason that feeds back to Claude instead of stopping execution entirely.
-  - Raw: "Added `continueOnBlock` for `PostToolUse` hooks to feed rejection back to Claude"
-
-- [ ] **worktree.bgIsolation: "none" setting** (CC 2.1.143) [PROMOTED by Stage 2]
-  - Source: changelog (WebFetch)
-  - Confidence: high
-  - Affects: agent-development (background agents, worktree isolation)
-  - Details: New setting allows background sessions to edit the working copy directly without entering a worktree via `EnterWorktree`. Affects how background agents interact with the main working directory.
-  - Raw: "New `worktree.bgIsolation: "none"` setting allows background sessions to edit the working copy directly without `EnterWorktree`"
-
-- [ ] **Stop hooks block cap (8 consecutive blocks)** (CC 2.1.143) [PROMOTED by Stage 2]
-  - Source: changelog (WebFetch)
-  - Confidence: high
-  - Affects: hook-development (Stop event section)
-  - Details: Stop hooks now have a built-in safeguard: turns end with a warning after 8 consecutive blocks to prevent infinite loops. Override via `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` environment variable.
-  - Raw: "Fixed stop hooks blocking repeatedly forever -- turns now end with a warning after 8 consecutive blocks (override via `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP`)"
+_None identified._ All changes in 2.1.144 appear to be bug fixes, IDE/terminal improvements, or internal enhancements that do not affect the plugin system, skill format, hooks, or agent features documented in plugin-dev.
 
 ---
 
 ### May Update
 
-- [ ] **Write tool description: 'When to use' format** (CC 2.1.140) [DEMOTED from Must Update by Stage 2]
-  - Source: system-prompts
-  - Confidence: medium
-  - Affects: tool-reference documentation (low priority)
-  - Details: Write tool description has been rewritten into a "When to use" format that explicitly names the two use cases: (1) creating a new file, or (2) fully replacing a previously-read file. The description now explicitly points users to the Edit tool for partial changes. Low priority for plugin-dev since we reference tools by name, not by documenting their descriptions.
-  - Raw: "Tool Description: Write (read existing file first) - Rewrites the description into a 'When to use' format..."
+- [ ] `/resume` command support for background sessions (CC 2.1.144)
+  - Source: CC changelog only
+  - Confidence: low (single source, no system-prompt details available)
+  - Affects: Possibly agent-related documentation if `/resume` has implications for background agent workflows
+  - Details: New `/resume` command can resume background sessions. May be worth documenting in agent or background-session guidance if system-prompts reveal plugin-relevant details. Currently flagged for follow-up once system-prompts are updated.
 
-- [ ] **Snooze tool: warning against short-interval wakeups** (CC 2.1.140)
-  - Source: system-prompts
+- [ ] MCP paginated tools/list fix (CC 2.1.144) [Stage 2 promoted]
+  - Source: CC changelog
   - Confidence: medium
-  - Affects: agent documentation (background/scheduled work, low priority)
-  - Details: Snooze tool now explicitly warns not to schedule short-interval wakeups to poll for harness-tracked background work (since the agent is re-invoked automatically when background work finishes). Recommends long 1200s+ fallback heartbeat for monitoring. Low priority since Snooze is not a core plugin development concern.
-  - Raw: "Tool Description: Snooze (delay and reason guidance) - Adds an explicit warning not to schedule short-interval wakeups..."
+  - Affects: mcp-integration
+  - Details: "MCP servers with paginated `tools/list` responses now return all pages instead of silently dropping tools". Behavior fix for MCP servers with many tools. Low priority but worth documenting in Tool Search section.
+
+- [ ] MCP images with unsupported MIME types (CC 2.1.144) [Stage 2 promoted]
+  - Source: CC changelog
+  - Confidence: low
+  - Affects: mcp-integration
+  - Details: "MCP images with unsupported MIME types (e.g., SVG) are saved to disk and referenced in tool results". Edge case fallback behavior for image handling.
+
+- [ ] Plugin update timestamps in marketplace (CC 2.1.144) [Stage 2 promoted]
+  - Source: CC changelog
+  - Confidence: medium
+  - Affects: marketplace-structure
+  - Details: "Plugin marketplace now displays when each plugin was last updated". Informational for plugin authors.
 
 ---
 
 ### No Action
 
-**Original No Action items:**
-- Fast mode defaults to Opus 4.7 (CC 2.1.142) - model selection, not plugin-related
-- Agent view (Research Preview) added (CC 2.1.139) - UI feature, not plugin system
-- Goal completion tracking, scroll speed configuration (CC 2.1.139) - UI features
-- Plugin dependency enforcement (CC 2.1.143) - internal enforcement logic, not new manifest fields
-- Projected context costs (CC 2.1.143) - UI/display feature
-- Background session enhancements (CC 2.1.143) - internal improvements
-- HTTPS plugin cloning (CC 2.1.141) - installation behavior, not plugin authoring
-- Workspace ID support (CC 2.1.141) - internal identifier
-- Session title generator data treatment (CC 2.1.142) - internal prompt refinement, treats content as data
-- Managed Agents onboarding Console escape hatch (CC 2.1.142) - Managed Agents specific, not plugin-dev
-- /rename conversation wrapper (CC 2.1.142) - internal prompt refinement
-- Amazon Bedrock model IDs section (CC 2.1.142) - API provider specific, not plugin system
-- Create verifier skills TodoWrite/TaskCreate toggle (CC 2.1.142) - internal tool resolution based on tasks feature
-- Worker fork wording cleanup (CC 2.1.140) - minor wording change, drops "in your system prompt"
-- Action safety and truthful reporting prompt (CC 2.1.136) - already in previous audit, internal agent behavior
-- Claude Platform on AWS reference (CC 2.1.139) - cloud deployment, not plugin system
-- Dream memory consolidation log discovery update (CC 2.1.120) - memory system internal
-- WebSearch template variable rename (CC 2.1.120) - internal variable naming
-- Task tools reminder change - removes "never mention reminder to user" (CC 2.1.139) - internal behavior
-- TodoWrite reminder change - removes "never mention reminder to user" (CC 2.1.139) - internal behavior
-- /insights report output trimming (CC 2.1.139) - internal formatting
-- Dynamic pacing loop reordering (CC 2.1.139) - internal step ordering
+- `/model` command session-scoped behavior change (CC 2.1.144) - User-facing command, not plugin-related [Stage 2 demoted from May Update]
+- Elapsed duration in notifications (CC 2.1.144) - UI/notification improvement
+- Startup hang fix when API is unreachable (CC 2.1.144) - Bug fix
+- Terminal corruption fixes (CC 2.1.144) - Terminal/display bug fix
+- Background session macOS Full Disk Access fix (CC 2.1.144) - Platform-specific bug fix
+- File handling for mismatched image extensions (CC 2.1.144) - File handling bug fix
+- Tool error reductions during search operations (CC 2.1.144) - Internal error handling improvement
 
-**Demoted from May Update by Stage 2:**
-- Verify skill: destructive path guard and no-CI workflow (CC 2.1.143) - internal CC skill, not plugin authoring
-- Conversation/partial compaction: security-relevant instructions preservation (CC 2.1.139) - internal CC behavior
-- Memory instructions: kebab-case slugs, metadata block, cross-links (CC 2.1.139) - CC memory system, not plugin-dev
-- PowerShell reference table: Unix to PowerShell mapping (CC 2.1.139) - internal tool docs, hook-development already covers PowerShell
-- Output style per-turn reminder sourcing (CC 2.1.141) - internal implementation detail
-- Auto mode: destructive-action guidance now generic (CC 2.1.139) - internal prompt refinement
-- Managed Agents skill limit: 64 -> 20 per agent (CC 2.1.132) - Managed Agents platform, not local plugins
+_Note: "Plugin update timestamps" moved to May Update by Stage 2 verification._
+
+---
+
+## Raw Changelog Data
+
+### CC 2.1.144 (from official changelog via WebFetch)
+
+> Key improvements include `/resume` support for background sessions, elapsed duration in notifications, and plugin update timestamps. The `/model` command now changes only the current session's model. Notable fixes: startup no longer hangs when API is unreachable, terminal corruption issues resolved, and background sessions on macOS no longer crash under Full Disk Access-protected folders. File handling improved for mismatched image extensions, and tool errors reduced during search operations.
+
+---
+
+## Triangulation Status
+
+| Source | Status | Notes |
+|--------|--------|-------|
+| CC Changelog | OK | Retrieved via WebFetch from upstream |
+| System-prompts | PARTIAL | Latest version is 2.1.143 (already audited); 2.1.144 not yet extracted |
+| claude-code-guide | Skipped | Single version with no apparent plugin-system changes; cross-reference not needed |
 
 ---
 
 ## Summary
 
-**Version Range:** 2.1.139 - 2.1.143 (5 versions since last audit at 2.1.138)
+**Version Range:** 2.1.144 (1 version since last audit at 2.1.143)
 
-**Total Changes Analyzed:** 45+ across system-prompts and changelog
+**Total Changes Analyzed:** 9 items from CC changelog
 
-**Must Update: 9 items** (4 original + 5 promoted by Stage 2)
-1. **NEW SendUserFile tool** (CC 2.1.142) - major new tool for surfacing deliverables
-2. **NEW Agent tool simplified usage notes** (CC 2.1.140) - clearer Agent tool reference for plugin authors
-3. **Security monitor Self-Modification paths** (CC 2.1.140) - explicit enumerated list of protected paths
-4. **Hook condition evaluator 'impossible' response** (CC 2.1.143) - new hook response shape for stop conditions
-5. **Hook terminalSequence output field** (CC 2.1.141) - [PROMOTED] desktop notifications via hooks
-6. **Hook args field (exec form)** (CC 2.1.139) - [PROMOTED] safer command spawning without shell
-7. **continueOnBlock for PostToolUse hooks** (CC 2.1.139) - [PROMOTED] feed rejection back to Claude
-8. **worktree.bgIsolation: "none" setting** (CC 2.1.143) - [PROMOTED] background sessions skip worktree
-9. **Stop hooks block cap** (CC 2.1.143) - [PROMOTED] 8-block cap prevents infinite loops
+**Must Update: 0 items**
+- No plugin-system, hook, skill, or agent changes identified
 
-**May Update: 2 items** (1 demoted from Must Update + 1 retained)
-- Write tool 'When to use' format (demoted - low priority for plugin-dev)
-- Snooze tool polling warning (low priority)
+**May Update: 4 items** [Updated by Stage 2]
+1. `/resume` command for background sessions - pending system-prompts update for details
+2. MCP paginated tools/list fix - behavior fix for multi-tool MCP servers [Stage 2 promoted]
+3. MCP unsupported MIME types - edge case image handling [Stage 2 promoted]
+4. Plugin update timestamps in marketplace - informational [Stage 2 promoted]
 
-**No Action: 29 items** (22 original + 7 demoted from May Update)
+**No Action: 7 items** [Updated by Stage 2]
+- Bug fixes and internal improvements
+- `/model` command demoted from May Update (not plugin-related)
 
-**Token delta from system-prompts:**
-- 2.1.143: +302 tokens
-- 2.1.142: +1,080 tokens
-- 2.1.141: +4 tokens
-- 2.1.140: +622 tokens
-- 2.1.139: +2,248 tokens
-- **Total for range: +4,256 tokens**
+**Token delta from system-prompts:** N/A (2.1.144 not yet available)
 
 **Triangulation Notes:**
-- claude-code-guide agent timed out in CI environment; triangulation degraded to two sources
-- Stage 2 verification discovered 5 missed items from CC changelog (WebFetch)
-- Changelog provides feature-level summaries; system-prompts provides implementation details
-- Versions 2.1.138, 2.1.137, 2.1.131 had no system prompt changes
-- Stage 1 significantly underestimated hook-related changes in CC 2.1.139 and 2.1.143
+- Single-source triangulation (CC changelog only)
+- System-prompts repo lags behind CC releases; 2.1.144 extraction not yet available
+- Re-audit recommended once system-prompts are updated to 2.1.144
 
 ---
 
-## Key Plugin-Dev Impacts
+## Recommendations
 
-### For plugin.json / Manifest
-- No new manifest fields identified in this range
+1. **Wait for system-prompts update**: The system-prompts repository typically updates within 24-48 hours of a CC release. Re-running this audit after the 2.1.144 extraction is available will provide higher-confidence change detection.
 
-### For Skills
-- SendUserFile tool available for skills generating deliverables
-- Agent tool has clearer usage guidance
-- Verify skill has new workflow patterns worth documenting
+2. **No immediate action required**: None of the 2.1.144 changes appear to affect plugin manifests, hooks, skills, or agent features that plugin-dev documents.
 
-### For Hooks
-- New 'impossible' response shape for stop condition evaluators: `{"ok": false, "impossible": true, "reason": "..."}`
-- Security-relevant instructions now explicitly preserved across compaction
+3. **Monitor for follow-up releases**: If 2.1.145+ is released before the next audit, those changes should be included in the next run.
 
-### For Agents
-- Explicit list of Self-Modification protected paths documented
-- Agent tool simplified usage notes available
-
-### For Tools
-- Write tool "When to use" format change
-- Snooze tool short-interval warning
-- PowerShell reference table for Windows development
+4. **Low confidence flag**: This manifest has lower confidence than typical due to single-source triangulation. The May Update items should be re-evaluated once system-prompts are available.
 
 ---
 
 ## Stage 2: Verification Results
-### Verified: 2026-05-16
+### Verified: 2026-05-19
 
 #### Must Update Verification
 
-- **[check]** **NEW: SendUserFile tool** (CC 2.1.142) -- CONFIRMED in system-prompts CHANGELOG ("Tool Description: SendUserFile - Describes the SendUserFile tool for surfacing generated deliverable files to the user, with optional captions and normal or proactive status."). Gap exists: plugin-dev does not document SendUserFile anywhere. Skill mapping corrected: This affects **hook-development** documentation (new tool hooks can match) and potentially **agent-development** (agents generating deliverables).
+Stage 1 identified 0 items for Must Update. Verification found this assessment **incomplete**. The following items were missed:
 
-- **[check]** **NEW: Agent tool simplified usage notes** (CC 2.1.140) -- CONFIRMED in system-prompts CHANGELOG ("Tool Description: Agent (simple usage notes) - Simplified usage notes for the Agent tool covering when to delegate, fork behavior, resumption, worktree isolation, background execution, parallel launches, and context restrictions."). Gap exists: agent-development/overview.md does not mention these simplified usage notes. Affects: **agent-development** reference.
+#### Missed Items (promoted from No Action)
 
-- **[check]** **Security monitor: explicit agent-config paths for Self-Modification rule** (CC 2.1.140) -- CONFIRMED in system-prompts CHANGELOG. Lists explicit paths: `.claude/settings*.json`, `CLAUDE.md`, `.claude/rules/`, `.claude/hooks/`, `.claude/commands/`, `.claude/agents/`, `.claude/skills/`, etc. Gap exists: plugin-dev does not document Self-Modification protected paths. Affects: **agent-development** (agents modifying config) and **hook-development** (hooks targeting config files).
+- ! **MCP paginated tools/list fix** (CC 2.1.144) — missed because it was buried in changelog description
+  - Affects: mcp-integration
+  - Details: "MCP servers with paginated `tools/list` responses now return all pages instead of silently dropping tools". This is a significant behavior fix affecting MCP servers that expose many tools. Plugin authors relying on tool discovery should be aware of this fix. Current mcp-integration/overview.md does not mention pagination behavior.
+  - Gap verified: Searched `/home/runner/work/plugin-dev/plugin-dev/plugins/plugin-dev/skills/plugin-dev/references/mcp-integration/overview.md` - no mention of pagination or `tools/list` behavior.
+  - **Action: May Update** — Low priority since this is a bug fix users benefit from automatically, but worth documenting in "Tool Search" section as context.
 
-- **[check]** **Hook condition evaluator: new 'impossible' response shape** (CC 2.1.143) -- CONFIRMED in system-prompts CHANGELOG ("Adds a third response shape `{"ok": false, "impossible": true, "reason": ...}` for conditions that can never be satisfied"). Gap exists: hook-development/overview.md documents Stop hook blocking but not the 'impossible' response variant. Affects: **hook-development** skill.
+- ! **MCP images with unsupported MIME types** (CC 2.1.144) — missed due to narrow categorization
+  - Affects: mcp-integration
+  - Details: "MCP images with unsupported MIME types (e.g., SVG) are saved to disk and referenced in tool results". MCP servers returning images now have a fallback behavior for unsupported types.
+  - Gap verified: No mention of image handling or MIME types in mcp-integration docs.
+  - **Action: May Update** — Edge case behavior, low priority.
 
-- **[check]** **Write tool description: 'When to use' format** (CC 2.1.140) -- CONFIRMED in system-prompts CHANGELOG ("Tool Description: Write (read existing file first) - Rewrites the description into a 'When to use' format"). However, this is LOWER PRIORITY for plugin-dev: the Write tool is a standard CC tool, and plugin-dev references it only incidentally. Reclassified to **May Update** since plugin authors don't need detailed Write tool documentation -- they reference it by name.
-
-#### Missed Items (promoted from No Action or newly identified)
-
-- **[!]** **Hook terminalSequence output field** (CC 2.1.141) -- MISSED by Stage 1. The CC 2.1.141 changelog notes: "Hooks can now emit desktop notifications, window titles, and bells via new `terminalSequence` JSON field." This is plugin-relevant: hooks can now output terminal sequences for notifications. Not documented in plugin-dev hook-development reference.
-  - Affects: **hook-development** (output format section)
-  - Details: New `terminalSequence` field in hook JSON output enables desktop notifications, window titles, and terminal bells.
-
-- **[!]** **Hook args field (exec form)** (CC 2.1.139) -- MISSED by Stage 1. The CC 2.1.139 WebFetch result notes: "Added hook `args: string[]` field (exec form) for direct command spawning without shell." This is a new hook configuration option allowing array-based command execution without shell interpolation.
-  - Affects: **hook-development** (hook entry schema section)
-  - Details: New `args` field in hook config allows exec-form command execution (safer, no shell interpolation).
-
-- **[!]** **continueOnBlock for PostToolUse hooks** (CC 2.1.139) -- MISSED by Stage 1. The CC 2.1.139 WebFetch result notes: "Added `continueOnBlock` for `PostToolUse` hooks to feed rejection back to Claude." This allows PostToolUse hooks to block and provide feedback without stopping execution.
-  - Affects: **hook-development** (PostToolUse section)
-  - Details: New `continueOnBlock` option for PostToolUse hooks feeds rejection reason to Claude instead of stopping.
-
-- **[!]** **worktree.bgIsolation: "none" setting** (CC 2.1.143) -- MISSED by Stage 1. The CC 2.1.143 WebFetch result notes: "New `worktree.bgIsolation: "none"` setting allows background sessions to edit the working copy directly without `EnterWorktree`." This affects how background agents interact with worktrees.
-  - Affects: **agent-development** (background agents, worktree isolation)
-  - Details: New setting to disable automatic worktree isolation for background sessions.
-
-- **[!]** **Stop hooks block cap (8 consecutive blocks)** (CC 2.1.143) -- MISSED by Stage 1. The CC 2.1.143 changelog notes: "Fixed stop hooks blocking repeatedly forever -- turns now end with a warning after 8 consecutive blocks (override via `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP`)." This is important for Stop hook authors to understand.
-  - Affects: **hook-development** (Stop event section)
-  - Details: Stop hooks now have an 8-block cap to prevent infinite loops; configurable via env var.
+- ! **Plugin update timestamps in marketplace** (CC 2.1.144) — incorrectly classified as internal
+  - Affects: marketplace-structure
+  - Details: "Plugin marketplace now displays when each plugin was last updated". This is visible to plugin consumers and plugin authors should know their last-updated timestamp is displayed.
+  - Gap verified: `/home/runner/work/plugin-dev/plugin-dev/plugins/plugin-dev/skills/plugin-dev/references/marketplace-structure/overview.md` does not mention update timestamps.
+  - **Action: May Update** — Informational, low priority.
 
 #### May Update Resolution
 
-- **[down-arrow]** **Verify skill: destructive path guard and no-CI workflow** (CC 2.1.143) -- Demoted to **No Action**. The Verify skill is an internal CC skill, not something plugin-dev documents. Plugin authors do not need to know about Verify skill internals.
+- = `/resume` command support for background sessions (CC 2.1.144) — kept as May Update: Per Stage 1 analysis, this is a command-level feature. The current plugin-dev docs do not cover background session commands in detail. May be relevant for agent-development docs if background agents use `/resume`. Awaiting system-prompts extraction for details.
 
-- **[=]** **Snooze tool: warning against short-interval wakeups** (CC 2.1.140) -- Kept as **May Update**. The Snooze tool is occasionally relevant for scheduled/background plugin workflows, but it is not a core plugin-dev concern. Low priority.
+- downarrow `/model` command session-scoped behavior change (CC 2.1.144) — demoted to No Action: This is user-facing command behavior, not plugin-related. Plugin developers do not need to document `/model` command behavior changes.
 
-- **[down-arrow]** **Conversation/partial compaction: security-relevant instructions preservation** (CC 2.1.139) -- Demoted to **No Action**. This is internal CC behavior. Plugin authors don't control compaction behavior; they just benefit from security instructions being preserved automatically.
+#### Verification of "No Action" Items
 
-- **[down-arrow]** **Memory instructions: kebab-case slugs, metadata block, cross-links** (CC 2.1.139) -- Demoted to **No Action**. This affects CC memory features, not plugin development. Plugin-dev does not document memory file formats.
+Spot-checked the following No Action items:
+- ✓ "Elapsed duration in notifications" — Correct, UI feature not plugin-related
+- ✓ "Startup hang fix when API is unreachable" — Correct, bug fix not plugin-related
+- ✓ "Terminal corruption fixes" — Correct, terminal bug fix
+- ✓ "Background session macOS Full Disk Access fix" — Correct, platform bug fix
+- ✓ "File handling for mismatched image extensions" — Correct, internal file handling
+- ✓ "Tool error reductions during search operations" — Correct, internal error handling
 
-- **[down-arrow]** **PowerShell reference table: Unix to PowerShell mapping** (CC 2.1.139) -- Demoted to **No Action**. While Windows support matters, plugin-dev's hook scripts already note PowerShell considerations (CC 2.1.126). The detailed Unix-to-PowerShell mapping is internal to CC, not plugin-authoring guidance.
-
-- **[down-arrow]** **Output style per-turn reminder sourcing** (CC 2.1.141) -- Demoted to **No Action**. This is an internal implementation detail about how output styles source reminders. Does not affect output style authoring.
-
-- **[down-arrow]** **Auto mode: destructive-action guidance now generic** (CC 2.1.139) -- Demoted to **No Action**. Internal prompt refinement, not plugin-relevant.
-
-- **[down-arrow]** **Managed Agents skill limit: 64 -> 20 per agent** (CC 2.1.132) -- Demoted to **No Action**. This is Managed Agents platform-specific (cloud), not local plugin development. Out of scope for plugin-dev.
-
-- **[up-arrow]** **Write tool 'When to use' format** (CC 2.1.140) -- Reclassified from Must Update to **May Update**. The change is real but low priority for plugin-dev since we don't document individual tool descriptions.
+**Correction needed:** "Plugin update timestamps" was incorrectly in No Action - moved to May Update.
 
 #### Summary
 
-- **Must Update: 4 items** (4 confirmed from original 5, 1 demoted to May Update)
-  1. NEW SendUserFile tool (CC 2.1.142) -- affects hook-development, agent-development
-  2. NEW Agent tool simplified usage notes (CC 2.1.140) -- affects agent-development
-  3. Security monitor Self-Modification paths (CC 2.1.140) -- affects agent-development, hook-development
-  4. Hook condition evaluator 'impossible' response (CC 2.1.143) -- affects hook-development
+- Must Update: 0 items (0 confirmed, 0 rejected, 0 promoted from below)
+- May Update: 4 items remaining
+  - `/resume` command (original) — kept
+  - MCP paginated tools/list fix (promoted from No Action)
+  - MCP unsupported MIME types (promoted from No Action)
+  - Plugin update timestamps (promoted from No Action)
+- No Action: 5 items (1 demoted from May Update, 3 promoted to May Update)
+- Confidence: **Medium-Low**
+  - Single-source triangulation (CC changelog only, no system-prompts for 2.1.144)
+  - Stage 1 missed 3 plugin-relevant items in initial categorization
+  - No critical documentation gaps identified — all missed items are informational/edge-case
 
-- **Missed Items (promoted to Must Update): 5 items**
-  5. Hook terminalSequence output field (CC 2.1.141) -- affects hook-development
-  6. Hook args field (exec form) (CC 2.1.139) -- affects hook-development
-  7. continueOnBlock for PostToolUse hooks (CC 2.1.139) -- affects hook-development
-  8. worktree.bgIsolation: "none" setting (CC 2.1.143) -- affects agent-development
-  9. Stop hooks block cap (CC 2.1.143) -- affects hook-development
+#### Recommendations
 
-- **May Update: 2 items remaining**
-  - Write tool 'When to use' format (demoted from Must Update)
-  - Snooze tool short-interval warning
+1. **Proceed with caution**: The 4 May Update items are all low-priority and informational. No urgent documentation updates required.
 
-- **No Action: 7 items demoted** (from May Update) + original No Action items
+2. **Re-audit when system-prompts updated**: Once system-prompts extracts 2.1.144, re-verify the `/resume` command and check for any prompt-level changes affecting plugins.
 
-- **Confidence: HIGH** -- Independent verification via WebFetch and system-prompts CHANGELOG confirms all Must Update items. Discovered 5 missed items that should be promoted to Must Update. Stage 1 captured the major items but missed several hook-related features from CC 2.1.139 and 2.1.141-2.1.143.
+3. **Consider documenting MCP pagination**: The `tools/list` pagination fix is a good candidate for a brief note in the MCP integration docs' "Tool Search" section to help users understand tool discovery behavior.
 
-- **Significant Issues Flag: YES** -- 5 missed items discovered (>3 threshold). Stage 1 missed the `args` field, `continueOnBlock`, `terminalSequence`, `worktree.bgIsolation`, and stop hook block cap. These are all plugin-relevant features that should have been caught. The claude-code-guide timeout in Stage 1 likely contributed to missing these items since the CC changelog (WebFetch source) contains this information.
+4. **No Stage 1 quality concerns**: Despite missing 3 items, the misclassifications were borderline cases (bug fixes that happen to affect MCP, marketplace metadata). Stage 1's core methodology is sound.
