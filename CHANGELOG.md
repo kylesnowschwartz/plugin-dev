@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-05-22
+
+### Added
+
+- **agent-development**: Documented Workflow tool for opt-in deterministic multi-subagent orchestration with script metadata, agent hooks, control flow, token budgeting, and resume behavior (CC 2.1.146)
+- **agent-development**: Documented pinned background sessions behavior change — sessions now persist when idle and auto-restart for updates (CC 2.1.147)
+- **plugin-structure**: Documented enhanced plugin discovery screens showing commands, agents, skills, hooks, and MCP/LSP servers before installation (CC 2.1.145)
+- **marketplace-structure**: Documented enhanced plugin discovery impact for marketplace maintainers (CC 2.1.145)
+- **hook-development**: Documented `background_tasks` and `session_crons` fields added to Stop and SubagentStop hook input schemas (CC 2.1.145)
+
 ## [0.16.1] - 2026-05-19
 
 ### Changed
@@ -498,7 +508,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.16.1...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.17.0...HEAD
+[0.17.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.16.1...v0.17.0
 [0.16.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.16.0...v0.16.1
 [0.16.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.14.0...v0.15.0

@@ -555,6 +555,25 @@ Claude Code automatically discovers and loads components:
 
 **Override behavior**: Custom paths in `plugin.json` supplement (not replace) default directories
 
+### Enhanced Plugin Discovery (CC 2.1.145)
+
+Plugin discovery screens now display comprehensive component information before installation:
+
+- **Commands** — User-invocable slash commands
+- **Agents** — Autonomous subagents provided by the plugin
+- **Skills** — Knowledge and guidance skills
+- **Hooks** — Event handlers the plugin registers
+- **MCP servers** — Model Context Protocol servers
+- **LSP servers** — Language Server Protocol servers
+
+**Impact for plugin authors:** Users can now see what components a plugin provides before installing. Ensure your plugin has:
+
+- Clear, descriptive names for all components
+- Meaningful descriptions in frontmatter
+- Well-organized component directories
+
+This transparency helps users make informed decisions about plugin installation.
+
 ## Best Practices
 
 ### Organization

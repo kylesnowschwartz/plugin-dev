@@ -459,11 +459,15 @@ Note: `permission_mode` is not present on SessionStart.
   "permission_mode": "string",
   "hook_event_name": "Stop",
   "stop_hook_active": true,
-  "last_assistant_message": "string"
+  "last_assistant_message": "string",
+  "background_tasks": ["string (CC 2.1.145)"],
+  "session_crons": ["string (CC 2.1.145)"]
 }
 ```
 
 - `stop_hook_active`: Whether a Stop hook is currently processing (prevents infinite recursion)
+- `background_tasks`: List of active background task identifiers (CC 2.1.145)
+- `session_crons`: List of active session cron job identifiers (CC 2.1.145)
 
 **Output:**
 
@@ -558,9 +562,14 @@ When `decision` is `"block"`, Claude receives `reason` as feedback and attempts 
   "agent_id": "string",
   "agent_type": "string",
   "agent_transcript_path": "string (path to subagent's transcript)",
-  "last_assistant_message": "string"
+  "last_assistant_message": "string",
+  "background_tasks": ["string (CC 2.1.145)"],
+  "session_crons": ["string (CC 2.1.145)"]
 }
 ```
+
+- `background_tasks`: List of active background task identifiers (CC 2.1.145)
+- `session_crons`: List of active session cron job identifiers (CC 2.1.145)
 
 **Output:**
 

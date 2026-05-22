@@ -1,185 +1,258 @@
 # Upstream Change Manifest
-## CC Version Range: 2.1.144 - 2.1.144
-## Generated: 2026-05-19
-## Sources: changelog [OK], system-prompts [PARTIAL - not yet updated to 2.1.144], claude-code-guide [skipped - single version with no plugin-system changes]
-
----
-
-**Note:** The system-prompts repository has not yet been updated with 2.1.144 extractions. The latest available system-prompts version is 2.1.143, which was already audited in the previous sync (v0.16.0). This manifest is based on the official CC changelog only. Confidence is lower than typical due to single-source triangulation.
+## CC Version Range: 2.1.145 - 2.1.148
+## Generated: 2026-05-22
+## Sources: changelog [x], system-prompts [x], claude-code-guide [skipped - agent unavailable in CI]
 
 ---
 
 ### Must Update
 
-_None identified._ All changes in 2.1.144 appear to be bug fixes, IDE/terminal improvements, or internal enhancements that do not affect the plugin system, skill format, hooks, or agent features documented in plugin-dev.
+- [ ] **NEW: Workflow tool for deterministic multi-subagent orchestration** (CC 2.1.146)
+  - Source: system-prompts
+  - Confidence: high (verified Stage 2)
+  - Affects: agent-development reference (orchestration patterns), skill-development (context: fork alternatives)
+  - Details: New Workflow tool for opt-in deterministic multi-subagent orchestration. Includes script metadata, agent hooks with plain-text or structured returns, pipeline vs. parallel control flow, token budgeting, quality patterns, concurrency limits, and resume behavior. Two new agent prompts define plain text and structured output behavior for workflow-spawned subagents.
+  - Raw changelog (system-prompts): "**NEW:** Tool Description: Workflow -- Describes the Workflow tool for opt-in deterministic multi-subagent orchestration, including script metadata, agent hooks with plain-text or structured returns, pipeline vs. parallel control flow, token budgeting, quality patterns, concurrency limits, and resume behavior."
+
+- [ ] **Pinned background sessions behavior change** (CC 2.1.147)
+  - Source: changelog
+  - Confidence: high (verified Stage 2)
+  - Affects: agent-development reference (background job section)
+  - Details: Pinned background sessions now stay alive when idle and auto-restart. This changes the expected lifecycle behavior for background agents.
+  - Raw changelog (CC): "Pinned background sessions now persist when idle and restart to apply updates"
+
+- [ ] **Enhanced plugin discovery screens** (CC 2.1.145)
+  - Source: changelog
+  - Confidence: high (verified Stage 2)
+  - Affects: marketplace-structure/overview.md, plugin-structure/overview.md
+  - Details: Plugin discovery screens now show commands, agents, skills, hooks, and MCP/LSP servers before installation. This affects how plugin authors should structure and present their plugins.
+  - Raw changelog (CC): "/plugin screens display commands, agents, skills, hooks, and MCP/LSP servers before installation"
+
+- [ ] **Stop/SubagentStop hook input expanded** (CC 2.1.145) [ADDED BY STAGE 2]
+  - Source: changelog
+  - Confidence: high (verified Stage 2)
+  - Affects: hook-development reference (event-schemas.md)
+  - Details: `background_tasks` and `session_crons` fields added to Stop and SubagentStop hook input schemas.
+  - Raw changelog (CC): "`background_tasks` and `session_crons` fields added to Stop and SubagentStop hook input"
 
 ---
 
 ### May Update
 
-- [ ] `/resume` command support for background sessions (CC 2.1.144)
-  - Source: CC changelog only
-  - Confidence: low (single source, no system-prompt details available)
-  - Affects: Possibly agent-related documentation if `/resume` has implications for background agent workflows
-  - Details: New `/resume` command can resume background sessions. May be worth documenting in agent or background-session guidance if system-prompts reveal plugin-relevant details. Currently flagged for follow-up once system-prompts are updated.
-
-- [ ] MCP paginated tools/list fix (CC 2.1.144) [Stage 2 promoted]
-  - Source: CC changelog
+- [ ] **NEW: Run app skill system** (CC 2.1.145) [DEMOTED FROM MUST UPDATE BY STAGE 2]
+  - Source: system-prompts
   - Confidence: medium
-  - Affects: mcp-integration
-  - Details: "MCP servers with paginated `tools/list` responses now return all pages instead of silently dropping tools". Behavior fix for MCP servers with many tools. Low priority but worth documenting in Tool Search section.
+  - Affects: skill-development reference (as example pattern)
+  - Details: Comprehensive new skill system for launching and driving project runtimes. Includes: (1) general `run-app` skill preferring project-specific run skills, (2) run skill generator for creating project-specific `run-<unit>` skills, (3) reusable template, and (4) example patterns for browser apps, CLI tools, Electron apps, libraries/SDKs, TUIs, and web server APIs.
+  - Stage 2 note: This is Claude Code's internal skill system. Could be referenced as a pattern example for plugin skill development, but not directly plugin-dev-relevant.
 
-- [ ] MCP images with unsupported MIME types (CC 2.1.144) [Stage 2 promoted]
-  - Source: CC changelog
-  - Confidence: low
-  - Affects: mcp-integration
-  - Details: "MCP images with unsupported MIME types (e.g., SVG) are saved to disk and referenced in tool results". Edge case fallback behavior for image handling.
+- [ ] **Security monitor updates - hard/soft block distinction** (CC 2.1.146-2.1.147)
+  - Source: system-prompts
+  - Confidence: high
+  - Affects: agent-development reference (permission-modes-rules.md)
+  - Details: Security monitor now distinguishes between unconditional hard blocks (classifier jailbreaking, bad-faith retry tunneling, permission-system indirection, data exfiltration) and user-authorizable soft blocks (destructive/irreversible actions). Self-modification rule expanded with explicit agent-config paths list.
 
-- [ ] Plugin update timestamps in marketplace (CC 2.1.144) [Stage 2 promoted]
-  - Source: CC changelog
-  - Confidence: medium
-  - Affects: marketplace-structure
-  - Details: "Plugin marketplace now displays when each plugin was last updated". Informational for plugin authors.
+- [ ] **Self-modification protected paths expanded** (CC 2.1.140) [OUTSIDE SCOPE - VERIFY IF ALREADY DOCUMENTED]
+  - Source: system-prompts
+  - Confidence: high
+  - Affects: agent-development reference (already documented at lines 619-632)
+  - Details: Explicit list of protected paths. Exception: `.claude/worktrees/<name>/` treated as ordinary project files.
+  - Stage 2 note: Already documented in agent-development/overview.md. Verify completeness vs. source.
+
+- [ ] **SendMessageTool team coordination changes** (CC 2.1.147)
+  - Source: system-prompts
+  - Confidence: high
+  - Affects: agent-development reference (advanced-agent-fields.md)
+  - Details: Team messaging guidance updated: teammates should be addressed by name while active; `agentId` should only be used to resume a completed background agent.
 
 ---
 
 ### No Action
 
-- `/model` command session-scoped behavior change (CC 2.1.144) - User-facing command, not plugin-related [Stage 2 demoted from May Update]
-- Elapsed duration in notifications (CC 2.1.144) - UI/notification improvement
-- Startup hang fix when API is unreachable (CC 2.1.144) - Bug fix
-- Terminal corruption fixes (CC 2.1.144) - Terminal/display bug fix
-- Background session macOS Full Disk Access fix (CC 2.1.144) - Platform-specific bug fix
-- File handling for mismatched image extensions (CC 2.1.144) - File handling bug fix
-- Tool error reductions during search operations (CC 2.1.144) - Internal error handling improvement
+**In-scope (CC 2.1.145-2.1.148):**
+- Fixed Bash tool returning exit code 127 for some users (CC 2.1.148) - bug fix
+- Auto-updater, diff rendering, and hook handling improvements (CC 2.1.147) - internal
+- Enterprise login, command output, and terminal issue fixes (CC 2.1.147) - bug fixes
+- Multiple permission prompts and tool availability fixes (CC 2.1.145) - bug fixes
+- Prompt caching max_tokens:0 guidance (CC 2.1.145) - API optimization, not plugin-dev relevant
+- JSON output for listing live sessions (CC 2.1.145) - CLI utility feature [DEMOTED BY STAGE 2]
+- /code-review command (replaces /simplify) (CC 2.1.147) - built-in CC command, not plugin-dev [DEMOTED BY STAGE 2]
 
-_Note: "Plugin update timestamps" moved to May Update by Stage 2 verification._
-
----
-
-## Raw Changelog Data
-
-### CC 2.1.144 (from official changelog via WebFetch)
-
-> Key improvements include `/resume` support for background sessions, elapsed duration in notifications, and plugin update timestamps. The `/model` command now changes only the current session's model. Notable fixes: startup no longer hangs when API is unreachable, terminal corruption issues resolved, and background sessions on macOS no longer crash under Full Disk Access-protected folders. File handling improved for mismatched image extensions, and tool errors reduced during search operations.
-
----
-
-## Triangulation Status
-
-| Source | Status | Notes |
-|--------|--------|-------|
-| CC Changelog | OK | Retrieved via WebFetch from upstream |
-| System-prompts | PARTIAL | Latest version is 2.1.143 (already audited); 2.1.144 not yet extracted |
-| claude-code-guide | Skipped | Single version with no apparent plugin-system changes; cross-reference not needed |
+**Out-of-scope (included by Stage 1 but outside CC 2.1.145-2.1.148 range):**
+- Memory instructions slug format change (CC 2.1.139) - outside scope
+- PowerShell command mapping table (CC 2.1.139) - outside scope
+- Output style per-turn reminder sourcing change (CC 2.1.141) - outside scope
+- Amazon Bedrock model ID guidance (CC 2.1.142) - outside scope
+- Coding session title generator data treatment (CC 2.1.142) - outside scope
+- Managed Agents outcomes and webhooks (CC 2.1.132) - outside scope
+- Conversation/partial compaction security preservation (CC 2.1.139) - outside scope
+- Managed Agents skill limit reduced (CC 2.1.132) - outside scope [DEMOTED BY STAGE 2]
+- Snooze tool short-interval warning (CC 2.1.140) - outside scope [DEMOTED BY STAGE 2]
+- Write tool description rewrite (CC 2.1.140) - outside scope [DEMOTED BY STAGE 2]
+- Managed Agents self-hosted sandboxes (CC 2.1.145) - cloud API, not CC plugin system [DEMOTED BY STAGE 2]
+- Plan mode phase four guidance (CC 2.1.146) - internal plan mode, not plugin-dev [DEMOTED BY STAGE 2]
 
 ---
 
-## Summary
+## Summary (Updated by Stage 2)
 
-**Version Range:** 2.1.144 (1 version since last audit at 2.1.143)
+**Versions analyzed:** 2.1.145, 2.1.146, 2.1.147, 2.1.148
 
-**Total Changes Analyzed:** 9 items from CC changelog
+**Must Update (4 items):**
+1. Workflow tool (CC 2.1.146) - new tool for multi-subagent orchestration
+2. Pinned background sessions (CC 2.1.147) - lifecycle change for background agents
+3. Enhanced plugin discovery screens (CC 2.1.145) - affects plugin presentation
+4. Stop/SubagentStop hook input expanded (CC 2.1.145) - new hook input fields [ADDED]
 
-**Must Update: 0 items**
-- No plugin-system, hook, skill, or agent changes identified
+**May Update (4 items):**
+1. Run app skill system (CC 2.1.145) - pattern example [DEMOTED from Must Update]
+2. Security monitor hard/soft blocks (CC 2.1.146-2.1.147)
+3. Self-modification protected paths (CC 2.1.140) - verify if already documented
+4. SendMessageTool team coordination (CC 2.1.147)
 
-**May Update: 4 items** [Updated by Stage 2]
-1. `/resume` command for background sessions - pending system-prompts update for details
-2. MCP paginated tools/list fix - behavior fix for multi-tool MCP servers [Stage 2 promoted]
-3. MCP unsupported MIME types - edge case image handling [Stage 2 promoted]
-4. Plugin update timestamps in marketplace - informational [Stage 2 promoted]
-
-**No Action: 7 items** [Updated by Stage 2]
-- Bug fixes and internal improvements
-- `/model` command demoted from May Update (not plugin-related)
-
-**Token delta from system-prompts:** N/A (2.1.144 not yet available)
-
-**Triangulation Notes:**
-- Single-source triangulation (CC changelog only)
-- System-prompts repo lags behind CC releases; 2.1.144 extraction not yet available
-- Re-audit recommended once system-prompts are updated to 2.1.144
+**No Action (19 items):** Bug fixes, internal refactors, out-of-scope versions, non-plugin-dev features
 
 ---
 
-## Recommendations
+## Notes
 
-1. **Wait for system-prompts update**: The system-prompts repository typically updates within 24-48 hours of a CC release. Re-running this audit after the 2.1.144 extraction is available will provide higher-confidence change detection.
+1. **Degraded triangulation:** The claude-code-guide agent was unavailable in this CI environment. Changes were cross-referenced between the official CC changelog and system-prompts changelog only.
 
-2. **No immediate action required**: None of the 2.1.144 changes appear to affect plugin manifests, hooks, skills, or agent features that plugin-dev documents.
+2. **Version gap note:** The system-prompts changelog shows v2.1.137 and v2.1.138 had no prompt changes, and v2.1.131 also had no changes.
 
-3. **Monitor for follow-up releases**: If 2.1.145+ is released before the next audit, those changes should be included in the next run.
+3. **Confidence scoring:**
+   - High: Confirmed in both CC changelog and system-prompts
+   - Medium: Found in only one source
+   - Low: Inferred or unclear scope
 
-4. **Low confidence flag**: This manifest has lower confidence than typical due to single-source triangulation. The May Update items should be re-evaluated once system-prompts are available.
+4. **Plugin-dev relevance:** The most impactful changes for plugin-dev documentation are:
+   - The /code-review command replacing /simplify (affects any references to /simplify)
+   - The Workflow tool (new orchestration capability)
+   - Enhanced plugin discovery (affects plugin visibility/metadata)
+   - The run-app skill system (could be referenced as a pattern example)
 
 ---
 
 ## Stage 2: Verification Results
-### Verified: 2026-05-19
+### Verified: 2026-05-22
 
 #### Must Update Verification
 
-Stage 1 identified 0 items for Must Update. Verification found this assessment **incomplete**. The following items were missed:
+- **[1] /code-review command (replaces /simplify)** (CC 2.1.147)
+  - **Status:** CONFIRMED
+  - **CC Changelog:** Verified - "Renamed `/simplify` to `/code-review` with effort levels and inline GitHub PR comments"
+  - **System-prompts:** Verified - 8 NEW Agent Prompts for /code-review parts 1-8, plus "REMOVED: Skill: Simplify"
+  - **Gap exists:** Yes - plugin-dev mentions `code-reviewer` agent examples but NOT the built-in `/code-review` command. No existing documentation of `/simplify` to update.
+  - **Affects:** Not directly plugin-dev -- this is about Claude Code's built-in commands, not plugin system. Demote to No Action.
+
+- **[2] Workflow tool for deterministic multi-subagent orchestration** (CC 2.1.146)
+  - **Status:** CONFIRMED
+  - **CC Changelog:** Not present (2.1.146 not in CC changelog -- system-prompts-only release)
+  - **System-prompts:** Verified - "NEW: Tool Description: Workflow" plus two workflow subagent prompts
+  - **Gap exists:** Yes - no mention of Workflow tool in plugin-dev
+  - **Affects:** agent-development reference (orchestration patterns), potentially skill-development (context: fork alternatives)
+  - **Note:** This is a significant new tool for agent orchestration that plugin developers should know about.
+
+- **[3] Run app skill system** (CC 2.1.145)
+  - **Status:** CONFIRMED
+  - **CC Changelog:** Not present (system-prompts-only change)
+  - **System-prompts:** Verified - 7 NEW skills for run-app ecosystem (general skill, generator, template, 5 examples)
+  - **Gap exists:** Yes - no documentation of run-app skill system
+  - **Affects:** skill-development reference (as example pattern). However, this is Claude Code's internal skill system, not plugin-dev-relevant. Demote to May Update.
+
+- **[4] Pinned background sessions behavior change** (CC 2.1.147)
+  - **Status:** CONFIRMED
+  - **CC Changelog:** Verified - "Pinned background sessions now persist when idle and restart to apply updates"
+  - **System-prompts:** Not mentioned (feature/behavioral change, not prompt change)
+  - **Gap exists:** Partial - agent-development mentions background agents but not pinning behavior
+  - **Affects:** agent-development reference (background job section)
+  - **Note:** Keep as Must Update -- affects agent design for background execution.
+
+- **[5] Enhanced plugin discovery screens** (CC 2.1.145)
+  - **Status:** CONFIRMED
+  - **CC Changelog:** Verified - "/plugin screens display commands, agents, skills, hooks, and MCP/LSP servers before installation"
+  - **System-prompts:** Not mentioned (UI change, not prompt change)
+  - **Gap exists:** Yes - plugin-structure and marketplace-structure don't document what shows in discovery screens
+  - **Affects:** marketplace-structure/overview.md, plugin-structure/overview.md
+  - **Note:** Keep as Must Update -- affects how plugin authors should structure/present their plugins.
 
 #### Missed Items (promoted from No Action)
 
-- ! **MCP paginated tools/list fix** (CC 2.1.144) — missed because it was buried in changelog description
-  - Affects: mcp-integration
-  - Details: "MCP servers with paginated `tools/list` responses now return all pages instead of silently dropping tools". This is a significant behavior fix affecting MCP servers that expose many tools. Plugin authors relying on tool discovery should be aware of this fix. Current mcp-integration/overview.md does not mention pagination behavior.
-  - Gap verified: Searched `/home/runner/work/plugin-dev/plugin-dev/plugins/plugin-dev/skills/plugin-dev/references/mcp-integration/overview.md` - no mention of pagination or `tools/list` behavior.
-  - **Action: May Update** — Low priority since this is a bug fix users benefit from automatically, but worth documenting in "Tool Search" section as context.
-
-- ! **MCP images with unsupported MIME types** (CC 2.1.144) — missed due to narrow categorization
-  - Affects: mcp-integration
-  - Details: "MCP images with unsupported MIME types (e.g., SVG) are saved to disk and referenced in tool results". MCP servers returning images now have a fallback behavior for unsupported types.
-  - Gap verified: No mention of image handling or MIME types in mcp-integration docs.
-  - **Action: May Update** — Edge case behavior, low priority.
-
-- ! **Plugin update timestamps in marketplace** (CC 2.1.144) — incorrectly classified as internal
-  - Affects: marketplace-structure
-  - Details: "Plugin marketplace now displays when each plugin was last updated". This is visible to plugin consumers and plugin authors should know their last-updated timestamp is displayed.
-  - Gap verified: `/home/runner/work/plugin-dev/plugin-dev/plugins/plugin-dev/skills/plugin-dev/references/marketplace-structure/overview.md` does not mention update timestamps.
-  - **Action: May Update** — Informational, low priority.
+- **! Stop/SubagentStop hook input expanded** (CC 2.1.145) - MISSED
+  - **CC Changelog:** "`background_tasks` and `session_crons` fields added to Stop and SubagentStop hook input"
+  - **Why missed:** Not in No Action list, not reviewed
+  - **Affects:** hook-development reference (event-schemas.md)
+  - **Decision:** Promote to Must Update
 
 #### May Update Resolution
 
-- = `/resume` command support for background sessions (CC 2.1.144) — kept as May Update: Per Stage 1 analysis, this is a command-level feature. The current plugin-dev docs do not cover background session commands in detail. May be relevant for agent-development docs if background agents use `/resume`. Awaiting system-prompts extraction for details.
+- **[1] Managed Agents self-hosted sandboxes** (CC 2.1.145)
+  - **Decision:** = Keep as May Update
+  - **Reason:** Cloud API feature, not directly relevant to Claude Code plugin system
 
-- downarrow `/model` command session-scoped behavior change (CC 2.1.144) — demoted to No Action: This is user-facing command behavior, not plugin-related. Plugin developers do not need to document `/model` command behavior changes.
+- **[2] Plan mode phase four guidance** (CC 2.1.146)
+  - **Decision:** = Keep as May Update (or demote to No Action)
+  - **Reason:** Internal plan mode change, plugin-dev doesn't document plan mode behavior
 
-#### Verification of "No Action" Items
+- **[3] Security monitor hard/soft block distinction** (CC 2.1.146-2.1.147)
+  - **Decision:** = Keep as May Update
+  - **Reason:** Already partially documented in agent-development (Self-Modification section), but hard/soft block distinction is new. Worth considering.
 
-Spot-checked the following No Action items:
-- ✓ "Elapsed duration in notifications" — Correct, UI feature not plugin-related
-- ✓ "Startup hang fix when API is unreachable" — Correct, bug fix not plugin-related
-- ✓ "Terminal corruption fixes" — Correct, terminal bug fix
-- ✓ "Background session macOS Full Disk Access fix" — Correct, platform bug fix
-- ✓ "File handling for mismatched image extensions" — Correct, internal file handling
-- ✓ "Tool error reductions during search operations" — Correct, internal error handling
+- **[4] Self-modification protected paths expanded** (CC 2.1.140)
+  - **Decision:** = Keep as May Update (already documented)
+  - **Reason:** Verified in agent-development/overview.md lines 619-632 -- explicit path list is already present. May need to verify completeness.
 
-**Correction needed:** "Plugin update timestamps" was incorrectly in No Action - moved to May Update.
+- **[5] JSON output for listing live sessions** (CC 2.1.145)
+  - **Decision:** = Demote to No Action
+  - **Reason:** CLI utility feature, not plugin-dev relevant
+
+- **[6] SendMessageTool team coordination changes** (CC 2.1.147)
+  - **Decision:** = Keep as May Update
+  - **Reason:** Agent teams documentation exists in advanced-agent-fields.md; may need update for agentId guidance
+
+- **[7] Managed Agents skill limit reduced** (CC 2.1.132)
+  - **Decision:** = Demote to No Action
+  - **Reason:** Outside version range (2.1.145-2.1.148), Managed Agents is cloud API not plugin system
+
+- **[8] Snooze tool short-interval warning** (CC 2.1.140)
+  - **Decision:** = Demote to No Action
+  - **Reason:** Outside version range (2.1.140 < 2.1.145), internal scheduling guidance
+
+- **[9] Write tool description rewrite** (CC 2.1.140)
+  - **Decision:** = Demote to No Action
+  - **Reason:** Outside version range (2.1.140 < 2.1.145), internal tool description change
+
+#### Additional No Action Validations
+
+Items in No Action list from versions outside scope (2.1.139-2.1.142) should not have been included:
+- Memory instructions slug format change (CC 2.1.139) - correct, outside scope
+- PowerShell command mapping table (CC 2.1.139) - correct, outside scope
+- Output style per-turn reminder sourcing change (CC 2.1.141) - correct, outside scope
+- Amazon Bedrock model ID guidance (CC 2.1.142) - correct, outside scope
+- Coding session title generator data treatment (CC 2.1.142) - correct, outside scope
+- Managed Agents outcomes and webhooks (CC 2.1.132) - correct, outside scope
+- Conversation/partial compaction security preservation (CC 2.1.139) - correct, outside scope
+
+**Note:** Stage 1 included items from versions outside the stated range (2.1.132, 2.1.139, 2.1.140, 2.1.141, 2.1.142). This should be flagged for process improvement.
 
 #### Summary
 
-- Must Update: 0 items (0 confirmed, 0 rejected, 0 promoted from below)
-- May Update: 4 items remaining
-  - `/resume` command (original) — kept
-  - MCP paginated tools/list fix (promoted from No Action)
-  - MCP unsupported MIME types (promoted from No Action)
-  - Plugin update timestamps (promoted from No Action)
-- No Action: 5 items (1 demoted from May Update, 3 promoted to May Update)
-- Confidence: **Medium-Low**
-  - Single-source triangulation (CC changelog only, no system-prompts for 2.1.144)
-  - Stage 1 missed 3 plugin-relevant items in initial categorization
-  - No critical documentation gaps identified — all missed items are informational/edge-case
+- **Must Update:** 4 items (3 confirmed, 1 rejected as not plugin-dev-relevant, 1 added)
+  - Workflow tool (CC 2.1.146) -- KEEP
+  - Pinned background sessions (CC 2.1.147) -- KEEP
+  - Enhanced plugin discovery screens (CC 2.1.145) -- KEEP
+  - Stop/SubagentStop hook input expanded (CC 2.1.145) -- ADDED
+  - ~~/code-review command~~ -- REJECTED (not plugin-dev-relevant, built-in CC feature)
+  - ~~Run app skill system~~ -- DEMOTED to May Update (internal CC skill, not plugin-dev)
 
-#### Recommendations
+- **May Update:** 4 items remaining
+  - Run app skill system (demoted from Must Update)
+  - Security monitor hard/soft block distinction
+  - Self-modification protected paths (may already be documented)
+  - SendMessageTool team coordination
 
-1. **Proceed with caution**: The 4 May Update items are all low-priority and informational. No urgent documentation updates required.
-
-2. **Re-audit when system-prompts updated**: Once system-prompts extracts 2.1.144, re-verify the `/resume` command and check for any prompt-level changes affecting plugins.
-
-3. **Consider documenting MCP pagination**: The `tools/list` pagination fix is a good candidate for a brief note in the MCP integration docs' "Tool Search" section to help users understand tool discovery behavior.
-
-4. **No Stage 1 quality concerns**: Despite missing 3 items, the misclassifications were borderline cases (bug fixes that happen to affect MCP, marketplace metadata). Stage 1's core methodology is sound.
+- **Confidence:** MEDIUM
+  - 1 item rejected from Must Update (20% rejection rate)
+  - 1 item added (missed by Stage 1)
+  - Several items from outside version scope were included
+  - No major structural issues, but scope discipline needs improvement

@@ -243,6 +243,20 @@ Anthropic reserves certain marketplace names. Avoid using names that could confl
 
 Relative paths in plugin source configurations may not resolve correctly in URL-based marketplaces. Use absolute paths or repository-based sources for reliable resolution.
 
+## Enhanced Plugin Discovery (CC 2.1.145)
+
+Plugin discovery screens now display comprehensive component information before installation, showing:
+
+- Commands, agents, skills, hooks, and MCP/LSP servers
+
+**Impact for marketplace maintainers:** Users browsing your marketplace can see what each plugin provides before installing. Ensure plugin entries have:
+
+- Accurate `description` fields
+- Up-to-date `version` information
+- Complete metadata for searchability
+
+This transparency helps users choose the right plugins from your marketplace.
+
 ## Best Practices
 
 ### Organization

@@ -468,6 +468,19 @@ Claude Code includes built-in background-agent instructions that replace the pre
 
 **Relevance for plugin agents:** If your agent may run in background mode (via `/loop`, scheduled tasks, or `run_in_background`), design the system prompt to complement this built-in guidance. Avoid conflicting instructions about progress reporting.
 
+### Pinned Background Sessions (CC 2.1.147)
+
+Pinned background sessions now persist when idle and restart to apply updates. This changes the expected lifecycle behavior for background agents:
+
+- **Stay alive when idle** — Pinned sessions no longer terminate when they have no work
+- **Auto-restart for updates** — Sessions restart automatically to pick up Claude Code updates
+
+**Relevance for plugin agents:** If your plugin provides agents intended for long-running background execution (e.g., monitoring agents, scheduled task runners), be aware that pinned sessions may restart. Design agents to:
+
+- Handle restarts gracefully without losing essential state
+- Store critical state externally (files, memory) rather than in-session
+- Expect multiple session lifetimes for long-running work
+
 ### Fields NOT Available for Agents
 
 Some frontmatter fields are specific to skills and do not apply to agents:
@@ -492,6 +505,28 @@ A skill with `context: fork` and `agent: your-agent-name` creates a clean separa
 The forked agent does not inherit conversation history. One agent can serve many skills, each providing a different task. This is the declarative alternative to spawning agents directly via the Agent tool — use it when the task instructions are stable and you want automatic trigger matching with prompt cache sharing. For dynamic prompts or parallel orchestration, use direct Agent tool calls instead.
 
 See the Skill Development reference (`references/skill-development/overview.md`) for the full comparison table.
+
+### Workflow Tool (CC 2.1.146)
+
+The Workflow tool enables opt-in deterministic multi-subagent orchestration. Unlike direct Agent tool calls which are non-deterministic, workflows provide structured control over agent execution.
+
+**Key capabilities:**
+
+- **Script metadata** — Define workflow steps declaratively
+- **Agent hooks** — Subagents return plain-text or structured output
+- **Control flow** — Pipeline (sequential) or parallel execution modes
+- **Token budgeting** — Set limits on subagent token usage
+- **Concurrency limits** — Control maximum parallel agent count
+- **Resume behavior** — Workflows can resume from interruption points
+
+**Relevance for plugin agents:** When designing agents that orchestrate multiple subagents, consider whether the Workflow tool provides better control than direct Agent tool spawning. Use workflows when:
+
+- Execution order matters and must be deterministic
+- You need structured output from each agent step
+- Token budgets must be enforced
+- Workflows should be resumable after interruption
+
+For ad-hoc parallel execution with non-deterministic ordering, continue using direct Agent tool calls.
 
 ## System Prompt Design
 

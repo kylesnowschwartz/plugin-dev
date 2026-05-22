@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.144 (2026-05-19)
-Plugin-dev version: 0.16.1
+Last audited: Claude Code 2.1.148 (2026-05-22)
+Plugin-dev version: 0.17.0
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.17.0 | 2.1.145-2.1.148 | 2026-05-22 | Workflow tool, pinned background sessions, enhanced plugin discovery, Stop/SubagentStop hook fields |
 | v0.16.1 | 2.1.144 | 2026-05-19 | Bug fixes only — no plugin-system changes |
 | v0.16.0 | 2.1.139-2.1.143 | 2026-05-16 | SendUserFile tool, Agent tool usage notes, Self-Modification protected paths, `worktree.bgIsolation` setting, hook `args` field, `continueOnBlock` for PostToolUse, `terminalSequence` output, Stop hook `impossible` response + 8-block cap |
 | v0.15.0 | 2.1.133-2.1.138 | 2026-05-10 | `effort.level` hook input + `$CLAUDE_EFFORT` env var, `worktree.baseRef` setting, subagent skill discovery fix, Bash tool dedicated tools guidance |
