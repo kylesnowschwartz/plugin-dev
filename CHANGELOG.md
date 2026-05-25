@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-05-25
+
+### Added
+
+- **agent-development**: Documented Workflow tool for opt-in deterministic multi-subagent orchestration with script metadata, pipeline/parallel control flow, token budgeting, and quality patterns (CC 2.1.146, 2.1.149)
+- **agent-development**: Documented pinned background sessions via `Ctrl+T` in `claude agents` that remain alive during idle and restart for updates (CC 2.1.147)
+- **agent-development**: Documented fix for plugin agents with multiple `Agent(...)` entries now retaining all types (CC 2.1.147)
+- **agent-development**: Documented `CLAUDE_CODE_SUBAGENT_MODEL` environment variable now applying to teammate processes (CC 2.1.147)
+- **agent-development**: Documented `claude agents --json` flag for machine-readable agent listing (CC 2.1.145)
+- **hook-development**: Documented fix for hook `if` wildcard patterns with shell tool prefixes like `PowerShell(git push*)` (CC 2.1.147)
+- **hook-development**: Documented `background_tasks` and `session_crons` input fields for Stop and SubagentStop hooks (CC 2.1.145)
+- **mcp-integration**: Documented `allowAllClaudeAiMcps` enterprise setting for loading claude.ai cloud MCP connectors (CC 2.1.149)
+- **mcp-integration**: Documented MCP server pagination fix now returning all resources beyond page 1 (CC 2.1.147)
+- **plugin-structure**: Documented `/plugin` Discover and Browse screens showing full plugin contents before installation (CC 2.1.145)
+
 ## [0.16.1] - 2026-05-19
 
 ### Changed
@@ -498,7 +513,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.16.1...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.17.0...HEAD
+[0.17.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.16.1...v0.17.0
 [0.16.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.16.0...v0.16.1
 [0.16.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.14.0...v0.15.0

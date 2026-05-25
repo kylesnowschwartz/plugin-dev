@@ -805,6 +805,19 @@ claude plugin prune
 - **Dependency handling**: `plugin install` now automatically handles missing dependencies, installing required plugins from configured marketplaces
 - **Marketplace blocking enforced**: Plugins from blocked marketplaces (configured via `blockedMarketplaces` in managed settings) cannot be installed
 
+### Plugin Discovery Preview (CC 2.1.145)
+
+The `/plugin` Discover and Browse screens now show a plugin's full contents before installation:
+
+- Commands
+- Agents
+- Skills
+- Hooks
+- MCP servers
+- LSP servers
+
+This enables users to evaluate what capabilities a plugin provides before committing to installation. Plugin developers should ensure their manifests and component descriptions are clear and informative.
+
 ### Additional Source Types
 
 ```bash

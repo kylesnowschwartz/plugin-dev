@@ -28,6 +28,16 @@ Plugin-bundled MCP servers auto-start and interact with user/project MCP configs
 
 The server name `workspace` is reserved by Claude Code. Do not use `"workspace"` as an MCP server name in plugin configurations — it will conflict with Claude Code's internal workspace server.
 
+### Enterprise MCP Settings (CC 2.1.149)
+
+The `allowAllClaudeAiMcps` enterprise setting enables loading claude.ai cloud MCP connectors alongside `managed-mcp.json` configurations. When enabled by administrators:
+
+- Cloud MCP connectors from claude.ai become available
+- Works alongside existing managed MCP configurations
+- Enables access to Anthropic-hosted MCP services
+
+This setting is administrator-controlled via enterprise managed settings. Plugin developers building for enterprise environments should be aware that additional MCP servers may be available beyond what's explicitly configured.
+
 ## MCP Server Configuration Methods
 
 Plugins can bundle MCP servers in two ways:
@@ -511,6 +521,8 @@ Handle MCP server unavailability:
 - Check server URL and configuration
 
 **Auto-retry (CC 2.1.121):** MCP servers now auto-retry up to 3 times for transient startup errors, reducing spurious connection failures.
+
+**Pagination fix (CC 2.1.147):** MCP server pagination now correctly returns all resources, templates, and prompts beyond page 1. Prior to this fix, only the first page of results was returned for servers with many items.
 
 ### Tool Call Errors
 

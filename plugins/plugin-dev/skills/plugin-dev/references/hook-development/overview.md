@@ -168,7 +168,7 @@ Each hook entry in a matcher group supports these fields:
 ```
 
 - `args`: Array of command arguments for exec-form spawning (CC 2.1.139). When provided, the command is executed directly without shell interpolation, which is safer for hooks that pass user-controlled data. Example: `"args": ["--file", "$FILE_PATH"]`. The `command` field becomes the executable path when `args` is present.
-- `if`: Conditional execution using permission rule syntax (e.g., `Bash(git *)` runs the hook only for git commands). When set, the hook fires only when the tool call matches the pattern. Combines with `matcher` for precise targeting — `matcher` selects the event, `if` filters within it. Added in CC 2.1.85. CC 2.1.88 fixed filtering to properly match compound commands (e.g., `ls && git push`) and commands with env var prefixes (e.g., `FOO=bar git push`).
+- `if`: Conditional execution using permission rule syntax (e.g., `Bash(git *)` runs the hook only for git commands). When set, the hook fires only when the tool call matches the pattern. Combines with `matcher` for precise targeting — `matcher` selects the event, `if` filters within it. Added in CC 2.1.85. CC 2.1.88 fixed filtering to properly match compound commands (e.g., `ls && git push`) and commands with env var prefixes (e.g., `FOO=bar git push`). CC 2.1.147 fixed wildcard patterns with shell tool prefixes (e.g., `PowerShell(git push*)`) to work correctly.
 - `timeout`: Max execution time in seconds. Defaults vary by type (command: 60s, prompt: 30s, http: 30s, agent: 60s)
 - `statusMessage`: Shown in the UI while the hook runs
 - `once`: Run only once per session (not per event occurrence)

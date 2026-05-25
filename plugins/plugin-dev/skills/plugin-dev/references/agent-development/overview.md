@@ -650,9 +650,43 @@ The `worktree.bgIsolation` setting controls whether background sessions automati
 
 Use `"none"` when background agents need to modify the main working directory directly (e.g., for refactoring tasks that should affect the current branch). Configure in user or project settings.
 
+### Pinned Background Sessions (CC 2.1.147)
+
+Background sessions can be pinned via `Ctrl+T` in `claude agents`. Pinned sessions:
+
+- Remain alive during idle periods instead of being shed
+- Restart in-place for Claude Code updates
+- Are only shed under memory pressure after non-pinned sessions
+
+Use pinning for background agents that should persist across sessions, such as monitoring agents or long-running orchestrators.
+
 ### Subagent Skill Discovery (CC 2.1.133)
 
 **Resolved:** Subagents now correctly discover project, user, and plugin skills via the Skill tool. Prior to CC 2.1.133, subagents could not invoke skills, which limited their ability to leverage plugin-provided knowledge. If your agents depend on skills, ensure users are on CC 2.1.133 or later.
+
+### Multiple Agent Tool Entries (CC 2.1.147)
+
+**Resolved:** Plugin agents declaring multiple `Agent(...)` entries in their `tools:` frontmatter now retain all agent types, not just the last one. Previously, only the final `Agent(...)` entry was preserved. This fix enables agents that need to spawn multiple specialized subagent types.
+
+Example that now works correctly:
+
+```yaml
+tools: Read, Grep, Agent(code-reviewer), Agent(test-generator), Write
+```
+
+### CLAUDE_CODE_SUBAGENT_MODEL Scope (CC 2.1.147)
+
+The `CLAUDE_CODE_SUBAGENT_MODEL` environment variable now applies to teammate processes in agent teams, not just direct subagents. This enables consistent model selection across all spawned agents in team-based workflows.
+
+### claude agents --json (CC 2.1.145)
+
+List live Claude sessions as JSON for scripting and automation:
+
+```bash
+claude agents --json
+```
+
+Returns a JSON array of active agent sessions with their IDs, types, and status. Useful for building monitoring dashboards or integration scripts that need to enumerate running agents.
 
 ### Namespacing
 
@@ -774,6 +808,33 @@ When designing agents that run as background jobs or forks:
 **Restricting spawnable agents:** Use `Task(agent_type1, agent_type2)` syntax in settings.json allow rules to control which agent types can be spawned. Omitting `Task` entirely prevents subagent spawning.
 
 **Built-in agent types:** Explore (read-only, Haiku), Plan (read-only research), general-purpose (all tools), Bash (terminal commands), statusline-setup (Haiku), Claude Code Guide (Haiku).
+
+## Workflow Tool (CC 2.1.146)
+
+The Workflow tool enables opt-in deterministic multi-subagent orchestration. Use workflows when you need predictable execution patterns, independent verification, and scale beyond a single context.
+
+**Key capabilities:**
+
+- **Script metadata**: Define workflow structure declaratively
+- **Agent hooks**: Return plain-text or structured results from subagents
+- **Pipeline vs parallel**: Control sequential and concurrent execution
+- **Token budgeting**: Manage token allocation across workflow stages
+- **Quality patterns**: Multi-modal sweeps, completeness critics, bounded coverage logging
+- **Concurrency limits**: Control parallel agent execution
+- **Resume behavior**: Continue workflows from interruption points
+
+**When to use Workflow vs Agent tool:**
+
+| Use Case | Tool |
+|---|---|
+| Decompose broad work with independent checks | Workflow |
+| Handle scale beyond one context | Workflow |
+| Simple delegation to a focused subagent | Agent |
+| Dynamic, context-dependent agent spawning | Agent |
+
+**Best practice (CC 2.1.149):** Scout inline before orchestration — explore the problem space with simple queries before defining a full workflow. This helps validate the approach before committing to a multi-stage pipeline.
+
+Plugin developers can leverage workflows for complex automation that requires deterministic execution. Skills and agents that orchestrate multiple stages benefit from the Workflow tool's structured approach to multi-subagent coordination.
 
 ## Agent Teams (Experimental)
 
