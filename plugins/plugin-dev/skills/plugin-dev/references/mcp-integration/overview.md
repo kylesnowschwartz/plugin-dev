@@ -228,6 +228,13 @@ Env vars support fallback values: `${VAR:-default_value}`. Supported in `command
 
 **MCP server identity variables (CC 2.1.85):** Claude Code injects `CLAUDE_CODE_MCP_SERVER_NAME` and `CLAUDE_CODE_MCP_SERVER_URL` into `headersHelper` scripts, enabling server self-identification in multi-server setups.
 
+**Stdio server environment variables (CC 2.1.154):** All stdio MCP servers automatically receive these environment variables:
+
+- `CLAUDE_CODE_SESSION_ID` — Current session identifier
+- `CLAUDECODE=1` — Marker indicating the server is running under Claude Code
+
+These variables enable stdio servers to log session context, correlate with other systems, or adjust behavior when running as a Claude Code MCP server.
+
 **Best practice:** Document all required environment variables in plugin README.
 
 ## MCP Tool Naming

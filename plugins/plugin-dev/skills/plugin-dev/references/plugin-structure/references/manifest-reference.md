@@ -355,6 +355,39 @@ MCP server configuration location or inline definition.
 - Complex plugins: External `.mcp.json` file
 - Multiple servers: Always use external file
 
+#### defaultEnabled
+
+**Type**: Boolean
+**Default**: `true`
+**Added**: CC 2.1.154
+**Example**: `false`
+
+Controls whether the plugin is enabled by default after installation.
+
+```json
+{
+  "name": "optional-feature",
+  "defaultEnabled": false
+}
+```
+
+**Behavior:**
+
+- `true` (default): Plugin is active immediately after installation
+- `false`: Plugin must be explicitly enabled via `/plugin` command
+
+**Use cases:**
+
+- **Optional features**: Plugins that should only be active when explicitly requested
+- **Experimental plugins**: Beta features users should opt into
+- **Heavy plugins**: Plugins with significant overhead that users may not always need
+
+**User experience:**
+
+- After installing a `defaultEnabled: false` plugin, users see it listed as "disabled"
+- Users enable via `/plugin enable <name>` or through plugin management UI
+- The marketplace may suggest relevant disabled plugins based on current directory context
+
 #### outputStyles
 
 **Type**: String or Array of strings

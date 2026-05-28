@@ -201,6 +201,8 @@ Which model the agent should use.
 - `sonnet` - Balanced performance; most use cases (default recommendation)
 - `opus` - Complex reasoning; detailed analysis; highest capability needed
 
+**Opus 4.8 (CC 2.1.154):** Claude Opus 4.8 is the current most powerful Opus model with a 1M input window. When using `opus`, Claude Code defaults to high-effort reasoning. This means agents using Opus 4.8 automatically benefit from extended thinking capabilities without explicit configuration.
+
 **Recommendation:** Use `inherit` (recommended default) unless the agent specifically needs:
 
 - `haiku` for fast, cost-sensitive operations
@@ -477,6 +479,25 @@ Claude Code includes built-in background-agent instructions that replace the pre
   - `failed:` — Task failed with error
 
 **Relevance for plugin agents:** If your agent may run in background mode (via `/loop`, scheduled tasks, or `run_in_background`), design the system prompt to complement this built-in guidance. Avoid conflicting instructions about progress reporting.
+
+### Background Session Temporary Directory (CC 2.1.154)
+
+Background sessions should write temporary files to `$CLAUDE_JOB_DIR/tmp` rather than directly to `$CLAUDE_JOB_DIR`. This change provides better organization and cleanup of temporary artifacts created during background job execution.
+
+**Before (deprecated):**
+```bash
+# Don't write directly to $CLAUDE_JOB_DIR
+echo "data" > $CLAUDE_JOB_DIR/scratch.txt
+```
+
+**After (recommended):**
+```bash
+# Use the /tmp subdirectory for temporary files
+mkdir -p $CLAUDE_JOB_DIR/tmp
+echo "data" > $CLAUDE_JOB_DIR/tmp/scratch.txt
+```
+
+Plugin agents that run as background jobs should update any temporary file handling to use this subdirectory pattern.
 
 ### Fields NOT Available for Agents
 

@@ -15,6 +15,22 @@ For these cases, use the **AskUserQuestion tool** within command execution rathe
 
 ## When to Use AskUserQuestion
 
+### Tightened Usage Guidance (CC 2.1.154)
+
+Agents should use AskUserQuestion **only when blocked on a decision that cannot be resolved from the request, code, or sensible defaults**. This prevents unnecessary prompting and improves agent autonomy.
+
+**Ask when:**
+- The decision is genuinely ambiguous
+- Multiple valid approaches exist with different trade-offs
+- User preference materially affects the outcome
+- No sensible default applies
+
+**Don't ask when:**
+- A sensible default exists
+- The answer can be inferred from context or code
+- The decision doesn't significantly impact the result
+- You're just confirming something obvious
+
 ### Use AskUserQuestion When
 
 1. **Multiple choice decisions** with explanations needed
