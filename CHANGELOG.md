@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-05-29
+
+### Changed
+
+- **Maintainer tooling relocated out of the shipped plugin**: Moved the `update-from-upstream` orchestration and its three verification agents (`changelog-differ`, `update-manifest-verifier`, `update-reviewer`) from `plugins/plugin-dev/` to the repo's `.claude/` directory. These exist only to keep this plugin's docs synced with Claude Code releases; they no longer load into context or clutter the skill/agent menus for users who install the plugin. They remain fully available to local development and the `upstream-sync.yml` CI workflow, which discovers them via the Agent SDK's `project` setting source.
+
+### Removed
+
+- **Shipped plugin no longer bundles the upstream-sync skill and agents** — the plugin now ships 1 skill (`plugin-dev`) and 3 agents (`plugin-validator`, `skill-reviewer`, `agent-creator`).
+
 ## [0.17.0] - 2026-05-28
 
 ### Added

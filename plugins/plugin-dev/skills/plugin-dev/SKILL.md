@@ -30,14 +30,5 @@ Each topic directory also contains additional references/, examples/, and script
 | **plugin-validator** | Validates plugin structure and manifests |
 | **skill-reviewer** | Reviews skill quality and triggering |
 | **agent-creator** | Generates new agents from descriptions |
-| **changelog-differ** | Discovers upstream Claude Code changes (Stage 1) |
-| **update-manifest-verifier** | Validates change manifest (Stage 2) |
-| **update-reviewer** | Verifies applied documentation updates (Stage 4) |
-
-## Maintenance Skills
-
-| Skill | Purpose |
-|-------|---------|
-| **update-from-upstream** | Sync plugin-dev docs with Claude Code upstream releases |
 
 $ARGUMENTS

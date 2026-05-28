@@ -38,15 +38,17 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           use_commit_signing: true
           show_full_output: true
-          plugin_marketplaces: "./"
-          plugins: "plugin-dev"
           prompt: |
             You are running an automated upstream sync for the plugin-dev plugin.
 
             ## Task
 
-            Run the `plugin-dev:update-from-upstream` skill. Follow all four stages
-            of the pipeline exactly as documented in the skill.
+            Read the orchestration instructions at
+            `.claude/skills/update-from-upstream/SKILL.md` and follow all four
+            stages of the pipeline exactly as documented. The pipeline's
+            verification agents (`changelog-differ`, `update-manifest-verifier`,
+            `update-reviewer`) are repo-scoped subagents in `.claude/agents/` and
+            are dispatched via the Agent tool — no plugin install is required.
 
             ## CI Overrides
 

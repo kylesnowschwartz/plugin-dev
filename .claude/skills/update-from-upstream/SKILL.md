@@ -63,7 +63,7 @@ Independently verify the change manifest at .agent-history/upstream-changes.md.
 
 Re-fetch the CC changelog yourself (do not trust Stage 1's data). Check every
 item for correctness, scan for missed changes, and validate topic mappings by
-reading the reference docs at skills/plugin-dev/references/<topic>/overview.md.
+reading the reference docs at plugins/plugin-dev/skills/plugin-dev/references/<topic>/overview.md.
 
 Follow your agent instructions exactly.
 ```

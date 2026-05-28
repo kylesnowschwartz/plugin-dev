@@ -51,7 +51,7 @@ Use `offset: 1, limit: 200` to avoid reading the entire file.
 For each item:
 1. Confirm the change actually exists in the changelog at the stated version
 2. Confirm the classification is correct (does it actually affect the plugin system?)
-3. Confirm the "Affects" skill mapping — read the target SKILL.md at `${CLAUDE_PLUGIN_ROOT}/skills/<skill-name>/SKILL.md` to verify this is the right skill
+3. Confirm the "Affects" topic mapping — read the target reference doc at `plugins/plugin-dev/skills/plugin-dev/references/<topic>/overview.md` to verify this is the right topic
 4. Check whether the gap actually exists (maybe plugin-dev already documents this feature)
 
 ### Step 4: Scan for Missed Changes

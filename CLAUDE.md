@@ -4,9 +4,9 @@ Guidance for Claude Code working in this repository.
 
 ## What This Is
 
-Plugin marketplace containing the **plugin-dev** plugin - a toolkit for developing Claude Code plugins. Provides 2 skills (1 consolidated + upstream sync) and 6 agents.
+Plugin marketplace containing the **plugin-dev** plugin - a toolkit for developing Claude Code plugins. The shipped plugin provides 1 consolidated skill and 3 agents. Maintainer-only upstream-sync tooling (1 skill + 3 agents) lives in this repo's `.claude/`, not the plugin.
 
-**Version**: v0.17.0 | [CHANGELOG.md](CHANGELOG.md)
+**Version**: v0.18.0 | [CHANGELOG.md](CHANGELOG.md)
 
 ## MCP Tool Requirements (CRITICAL)
 
@@ -93,9 +93,15 @@ rg '!`' plugins/plugin-dev/skills/ --glob '*.md' | rg -v '\[BANG\]'
 - **skill-reviewer**: Reviews skill quality and triggering
 - **agent-creator**: Generates agents from descriptions
 
-## Upstream Sync
+## Upstream Sync (maintainer-only, repo `.claude/`)
 
-- **update-from-upstream**: Skill that syncs plugin-dev docs with Claude Code releases
-- **changelog-differ**: Discovers upstream changes (Stage 1)
-- **update-manifest-verifier**: Validates change manifest (Stage 2)
-- **update-reviewer**: Verifies applied updates (Stage 4)
+These components are **not** part of the shipped plugin. They live in this repo's
+`.claude/` so they are discovered when running Claude Code in the repo (local dev
+and the `upstream-sync.yml` CI workflow, via the Agent SDK's `project` setting
+source) but never installed for plugin users. The CI workflow reads the
+orchestration file directly rather than invoking it as a plugin skill.
+
+- **`.claude/skills/update-from-upstream/SKILL.md`**: Orchestration that syncs plugin-dev docs with Claude Code releases
+- **`.claude/agents/changelog-differ.md`**: Discovers upstream changes (Stage 1)
+- **`.claude/agents/update-manifest-verifier.md`**: Validates change manifest (Stage 2)
+- **`.claude/agents/update-reviewer.md`**: Verifies applied updates (Stage 4)
