@@ -1071,6 +1071,7 @@ Available in all command hooks:
 - `$CLAUDE_CODE_REMOTE` -- Set if running in remote context
 - `$CLAUDE_CODE_SESSION_ID` -- Current session identifier (CC 2.1.132). Useful for hooks that need to track or correlate events across a session.
 - `$CLAUDE_EFFORT` -- Current effort level (CC 2.1.133). Also available in hook input JSON as `effort.level`. Enables hooks to adapt behavior based on the active effort setting.
+- `$TMPDIR` -- Sandbox-writable temporary directory. **CC 2.1.154 clarification:** `$TMPDIR` is set to the same sandbox-writable temporary directory for both sandboxed and unsandboxed Bash commands. Hook scripts and skill scripts can reliably use `$TMPDIR` for temporary files regardless of sandbox mode.
 
 **Windows PowerShell consideration (CC 2.1.126):** When the PowerShell tool is enabled on Windows, Claude treats PowerShell as the primary shell instead of Bash. Hook scripts using Bash-specific syntax may not execute correctly for Windows users. Consider providing cross-platform hook implementations or documenting Windows-specific alternatives.
 

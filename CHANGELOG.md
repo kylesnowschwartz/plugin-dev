@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-05-28
+
+### Added
+
+- **plugin-structure**: Documented `defaultEnabled: false` manifest option for plugins requiring manual enablement (CC 2.1.154)
+- **agent-development**: Documented background session temporary file path guidance (`$CLAUDE_JOB_DIR/tmp`) (CC 2.1.154)
+- **agent-development**: Documented AskUserQuestion tightened usage guidance — ask only when blocked (CC 2.1.154)
+- **hook-development**: Documented `$TMPDIR` sandbox clarification — same writable directory for sandboxed and unsandboxed commands (CC 2.1.154)
+- **marketplace-structure**: Documented directory-aware plugin suggestions in Discover tab (CC 2.1.154)
+- **mcp-integration**: Documented `CLAUDE_CODE_SESSION_ID` and `CLAUDECODE=1` environment variables for MCP servers (CC 2.1.154)
+
 ## [0.18.0] - 2026-05-29
 
 ### Changed
@@ -523,7 +534,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.17.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.19.0...HEAD
+[0.19.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.18.0...v0.19.0
+[0.18.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.16.1...v0.17.0
 [0.16.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.16.0...v0.16.1
 [0.16.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.15.0...v0.16.0

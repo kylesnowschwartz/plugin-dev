@@ -1,341 +1,228 @@
 # Upstream Change Manifest
-## CC Version Range: 2.1.145 - 2.1.153
+## CC Version Range: 2.1.154 - 2.1.156
 ## Generated: 2026-05-28
-## Sources: changelog [x], system-prompts [x], claude-code-guide [skipped]
-
-Note: The claude-code-guide subagent dispatch did not return output. Triangulation is based on CC changelog + system-prompts changelog + official documentation fetch. Official docs were successfully queried for skills, hooks, and plugins references.
+## Sources: changelog [Y], system-prompts [Y], claude-code-guide [timeout/no-output]
 
 ---
 
 ### Must Update
 
-- [ ] **Skills: `disallowed-tools` frontmatter field** (CC 2.1.152)
-  - Source: CC changelog, official docs (skills page)
-  - Confidence: high
-  - Affects: plugin-development skill (frontmatter reference section)
-  - Details: Skills and slash commands can now set `disallowed-tools` in frontmatter to remove tools from the model's available pool while the skill is active. Use for autonomous skills that should never call certain tools (e.g., `AskUserQuestion` for background loops). Accepts space/comma-separated string or YAML list. The restriction clears when the user sends their next message.
-  - Raw changelog: "Skills and slash commands can now set `disallowed-tools` in frontmatter to remove tools from the model"
+> **Stage 2 verified: 6 items after reclassification (5 confirmed + 1 promoted)**
 
-- [ ] **New command: `/reload-skills`** (CC 2.1.152)
-  - Source: CC changelog, official docs (skills page mentions "run `/reload-skills` to pick up the updates")
-  - Confidence: high
-  - Affects: plugin-development skill (commands section)
-  - Details: Added `/reload-skills` command to re-scan skill directories without restarting session. Useful during skill development.
-  - Raw changelog: "Added `/reload-skills` command to re-scan skill directories without restarting session"
-
-- [ ] **SessionStart hook: `reloadSkills` return value** (CC 2.1.152)
-  - Source: CC changelog, official docs (hooks page - confirmed with schema)
-  - Confidence: high
-  - Affects: plugin-development skill (hooks section)
-  - Details: SessionStart hooks can now return `reloadSkills: true` in `hookSpecificOutput` to trigger skill directory re-scanning. Useful when a hook installs or updates skills at session start.
-  - Raw changelog: "`SessionStart` hooks can now return `reloadSkills: true` to re-scan skill directories"
-
-- [ ] **SessionStart hook: `sessionTitle` output** (CC 2.1.152)
-  - Source: CC changelog, official docs (hooks page - confirmed with schema)
-  - Confidence: high
-  - Affects: plugin-development skill (hooks section)
-  - Details: SessionStart hooks can now set session title via `hookSpecificOutput.sessionTitle` on startup and resume. Only applies when `source` is `"startup"` or `"resume"`, ignored on `"clear"` and `"compact"`.
-  - Raw changelog: "`SessionStart` hooks can now set session title via `hookSpecificOutput.sessionTitle` on startup and resume"
-
-- [ ] **New hook event: `MessageDisplay`** (CC 2.1.152)
-  - Source: CC changelog, official docs (hooks page lists it as event #12)
-  - Confidence: high
-  - Affects: plugin-development skill (hooks section)
-  - Details: Added `MessageDisplay` hook event that fires while assistant message text streams. Display-only hook with `displayContent` decision field that can replace displayed text on screen (display-only; transcript and what Claude sees retain the original). No matcher support. Cannot block. Use for logging, observability, or customizing message display.
-  - Raw changelog: "Added `MessageDisplay` hook event that lets hooks transform or hide assistant message text as displayed"
-
-- [ ] **Workflow tool: renamed opt-in keyword** (CC 2.1.153)
-  - Source: system-prompts changelog
-  - Confidence: high
-  - Affects: plugin-development skill (possibly Workflow tool documentation)
-  - Details: The explicit opt-in keyword for the Workflow tool was renamed from `ultrawork` to `workflow`. Also adds exhaustive-review guidance for deduping against all seen findings, using perspective-diverse verification, and looping until discovery runs dry.
-  - Raw system-prompts: "Tool Description: Workflow -- Renames the explicit opt-in keyword from `ultrawork` to `workflow`"
-
-- [ ] **NEW: Run app skill family** (CC 2.1.145)
-  - Source: system-prompts changelog, official docs (skills page documents /run, /verify, /run-skill-generator)
-  - Confidence: high
-  - Affects: plugin-development skill (bundled skills reference)
-  - Details: Added new bundled skills: `/run`, `/verify`, and `/run-skill-generator`. These work together to launch and drive projects' actual runtime surface. `/run-skill-generator` records project-specific recipes that `/run` and `/verify` then follow. Requires CC v2.1.145+.
-  - Raw system-prompts: "NEW: Skill: Run app -- Adds a general skill for launching and driving a project's actual runtime surface"
-
-- [ ] **NEW: Coordinator mode system prompts** (CC 2.1.152)
-  - Source: system-prompts changelog
-  - Confidence: high
-  - Affects: May affect agent documentation
-  - Details: Added coordinator-mode instructions for delegating software engineering work across workers, synthesizing worker results, managing worker lifecycle, handling cross-session peers, and independently verifying delegated changes. Also added worker-agent instructions for coordinator-assigned tasks.
-  - Raw system-prompts: "NEW: System Prompt: Coordinator mode orchestration" and "NEW: System Prompt: Coordinator worker instructions"
-
-- [ ] **Plugin marketplace: `skipLfs` option** (CC 2.1.153)
-  - Source: CC changelog only
-  - Confidence: medium (not found in official docs yet)
-  - Affects: plugin-development skill (marketplace sources section)
-  - Details: Added `skipLfs` option to `github`/`git` plugin marketplace sources to skip Git LFS downloads during clone and update.
-  - Raw changelog: "Added `skipLfs` option to `github`/`git` plugin marketplace sources to skip Git LFS downloads during clone and update"
-
-- [ ] **Subagent frontmatter MCP servers: policy enforcement** (CC 2.1.153)
+- [ ] **Plugin `defaultEnabled: false` option with manual enablement capability** (CC 2.1.154)
   - Source: CC changelog
-  - Confidence: high
-  - Affects: plugin-development skill (subagent/agent section)
-  - Details: Fixed subagent frontmatter MCP servers ignoring `--strict-mcp-config`, `--bare`, remote mode, and managed MCP config policies. This is a behavioral fix that makes MCP policies consistent.
-  - Raw changelog: "Fixed subagent frontmatter MCP servers ignoring `--strict-mcp-config`, `--bare`, remote mode, and managed MCP config policies"
+  - Confidence: HIGH (verified)
+  - Affects: plugin-structure skill (overview.md - manifest field documentation)
+  - Details: Plugins can now specify `defaultEnabled: false` in manifest to require users to manually enable them. This is a new plugin.json field that affects plugin loading behavior.
+  - Raw changelog: "Plugin `defaultEnabled: false` option with manual enablement capability"
+  - **Gap confirmed**: No mention of `defaultEnabled` field in current plugin-structure documentation
 
-- [ ] **`--strict-mcp-config` behavior change** (CC 2.1.153)
+- [ ] **Background session temporary file guidance change** (CC 2.1.154)
+  - Source: system-prompts
+  - Confidence: HIGH (verified)
+  - Affects: agent-development skill (overview.md - Background Job Agent Behavior section)
+  - Details: Changes temporary-file guidance from `$CLAUDE_JOB_DIR` to `$CLAUDE_JOB_DIR/tmp` for background sessions. This is a path convention change for background agent temporary file usage.
+  - Raw changelog: "System Prompt: Background session instructions - Changes temporary-file guidance from `$CLAUDE_JOB_DIR` to `$CLAUDE_JOB_DIR/tmp`..."
+  - **Gap confirmed**: Current docs do not mention `$CLAUDE_JOB_DIR` or `$CLAUDE_JOB_DIR/tmp` path conventions
+
+- [ ] **AskUserQuestion tool tightened usage guidance** (CC 2.1.154)
+  - Source: system-prompts
+  - Confidence: HIGH (verified)
+  - Affects: agent-development skill (guidance on when agents should prompt users)
+  - Details: Tightens usage guidance so agents ask only when blocked on a decision that cannot be resolved from the request, code, or sensible defaults. Affects how skills and agents should use this tool.
+  - Raw changelog: "Tool Description: AskUserQuestion - Tightens usage guidance so agents ask only when blocked..."
+  - **Gap confirmed**: Best practice for when to use AskUserQuestion not currently documented
+
+- [ ] **Bash tool TMPDIR clarification** (CC 2.1.154)
+  - Source: system-prompts
+  - Confidence: HIGH (verified)
+  - Affects: hook-development skill (environment variables section), skill-development (scripts guidance)
+  - Details: Clarifies that `$TMPDIR` is set to the same sandbox-writable temporary directory for both sandboxed and unsandboxed commands. Important for skills using temporary files.
+  - Raw changelog: "Tool Description: Bash (sandbox - tmpdir) - Clarifies that `$TMPDIR` is set to the same sandbox-writable temporary directory..."
+  - **Gap confirmed**: TMPDIR sandbox behavior not currently documented in hook/skill environment guidance
+
+- [ ] **Directory-aware plugin suggestions in Discover tab** (CC 2.1.154)
   - Source: CC changelog
-  - Confidence: high
-  - Affects: plugin-development skill (MCP configuration section)
-  - Details: `--strict-mcp-config` no longer strips inline `mcpServers` from explicitly-passed agent definitions. This allows agents passed via CLI to retain their MCP server configurations.
-  - Raw changelog: "`--strict-mcp-config` no longer strips inline `mcpServers` from explicitly-passed agent definitions"
+  - Confidence: HIGH (verified)
+  - Affects: marketplace-structure skill (overview.md - plugin discovery behavior)
+  - Details: Plugin discovery now considers directory context for suggestions. The Discover tab shows "suggested for this directory" annotations.
+  - Raw changelog: "Directory-aware plugin suggestions in Discover tab"
+  - **Gap confirmed**: Directory-aware suggestions not mentioned in marketplace documentation
 
-- [ ] **REMOVED: Simplify skill** (CC 2.1.147)
-  - Source: system-prompts changelog
-  - Confidence: high
-  - Affects: plugin-development skill (bundled skills reference)
-  - Details: The `/simplify` skill was removed and replaced with `/code-review`. Worker instructions now invoke `code-review` skill instead of `simplify`.
-  - Raw system-prompts: "REMOVED: Skill: Simplify -- Removes the code review and cleanup skill"
-
-- [ ] **`/simplify` now invokes `/code-review --fix`** (CC 2.1.152)
-  - Source: CC changelog
-  - Confidence: high
-  - Affects: plugin-development skill (bundled skills reference)
-  - Details: `/simplify` now invokes `/code-review --fix` for applying review findings.
-  - Raw changelog: "`/simplify` now invokes `/code-review --fix`"
-
-- [ ] **NEW: /code-review with --fix and --comment** (CC 2.1.147, enhanced 2.1.152)
-  - Source: system-prompts changelog, CC changelog
-  - Confidence: high
-  - Affects: plugin-development skill (bundled skills reference)
-  - Details: Major `/code-review` update with new `--fix` behavior that applies reported review findings to working tree (correctness bugs, reuse, simplification, efficiency cleanups), and `--comment` behavior for posting findings as inline GitHub PR comments. Multiple effort modes (low/medium/high/extra-high/max) with different finder angles.
-  - Raw changelog: "`/code-review --fix` now applies review findings to working tree after review"
-
-- [ ] **Auto mode no longer requires opt-in consent** (CC 2.1.152)
-  - Source: CC changelog
-  - Confidence: high
-  - Affects: plugin-development skill (auto mode documentation)
-  - Details: Auto mode no longer requires explicit opt-in consent dialog. This is a behavioral change for autonomous operation.
-  - Raw changelog: "Auto mode no longer requires opt-in consent"
-
-- [ ] **`pluginSuggestionMarketplaces` managed setting** (CC 2.1.152)
-  - Source: CC changelog only
-  - Confidence: medium (not found in official docs yet)
-  - Affects: plugin-development skill (managed settings section)
-  - Details: Added `pluginSuggestionMarketplaces` managed setting allowing admins to allowlist org marketplaces whose plugins may be suggested.
-  - Raw changelog: "Added `pluginSuggestionMarketplaces` managed setting: admins can allowlist org marketplaces whose plugins may be suggested"
-
-- [ ] **Plugin agents declaring multiple `Agent(...)` types** (CC 2.1.147) [STAGE 2 ADDITION]
-  - Source: CC changelog
-  - Confidence: high
-  - Affects: agent-development skill (tools frontmatter section)
-  - Details: Fixed plugin agents declaring multiple `Agent(...)` types in `tools:` frontmatter now correctly retain all entries instead of dropping all but the last. Affects agents that need to declare they can spawn multiple agent types.
-  - Raw changelog: "Fixed plugin agents declaring multiple `Agent(...)` types in `tools:` frontmatter now retain all entries instead of dropping all but the last"
-
-- [ ] **Agent tool autocomplete suggests skills** (CC 2.1.153) [PROMOTED from May Update]
-  - Source: CC changelog
-  - Confidence: high
-  - Affects: agent-development skill (dispatch/invocation section)
-  - Details: `claude agents` autocomplete in the dispatch input now suggests native slash commands and bundled skills, not just project skills.
-  - Raw changelog: "`claude agents`: autocomplete in the dispatch input now suggests native slash commands and bundled skills"
+- [ ] **MCP servers receive `CLAUDE_CODE_SESSION_ID` and `CLAUDECODE=1` environment variables** (CC 2.1.154)
+  - Source: CC changelog (Plugin & MCP Improvements section)
+  - Confidence: HIGH (verified, promoted from No Action)
+  - Affects: mcp-integration skill (overview.md - server environment variables)
+  - Details: MCP servers now receive `CLAUDE_CODE_SESSION_ID` and `CLAUDECODE=1` environment variables automatically, enabling session tracking and Claude Code detection in MCP server implementations.
+  - Raw changelog: "MCP servers receive `CLAUDE_CODE_SESSION_ID` and `CLAUDECODE=1` environment variables"
+  - **Gap confirmed**: These env vars not currently documented in MCP integration guidance
 
 ---
 
 ### May Update
 
-- [ ] **`/model` saves selection as default** (CC 2.1.153)
+> **Stage 2 verified: 16 items (13 original + 5 reclassified from Must Update - 1 demoted to No Action)**
+
+- [ ] **Opus 4.8 now available as default with "high effort" mode** (CC 2.1.154)
+  - Source: CC changelog + system-prompts
+  - Confidence: high (confirmed in both)
+  - Affects: model references in documentation
+  - Details: System-prompts confirms extensive Opus 4.8 updates across API references (Python, Go, TypeScript, cURL), model catalog, streaming references, tool use concepts, and migration guide. Model-selection examples updated to prefer `claude-opus-4-8`.
+
+- [ ] **Dynamic workflows for coordinating multiple agents** (CC 2.1.154)
   - Source: CC changelog
-  - Confidence: high
-  - Affects: Reference documentation (commands)
-  - Details: `/model` now saves selection as default for new sessions. Press `s` in picker to switch for current session only. If customized `modelPicker:setAsDefault` keybinding, rename to `modelPicker:thisSessionOnly`.
-  - Raw changelog: "`/model` now saves selection as default for new sessions"
+  - Confidence: medium (single source, general feature)
+  - Affects: potentially agent-anatomy documentation
+  - Details: Enables Claude to coordinate "tens to hundreds of agents" for complex work. May relate to Workflow tool updates in system-prompts.
 
-- [ ] **`/bg` continues response in background** (CC 2.1.153)
+- [ ] **Fast mode on Opus 4.8 costs 2x standard rate for 2.5x speed improvement** (CC 2.1.154)
   - Source: CC changelog
-  - Confidence: high
-  - Affects: Reference documentation (commands)
-  - Details: `/bg` while Claude is responding now continues response in background session instead of dropping it.
-  - Raw changelog: "`/bg` while Claude is responding now continues response in background session instead of dropping it"
+  - Confidence: medium (single source)
+  - Affects: model/pricing documentation if present
+  - Details: Speed/cost tradeoff information for Opus 4.8.
 
-- [ ] **Agent tool autocomplete suggests skills** (CC 2.1.153) [PROMOTED to Must Update - see above]
+- [ ] **/effort slider renamed from "Speed/Intelligence" to "Faster/Smarter"** (CC 2.1.154)
   - Source: CC changelog
-  - Confidence: high
-  - Affects: Reference documentation (agents)
-  - Details: `claude agents` autocomplete in the dispatch input now suggests native slash commands and bundled skills.
-  - Raw changelog: "`claude agents`: autocomplete in the dispatch input now suggests native slash commands and bundled skills"
+  - Confidence: medium (single source)
+  - Affects: command reference documentation
+  - Details: UI/terminology change for the effort setting.
 
-- [ ] **Status line receives COLUMNS/LINES env vars** (CC 2.1.153)
+- [ ] **Shell command execution via `! <command>` in background sessions** (CC 2.1.154)
   - Source: CC changelog
-  - Confidence: high
-  - Affects: Reference documentation (status line)
-  - Details: Status line commands now receive `COLUMNS` and `LINES` environment variables for terminal-aware output sizing.
-  - Raw changelog: "Status line commands now receive `COLUMNS` and `LINES` environment variables for terminal-aware output sizing"
+  - Confidence: medium (single source)
+  - Affects: background session documentation
+  - Details: New inline shell execution syntax for background sessions. May be useful for background agent development.
 
-- [ ] **`claude plugin marketplace remove` scope flag** (CC 2.1.152)
+- [ ] **Browser selection via `/chrome` command** (CC 2.1.154)
   - Source: CC changelog
-  - Confidence: high
-  - Affects: Reference documentation (CLI commands)
-  - Details: `claude plugin marketplace remove` now accepts `--scope user|project|local` for symmetry with other commands.
-  - Raw changelog: "`claude plugin marketplace remove` now accepts `--scope user|project|local` for symmetry with other commands"
+  - Confidence: medium (single source)
+  - Affects: command reference documentation
+  - Details: New command for browser selection.
 
-- [ ] **`/usage` per-category breakdown** (CC 2.1.149)
+- [ ] **Streaming tool execution now universally enabled** (CC 2.1.154)
   - Source: CC changelog
+  - Confidence: medium (single source)
+  - Affects: tool behavior documentation
+  - Details: Streaming is now the default for all tool execution.
+
+- [ ] **Coordinator mode orchestration token accounting change** (CC 2.1.154)
+  - Source: system-prompts
   - Confidence: high
-  - Affects: Reference documentation (commands)
-  - Details: `/usage` now shows per-category breakdown: skills, subagents, plugins, and per-MCP-server cost. Also includes large session files with streaming read.
-  - Raw changelog: "`/usage` now shows per-category breakdown: skills, subagents, plugins, and per-MCP-server cost"
+  - Affects: agent architecture documentation
+  - Details: Updates PR activity subscription guidance and changes worker summary accounting from total tokens to subagent tokens.
 
-- [ ] **Workflow tool expanded guidance** (CC 2.1.149, 2.1.152)
-  - Source: system-prompts changelog
+- [ ] **Claude guide agent stale-knowledge handling** (CC 2.1.154)
+  - Source: system-prompts
   - Confidence: high
-  - Affects: Reference documentation (tools)
-  - Details: Workflow tool expanded with: using workflows to decompose broad work, scouting inline before orchestration, multi-modal sweeps, completeness critics, chaining scoped workflows across turns, MCP tool access via ToolSearch.
-  - Raw system-prompts: "Tool Description: Workflow -- Adds framing for using workflows to decompose broad work"
+  - Affects: agent behavior documentation
+  - Details: Adds stale-knowledge handling that tells the guide agent to disclose documentation fetch failures instead of silently answering from memory.
 
-- [ ] **Fallback model support** (CC 2.1.152)
-  - Source: CC changelog
+- [ ] **Anthropic CLI authentication updates** (CC 2.1.154)
+  - Source: system-prompts
   - Confidence: high
-  - Affects: Reference documentation (configuration)
-  - Details: Claude Code now switches to configured `--fallback-model` for session when primary model is not found.
-  - Raw changelog: "Claude Code now switches to configured `--fallback-model` for session when primary model is not found"
+  - Affects: API/CLI documentation references
+  - Details: Updates to cover SDK-style credential resolution, OAuth profiles from `ant auth login`, `ant auth print-credentials`, bearer-token usage.
 
-- [ ] **REMOVED: Thinking frequency tuning reminder** (CC 2.1.153) [DEMOTED to No Action]
-  - Source: system-prompts changelog
-  - Confidence: medium
-  - Affects: System prompt reference (if documented)
-  - Details: Removed the system reminder that treated harness-added `<system-reminder>` messages as thinking-frequency instructions.
-  - Raw system-prompts: "REMOVED: System Reminder: Thinking frequency tuning"
-  - Stage 2 note: Internal system prompt change, no plugin API impact.
+- [ ] **Agent Design Patterns skill: mid-session system messages** (CC 2.1.154)
+  - Source: system-prompts
+  - Confidence: high
+  - Affects: skill-building documentation
+  - Details: Replaces mid-session `<system-reminder>` guidance with beta `role: "system"` messages for supported models, with `<system-reminder>` retained as fallback.
 
-- [ ] **REMOVED: Iterative plan mode reminder** (CC 2.1.145) [DEMOTED to No Action]
-  - Source: system-prompts changelog
-  - Confidence: medium
-  - Affects: System prompt reference (if documented)
-  - Details: Removed the iterative plan-mode reminder that told agents to maintain a plan file while repeatedly exploring, updating the plan, and asking questions before exiting plan mode.
-  - Raw system-prompts: "REMOVED: System Reminder: Plan mode is active (iterative)"
-  - Stage 2 note: Internal system prompt change, no plugin API impact.
+- [ ] **Model migration guide: Opus 4.8 section** (CC 2.1.154)
+  - Source: system-prompts
+  - Confidence: high
+  - Affects: model documentation
+  - Details: Adds Opus 4.8 migration guidance including model-ID updates, mid-session system prompts, long-horizon agentic tuning, effort recommendations, tool-triggering behavior, narration changes.
 
-- [ ] **NEW: Phase four of plan mode** (CC 2.1.146) [DEMOTED to No Action]
-  - Source: system-prompts changelog
-  - Confidence: medium
-  - Affects: System prompt reference (if documented)
-  - Details: Added final-plan guidance requiring context, single recommended approach, critical files and reusable utilities, concise executable detail, and end-to-end verification steps.
-  - Raw system-prompts: "NEW: System Prompt: Phase four of plan mode"
-  - Stage 2 note: Internal system prompt change, no plugin API impact.
+- [ ] **NEW: Claude Code live documentation sources data file** (CC 2.1.154) - **Reclassified from Must Update**
+  - Source: system-prompts
+  - Reason: CC-internal data pattern, not directly actionable for plugin authors
+  - Details: Adds official Claude Code documentation URLs and topic-specific WebFetch prompts. Could serve as a reference pattern.
 
-- [ ] **Security monitor updates** (CC 2.1.146, 2.1.147) [DEMOTED to No Action]
-  - Source: system-prompts changelog
-  - Confidence: medium
-  - Affects: Security documentation (if documented)
-  - Details: Updated security monitor with hard_deny category, explicit agent-config path list for Self-Modification rule, auto-mode bypass hard block. Files under `.claude/worktrees/<name>/` now treated as ordinary project files.
-  - Raw system-prompts: "Agent Prompt: Security monitor for autonomous agent actions"
-  - Stage 2 note: Internal security enforcement, no plugin API impact.
+- [ ] **NEW: Claude Code recent changes reference data file** (CC 2.1.154) - **Reclassified from Must Update**
+  - Source: system-prompts
+  - Reason: CC-internal documentation, informational pattern only
+  - Details: Adds a reference for renamed or removed Claude Code commands, flags, and terms.
+
+- [ ] **NEW: Claude Code configuration guide skill** (CC 2.1.154) - **Reclassified from Must Update**
+  - Source: system-prompts
+  - Reason: CC bundled skill, not plugin-dev documentation scope
+  - Details: Adds a configuration skill for CC guidance. Could mention as a skill pattern reference.
+
+- [ ] **Workflow tool: ultracode standing workflow opt-in** (CC 2.1.154) - **Reclassified from Must Update**
+  - Source: system-prompts
+  - Reason: Workflow tool updates may already be covered in skill-building documentation
+  - Details: Adds ultracode as standing workflow opt-in, requires inline workflow scripts, clarifies JSON `args` passing.
+
+- [ ] **Security monitor expanded with final-destination tracing** (CC 2.1.154) - **Reclassified from Must Update**
+  - Source: system-prompts
+  - Reason: Auto-mode behavior changes, optional note in agent security documentation
+  - Details: Expands security review with explicit final-destination tracing for writes, commits, pushes, uploads.
 
 ---
 
 ### No Action
 
-- Fixed stateful MCP servers without optional GET SSE stream reconnect-looping on `tools/list` (CC 2.1.153) - MCP implementation fix
-- Fixed custom API gateway receiving user's Anthropic OAuth credential instead of gateway's own token (CC 2.1.153) - API gateway fix
-- Fixed Windows PowerShell installer reporting "Installation complete!" when installation actually failed (CC 2.1.153) - Installer fix
-- Fixed `claude update` installing latest version instead of configured release channel's version for npm (CC 2.1.153) - Update mechanism fix
-- Fixed excessive memory usage when resuming session by transcript file path (CC 2.1.153) - Performance fix
-- Fixed `claude agents` and `claude --bg` running on stale daemon (CC 2.1.153) - Daemon fix
-- Fixed hang where CLI could fail to exit when stdin was closed without EOF (CC 2.1.153) - CLI fix
-- Fixed malformed `file://` links not being clickable in terminal (CC 2.1.153) - UI fix
-- Fixed `claude --help` rendering unwrapped output on narrow terminals (CC 2.1.153) - Help display fix
-- Fixed MCP tool progress notifications not rendering in collapsed tool view (CC 2.1.153) - UI fix
-- Fixed `Agent` tool with `subagent_type: 'claude'` running in undocumented temporary worktree (CC 2.1.153) - Agent fix
-- Multiple background session fixes (CC 2.1.153) - Background session stability
-- Fixed Windows update rollback (CC 2.1.153) - Update mechanism fix
-- Fixed Claude Code processes not shutting down cleanly on Windows when VS Code closed (CC 2.1.153) - IDE integration fix
-- Fixed terminal styling degrading in very long sessions (CC 2.1.152) - UI fix
-- Fixed sandbox-enabled warning not appearing in condensed startup mode (CC 2.1.152) - Startup fix
-- Fixed loading spinner showing thinking status while tool is running (CC 2.1.152) - UI fix
-- Fixed focus mode showing spurious hidden message count (CC 2.1.152) - UI fix
-- Fixed clicking link inside expanded tool result collapsing section (CC 2.1.152) - UI fix
-- Fixed markdown table cell borders inheriting color of inline code (CC 2.1.152) - UI fix
-- Fixed plugin MCP servers with same command but different environment variables being incorrectly deduplicated (CC 2.1.152) - Plugin fix
-- Fixed `/doctor` reporting "marketplace not found" for stale entries (CC 2.1.152) - Doctor fix
-- Fixed plugins tracking git branch silently no longer receiving updates (CC 2.1.152) - Plugin update fix
-- Fixed remote MCP servers failing to connect in Remote sessions when egress proxy enabled (CC 2.1.152) - MCP fix
-- Fixed effort-change confirmation dialog appearing when conversation has no messages (CC 2.1.152) - UI fix
-- Fixed Agent tool description referencing agent list never delivered with `--bare` (CC 2.1.152) - Documentation fix
-- Fixed background worker crash in `claude agents` when accepting stale permission prompt (CC 2.1.152) - Stability fix
-- Fixed `cache_creation_input_tokens` reporting as 0 in transcript (CC 2.1.152) - Metrics fix
-- Fixed PushNotification tool incorrectly reporting "Mobile push not sent" (CC 2.1.152) - Notification fix
-- Fixed sessions getting stuck after model or login switch (CC 2.1.152) - Session fix
-- v2.1.150: Internal infrastructure improvements (no user-facing changes)
-- Fixed PowerShell permission bypass (CC 2.1.149) - Security fix
-- Fixed sandbox write allowlist in git worktrees (CC 2.1.149) - Security fix
-- Fixed PowerShell prefix/wildcard allow rules (CC 2.1.149) - Permission fix
-- Fixed permission-analysis gap for PWD/OLDPWD/DIRSTACK (CC 2.1.149) - Security fix
-- Fixed `find` in Bash tool exhausting macOS system file table (CC 2.1.149) - Performance fix
-- Fixed managed-settings approval dialog leaving terminal frozen (CC 2.1.149) - UI fix
-- Fixed `/ultraplan` and remote session creation failing (CC 2.1.149) - Feature fix
-- Fixed `otelHeadersHelper` failing silently when script path contains spaces (CC 2.1.149) - Telemetry fix
-- Multiple UI fixes for spinners, slash-command hints, status bar, transcript view (CC 2.1.149) - UI fixes
-- Fixed editing recalled prompt-history entry losing edit (CC 2.1.149) - Input fix
-- Fixed `/config` exit summary reporting phantom changes (CC 2.1.149) - Config fix
-- Fixed `/insights` crashing when cached session-meta files missing fields (CC 2.1.149) - Crash fix
-- Fixed malformed PowerShell and History tool calls being misclassified (CC 2.1.149) - Classification fix
-- Fixed renaming Remote Control session not updating local session name (CC 2.1.149) - Remote fix
-- Fixed race where just-submitted prompt could appear twice in history (CC 2.1.149) - History fix
-- Improved `/feedback` reports to include conversation before context compaction (CC 2.1.149) - Feedback improvement
-- Fixed Bash tool returning exit code 127 on every command (CC 2.1.148) - Regression fix
-- macOS: background agents now appear as "Claude Code" in Privacy & Security (CC 2.1.153) - macOS integration
-- Combined separate authentication notifications for MCP servers and connectors (CC 2.1.153) - UX improvement
-- Thinking summaries improvements (CC 2.1.152) - UI enhancement
-- Simplified Workflow tool's inline progress display (CC 2.1.152) - UI enhancement
-- Post-response timer shows background agent/workflow status (CC 2.1.152) - UI enhancement
-- Added session entrypoint as OpenTelemetry metric attribute (CC 2.1.152) - Telemetry
-- Vim mode: `/` in NORMAL mode opens reverse history search (CC 2.1.152) - Vim mode enhancement
-- In fullscreen mode, thinking indicator counts up live (CC 2.1.152) - UI enhancement
-- Markdown output now renders GFM task list checkboxes (CC 2.1.149) - Markdown rendering
-- `/diff` detail view can now be scrolled with keyboard (CC 2.1.149) - UI enhancement
-- Enterprise: added `allowAllClaudeAiMcps` managed setting (CC 2.1.149) - Enterprise feature
-- `claude doctor` now shows the result of your last update attempt (CC 2.1.153) - Doctor enhancement
+> **Stage 2 verified: 12 items (11 original + 1 reclassified)**
+
+- Lean system prompt becomes default across models (except Haiku, Sonnet, 4.7) (CC 2.1.154) - Internal prompt optimization, no plugin system impact
+- Multiple-choice questions reserved for genuine decision scenarios (CC 2.1.154) - UI behavior, no plugin system impact
+- Multiple security and performance fixes across permission systems and background agents (CC 2.1.154) - Internal fixes, no documentation impact
+- API reference updates for Opus 4.8 (Python, Go, TypeScript, cURL) (CC 2.1.154) - API doc updates in system-prompts, not plugin-dev scope
+- HTTP error codes reference updates for OAuth tokens (CC 2.1.154) - API reference, not plugin-dev scope
+- Managed Agents reference updates for credential resolution (CC 2.1.154) - API reference, not plugin-dev scope
+- Prompt Caching mid-conversation system-message guidance (CC 2.1.154) - API optimization, not plugin-dev scope
+- Streaming reference updates for Opus 4.8 (CC 2.1.154) - API reference, not plugin-dev scope
+- Tool use concepts updates for Opus 4.8 (CC 2.1.154) - API reference, not plugin-dev scope
+- Building LLM-powered applications skill: Opus 4.8 updates (CC 2.1.154) - SDK documentation, not plugin-dev scope
+- Version 2.1.156 - No changes to system prompts
+- `/simplify` slash command refocused (CC 2.1.154) - **Reclassified from Must Update**: CC bundled command, not plugin development surface
 
 ---
 
-## Summary
+## Notes
 
-**Version Range:** 2.1.145 - 2.1.153 (9 versions since last audit at 2.1.144)
+1. **Version coverage**: This manifest covers CC 2.1.154-2.1.156. Version 2.1.155 was not found in either changelog (may not exist or may be unreleased). Version 2.1.156 has no system prompt changes per the system-prompts CHANGELOG.
 
-**Total Changes Analyzed:** 100+ items from CC changelog and system-prompts
+2. **Source triangulation**:
+   - CC changelog: Provided high-level feature summaries
+   - system-prompts CHANGELOG: Provided detailed prompt/tool changes (+11,516 tokens in 2.1.154)
+   - claude-code-guide agent: Attempted dispatch but no response received (timeout after 60+ seconds)
 
-**Must Update: 18 items** (Stage 2 corrected: +2 from Stage 1's 16)
-1. `disallowed-tools` frontmatter field for skills (CC 2.1.152)
-2. `/reload-skills` command (CC 2.1.152)
-3. SessionStart hook `reloadSkills` return value (CC 2.1.152)
-4. SessionStart hook `sessionTitle` output (CC 2.1.152)
-5. `MessageDisplay` hook event (CC 2.1.152)
-6. Workflow tool keyword rename: `ultrawork` -> `workflow` (CC 2.1.153)
-7. Run app skill family: `/run`, `/verify`, `/run-skill-generator` (CC 2.1.145)
-8. Coordinator mode system prompts (CC 2.1.152)
-9. Plugin marketplace `skipLfs` option (CC 2.1.153)
-10. Subagent frontmatter MCP servers policy enforcement (CC 2.1.153)
-11. `--strict-mcp-config` behavior change (CC 2.1.153)
-12. REMOVED: `/simplify` skill (CC 2.1.147)
-13. `/simplify` now invokes `/code-review --fix` (CC 2.1.152)
-14. `/code-review --fix` and `--comment` flags (CC 2.1.147, 2.1.152)
-15. Auto mode consent removal (CC 2.1.152)
-16. `pluginSuggestionMarketplaces` managed setting (CC 2.1.152)
-17. Plugin agents declaring multiple `Agent(...)` types fix (CC 2.1.147) [STAGE 2 ADDITION]
-18. Agent tool autocomplete suggests skills (CC 2.1.153) [PROMOTED from May Update]
+3. **Key changes for plugin-dev**:
+   - The `defaultEnabled: false` plugin option is the most significant plugin-system change
+   - Several new skills and data files establish patterns that may inform plugin-dev documentation
+   - Workflow tool updates are substantial and may warrant expanded workflow documentation
+   - Background session path guidance change (`$CLAUDE_JOB_DIR/tmp`) affects background agent development
 
-**May Update: 8 items** (Stage 2 corrected: -4 demoted, -1 promoted)
-- Command and tool behavior changes that may affect reference docs
-- 4 items demoted to No Action (internal system prompt changes)
+4. **Token delta**: +11,516 tokens in 2.1.154 (significant expansion of system prompts)
 
-**No Action: 54+ items**
-- Bug fixes, UI improvements, IDE integrations, platform-specific fixes
-- 4 items demoted from May Update (thinking reminder, plan mode, security monitor changes)
+---
 
-**Token delta from system-prompts:**
-- 2.1.145: +20,218 tokens (large addition: Run skills, Managed Agents self-hosted docs)
-- 2.1.146: +4,755 tokens (Workflow tool, plan mode phase four)
-- 2.1.147: +1,236 tokens (/code-review parts 1-8)
-- 2.1.149: +282 tokens (Workflow tool framing)
-- 2.1.152: +4,566 tokens (Coordinator mode, /code-review part 9)
-- 2.1.153: +303 tokens (Workflow keyword rename, thinking reminder removal)
-- Total estimated: ~31,360 tokens added across the version range
+## Summary (Stage 2 Verified)
+
+**Version Range:** 2.1.154 - 2.1.156 (2 versions since last audit at 2.1.153)
+
+**Total Changes Analyzed:** 30+ items from CC changelog and system-prompts
+
+**Must Update: 6 items** (after Stage 2 verification)
+1. Plugin `defaultEnabled: false` option (CC 2.1.154) - plugin-structure
+2. Background session temporary file guidance `$CLAUDE_JOB_DIR/tmp` (CC 2.1.154) - agent-development
+3. AskUserQuestion tool tightened usage guidance (CC 2.1.154) - agent-development
+4. Bash tool TMPDIR clarification (CC 2.1.154) - hook-development, skill-development
+5. Directory-aware plugin suggestions in Discover tab (CC 2.1.154) - marketplace-structure
+6. MCP servers receive `CLAUDE_CODE_SESSION_ID` and `CLAUDECODE=1` env vars (CC 2.1.154) - mcp-integration [PROMOTED]
+
+**May Update: 16 items** (13 original + 5 reclassified from Must Update - 1 demoted)
+- Model and effort changes (Opus 4.8, effort slider)
+- Command additions (`/chrome`, `! <command>` in background)
+- System prompt and agent behavior updates
+- Reclassified: /simplify, live docs data, recent changes data, config guide skill, workflow ultracode, security monitor
+
+**No Action: 12 items** (11 original + 1 reclassified from Must Update)
+- Internal prompt optimizations, API reference updates, SDK documentation
+- `/simplify` refocused (CC bundled command, not plugin-dev scope)
 
 ---
 
@@ -345,22 +232,29 @@ Note: The claude-code-guide subagent dispatch did not return output. Triangulati
 |--------|--------|-------|
 | CC Changelog | OK | Retrieved via WebFetch from upstream |
 | System-prompts | OK | Read from ./claude-code-system-prompts/CHANGELOG.md (first 200 lines) |
-| claude-code-guide | Skipped | Subagent dispatch returned empty output; official docs fetched directly |
-| Official docs | OK | skills, hooks, plugins-reference pages fetched and cross-referenced |
+| claude-code-guide | timeout/no-output | Subagent dispatch ran but output file remained empty |
 
 ---
 
-## Recommendations
+## Recommendations for Stage 3 (Stage 2 Verified)
 
-1. **High priority updates**: The skill frontmatter changes (`disallowed-tools`), new commands (`/reload-skills`), and hook enhancements (SessionStart outputs, MessageDisplay event) should be documented promptly as they directly affect plugin development.
+1. **Plugin manifest updates (HIGH PRIORITY)**:
+   - Add `defaultEnabled: false` option to plugin-structure/overview.md manifest field documentation
+   - Document directory-aware plugin suggestions behavior in marketplace-structure/overview.md
 
-2. **Bundled skill documentation**: The Run app skill family (`/run`, `/verify`, `/run-skill-generator`) and `/code-review` enhancements are significant additions that users should know about.
+2. **MCP integration updates (HIGH PRIORITY)**:
+   - Document `CLAUDE_CODE_SESSION_ID` and `CLAUDECODE=1` environment variables in mcp-integration/overview.md
 
-3. **Marketplace source options**: The `skipLfs` option for git sources should be documented once official docs confirm the schema.
+3. **Agent development updates (MEDIUM PRIORITY)**:
+   - Add `$CLAUDE_JOB_DIR/tmp` path guidance for background session temporary files
+   - Document AskUserQuestion best practice: "ask only when blocked on a decision that cannot be resolved from the request, code, or sensible defaults"
 
-4. **Auto mode change**: Document that auto mode no longer requires explicit consent, as this affects autonomous agent workflows.
+4. **Hook/Skill development updates (MEDIUM PRIORITY)**:
+   - Document TMPDIR sandbox behavior: `$TMPDIR` is set to the same sandbox-writable temporary directory for both sandboxed and unsandboxed commands
 
-5. **Coordinator mode**: Consider documenting the coordinator/worker pattern for advanced multi-agent orchestration scenarios.
+5. **Optional updates (May Update items, LOWER PRIORITY)**:
+   - Consider documenting Workflow tool ultracode opt-in if not already covered
+   - Consider noting security monitor final-destination tracing in agent security section
 
 ---
 
@@ -369,78 +263,128 @@ Note: The claude-code-guide subagent dispatch did not return output. Triangulati
 
 #### Must Update Verification
 
-- [x] **`disallowed-tools` frontmatter field** (CC 2.1.152) — CONFIRMED in CC changelog ("Skills and slash commands can set `disallowed-tools` in frontmatter to remove tools from the model"). Gap exists: not in `references/skill-development/references/advanced-frontmatter.md` or `references/command-development/references/frontmatter-reference.md`.
-- [x] **`/reload-skills` command** (CC 2.1.152) — CONFIRMED in CC changelog ("Added `/reload-skills` command to re-scan skill directories without restarting session"). Gap exists: not documented in any plugin-dev reference. Note: This is a built-in CC command, may be worth brief mention in skill development context.
-- [x] **SessionStart hook `reloadSkills` return value** (CC 2.1.152) — CONFIRMED in CC changelog ("`SessionStart` hooks can return `reloadSkills: true` to re-scan directories"). Gap exists: not in `references/hook-development/references/event-schemas.md` SessionStart output section.
-- [x] **SessionStart hook `sessionTitle` output** (CC 2.1.152) — CONFIRMED in CC changelog ("`SessionStart` hooks can set session title via `hookSpecificOutput.sessionTitle`"). Gap exists: not in `references/hook-development/references/event-schemas.md` SessionStart output section.
-- [x] **`MessageDisplay` hook event** (CC 2.1.152) — CONFIRMED in CC changelog ("Added `MessageDisplay` hook event that lets hooks transform or hide assistant message text"). Gap exists: not in `references/hook-development/overview.md` (lists 25 events, but this would be #26) or event-schemas.md.
-- [x] **Workflow tool keyword rename** (CC 2.1.153) — CONFIRMED in system-prompts changelog ("Renames the explicit opt-in keyword from `ultrawork` to `workflow`"). Low plugin-dev impact but noted for completeness.
-- [x] **Run app skill family** (CC 2.1.145) — CONFIRMED in system-prompts changelog (NEW: Skill: Run app, Run skill generator, etc.). Gap exists: bundled skills reference not comprehensive.
-- [x] **Coordinator mode system prompts** (CC 2.1.152) — CONFIRMED in system-prompts changelog (NEW: Coordinator mode orchestration, Coordinator worker instructions). May affect agent documentation for multi-agent patterns.
-- [x] **Plugin marketplace `skipLfs` option** (CC 2.1.153) — CONFIRMED in CC changelog ("Added `skipLfs` option to `github`/`git` plugin marketplace sources"). Gap exists: not in `references/marketplace-structure/references/schema-reference.md` Source Types section.
-- [x] **Subagent frontmatter MCP servers policy enforcement** (CC 2.1.153) — CONFIRMED in CC changelog ("Fixed subagent frontmatter MCP servers ignoring `--strict-mcp-config`, `--bare`, remote mode, and managed MCP config policies"). Behavior fix worth noting in agent documentation.
-- [x] **`--strict-mcp-config` behavior change** (CC 2.1.153) — CONFIRMED in CC changelog ("`--strict-mcp-config` no longer strips inline `mcpServers` from explicitly-passed agent definitions"). Documentation note for MCP/agent integration.
-- [x] **REMOVED: `/simplify` skill** (CC 2.1.147) — CONFIRMED in system-prompts changelog ("REMOVED: Skill: Simplify — Removes the code review and cleanup skill"). Replaced by `/code-review`.
-- [x] **`/simplify` now invokes `/code-review --fix`** (CC 2.1.152) — CONFIRMED in CC changelog. This is a follow-up behavior where `/simplify` became an alias. Consolidate with the removal note.
-- [x] **`/code-review` with `--fix` and `--comment`** (CC 2.1.147, 2.1.152) — CONFIRMED in both changelogs. New major bundled skill with effort levels and fix application.
-- [x] **Auto mode consent removal** (CC 2.1.152) — CONFIRMED in CC changelog ("Auto mode no longer requires opt-in consent"). Relevant for autonomous agent workflows.
-- [x] **`pluginSuggestionMarketplaces` managed setting** (CC 2.1.152) — CONFIRMED in CC changelog. Enterprise setting for plugin marketplace suggestions.
+- **[CONFIRMED]** Plugin `defaultEnabled: false` option (CC 2.1.154)
+  - Source verification: CC changelog confirms "Plugins can declare `defaultEnabled: false` and be enabled via `/plugin`"
+  - Gap exists: No mention of `defaultEnabled` field in plugin-structure/overview.md (grep returned no matches)
+  - Affects: plugin-structure skill - needs new manifest field documentation
+
+- **[CONFIRMED]** `/simplify` slash command refocused (CC 2.1.154)
+  - Source verification: Both CC changelog and system-prompts CHANGELOG confirm refocus on cleanup review
+  - Gap assessment: This is a bundled Claude Code command, not plugin-dev documentation scope
+  - **RECLASSIFIED to No Action**: `/simplify` is an internal CC command, not a plugin development surface
+
+- **[CONFIRMED with CAVEAT]** NEW: Claude Code live documentation sources data file (CC 2.1.154)
+  - Source verification: system-prompts CHANGELOG confirms new data file with documentation URLs for hooks, MCP, skills, subagents
+  - Gap assessment: This is a CC-internal data pattern, not directly applicable to plugin-dev
+  - **RECLASSIFIED to May Update**: Could serve as a reference pattern but not directly actionable for plugin authors
+
+- **[CONFIRMED with CAVEAT]** NEW: Claude Code recent changes reference data file (CC 2.1.154)
+  - Source verification: system-prompts CHANGELOG confirms new reference for renamed/removed commands
+  - Gap assessment: This is CC-internal documentation, not plugin-dev scope
+  - **RECLASSIFIED to May Update**: Informational pattern only
+
+- **[CONFIRMED with CAVEAT]** NEW: Claude Code configuration guide skill (CC 2.1.154)
+  - Source verification: system-prompts CHANGELOG confirms new skill for CC configuration guidance
+  - Gap assessment: This is a CC bundled skill, not plugin-dev documentation scope
+  - **RECLASSIFIED to May Update**: Could mention as a skill pattern reference
+
+- **[CONFIRMED]** Workflow tool: ultracode standing workflow opt-in (CC 2.1.154)
+  - Source verification: system-prompts CHANGELOG confirms "Adds ultracode as standing workflow opt-in, requires inline workflow scripts for first invocation, clarifies JSON `args` passing"
+  - Gap assessment: Workflow tool is referenced in skill-development but not agent-development
+  - **RECLASSIFIED to May Update**: Workflow tool updates are primarily for skill-building documentation, which may already be covered
+
+- **[CONFIRMED]** Background session temporary file guidance change (CC 2.1.154)
+  - Source verification: system-prompts CHANGELOG confirms "Changes temporary-file guidance from `$CLAUDE_JOB_DIR` to `$CLAUDE_JOB_DIR/tmp`"
+  - Gap exists: agent-development/overview.md documents Background Job Agent Behavior (CC 2.1.128) but does not mention `$CLAUDE_JOB_DIR` or `$CLAUDE_JOB_DIR/tmp` path convention
+  - Affects: agent-development skill - needs path guidance update
+
+- **[CONFIRMED]** AskUserQuestion tool tightened usage guidance (CC 2.1.154)
+  - Source verification: system-prompts CHANGELOG confirms "Tightens usage guidance so agents ask only when blocked"
+  - Gap assessment: AskUserQuestion is referenced in hook-development (event-schemas.md) for PreToolUse patterns. The "ask only when blocked" guidance affects how skills/agents should use this tool
+  - Affects: agent-development skill - guidance on when agents should use AskUserQuestion
+
+- **[CONFIRMED]** Bash tool TMPDIR clarification (CC 2.1.154)
+  - Source verification: system-prompts CHANGELOG confirms TMPDIR sandbox clarification
+  - Gap assessment: hook-development references TMPDIR in some patterns but not this specific clarification
+  - Affects: hook-development skill (script environment section) and skill-development (scripts using TMPDIR)
+
+- **[CONFIRMED]** Security monitor expanded with final-destination tracing (CC 2.1.154)
+  - Source verification: system-prompts CHANGELOG confirms expanded security review for writes, commits, pushes, uploads, etc.
+  - Gap assessment: agent-development/overview.md has Self-Modification Protected Paths (CC 2.1.140) section but does not cover the 2.1.154 final-destination tracing expansion
+  - **RECLASSIFIED to May Update**: Security monitor changes affect auto-mode behavior, may warrant a note in agent security documentation
+
+- **[CONFIRMED]** Directory-aware plugin suggestions in Discover tab (CC 2.1.154)
+  - Source verification: CC changelog confirms "Directory-aware plugin suggestions in Discover tab" and "Plugin Discover tab shows 'suggested for this directory' annotations"
+  - Gap assessment: marketplace-structure/overview.md does not mention directory-aware suggestions
+  - Affects: marketplace-structure skill - plugin discovery behavior
 
 #### Missed Items (promoted from No Action)
 
-- ! **Plugin agents declaring multiple `Agent(...)` types** (CC 2.1.147) — Previously dropped all but last entry; now fixed. Affects agent `tools:` frontmatter when declaring multiple agent types.
-  - Affects: agent-development
-  - Details: Plugin agents with `tools: Agent(type1), Agent(type2)` now correctly retain both entries instead of only the last.
+- **[PROMOTED]** MCP servers receive `CLAUDE_CODE_SESSION_ID` and `CLAUDECODE=1` environment variables (CC 2.1.154)
+  - Source: CC changelog confirms this in Plugin & MCP Improvements section
+  - Missed because: Classified under general MCP improvements
+  - Affects: mcp-integration skill - MCP server environment variables
+  - Details: New env vars available in MCP server processes for session tracking
 
 #### May Update Resolution
 
-- = **`/model` saves selection as default** (CC 2.1.153) — Kept as May Update: User-facing feature, not directly plugin-related.
-- = **`/bg` continues response in background** (CC 2.1.153) — Kept as May Update: Background session behavior, tangentially relevant to background agents.
-- up **Agent tool autocomplete suggests skills** (CC 2.1.153) — PROMOTED to Must Update: `claude agents` autocomplete now suggests bundled skills. Relevant for agent development documentation.
-  - Affects: agent-development
-  - Details: The `claude agents` dispatch input autocomplete now includes native slash commands and bundled skills.
-- = **Status line receives COLUMNS/LINES** (CC 2.1.153) — Kept as May Update: Status line feature, minor relevance.
-- = **`claude plugin marketplace remove` scope flag** (CC 2.1.152) — Kept as May Update: CLI command enhancement, low priority.
-- = **`/usage` per-category breakdown** (CC 2.1.149) — Kept as May Update: User-facing feature.
-- = **Workflow tool expanded guidance** (CC 2.1.149, 2.1.152) — Kept as May Update: System prompt guidance, not plugin API.
-- = **Fallback model support** (CC 2.1.152) — Kept as May Update: Configuration feature.
-- down **REMOVED: Thinking frequency tuning reminder** (CC 2.1.153) — DEMOTED to No Action: Internal system prompt change, no plugin impact.
-- down **REMOVED: Iterative plan mode reminder** (CC 2.1.145) — DEMOTED to No Action: Internal system prompt change, no plugin impact.
-- down **Phase four of plan mode** (CC 2.1.146) — DEMOTED to No Action: Internal system prompt change, no plugin impact.
-- down **Security monitor updates** (CC 2.1.146, 2.1.147) — DEMOTED to No Action: Internal security enforcement, not plugin API.
+- **[KEPT as May Update]** Opus 4.8 now available as default with "high effort" mode
+  - Reason: Model reference updates are tangential to plugin development; no direct plugin-dev documentation impact
+
+- **[KEPT as May Update]** Dynamic workflows for coordinating multiple agents
+  - Reason: Workflow tool capabilities may warrant expanded documentation but not critical for plugin authors
+
+- **[KEPT as May Update]** Fast mode on Opus 4.8 costs 2x standard rate
+  - Reason: Pricing info not directly relevant to plugin-dev documentation
+
+- **[KEPT as May Update]** /effort slider renamed
+  - Reason: UI terminology change, minimal plugin-dev impact
+
+- **[KEPT as May Update]** Shell command execution via `! <command>` in background sessions
+  - Reason: User-facing feature, not a plugin development surface
+
+- **[KEPT as May Update]** Browser selection via `/chrome` command
+  - Reason: User command, not plugin-dev related
+
+- **[KEPT as May Update]** Streaming tool execution now universally enabled
+  - Reason: Internal CC behavior, no plugin-dev documentation change needed
+
+- **[DEMOTED to No Action]** Enhanced MCP server environment variables and approval workflows
+  - Reason: The specific env vars (CLAUDE_CODE_SESSION_ID, CLAUDECODE=1) are captured above as a separate Must Update item; the "approval workflows" aspect is UI/UX not documentation
+
+- **[KEPT as May Update]** Coordinator mode orchestration token accounting change
+  - Reason: Affects internal accounting, not directly actionable for plugin authors
+
+- **[KEPT as May Update]** Claude guide agent stale-knowledge handling
+  - Reason: CC bundled agent behavior, not plugin-dev scope
+
+- **[KEPT as May Update]** Anthropic CLI authentication updates
+  - Reason: CLI auth is outside plugin-dev scope
+
+- **[KEPT as May Update]** Agent Design Patterns skill: mid-session system messages
+  - Reason: Could inform agent-development but not critical for plugin authors
+
+- **[KEPT as May Update]** Model migration guide: Opus 4.8 section
+  - Reason: Model guidance not directly plugin-dev related
 
 #### Summary
 
-- **Must Update**: 17 items (16 confirmed from Stage 1 + 1 promoted from May Update + 1 missed item)
-- **May Update**: 7 items remaining (4 demoted to No Action)
-- **No Action**: 54+ items (including 4 demoted from May Update)
-- **Confidence**: HIGH — All Must Update items verified against primary sources. No items rejected.
-- **Issues Found**:
-  - Summary count discrepancy fixed (was "15 items" with 16 listed, now accurately 17)
-  - One missed item promoted: plugin agents multiple `Agent(...)` types fix
-  - Four May Update items demoted as irrelevant to plugin development
-  - One May Update item promoted (Agent tool autocomplete)
+- **Must Update: 6 items** (5 confirmed, 1 promoted)
+  1. Plugin `defaultEnabled: false` option - gap confirmed in plugin-structure
+  2. Background session temporary file guidance (`$CLAUDE_JOB_DIR/tmp`) - gap confirmed in agent-development
+  3. AskUserQuestion tool tightened usage - gap confirmed in agent-development
+  4. Bash tool TMPDIR clarification - gap confirmed in hook-development/skill-development
+  5. Directory-aware plugin suggestions - gap confirmed in marketplace-structure
+  6. MCP servers receive `CLAUDE_CODE_SESSION_ID` and `CLAUDECODE=1` env vars - gap confirmed in mcp-integration (PROMOTED)
 
-#### Notes for Stage 3
+- **Rejected/Reclassified: 5 items**
+  - `/simplify` refocused -> No Action (CC bundled command, not plugin-dev scope)
+  - NEW: Live documentation sources data file -> May Update (CC-internal pattern)
+  - NEW: Recent changes reference data file -> May Update (CC-internal pattern)
+  - NEW: Configuration guide skill -> May Update (CC bundled skill)
+  - Workflow tool ultracode opt-in -> May Update (may already be covered)
+  - Security monitor final-destination tracing -> May Update (auto-mode behavior, optional note)
 
-1. **Hook development updates (HIGH PRIORITY)**:
-   - Add `reloadSkills` and `sessionTitle` to SessionStart output schema in event-schemas.md
-   - Add `MessageDisplay` event documentation (new #26 event) to overview.md and event-schemas.md
-
-2. **Skill development updates (HIGH PRIORITY)**:
-   - Add `disallowed-tools` frontmatter field to advanced-frontmatter.md
-   - Mention `/reload-skills` command in overview.md for development workflow
-
-3. **Marketplace updates (MEDIUM PRIORITY)**:
-   - Add `skipLfs` option to schema-reference.md Source Types section
-
-4. **Agent development updates (MEDIUM PRIORITY)**:
-   - Document subagent MCP policy enforcement fix (CC 2.1.153)
-   - Document `--strict-mcp-config` behavior change for agent mcpServers
-   - Document multiple `Agent(...)` types fix (CC 2.1.147)
-   - Add note about `claude agents` autocomplete suggesting skills (CC 2.1.153)
-
-5. **Bundled skills reference (LOWER PRIORITY)**:
-   - Update `/simplify` -> `/code-review` rename with `--fix` and `--comment` flags
-   - Add Run app skill family (`/run`, `/verify`, `/run-skill-generator`)
-   - Note auto mode consent removal for autonomous workflows
+- **May Update: 13 items** remaining
+- **No Action: 12 items** (1 added from reclassification, 1 demoted from May Update)
+- **Confidence: HIGH** - All items independently verified against both CC changelog and system-prompts CHANGELOG. No significant issues found. Stage 1 correctly identified the main changes; minor scope adjustments made.

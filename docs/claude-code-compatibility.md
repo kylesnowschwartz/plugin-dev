@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.153 (2026-05-28)
-Plugin-dev version: 0.17.0
+Last audited: Claude Code 2.1.156 (2026-05-28)
+Plugin-dev version: 0.19.0
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.19.0 | 2.1.154-2.1.156 | 2026-05-28 | Plugin `defaultEnabled: false` option, background session `$CLAUDE_JOB_DIR/tmp` path, AskUserQuestion tightened guidance, Bash `$TMPDIR` sandbox clarification, directory-aware plugin suggestions, MCP server `CLAUDE_CODE_SESSION_ID`/`CLAUDECODE=1` env vars |
 | v0.17.0 | 2.1.145-2.1.153 | 2026-05-28 | MessageDisplay hook (26th event), SessionStart `reloadSkills`/`sessionTitle` outputs, `/reload-skills` command, `disallowed-tools` frontmatter, `skipLfs` marketplace option, MCP policy enforcement for subagent frontmatter, `--strict-mcp-config` behavior change, Agent tool autocomplete, multiple `Agent(...)` types fix |
 | v0.16.1 | 2.1.144 | 2026-05-19 | Bug fixes only — no plugin-system changes |
 | v0.16.0 | 2.1.139-2.1.143 | 2026-05-16 | SendUserFile tool, Agent tool usage notes, Self-Modification protected paths, `worktree.bgIsolation` setting, hook `args` field, `continueOnBlock` for PostToolUse, `terminalSequence` output, Stop hook `impossible` response + 8-block cap |

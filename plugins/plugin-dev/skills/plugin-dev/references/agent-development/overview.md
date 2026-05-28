@@ -478,6 +478,39 @@ Claude Code includes built-in background-agent instructions that replace the pre
 
 **Relevance for plugin agents:** If your agent may run in background mode (via `/loop`, scheduled tasks, or `run_in_background`), design the system prompt to complement this built-in guidance. Avoid conflicting instructions about progress reporting.
 
+### Background Session Temporary Files (CC 2.1.154)
+
+Background sessions should write temporary files to `$CLAUDE_JOB_DIR/tmp` rather than directly to `$CLAUDE_JOB_DIR`. This path convention ensures proper isolation of temporary artifacts from other job outputs:
+
+```bash
+# Correct: Use the tmp subdirectory
+temp_file="$CLAUDE_JOB_DIR/tmp/analysis-results.json"
+
+# Avoid: Writing directly to job root
+temp_file="$CLAUDE_JOB_DIR/analysis-results.json"
+```
+
+**Implications for plugin agents:**
+
+- Agents running in background mode should use `$CLAUDE_JOB_DIR/tmp` for scratch files
+- The `tmp` subdirectory is automatically available in background sessions
+- Final deliverables can still be written to `$CLAUDE_JOB_DIR` or user-specified locations
+
+### AskUserQuestion Best Practice (CC 2.1.154)
+
+Agents should use the AskUserQuestion tool sparingly—only when blocked on a decision that cannot be resolved from:
+
+- The original request
+- The codebase or available context
+- Sensible defaults
+
+**Design guidance for plugin agents:**
+
+- Prefer making reasonable assumptions over prompting
+- Use context clues and code patterns to infer intent
+- Reserve AskUserQuestion for genuinely ambiguous situations where the wrong choice would be costly
+- Avoid asking clarifying questions that could be answered by reading the code
+
 ### Fields NOT Available for Agents
 
 Some frontmatter fields are specific to skills and do not apply to agents:
