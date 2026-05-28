@@ -81,3 +81,31 @@ jobs:
             --model claude-opus-4-5-20251101
             --max-turns 150
             --allowedTools "Read,Write,Edit,Bash,Grep,Glob,WebFetch,Agent"
+
+      - name: Close superseded sync PRs
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Each run audits forward from the last *merged* baseline recorded in
+          # docs/claude-code-compatibility.md, so every still-open upstream-sync PR
+          # shares that baseline and the newest one is a superset of the older ones.
+          # Keep only the most recent open claude/upstream-sync-* PR; close the rest.
+          numbers=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 100 \
+            --json number,headRefName \
+            --jq '[.[] | select(.headRefName | startswith("claude/upstream-sync-")) | .number] | sort | reverse | .[]')
+
+          keep=$(printf '%s\n' "$numbers" | head -n1)
+          if [ -z "$keep" ]; then
+            echo "No open upstream-sync PRs; nothing to close."
+            exit 0
+          fi
+          echo "Keeping newest open sync PR: #$keep"
+
+          printf '%s\n' "$numbers" | tail -n +2 | while read -r pr; do
+            [ -n "$pr" ] || continue
+            echo "Closing superseded PR #$pr"
+            gh pr close "$pr" --repo "$GITHUB_REPOSITORY" --delete-branch \
+              --comment "Superseded by #$keep, a newer automated upstream sync that audits from the same baseline and covers the same and later Claude Code releases. Closed by sync housekeeping."
+          done
