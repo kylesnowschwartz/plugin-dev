@@ -1,8 +1,8 @@
 # Hook Event Schemas Reference
 
-Complete input and output JSON schemas for all 25 Claude Code hook events.
+Complete input and output JSON schemas for all 26 Claude Code hook events.
 
-**Last verified:** 2026-03-31 against official docs, Python SDK (`claude-agent-sdk`), and TypeScript SDK.
+**Last verified:** 2026-05-28 against official docs, Python SDK (`claude-agent-sdk`), and TypeScript SDK.
 
 ## Common Fields
 
@@ -95,10 +95,15 @@ Note: `permission_mode` is not present on SessionStart.
   "systemMessage": "string (optional)",
   "hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": "string (optional)"
+    "additionalContext": "string (optional)",
+    "reloadSkills": false,
+    "sessionTitle": "string (optional)"
   }
 }
 ```
+
+- `reloadSkills` (CC 2.1.152): When `true`, triggers skill directory re-scanning. Useful when a hook installs or updates skills at session start.
+- `sessionTitle` (CC 2.1.152): Sets the session title. Only applies when `source` is `"startup"` or `"resume"` — ignored on `"clear"` and `"compact"`.
 
 **Special behavior:** The `CLAUDE_ENV_FILE` environment variable points to a file where you can write `export VAR=value` lines. These persist as environment variables for subsequent Bash tool calls in the session.
 
@@ -930,14 +935,57 @@ Observability only. No decision control.
 
 ---
 
+## Message Display
+
+### MessageDisplay
+
+**When:** While assistant message text streams (CC 2.1.152).
+
+**Input:**
+
+```json
+{
+  "session_id": "string",
+  "transcript_path": "string",
+  "cwd": "string",
+  "hook_event_name": "MessageDisplay",
+  "message_text": "string (current streamed text)"
+}
+```
+
+**Output:**
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "MessageDisplay",
+    "displayContent": "string (replacement text to display)"
+  }
+}
+```
+
+- `displayContent`: Replaces displayed text on screen. This is display-only — the transcript and what Claude sees retain the original text.
+
+**Key limitations:**
+
+- Cannot block operations (display-only hook)
+- Matchers are not supported
+- Does not affect what Claude sees or the transcript record
+- Fires during streaming, may be called multiple times per message
+
+**Matchers:** Not supported
+**Hook types:** Command, HTTP, Prompt, Agent
+
+---
+
 ## SDK Parity Notes
 
-Not all events are typed in both SDKs. As of March 2026:
+Not all events are typed in both SDKs. As of May 2026:
 
-**Python SDK** (`claude-agent-sdk`) types 10 of 25 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
+**Python SDK** (`claude-agent-sdk`) types 10 of 26 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
 
 **TypeScript SDK** (`@anthropic-ai/claude-agent-sdk`) is closer to parity with the CLI. Events added over time: TeammateIdle and TaskCompleted (v2.1.34), ConfigChange (v0.2.49), Elicitation and ElicitationResult (v0.2.76).
 
-**CLI** supports all 25 events.
+**CLI** supports all 26 events.
 
-Events only available in CLI (not yet in either SDK): WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88).
+Events only available in CLI (not yet in either SDK): WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88), MessageDisplay (CC 2.1.152).

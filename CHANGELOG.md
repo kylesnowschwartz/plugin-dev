@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.0] - 2026-05-28
+
+### Added
+
+- **hook-development**: Documented MessageDisplay hook event (26th event) for transforming or hiding assistant message text as displayed (CC 2.1.152)
+- **hook-development**: Documented SessionStart hook `reloadSkills` and `sessionTitle` output fields (CC 2.1.152)
+- **skill-development**: Documented `disallowed-tools` frontmatter field for removing tools from model's available pool (CC 2.1.152)
+- **skill-development**: Documented `/reload-skills` command for hot-reloading skills during development (CC 2.1.152)
+- **command-development**: Documented `disallowed-tools` frontmatter field for commands (CC 2.1.152)
+- **marketplace-structure**: Documented `skipLfs` option for GitHub/git URL sources to skip Git LFS downloads (CC 2.1.153)
+- **agent-development**: Documented MCP policy enforcement fix for subagent frontmatter MCP servers (CC 2.1.153)
+- **agent-development**: Documented `--strict-mcp-config` behavior change for explicitly-passed agent definitions (CC 2.1.153)
+- **agent-development**: Documented Agent tool autocomplete for native slash commands and bundled skills (CC 2.1.153)
+- **agent-development**: Documented multiple `Agent(...)` types fix in tools frontmatter (CC 2.1.147)
+
 ## [0.16.1] - 2026-05-19
 
 ### Changed
@@ -498,7 +513,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.16.1...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.17.0...HEAD
+[0.17.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.16.1...v0.17.0
 [0.16.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.16.0...v0.16.1
 [0.16.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.15.0...v0.16.0
 [0.15.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.14.0...v0.15.0

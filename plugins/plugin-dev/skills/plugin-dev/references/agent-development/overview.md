@@ -238,6 +238,12 @@ tools: Read, Write, Grep, Bash
 
 **Best practice:** Limit tools to minimum needed (principle of least privilege)
 
+**Multiple Agent types (CC 2.1.147):** When declaring multiple `Agent(...)` types in the `tools:` field, all entries are now correctly retained. Previously, only the last entry was kept. This enables agents that can spawn multiple agent types:
+
+```yaml
+tools: Read, Grep, Agent(code-reviewer), Agent(test-runner)
+```
+
 **Common tool sets:**
 
 - Read-only analysis: `Read, Grep, Glob`
@@ -352,6 +358,10 @@ mcpServers:
 Reference an already-configured server by name, or provide inline config. Restricts which MCP servers the agent can access.
 
 **Main-thread agent loading (CC 2.1.117):** When an agent is launched as the main session agent via `--agent`, its frontmatter `mcpServers` now load for the main-thread session. Previously, agent-scoped MCP servers only loaded when the agent ran as a subagent. This extends MCP configuration to standalone agent sessions.
+
+**MCP policy enforcement fix (CC 2.1.153):** Subagent frontmatter MCP servers now correctly respect `--strict-mcp-config`, `--bare`, remote mode, and managed MCP config policies. Previously, these policies could be bypassed by defining MCP servers in subagent frontmatter. This fix makes MCP policies consistent across all invocation contexts.
+
+**`--strict-mcp-config` behavior change (CC 2.1.153):** `--strict-mcp-config` no longer strips inline `mcpServers` from explicitly-passed agent definitions. This allows agents passed via CLI to retain their MCP server configurations while still enforcing strict policies on dynamically-discovered servers.
 
 See `references/advanced-agent-fields.md` for configuration examples.
 
@@ -671,6 +681,10 @@ Create test scenarios to verify agent triggers correctly:
 2. Use similar phrasing to examples in test
 3. Check Claude loads the agent
 4. Verify agent provides expected functionality
+
+### Agent Autocomplete (CC 2.1.153)
+
+The `claude agents` dispatch input now suggests native slash commands and bundled skills in addition to project agents. When testing agent invocation, autocomplete helps discover available agent types and skills that can be dispatched to agents.
 
 ### Load Agents at Session Start
 

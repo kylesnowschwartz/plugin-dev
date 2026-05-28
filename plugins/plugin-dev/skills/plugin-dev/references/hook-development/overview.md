@@ -5,12 +5,13 @@
 
 Hooks are event-driven automation that execute in response to Claude Code events. Use hooks to validate operations, enforce policies, add context, and integrate external tools into workflows.
 
-Claude Code has **25 hook events** across these categories:
+Claude Code has **26 hook events** across these categories:
 
 - **Session Lifecycle** -- SessionStart, InstructionsLoaded, SessionEnd
 - **User Input** -- UserPromptSubmit
 - **Tool Lifecycle** -- PreToolUse, PermissionRequest, PermissionDenied, PostToolUse, PostToolUseFailure
 - **Turn Control** -- Stop, StopFailure
+- **Message Display** -- MessageDisplay
 - **Subagents** -- SubagentStart, SubagentStop
 - **Teams** -- TeammateIdle, TaskCompleted
 - **Context Management** -- PreCompact, PostCompact
@@ -277,6 +278,21 @@ echo "export PROJECT_TYPE=nodejs" >> "$CLAUDE_ENV_FILE"
 ```
 
 See `examples/load-context.sh` for a complete example.
+
+**SessionStart-specific output fields (CC 2.1.152):**
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "reloadSkills": true,
+    "sessionTitle": "My Custom Session Title"
+  }
+}
+```
+
+- `reloadSkills`: When `true`, triggers skill directory re-scanning. Useful when a hook installs or updates skills at session start.
+- `sessionTitle`: Sets the session title on startup and resume. Only applies when `source` is `"startup"` or `"resume"` — ignored on `"clear"` and `"compact"`.
 
 #### InstructionsLoaded
 
@@ -904,6 +920,62 @@ Execute after a user responds to an MCP elicitation, before the response is sent
 
 **Input includes:** `mcp_server_name`, `elicitation_id`, `user_response`
 
+### Message Display
+
+#### MessageDisplay
+
+Execute while assistant message text streams. Use for logging, observability, or customizing message display.
+
+**Matchers:** Not supported
+**Hook types:** Command, HTTP, Prompt, Agent
+**Decision control:** Display-only (`displayContent` decision)
+
+```json
+{
+  "MessageDisplay": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/log-message.sh"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Input includes:** `message_text` (current streamed text)
+
+**Output:**
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "MessageDisplay",
+    "displayContent": "Transformed text to display"
+  }
+}
+```
+
+- `displayContent`: Replaces displayed text on screen (display-only; transcript and what Claude sees retain the original text)
+
+**Key limitations:**
+
+- Cannot block operations (display-only)
+- Matchers are not supported
+- Does not affect what Claude sees or the transcript record
+- Fires during streaming, so may be called multiple times per message
+
+**Use cases:**
+
+- Custom message formatting or styling
+- Redacting sensitive information from display
+- Logging assistant output in real-time
+- Observability and monitoring
+
+> **CC 2.1.152:** Added MessageDisplay hook event for transforming or hiding assistant message text as displayed.
+
 ### Notifications
 
 #### Notification
@@ -1096,6 +1168,7 @@ Not all events support all four hook types:
 | WorktreeRemove     | Yes     | --   | --     | --    |
 | Elicitation        | Yes     | Yes  | Yes    | Yes   |
 | ElicitationResult  | Yes     | Yes  | Yes    | Yes   |
+| MessageDisplay     | Yes     | Yes  | Yes    | Yes   |
 | Notification       | Yes     | Yes  | Yes    | Yes   |
 
 ## Hook Configuration Locations
@@ -1276,7 +1349,7 @@ echo "$output" | jq .
 
 ## Quick Reference
 
-### All 25 Hook Events
+### All 26 Hook Events
 
 | Event              | Category      | Matchers                    | Decision Control              |
 | ------------------ | ------------- | --------------------------- | ----------------------------- |
@@ -1303,7 +1376,8 @@ echo "$output" | jq .
 | WorktreeCreate     | Worktree      | None                        | Return path, exit code        |
 | WorktreeRemove     | Worktree      | None                        | None (cleanup)                |
 | Elicitation        | MCP           | MCP server name             | Accept/decline/cancel         |
-| ElicitationResult  | MCP           | MCP server name             | Override response              |
+| ElicitationResult  | MCP           | MCP server name             | Override response             |
+| MessageDisplay     | Display       | None                        | Display content replacement   |
 | Notification       | Notification  | Notification types          | None (observability)          |
 
 ### Critical Gotchas
@@ -1326,7 +1400,7 @@ echo "$output" | jq .
 
 For detailed patterns and advanced techniques, consult:
 
-- **`references/event-schemas.md`** -- Complete input/output JSON schemas for all 25 events
+- **`references/event-schemas.md`** -- Complete input/output JSON schemas for all 26 events
 - **`references/patterns.md`** -- Proven patterns including temporarily active and configuration-driven hooks
 - **`references/migration.md`** -- Migrating from basic to advanced hooks
 - **`references/advanced.md`** -- Advanced use cases and techniques
@@ -1370,7 +1444,7 @@ Development tools in `scripts/`:
 
 To implement hooks in a plugin:
 
-1. Identify events to hook into (see [Quick Reference](#all-25-hook-events))
+1. Identify events to hook into (see [Quick Reference](#all-26-hook-events))
 2. Decide hook type: prompt (flexible), agent (multi-step), command (deterministic), or HTTP (external)
 3. Write hook configuration in `hooks/hooks.json`
 4. For command hooks, create hook scripts
