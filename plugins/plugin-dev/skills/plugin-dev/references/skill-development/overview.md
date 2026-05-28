@@ -227,6 +227,14 @@ Use for skills that should only be manually invoked by users, such as:
 | `user-invocable: false`          | Hidden     | Allowed    | Yes            |
 | `disable-model-invocation: true` | Visible    | Blocked    | Yes            |
 
+##### disallowed-tools (optional)
+
+```yaml
+disallowed-tools: AskUserQuestion, WebSearch
+```
+
+Remove specific tools from Claude's available pool while the skill is active. Useful for autonomous skills that should never call certain tools (e.g., `AskUserQuestion` for background loops). Accepts space/comma-separated string or YAML list. The restriction clears when the user sends their next message. Added in CC 2.1.152. See `references/advanced-frontmatter.md` for details.
+
 ##### model (optional)
 
 ```yaml
@@ -451,6 +459,16 @@ claude --plugin-dir /path/to/plugin
 # Verify skill loads correctly
 ```
 
+### Hot-Reloading Skills During Development (CC 2.1.152)
+
+Use the `/reload-skills` command to re-scan skill directories without restarting your session. This is useful during skill development when you're iterating on skill content:
+
+1. Edit your SKILL.md or references
+2. Run `/reload-skills` in Claude Code
+3. Test the updated skill immediately
+
+Changes to skill content, frontmatter, and references are picked up. No need to restart Claude Code.
+
 ## Examples from Plugin-Dev
 
 Study the skills in this plugin as examples of best practices:
@@ -489,6 +507,7 @@ Before finalizing a skill:
 - [ ] Name uses only lowercase letters, numbers, and hyphens (max 64 chars)
 - [ ] Description is under 1024 characters
 - [ ] (Optional) `allowed-tools` field if restricting tool access
+- [ ] (Optional) `disallowed-tools` field if blocking specific tools
 - [ ] (Optional) `context: fork` if running in subagent
 - [ ] (Optional) `agent` field if specifying agent type (requires `context: fork`)
 - [ ] (Optional) `skills` array if loading other skills (requires `context: fork`)

@@ -122,17 +122,19 @@ Paths are relative to:
     "source": "github",
     "repo": "owner/repo-name",
     "ref": "v1.0",
-    "sha": "abc123..."
+    "sha": "abc123...",
+    "skipLfs": true
   }
 }
 ```
 
-| Field    | Type   | Required | Description                              |
-| -------- | ------ | -------- | ---------------------------------------- |
-| `source` | string | Yes      | Must be `"github"`                       |
-| `repo`   | string | Yes      | GitHub repository in `owner/repo` format |
-| `ref`    | string | No       | Branch, tag, or commit reference         |
-| `sha`    | string | No       | Exact commit SHA for integrity pinning   |
+| Field     | Type    | Required | Description                                   |
+| --------- | ------- | -------- | --------------------------------------------- |
+| `source`  | string  | Yes      | Must be `"github"`                            |
+| `repo`    | string  | Yes      | GitHub repository in `owner/repo` format      |
+| `ref`     | string  | No       | Branch, tag, or commit reference              |
+| `sha`     | string  | No       | Exact commit SHA for integrity pinning        |
+| `skipLfs` | boolean | No       | Skip Git LFS downloads during clone/update (CC 2.1.153) |
 
 ### Git URL (Object)
 
@@ -143,17 +145,19 @@ For GitLab, Bitbucket, or self-hosted git repositories:
   "source": {
     "source": "url",
     "url": "https://gitlab.com/team/plugin.git",
-    "ref": "main"
+    "ref": "main",
+    "skipLfs": true
   }
 }
 ```
 
-| Field    | Type   | Required | Description                    |
-| -------- | ------ | -------- | ------------------------------ |
-| `source` | string | Yes      | Must be `"url"`                |
-| `url`    | string | Yes      | Full git clone URL             |
-| `ref`    | string | No       | Branch or tag reference        |
-| `sha`    | string | No       | Exact commit SHA for integrity |
+| Field     | Type    | Required | Description                                   |
+| --------- | ------- | -------- | --------------------------------------------- |
+| `source`  | string  | Yes      | Must be `"url"`                               |
+| `url`     | string  | Yes      | Full git clone URL                            |
+| `ref`     | string  | No       | Branch or tag reference                       |
+| `sha`     | string  | No       | Exact commit SHA for integrity                |
+| `skipLfs` | boolean | No       | Skip Git LFS downloads during clone/update (CC 2.1.153) |
 
 ### Host Pattern (Object)
 

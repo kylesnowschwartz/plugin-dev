@@ -191,6 +191,55 @@ Allow a skill with any arguments:
 
 This enables fine-grained control over which skills can be auto-invoked by Claude vs requiring explicit user invocation. Combine with `disable-model-invocation` frontmatter for maximum control.
 
+## disallowed-tools
+
+Remove specific tools from Claude's available pool while the skill is active. This is the denylist counterpart to `allowed-tools`.
+
+### Format
+
+Accepts space/comma-separated string or YAML list:
+
+```yaml
+---
+name: autonomous-processor
+description: Process files autonomously without user interruption...
+disallowed-tools: AskUserQuestion, WebSearch
+---
+```
+
+Or as a list:
+
+```yaml
+---
+name: autonomous-processor
+description: Process files autonomously without user interruption...
+disallowed-tools:
+  - AskUserQuestion
+  - WebSearch
+---
+```
+
+### Use Cases
+
+- **Autonomous skills:** Remove `AskUserQuestion` for background loops that should never prompt for input
+- **Offline workflows:** Remove `WebSearch` and `WebFetch` for air-gapped operations
+- **Safety constraints:** Remove `Bash` or `Write` for read-only analysis skills
+
+### Comparison with allowed-tools
+
+| Field             | Approach  | Use When                                        |
+| ----------------- | --------- | ----------------------------------------------- |
+| `allowed-tools`   | Allowlist | Few tools needed, restrict to specific set      |
+| `disallowed-tools`| Denylist  | Most tools needed, block specific dangerous ones|
+
+Use one or the other. If both are specified, behavior is undefined.
+
+### Lifecycle
+
+The restriction clears when the user sends their next message. This ensures the tool pool resets between user turns, preventing accidental tool lockout across conversation turns.
+
+> **CC 2.1.152:** Added `disallowed-tools` frontmatter field for skills and commands to remove tools from the model's available pool.
+
 ## Visual Output Generators
 
 Skills can bundle scripts that generate visual output (HTML files, charts, interactive visualizations) for rich user experiences.

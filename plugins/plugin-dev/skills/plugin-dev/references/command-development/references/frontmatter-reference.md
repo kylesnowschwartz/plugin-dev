@@ -309,6 +309,47 @@ argument-hint: [test-pattern] [options]
 Run tests matching $1 with options: $2
 ```
 
+### disallowed-tools
+
+**Type:** Comma-separated string or YAML list
+**Required:** No
+**Default:** None (no tools blocked)
+
+**Purpose:** Remove specific tools from Claude's available pool while command runs
+
+**Formats:**
+
+```yaml
+disallowed-tools: AskUserQuestion, WebSearch
+```
+
+Or as a list:
+
+```yaml
+disallowed-tools:
+  - AskUserQuestion
+  - WebSearch
+```
+
+**Use cases:**
+
+- **Autonomous commands:** Block `AskUserQuestion` for background execution
+- **Offline workflows:** Block `WebSearch` and `WebFetch`
+- **Safety constraints:** Block `Bash` for read-only analysis commands
+
+**Comparison with allowed-tools:**
+
+| Field              | Approach  | Use When                                         |
+| ------------------ | --------- | ------------------------------------------------ |
+| `allowed-tools`    | Allowlist | Few tools needed, restrict to specific set       |
+| `disallowed-tools` | Denylist  | Most tools needed, block specific dangerous ones |
+
+Use one or the other. If both are specified, behavior is undefined.
+
+The restriction clears when the user sends their next message.
+
+> **CC 2.1.152:** Added `disallowed-tools` frontmatter field for skills and commands.
+
 ### disable-model-invocation
 
 **Type:** Boolean
