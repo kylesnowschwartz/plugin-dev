@@ -81,6 +81,29 @@ The manifest defines plugin metadata and configuration. Located at `.claude-plug
 **Version format**: Follow semantic versioning (MAJOR.MINOR.PATCH)
 **Keywords**: Use for plugin discovery and categorization
 
+### Default Enabled State (CC 2.1.154)
+
+Plugins can specify whether they are enabled by default after installation:
+
+```json
+{
+  "name": "my-plugin",
+  "defaultEnabled": false
+}
+```
+
+**Values:**
+
+- `true` (default) - Plugin is enabled immediately after installation
+- `false` - Plugin is installed but disabled; users must manually enable it via `/plugin` command
+
+**Use cases for `defaultEnabled: false`:**
+
+- Plugins with significant resource requirements
+- Plugins that require configuration before use
+- Optional extensions that users should explicitly opt into
+- Plugins with security-sensitive capabilities that users should consciously enable
+
 ### Component Path Configuration
 
 Specify custom paths for components (supplements default directories):

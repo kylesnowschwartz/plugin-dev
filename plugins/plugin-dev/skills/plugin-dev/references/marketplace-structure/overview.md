@@ -243,6 +243,25 @@ Anthropic reserves certain marketplace names. Avoid using names that could confl
 
 Relative paths in plugin source configurations may not resolve correctly in URL-based marketplaces. Use absolute paths or repository-based sources for reliable resolution.
 
+## Plugin Discovery Behavior
+
+### Directory-Aware Suggestions (CC 2.1.154)
+
+The Discover tab considers the current working directory when suggesting plugins. When users browse plugins, they may see "suggested for this directory" annotations on plugins that are particularly relevant to their project type.
+
+**How it works:**
+
+- Claude Code analyzes the current directory's contents (package.json, Cargo.toml, pyproject.toml, etc.)
+- Plugins with matching `keywords` or `category` fields are surfaced with directory-aware suggestions
+- This helps users discover relevant plugins without searching
+
+**Implications for marketplace maintainers:**
+
+- Use accurate `keywords` in plugin entries to enable directory-aware discovery
+- Include technology-specific keywords (e.g., `["react", "typescript", "frontend"]`)
+- Set appropriate `category` fields for plugins
+- Consider the directory contexts where each plugin would be useful
+
 ## Best Practices
 
 ### Organization
