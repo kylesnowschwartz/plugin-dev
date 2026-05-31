@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-05-31
+
+### Added
+
+- **plugin-structure**: Documented `claude plugin init <name>` command for scaffolding new plugins with recommended directory structure (CC 2.1.157)
+- **plugin-structure**: Documented automatic local skill loading — skills in `.claude/skills/` directories now load without marketplace installation (CC 2.1.157)
+- **skill-development**: Documented automatic local skill loading workflow for streamlined development (CC 2.1.157)
+- **agent-development**: Documented EnterWorktree mid-session switching — agents can now switch between Claude-managed worktrees using `path` parameter (CC 2.1.157)
+- **agent-development**: Documented settings.json `agent` field now honored for dispatched sessions (CC 2.1.157)
+
 ## [0.19.0] - 2026-05-28
 
 ### Added
@@ -534,7 +544,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.19.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.0...HEAD
+[0.20.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.17.0...v0.18.0
 [0.17.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.16.1...v0.17.0

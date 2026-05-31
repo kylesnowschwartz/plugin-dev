@@ -570,6 +570,27 @@ Claude Code automatically discovers and loads components:
 5. **Hooks**: Loads configuration from `hooks/hooks.json` or manifest
 6. **MCP servers**: Loads configuration from `.mcp.json` or manifest
 
+### Automatic Local Skill Loading (CC 2.1.157)
+
+Skills placed in `.claude/skills/` directories now load automatically without requiring marketplace installation or explicit plugin configuration. This enables a streamlined local development workflow:
+
+```
+project/
+└── .claude/
+    └── skills/
+        └── my-skill/
+            └── SKILL.md    # Automatically discovered and loaded
+```
+
+**Benefits:**
+
+- No marketplace publishing required for local skills
+- Skills are immediately available in the project
+- Simplifies plugin development iteration
+- Works alongside installed marketplace plugins
+
+**Precedence:** Local `.claude/skills/` are discovered at the Project level in the skill precedence hierarchy (Enterprise > Personal > Project > Plugin).
+
 **Discovery timing**:
 
 - Plugin installation: Components register with Claude Code
@@ -812,6 +833,26 @@ claude --verbose          # Additional debugging
 ```
 
 Use `/plugins` in the TUI to view installed plugins and their status.
+
+### Plugin Scaffolding (CC 2.1.157)
+
+Create a new plugin with the recommended directory structure:
+
+```bash
+claude plugin init my-plugin
+```
+
+This scaffolds a new plugin in `.claude/skills/my-plugin/` with:
+
+- `.claude-plugin/plugin.json` manifest
+- Basic `SKILL.md` template
+- Proper directory structure
+
+**Use cases:**
+
+- Starting a new plugin from scratch
+- Creating plugins with correct structure automatically
+- Avoiding common structural mistakes
 
 ### Plugin Pruning (CC 2.1.121)
 
