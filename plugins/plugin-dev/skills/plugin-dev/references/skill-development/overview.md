@@ -41,6 +41,18 @@ Both skills and commands are invoked via the Skill tool and share the same under
 
 Skills follow precedence: Enterprise > Personal (`~/.claude/skills/`) > Project (`.claude/skills/`) > Plugin skills. Higher-priority skills with the same name shadow lower-priority ones. Use distinctive, namespaced names for plugin skills to avoid collisions.
 
+### Automatic Local Skill Loading (CC 2.1.157)
+
+Skills in `.claude/skills/` directories now load automatically without marketplace installation or explicit configuration. Simply place a skill directory with a `SKILL.md` file in your project's `.claude/skills/` or personal `~/.claude/skills/`, and it becomes available immediately.
+
+**Development workflow:**
+
+1. Create skill directory: `mkdir -p .claude/skills/my-skill`
+2. Add `SKILL.md` with frontmatter and content
+3. Skill is immediately available — no install step required
+
+This streamlines local plugin development and testing. Skills loaded this way follow the standard precedence rules.
+
 ### skillOverrides Setting (CC 2.1.129)
 
 Users can control skill behavior globally via the `skillOverrides` setting in their settings.json:

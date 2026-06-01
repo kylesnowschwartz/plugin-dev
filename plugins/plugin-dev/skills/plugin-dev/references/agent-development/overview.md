@@ -693,6 +693,22 @@ The `worktree.bgIsolation` setting controls whether background sessions automati
 
 Use `"none"` when background agents need to modify the main working directory directly (e.g., for refactoring tasks that should affect the current branch). Configure in user or project settings.
 
+### EnterWorktree Mid-Session Switching (CC 2.1.157)
+
+The `EnterWorktree` tool can now switch between Claude-managed worktrees mid-session using the `path` parameter. This enables:
+
+- Switching from one worktree to another without ending the session
+- Moving between parallel feature branches during a single session
+- Returning to the main worktree after isolated work
+
+**Usage:** Agents in an existing worktree session or pinned agent can call `EnterWorktree` with a `path` pointing to another registered `.claude/worktrees/` worktree. Cleanup and writability limits are enforced during the switch.
+
+**Implications for plugin agents:**
+
+- Agents can now orchestrate work across multiple worktrees
+- Design multi-branch workflows that switch context as needed
+- Be aware of writability restrictions when switching worktrees
+
 ### Subagent Skill Discovery (CC 2.1.133)
 
 **Resolved:** Subagents now correctly discover project, user, and plugin skills via the Skill tool. Prior to CC 2.1.133, subagents could not invoke skills, which limited their ability to leverage plugin-provided knowledge. If your agents depend on skills, ensure users are on CC 2.1.133 or later.
@@ -744,6 +760,28 @@ Agent frontmatter `tools:` and `disallowedTools:` restrictions now work in print
 ### Agent permissionMode via CLI (CC 2.1.119)
 
 When launching an agent via `--agent <name>`, Claude Code now respects the agent's frontmatter `permissionMode` for built-in agents. This means permission modes defined in agent definitions are honored when launched via the CLI flag.
+
+### Settings Agent Field for Dispatched Sessions (CC 2.1.157)
+
+The `agent` field in `settings.json` is now honored when dispatching sessions via `claude agents`. This enables:
+
+```json
+{
+  "agent": "my-custom-agent"
+}
+```
+
+**Behavior:**
+
+- Dispatched sessions inherit the `agent` setting from the dispatching context
+- Allows default agent configuration at the project or user level
+- Consistent agent selection across interactive and dispatched sessions
+
+**Use cases:**
+
+- Set a default agent for all dispatched work in a project
+- Ensure dispatched sessions use the same specialized agent as interactive sessions
+- Configure team-wide agent defaults via project settings
 
 ### Test System Prompt
 
