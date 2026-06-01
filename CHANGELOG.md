@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.1] - 2026-06-01
+
+### Changed
+
+- **claude-code-compatibility**: Audited CC 2.1.159 — internal infrastructure improvements only, no plugin-system changes requiring documentation updates
+
 ## [0.20.0] - 2026-05-31
 
 ### Added
@@ -544,7 +550,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.1...HEAD
+[0.20.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.0...v0.20.1
 [0.20.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.17.0...v0.18.0
