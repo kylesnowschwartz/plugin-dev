@@ -1,111 +1,117 @@
 # Upstream Change Manifest
-## CC Version Range: 2.1.157 - 2.1.158
-## Generated: 2026-05-31
-## Sources: changelog [x], system-prompts [x], claude-code-guide [skipped - small change set]
+## CC Version Range: 2.1.159 - 2.1.162
+## Generated: 2026-06-04
+## Sources: changelog [Y], system-prompts [Y], claude-code-guide [skipped - empty output]
 
 ---
 
 ### Must Update
 
-- [ ] **`claude plugin init <name>` command to scaffold new plugins** (CC 2.1.157)
-  - Source: CC changelog
-  - Confidence: HIGH
-  - Affects: `plugin-structure/overview.md` (Plugin CLI section)
-  - Details: New CLI command that scaffolds a new plugin structure in `.claude/skills`. This is a significant addition for plugin developers as it provides an official way to create new plugins with proper structure.
-  - Raw changelog: "Added `claude plugin init <name>` command to scaffold new plugins"
+- [ ] **LSP workspaceSymbol query parameter** (CC 2.1.162)
+  - Source: changelog, system-prompts
+  - Confidence: high
+  - Affects: lsp-integration/overview.md
+  - Details: LSP `workspaceSymbol` operation now accepts `query` parameter for language server pass-through. System-prompts clarify agents should always provide a query because many language servers return no results for an empty one.
+  - Raw changelog: "LSP `workspaceSymbol` operation now accepts `query` parameter for language server pass-through"
+  - Stage 2 verified: Gap exists in lsp-integration/overview.md
 
-- [ ] **Plugins in `.claude/skills` directories automatically load without marketplace requirement** (CC 2.1.157)
-  - Source: CC changelog
-  - Confidence: HIGH
-  - Affects: `skill-development/overview.md` (Skill Precedence section), `plugin-structure/overview.md`
-  - Details: Skills placed in `.claude/skills/` now load automatically without needing to be published to the marketplace or installed. This changes the development workflow significantly - local skills are now first-class citizens.
-  - Raw changelog: "Plugins in `.claude/skills` directories automatically load without marketplace requirement"
-
-- [ ] **EnterWorktree tool can switch between Claude-managed worktrees mid-session** (CC 2.1.157)
-  - Source: CC changelog, system-prompts
-  - Confidence: HIGH
-  - Affects: `agent-development/overview.md` (Worktree Base Reference section at line ~678)
-  - Details: The EnterWorktree tool now allows switching by `path` from an existing worktree session or pinned agent into another registered `.claude/worktrees/` worktree, with cleanup and writability limits clarified.
-  - Raw changelog: "`EnterWorktree` can switch between Claude-managed worktrees mid-session"
-  - System-prompts: "Tool Description: EnterWorktree - Allows switching by `path` from an existing worktree session or pinned agent into another registered `.claude/worktrees/` worktree, with cleanup and writability limits clarified."
-
-- [ ] **Agent field in `settings.json` now honored for dispatched sessions** (CC 2.1.157)
-  - Source: CC changelog
-  - Confidence: HIGH
-  - Affects: `agent-development/overview.md` (new section needed for agent dispatch configuration)
-  - Details: When dispatching agent sessions via `claude agents`, the `agent` field in settings.json is now respected. This affects how dispatched sessions select which agent to run.
-  - Raw changelog: "Agent field in `settings.json` now honored for dispatched sessions"
-
----
+- [ ] **NotebookEdit reworked around cell IDs** (CC 2.1.162)
+  - Source: system-prompts
+  - Confidence: high (verified)
+  - Affects: hook-development/references/hook-input-schemas.md
+  - Details: Notebook editing guidance reworked around cell IDs from prior Read output. Requires notebook to be read before editing. Insert behavior changed to add cells after a target cell or at notebook start.
+  - Raw changelog: "Reworks notebook editing guidance around cell IDs from prior `Read` output, requiring the notebook to be read before editing and changing insert behavior to add cells after a target cell or at the notebook start."
+  - Stage 2 verified: Hook-input-schemas.md line 118 needs cell_id/cell_number parameters added
 
 ### May Update
 
-- [ ] **Autocomplete enhancements for `/plugin` arguments** (CC 2.1.157)
-  - Source: CC changelog
-  - Confidence: medium
-  - Affects: plugin command documentation
-  - Details: Improved autocomplete for plugin-related slash commands. May warrant mention in usage documentation.
-
-- [ ] **Auto mode available on Bedrock, Vertex, and Foundry for Opus 4.7 and 4.8** (CC 2.1.158)
-  - Source: CC changelog
-  - Confidence: high
-  - Affects: deployment/provider documentation if plugin-dev covers it
-  - Details: Auto mode can now be enabled on non-Anthropic providers via `CLAUDE_CODE_ENABLE_AUTO_MODE=1`. This is primarily relevant for enterprise deployments.
-
-- [ ] **Tool use concepts - guidance on tool descriptions prescribing when to call each tool** (CC 2.1.157)
+- [ ] **/init CLAUDE.md discovers .devin/rules/ and .windsurf/rules/** (CC 2.1.162)
   - Source: system-prompts
-  - Confidence: medium
-  - Affects: skill-authoring best practices
-  - Details: New guidance that tool descriptions should prescribe when to call each tool, especially to improve should-call behavior on recent Opus models. May be relevant for skill description best practices.
+  - Confidence: medium (single source)
+  - Affects: /init skill documentation, AI config discovery
+  - Details: Expands AI coding tool config discovery to include `.devin/rules/` and `.windsurf/rules/` alongside existing AGENTS, Cursor, Copilot, Windsurf, and Cline files.
+  - Stage 2: Kept as May Update - not directly plugin-relevant but useful context
 
-- [ ] **Opus 4.8 migration guidance in Model migration guide** (CC 2.1.157)
+- [ ] **Single-file grep satisfies read-before-edit verification** (CC 2.1.160)
+  - Source: changelog
+  - Confidence: medium (single source)
+  - Affects: Edit tool documentation, read-before-edit guidance
+  - Details: Single-file `grep` commands now satisfy read-before-edit verification requirements. This relaxes the previous requirement that files must be read with the Read tool before editing.
+  - Stage 2: Kept as May Update - affects plugin documentation about Edit tool
+
+- [ ] **Confirmation prompts before writing to shell startup files** (CC 2.1.160)
+  - Source: changelog
+  - Confidence: medium (single source)
+  - Affects: Bash tool documentation, safety guidance
+  - Details: Added confirmation prompts before writing to shell startup files and build-tool configs that enable code execution. This is a security enhancement.
+  - Stage 2: Kept as May Update - security enhancement worth noting
+
+- [ ] **Agent tool usage notes updated for subagent-type availability** (CC 2.1.161)
   - Source: system-prompts
-  - Confidence: low
-  - Affects: model compatibility notes if any
-  - Details: Adds Opus 4.8 migration guidance to put tool-triggering instructions in each tool's own description, not only in the system prompt.
-
-- [ ] **Security monitor for autonomous agent actions expansion** (CC 2.1.157)
-  - Source: system-prompts
-  - Confidence: low
-  - Affects: agent security documentation if present
-  - Details: Expands high-severity review for persistent configuration changes, outbound submissions, novel destinations, and low-information actions whose intent is clarified by the agent's narration.
-
----
+  - Confidence: medium (single source)
+  - Affects: agent-development/overview.md (minor clarification)
+  - Details: Agent usage guidance now keys subagent-type instructions off subagent-type availability rather than message-continuation support, and scopes subagent-context restrictions to the actual subagent context check.
+  - Stage 2: Demoted from Must Update - existing docs already cover subagent concepts
 
 ### No Action
 
-- Bug fixes: unprocessable images no longer crash requests (CC 2.1.157) - internal bug fix
-- Sandbox network permission prompts fixed in auto mode (CC 2.1.157) - internal bug fix
-- Background session retirement improved (CC 2.1.157) - internal improvement
-- Enhanced worktree management and clipboard functionality (CC 2.1.157) - internal improvement
-- Terminal UI improvements and performance optimizations (CC 2.1.157) - internal improvement
-- Version 2.1.158: No changes to system prompts
+- `claude agents --json` shows `waitingFor` field (CC 2.1.162) - CLI output format, not plugin-relevant
+- Slash command autocomplete fills prompt instead of executing (CC 2.1.162) - UI behavior change
+- Remote Control redesigned as persistent footer (CC 2.1.162) - UI change
+- Windsurf rebranded to Devin Desktop (CC 2.1.162) - Branding change
+- Session names use full terminal width (CC 2.1.162) - UI formatting
+- OpenTelemetry metrics include OTEL_RESOURCE_ATTRIBUTES (CC 2.1.161) - Observability, not plugin-relevant
+- `claude agents` shows done/total counts (CC 2.1.161) - CLI output format
+- /mcp menu collapses unused claude.ai connectors (CC 2.1.161) - UI change
+- Linux clipboard support (wl-copy/xclip/xsel) (CC 2.1.161) - Platform support
+- Motion accessibility settings honored (CC 2.1.161) - Accessibility
+- Managed settings policies fixed (CC 2.1.161) - Bug fix
+- Background subagent output fixed (CC 2.1.161) - Bug fix
+- /autofix-pr error handling improved (CC 2.1.161) - Bug fix
+- Copy-on-select restored for Windows WSL (CC 2.1.160) - Bug fix
+- Session restoration from `claude agents` fixed (CC 2.1.160) - Bug fix
+- Background session reconnection improved (CC 2.1.160) - Bug fix
+- Interrupt handling fixed (CC 2.1.160) - Bug fix
+- MCP server timeout configuration corrected (CC 2.1.160) - Bug fix
+- v2.1.159: Internal infrastructure updates only - No user-visible changes
+- DesignSync legacy asset registration (CC 2.1.162) - Internal tool state, not plugin API
+- WebFetch permission rules properly applied (CC 2.1.162) - Bug fix
+- Windows permission matching improved (CC 2.1.162) - Bug fix
+- Startup hang fix when config directory lacks write permissions (CC 2.1.162) - Bug fix
+- **[Stage 2 demoted]** NEW DesignSync tool (CC 2.1.160) - claude.ai-specific, not plugin API
+- **[Stage 2 demoted]** NEW /design-sync slash command (CC 2.1.160, 2.1.162) - claude.ai-specific, not plugin API
+- **[Stage 2 demoted]** Durable approval context (CC 2.1.161) - Internal behavior change
+- **[Stage 2 demoted]** Background monitor streaming-pipeline guidance (CC 2.1.161) - Internal guidance
+- **[Stage 2 demoted]** Workflow tool ultracode keyword (CC 2.1.160) - Not plugin-relevant
+- **[Stage 2 demoted]** /code-review changes (CC 2.1.160) - Built-in command internals
+- **[Stage 2 demoted]** Parallel Bash execution error handling (CC 2.1.161) - Internal behavior
+- **[Stage 2 demoted]** Bash PR instructions configurable slot (CC 2.1.162) - Not plugin-relevant
 
 ---
 
 ## Summary
 
-Two versions were released after the last audit (2.1.156):
+Four versions were released after the last audit (2.1.158):
 
-- **2.1.157**: Major plugin-system changes including `claude plugin init`, automatic `.claude/skills` loading, EnterWorktree enhancements, and settings.json agent field support
-- **2.1.158**: Auto mode expansion to additional providers (minimal plugin-dev impact)
+- **2.1.159**: Internal infrastructure updates only - no user-visible changes
+- **2.1.160**: DesignSync tool (out of scope), /design-sync command (out of scope), read-before-edit relaxation, security prompts
+- **2.1.161**: Agent tool usage updates (minor), durable approvals, parallel execution changes
+- **2.1.162**: LSP query parameter, NotebookEdit cell IDs, /init config discovery expansion
 
-**Must Update: 4 items**
-1. `claude plugin init <name>` command - new plugin scaffolding command
-2. Automatic `.claude/skills` loading - changes plugin development workflow
-3. EnterWorktree mid-session switching - worktree tool enhancement
-4. Settings.json agent field honored for dispatched sessions - agent configuration inheritance
+**Must Update: 2 items** (Stage 2 verified)
+1. LSP workspaceSymbol query parameter (high confidence - dual source) -- affects lsp-integration/overview.md
+2. NotebookEdit cell ID changes (high confidence) -- affects hook-development/references/hook-input-schemas.md
 
-**May Update: 5 items**
-- `/plugin` autocomplete enhancements
-- Auto mode on Bedrock/Vertex/Foundry
-- Tool description guidance for should-call behavior
-- Opus 4.8 migration guidance
-- Security monitor expansion
+**May Update: 4 items** (Stage 2 refined from 9)
+- /init .devin/rules and .windsurf/rules discovery
+- Single-file grep read-before-edit
+- Shell startup file confirmation prompts
+- Agent tool usage notes for subagent-type (demoted from Must Update)
 
-**No Action: 6 items**
-- Internal bug fixes and UI improvements
-- No system prompt changes in 2.1.158
+**No Action: 31 items** (23 original + 8 Stage 2 demoted)
+- UI/UX improvements, bug fixes, internal infrastructure, platform support
+- claude.ai-specific features (DesignSync, /design-sync)
+- Internal behavior changes (durable approval, streaming guidance, etc.)
 
 ---
 
@@ -113,59 +119,122 @@ Two versions were released after the last audit (2.1.156):
 
 | Source | Status | Notes |
 |--------|--------|-------|
-| CC Changelog | OK | Retrieved via WebFetch from upstream |
-| System-prompts | OK | Read from ./claude-code-system-prompts/CHANGELOG.md (first 200 lines) |
-| claude-code-guide | skipped | Small change set; single-source items flagged appropriately |
+| CC Changelog | Y | Retrieved via WebFetch from upstream |
+| System-prompts | Y | Read from ./claude-code-system-prompts/CHANGELOG.md (first 200 lines) |
+| claude-code-guide | skipped | Agent dispatch returned empty output |
 
 ---
 
-## Recommendations for Stage 3
+## Recommendations for Stage 3 (Updated by Stage 2)
 
-1. **Plugin scaffolding command (HIGH PRIORITY)**:
-   - Document `claude plugin init <name>` command in `plugin-structure/overview.md`
-   - This is a major developer experience improvement
+### MUST UPDATE (2 items)
 
-2. **Automatic skill loading (HIGH PRIORITY)**:
-   - Document that `.claude/skills/` directories load automatically without marketplace
-   - Update `skill-development/overview.md` and `plugin-structure/overview.md`
-   - This fundamentally changes how local plugins are developed
+1. **LSP workspaceSymbol query parameter (HIGH PRIORITY)**:
+   - File: `plugins/plugin-dev/skills/plugin-dev/references/lsp-integration/overview.md`
+   - Action: Add guidance that workspaceSymbol requires a query parameter; many language servers return no results for empty query
+   - Location: Add to "What Claude Gains from LSP" or "Code Navigation" section
 
-3. **EnterWorktree enhancements (MEDIUM PRIORITY)**:
-   - Document mid-session worktree switching capability in `agent-development/overview.md`
-   - Add `path` parameter documentation to worktree section
+2. **NotebookEdit cell ID changes (HIGH PRIORITY)**:
+   - File: `plugins/plugin-dev/skills/plugin-dev/references/hook-development/references/hook-input-schemas.md`
+   - Action: Update NotebookEdit tool_input schema (line 118) to include cell_id and cell_number parameters
+   - Note: Notebooks must be read before editing; insert adds cells after target cell or at start
 
-4. **Settings agent field (MEDIUM PRIORITY)**:
-   - Document that `agent` field in settings.json is now honored for dispatched sessions
-   - Update `agent-development/overview.md` (agent dispatch section)
+### MAY UPDATE (4 items - evaluate as Stage 3 proceeds)
+
+3. **Single-file grep read-before-edit (LOW PRIORITY)**:
+   - Single-file grep now satisfies read-before-edit verification
+   - Minor documentation update to Edit tool section in hook-input-schemas
+
+4. **Shell startup file confirmation prompts (LOW PRIORITY)**:
+   - Security enhancement for Bash tool
+   - Consider noting in hook-development for security-aware plugin authors
+
+5. **/init config discovery expansion (LOW PRIORITY)**:
+   - .devin/rules/ and .windsurf/rules/ now discovered
+   - Not directly plugin-relevant; skip unless documenting project config patterns
+
+6. **Agent tool subagent-type guidance (LOW PRIORITY)**:
+   - Internal guidance refinement
+   - Existing docs already cover subagent concepts; minimal update if any
+
+### OUT OF SCOPE (removed from scope)
+
+- ~~DesignSync tool and /design-sync command~~ - claude.ai-specific, not plugin API
 
 ---
 
 ## Stage 2: Verification Results
-### Verified: 2026-05-31
+### Verified: 2026-06-04
 
 #### Must Update Verification
-- [x] **`claude plugin init <name>` command** (CC 2.1.157) -- CONFIRMED in CC changelog; gap verified (no "plugin init" references in plugin-dev docs)
-  - Topic mapping correction: "plugin-authoring skill" does not exist; target should be `plugin-structure/overview.md`
-- [x] **Plugins in `.claude/skills` directories automatically load** (CC 2.1.157) -- CONFIRMED in CC changelog; gap verified (partial mention at skill-development/overview.md:42 mentions precedence but NOT automatic loading without marketplace)
-  - Target: `skill-development/overview.md`, `plugin-structure/overview.md`
-- [x] **EnterWorktree mid-session switching** (CC 2.1.157) -- CONFIRMED in both CC changelog and system-prompts changelog; gap verified (no "mid-session" or "switch.*worktree" in docs; existing worktree section at agent-development/overview.md:678-694 lacks this)
-  - Target: `agent-development/overview.md` (worktree section)
-- [x] **Agent field in settings.json honored for dispatched sessions** (CC 2.1.157) -- CONFIRMED in CC changelog; gap verified (no documentation of `agent` field for dispatch; only Task() restrictions documented)
-  - Target: `agent-development/overview.md`
+
+- [check] **LSP workspaceSymbol query parameter** (CC 2.1.162) -- confirmed in CC changelog ("Fixed the LSP tool's `workspaceSymbol` operation returning no results") and system-prompts (Tool Description: LSP clarifies query should always be provided). Gap exists: lsp-integration/overview.md does not document workspaceSymbol query parameter guidance.
+  - Affects: lsp-integration/overview.md
+  - Action: Add guidance that workspaceSymbol requires a query parameter
+
+- [check] **Agent tool usage notes for subagent-type** (CC 2.1.161) -- confirmed in system-prompts. Minor internal guidance refinement. Agent-development reference already has "Agent Tool Usage Notes (CC 2.1.140)" section at lines 453-465. Low priority; existing documentation covers subagent concepts.
+  - Affects: agent-development/overview.md (minor clarification only)
+  - Action: Consider adding note about subagent-type availability check
+
+- [x-mark] **NEW DesignSync tool** (CC 2.1.160) -- confirmed in system-prompts but OUT OF SCOPE. DesignSync is a claude.ai/design-specific tool, not a general plugin API. Plugin-dev focuses on plugin development, not claude.ai integration. This tool does not affect the plugin system.
+  - Reclassified: No Action (out of scope)
+
+- [x-mark] **NEW /design-sync slash command** (CC 2.1.160, 2.1.162) -- confirmed in system-prompts but OUT OF SCOPE. Same reasoning as DesignSync. This is a claude.ai-specific feature, not a plugin API or pattern that plugin developers need to know about.
+  - Reclassified: No Action (out of scope)
+
+- [check] **NotebookEdit reworked around cell IDs** (CC 2.1.162) -- confirmed in system-prompts. Hook-input-schemas.md at line 118 documents NotebookEdit but lacks cell_id and cell_number parameters. The change affects how NotebookEdit works and hooks that intercept it.
+  - Affects: hook-development/references/hook-input-schemas.md
+  - Action: Update NotebookEdit tool_input schema to include cell_id/cell_number parameters
 
 #### Missed Items (promoted from No Action)
-- ! **Worktrees remain unlocked after agent completion** (CC 2.1.157) -- NOT promoted. This is a behavioral change for cleanup convenience, not a plugin API change. Keep in No Action.
-- ! **`tool_decision` telemetry with OTEL_LOG_TOOL_DETAILS=1** (CC 2.1.157) -- NOT promoted. Telemetry/debugging feature, not plugin-relevant.
+
+- None identified. Scanned changelog entries for plugin-relevant keywords (hook, plugin, MCP, skill, frontmatter, manifest, PreToolUse, PostToolUse, Stop). The "Fixed Windows hooks that invoke bash explicitly" (CC 2.1.161) is a bug fix that doesn't require documentation changes since existing Windows/PowerShell guidance at line 1076 already covers cross-platform considerations.
 
 #### May Update Resolution
-- = **`/plugin` autocomplete enhancements** (CC 2.1.157) -- kept as May Update. Nice-to-document UX improvement but not critical for plugin developers.
-- = **Auto mode on Bedrock/Vertex/Foundry** (CC 2.1.158) -- kept as May Update. Enterprise deployment topic; plugin-dev does not cover provider deployment.
-- = **Tool description guidance for should-call behavior** (CC 2.1.157 system-prompts) -- kept as May Update. Best practice guidance; could inform skill description writing but not directly actionable.
-- = **Opus 4.8 migration guidance** (CC 2.1.157 system-prompts) -- kept as May Update. Model-specific guidance; low plugin relevance.
-- = **Security monitor expansion** (CC 2.1.157 system-prompts) -- kept as May Update. Agent security topic; not directly plugin-authoring related.
+
+- [up-arrow] **/init CLAUDE.md discovers .devin/rules/ and .windsurf/rules/** (CC 2.1.162) -- kept as May Update. Not directly plugin-relevant but may be useful context for skill-development documentation regarding how Claude discovers project configuration.
+  - Verdict: Keep as May Update
+
+- [down-arrow] **Durable approval context** (CC 2.1.161) -- demoted to No Action. This is an internal system prompt change about permission persistence. Plugin developers don't need to know about this; it affects Claude's behavior, not plugin APIs.
+  - Verdict: No Action (internal behavior)
+
+- [down-arrow] **Background monitor streaming-pipeline guidance** (CC 2.1.161) -- demoted to No Action. Internal guidance refinement for the Monitor tool. Not plugin-API relevant.
+  - Verdict: No Action (internal guidance)
+
+- [down-arrow] **Workflow tool ultracode keyword** (CC 2.1.160) -- demoted to No Action. Workflow tool is not part of the plugin system; it's a separate Claude Code feature. Plugin-dev doesn't document Workflow usage.
+  - Verdict: No Action (not plugin-relevant)
+
+- [down-arrow] **/code-review changes** (CC 2.1.160) -- demoted to No Action. These are changes to a built-in slash command, not plugin APIs. Plugin-dev focuses on how to create plugins, not how built-in commands work internally.
+  - Verdict: No Action (built-in command internals)
+
+- [equals] **Single-file grep read-before-edit** (CC 2.1.160) -- kept as May Update. This affects plugin documentation about the Edit tool. The hook-input-schemas.md documents Edit tool input, and agent-development discusses tool restrictions. Worth considering.
+  - Verdict: Keep as May Update
+
+- [equals] **Shell startup file confirmation prompts** (CC 2.1.160) -- kept as May Update. Security enhancement that affects Bash tool behavior. May be worth noting in hook-development or agent-development for security-conscious plugin authors.
+  - Verdict: Keep as May Update
+
+- [down-arrow] **Parallel Bash execution error handling** (CC 2.1.161) -- demoted to No Action. Internal execution behavior change, not a plugin API change.
+  - Verdict: No Action (internal behavior)
+
+- [down-arrow] **Bash PR instructions configurable slot** (CC 2.1.162) -- demoted to No Action. This is about PR workflow guidance injection, not plugin APIs.
+  - Verdict: No Action (not plugin-relevant)
 
 #### Summary
-- Must Update: 4 items (4 confirmed, 0 rejected, 0 added)
-- May Update: 5 items remaining (0 promoted, 0 demoted)
-- No Action: 6 items (no changes)
-- Confidence: HIGH -- all Must Update items verified against primary sources; topic mappings corrected; no significant gaps found beyond those identified
+
+- **Must Update: 2 items** (3 confirmed, 2 rejected/reclassified as out of scope)
+  1. LSP workspaceSymbol query parameter -- affects lsp-integration
+  2. NotebookEdit cell ID changes -- affects hook-development
+
+- **May Update: 4 items remaining** (from original 9)
+  1. /init .devin/rules and .windsurf/rules discovery
+  2. Single-file grep read-before-edit
+  3. Shell startup file confirmation prompts
+  4. (Agent tool subagent-type -- demoted to May Update from Must Update)
+
+- **No Action: 28 items** (original 23 + 5 demoted/reclassified)
+
+- **Confidence: HIGH**
+  - CC changelog and system-prompts both confirm the relevant changes
+  - DesignSync/design-sync correctly identified as out of scope for plugin-dev (these are claude.ai-specific features, not plugin APIs)
+  - No missed plugin-relevant items found in scan
+  - Stage 1 was slightly over-inclusive (counted claude.ai features as plugin-relevant), but this is the correct conservative approach

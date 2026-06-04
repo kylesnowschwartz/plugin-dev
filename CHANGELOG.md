@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.1] - 2026-06-04
+
+### Added
+
+- **lsp-integration**: Documented `workspaceSymbol` query parameter requirement — always provide a non-empty query since many language servers return no results for empty queries (CC 2.1.162)
+- **hook-development**: Documented NotebookEdit `cell_id` parameter for cell targeting from prior Read output; notebooks must be read before editing; insert mode adds cells after target or at start (CC 2.1.162)
+
 ## [0.20.0] - 2026-05-31
 
 ### Added
@@ -544,7 +551,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.1...HEAD
+[0.20.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.0...v0.20.1
 [0.20.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.18.0...v0.19.0
 [0.18.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.17.0...v0.18.0
