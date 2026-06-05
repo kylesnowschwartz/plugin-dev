@@ -115,7 +115,7 @@ The `tool_input` object varies by tool. Common tool schemas:
 | WebSearch    | `query` (string), `allowed_domains` (array, optional), `blocked_domains` (array, optional)                                                                            |
 | Task         | `prompt` (string), `description` (string), `subagent_type` (string), `model` (string, optional)                                                                       |
 | Skill        | `skill` (string), `args` (string, optional)                                                                                                                           |
-| NotebookEdit | `notebook_path` (string), `new_source` (string), `cell_type` (string, optional), `edit_mode` (string, optional)                                                       |
+| NotebookEdit | `notebook_path` (string), `new_source` (string), `cell_id` (string, optional), `cell_number` (number, optional, deprecated), `cell_type` (string, optional), `edit_mode` (string, optional). **CC 2.1.162:** Editing uses `cell_id` from prior Read output; notebooks must be read before editing. Insert mode adds cells after the target cell or at the notebook start if no cell_id is specified. |
 
 ## Practical Example
 

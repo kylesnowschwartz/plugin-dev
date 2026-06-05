@@ -143,11 +143,13 @@ Claude can use the language server to:
 - Jump to definitions
 - Find all references to a symbol
 - Get type information on hover
-- List symbols in a file
+- List symbols in a file or workspace
 - Find implementations of interfaces
 - Trace call hierarchies
 
 These operations give Claude more precise navigation than grep-based search.
+
+> **CC 2.1.162:** When using `workspaceSymbol` operations, always provide a non-empty `query` parameter. Many language servers return no results for an empty query string. The query is passed through to the language server for server-side filtering.
 
 ## Pre-built LSP Plugins
 
