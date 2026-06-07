@@ -191,6 +191,8 @@ claude plugin install plugin-name@marketplace --scope local    # Personal projec
 ```bash
 # List installed plugins
 claude plugin list
+claude plugin list --enabled   # Show only enabled plugins (CC 2.1.163)
+claude plugin list --disabled  # Show only disabled plugins (CC 2.1.163)
 
 # Enable/disable without uninstalling
 claude plugin enable plugin-name@marketplace

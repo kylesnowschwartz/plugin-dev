@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.162 (2026-06-04)
-Plugin-dev version: 0.20.1
+Last audited: Claude Code 2.1.168 (2026-06-07)
+Plugin-dev version: 0.20.2
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.20.2 | 2.1.163-2.1.168 | 2026-06-07 | Stop/SubagentStop hooks `additionalContext` output, skills `\$` escape syntax, cross-session messaging security, `/plugin list` filters, hook `if` Bash condition fix |
 | v0.20.1 | 2.1.159-2.1.162 | 2026-06-04 | LSP `workspaceSymbol` query parameter guidance, NotebookEdit `cell_id` parameter and read-before-edit requirement |
 | v0.20.0 | 2.1.157-2.1.158 | 2026-05-31 | `claude plugin init <name>` scaffolding command, automatic `.claude/skills` loading without marketplace, EnterWorktree mid-session switching, settings.json `agent` field honored for dispatched sessions |
 | v0.19.0 | 2.1.154-2.1.156 | 2026-05-28 | Plugin `defaultEnabled: false` option, background session `$CLAUDE_JOB_DIR/tmp` path, AskUserQuestion tightened guidance, Bash `$TMPDIR` sandbox clarification, directory-aware plugin suggestions, MCP server `CLAUDE_CODE_SESSION_ID`/`CLAUDECODE=1` env vars |

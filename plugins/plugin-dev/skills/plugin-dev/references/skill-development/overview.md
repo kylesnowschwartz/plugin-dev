@@ -338,6 +338,8 @@ Arguments passed: $ARGUMENTS
 - `${CLAUDE_SESSION_ID}` - Current session identifier
 - `${CLAUDE_PLUGIN_ROOT}` - Plugin directory path
 
+**Escaping `$` (CC 2.1.163):** Use `\$` to produce a literal `$` character before digits in command bodies. This prevents unintended variable interpolation when you need literal text like `$1` or `$100` in output.
+
 #### Dynamic Context Injection
 
 Execute commands to inject their output into skill context using backtick syntax:

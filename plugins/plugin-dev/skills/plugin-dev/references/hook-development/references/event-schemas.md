@@ -475,11 +475,16 @@ Note: `permission_mode` is not present on SessionStart.
 ```json
 {
   "decision": "block",
-  "reason": "string (required when blocking -- fed back to Claude as instructions)"
+  "reason": "string (required when blocking -- fed back to Claude as instructions)",
+  "hookSpecificOutput": {
+    "hookEventName": "Stop",
+    "additionalContext": "string (optional, injected into Claude's next turn)"
+  }
 }
 ```
 
-When `decision` is `"block"`, Claude receives `reason` as feedback and attempts another turn.
+- `decision`: When `"block"`, Claude receives `reason` as feedback and attempts another turn
+- `hookSpecificOutput.additionalContext` (CC 2.1.163): Optional context string injected into Claude's next turn, useful for providing guidance without blocking
 
 **Matchers:** Not supported.
 **Hook types:** Command, HTTP, Prompt, Agent
@@ -572,11 +577,16 @@ When `decision` is `"block"`, Claude receives `reason` as feedback and attempts 
 ```json
 {
   "decision": "block",
-  "reason": "string (required when blocking -- fed back to subagent)"
+  "reason": "string (required when blocking -- fed back to subagent)",
+  "hookSpecificOutput": {
+    "hookEventName": "SubagentStop",
+    "additionalContext": "string (optional, injected into subagent's next turn)"
+  }
 }
 ```
 
-Same semantics as Stop: blocking causes the subagent to continue working with `reason` as feedback.
+- `decision`: When `"block"`, the subagent receives `reason` as feedback and continues working
+- `hookSpecificOutput.additionalContext` (CC 2.1.163): Optional context string injected into the subagent's next turn
 
 **Note:** Stop hooks defined in a subagent context automatically convert to SubagentStop events.
 

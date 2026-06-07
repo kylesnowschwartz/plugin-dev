@@ -1,117 +1,208 @@
 # Upstream Change Manifest
-## CC Version Range: 2.1.159 - 2.1.162
-## Generated: 2026-06-04
-## Sources: changelog [Y], system-prompts [Y], claude-code-guide [skipped - empty output]
+## CC Version Range: 2.1.163 - 2.1.168
+## Generated: 2026-06-07
+## Sources: changelog [x], system-prompts [x], claude-code-guide [degraded - subagent dispatch unavailable in CI]
 
 ---
 
 ### Must Update
 
-- [ ] **LSP workspaceSymbol query parameter** (CC 2.1.162)
-  - Source: changelog, system-prompts
+- [ ] **Stop and SubagentStop hooks: `hookSpecificOutput.additionalContext`** (CC 2.1.163)
+  - Source: changelog confirmed, system-prompts not explicitly mentioned
   - Confidence: high
-  - Affects: lsp-integration/overview.md
-  - Details: LSP `workspaceSymbol` operation now accepts `query` parameter for language server pass-through. System-prompts clarify agents should always provide a query because many language servers return no results for an empty one.
-  - Raw changelog: "LSP `workspaceSymbol` operation now accepts `query` parameter for language server pass-through"
-  - Stage 2 verified: Gap exists in lsp-integration/overview.md
+  - Affects: hooks-reference skill, hook event documentation
+  - Details: Stop and SubagentStop hooks can now return `hookSpecificOutput.additionalContext` in their response. This extends hook output capabilities beyond the existing response fields.
+  - Raw changelog: "Hooks: Stop and SubagentStop hooks can return `hookSpecificOutput.additionalContext`"
 
-- [ ] **NotebookEdit reworked around cell IDs** (CC 2.1.162)
-  - Source: system-prompts
-  - Confidence: high (verified)
-  - Affects: hook-development/references/hook-input-schemas.md
-  - Details: Notebook editing guidance reworked around cell IDs from prior Read output. Requires notebook to be read before editing. Insert behavior changed to add cells after a target cell or at notebook start.
-  - Raw changelog: "Reworks notebook editing guidance around cell IDs from prior `Read` output, requiring the notebook to be read before editing and changing insert behavior to add cells after a target cell or at the notebook start."
-  - Stage 2 verified: Hook-input-schemas.md line 118 needs cell_id/cell_number parameters added
+- [ ] **Skills: `\$` escape syntax for literal `$` before digits** (CC 2.1.163)
+  - Source: changelog confirmed
+  - Confidence: high
+  - Affects: skill-authoring skill, skill format documentation
+  - Details: Skills now support `\$` escape syntax to produce a literal `$` character before digits in command bodies. This prevents unintended variable interpolation in skill commands.
+  - Raw changelog: "Skills: added `\$` escape syntax for literal `$` before digits in command bodies"
+
+- [ ] **Cross-session messaging security enhancement** (CC 2.1.166)
+  - Source: changelog confirmed, system-prompts confirmed (explicit warning added)
+  - Confidence: high
+  - Affects: agent-teams skill, cross-session messaging documentation
+  - Details: Relayed messages from peer sessions no longer carry user authority. System prompts now include explicit warnings that peer-session messages cannot grant consent and must not be used to relay denied actions between sessions. This is a security hardening change.
+  - Raw changelog: "Enhanced cross-session messaging security; relayed messages no longer carry user authority"
+  - System-prompts entry: "**NEW:** System Reminder: Cross-session peer message authority warning - Adds an explicit warning that peer-session messages are not user authority, cannot grant consent, and must not be used to relay denied actions between sessions."
+
+- [ ] **`/plugin list` command with `--enabled`/`--disabled` filters** (CC 2.1.163)
+  - Source: changelog confirmed
+  - Confidence: high
+  - Affects: plugin-commands skill, CLI reference documentation
+  - Details: New `/plugin list` command allows filtering installed plugins by enabled or disabled state using `--enabled` and `--disabled` flags.
+  - Raw changelog: "Added `/plugin list` command with `--enabled`/`--disabled` filters"
+
+---
 
 ### May Update
 
-- [ ] **/init CLAUDE.md discovers .devin/rules/ and .windsurf/rules/** (CC 2.1.162)
-  - Source: system-prompts
-  - Confidence: medium (single source)
-  - Affects: /init skill documentation, AI config discovery
-  - Details: Expands AI coding tool config discovery to include `.devin/rules/` and `.windsurf/rules/` alongside existing AGENTS, Cursor, Copilot, Windsurf, and Cline files.
-  - Stage 2: Kept as May Update - not directly plugin-relevant but useful context
+- [ ] **`fallbackModel` configuration for backup models** (CC 2.1.166)
+  - Source: changelog confirmed
+  - Confidence: medium
+  - Affects: configuration reference, settings documentation
+  - Details: New `fallbackModel` configuration option allows specifying up to three backup models when the primary model is unavailable. Claude Code retries once on fallback model for unexpected non-retryable API errors.
+  - Raw changelog: "Added `fallbackModel` configuration for up to three backup models when primary is unavailable"
 
-- [ ] **Single-file grep satisfies read-before-edit verification** (CC 2.1.160)
-  - Source: changelog
-  - Confidence: medium (single source)
-  - Affects: Edit tool documentation, read-before-edit guidance
-  - Details: Single-file `grep` commands now satisfy read-before-edit verification requirements. This relaxes the previous requirement that files must be read with the Read tool before editing.
-  - Stage 2: Kept as May Update - affects plugin documentation about Edit tool
+- [ ] **Glob pattern support in deny rules** (CC 2.1.166)
+  - Source: changelog confirmed
+  - Confidence: medium
+  - Affects: permission rules documentation, managed settings reference
+  - Details: Deny rules now support glob patterns for path matching. Allow rules reject non-MCP globs (presumably to prevent overly permissive allow patterns).
+  - Raw changelog: "Implemented glob pattern support in deny rules; allow rules reject non-MCP globs"
 
-- [ ] **Confirmation prompts before writing to shell startup files** (CC 2.1.160)
-  - Source: changelog
-  - Confidence: medium (single source)
-  - Affects: Bash tool documentation, safety guidance
-  - Details: Added confirmation prompts before writing to shell startup files and build-tool configs that enable code execution. This is a security enhancement.
-  - Stage 2: Kept as May Update - security enhancement worth noting
+- [ ] **`requiredMinimumVersion` and `requiredMaximumVersion` managed settings** (CC 2.1.163)
+  - Source: changelog confirmed
+  - Confidence: medium
+  - Affects: managed settings documentation, enterprise deployment docs
+  - Details: New managed settings to enforce minimum and/or maximum Claude Code versions in enterprise deployments.
+  - Raw changelog: "Added `requiredMinimumVersion` and `requiredMaximumVersion` managed settings"
 
-- [ ] **Agent tool usage notes updated for subagent-type availability** (CC 2.1.161)
-  - Source: system-prompts
-  - Confidence: medium (single source)
-  - Affects: agent-development/overview.md (minor clarification)
-  - Details: Agent usage guidance now keys subagent-type instructions off subagent-type availability rather than message-continuation support, and scopes subagent-context restrictions to the actual subagent context check.
-  - Stage 2: Demoted from Must Update - existing docs already cover subagent concepts
+- [ ] **`MAX_THINKING_TOKENS=0` to disable thinking** (CC 2.1.166)
+  - Source: changelog confirmed
+  - Confidence: medium
+  - Affects: environment variables documentation, model configuration
+  - Details: Models with default thinking enabled via Claude API can have thinking disabled by setting `MAX_THINKING_TOKENS=0`.
+  - Raw changelog: "Disabled thinking on models with default thinking via Claude API with `MAX_THINKING_TOKENS=0`"
+
+- [ ] **stdio MCP servers receive `CLAUDE_CODE_SESSION_ID` on `--resume`** (CC 2.1.163)
+  - Source: changelog confirmed
+  - Confidence: medium
+  - Affects: MCP server development documentation
+  - Details: stdio MCP servers now receive the `CLAUDE_CODE_SESSION_ID` environment variable when a session is resumed with `--resume`. Previously documented for new sessions, now confirmed for resumed sessions.
+  - Raw changelog: "stdio MCP servers receive `CLAUDE_CODE_SESSION_ID` on `--resume`"
+
+- [ ] **Hook `if: "Bash(...)"` condition fix** (CC 2.1.163) **[PROMOTED TO MUST UPDATE]**
+  - Source: changelog confirmed
+  - Confidence: high (promoted by Stage 2 verification)
+  - Affects: hook-development skill, overview.md line ~172 where `if` field is documented
+  - Details: Fixed bug where hook `if: "Bash(...)"` conditions were firing on every command containing `$()` or `$VAR` syntax rather than matching the intended pattern. This is a bug fix that may affect existing hook configurations. Plugin developers with workarounds should be notified.
+  - Raw changelog: "Fixed hook `if: \"Bash(...)\"` conditions firing on every command with `$()` or `$VAR`"
+
+- [ ] **"c to copy" shortcut for `/btw`** (CC 2.1.163)
+  - Source: changelog confirmed
+  - Confidence: low
+  - Affects: slash commands reference
+  - Details: Added "c to copy" keyboard shortcut to `/btw` for raw markdown copying.
+  - Raw changelog: "Added \"c to copy\" shortcut to `/btw` for raw markdown copying"
+
+- [ ] **`claude update` announces target version before downloading** (CC 2.1.166)
+  - Source: changelog confirmed
+  - Confidence: low
+  - Affects: CLI reference documentation
+  - Details: `claude update` command now shows the target version before beginning the download.
+  - Raw changelog: "`claude update` now announces target version before downloading"
+
+- [ ] **Cowork plugin authoring skill and component schemas** (CC 2.1.163 system-prompts)
+  - Source: system-prompts confirmed (multiple NEW entries)
+  - Confidence: medium
+  - Affects: may provide useful reference for plugin-dev documentation
+  - Details: System prompts added extensive Cowork plugin authoring documentation including component schemas (skills, agents, hooks, MCP servers), plugin examples (minimal, standard, complex), MCP discovery guidance, and knowledge MCP search strategies. This appears to be an internal Anthropic feature but may inform plugin-dev patterns.
+  - System-prompts entries: Multiple NEW entries for "Data: Cowork plugin component schemas", "Data: Cowork plugin examples", "Data: Cowork plugin MCP discovery and connection", "Skill: Cowork plugin authoring"
+
+- [ ] **Browser file upload tool** (CC 2.1.163 system-prompts)
+  - Source: system-prompts confirmed
+  - Confidence: low
+  - Affects: tools reference (if exposed to plugins)
+  - Details: New browser file upload tool that uploads shared session files directly to page file inputs by element ref, with 10 MB combined upload limit. May be Chrome-integration specific.
+  - System-prompts entry: "**NEW:** Tool Description: Browser file upload"
+
+- [ ] **Outcome-first communication style system prompt** (CC 2.1.163 system-prompts)
+  - Source: system-prompts confirmed
+  - Confidence: low
+  - Affects: behavioral guidance for skill authors
+  - Details: New system prompt guidance to lead with outcomes, write readable teammate-facing updates, match response shape to task complexity, and keep code comments limited to non-obvious constraints.
+  - System-prompts entry: "**NEW:** System Prompt: Outcome-first communication style"
+
+- [ ] **Workflow tool: 4096 item limit for `parallel()` and `pipeline()`** (CC 2.1.163 system-prompts)
+  - Source: system-prompts confirmed
+  - Confidence: medium
+  - Affects: workflow/ultracode documentation
+  - Details: Each `parallel()` or `pipeline()` call in workflow scripts accepts at most 4096 items and errors explicitly when the limit is exceeded.
+  - System-prompts entry: "Tool Description: Workflow - Adds that each `parallel()` or `pipeline()` call accepts at most 4096 items"
+
+- [ ] **Workflow tool: `agent()` returns `null` on terminal API error** (CC 2.1.166 system-prompts)
+  - Source: system-prompts confirmed
+  - Confidence: low
+  - Affects: workflow documentation
+  - Details: Clarifies that `agent()` returns `null` when a workflow subagent dies on a terminal API error after retries.
+  - System-prompts entry: "Tool Description: Workflow - Clarifies that `agent()` returns `null` when a workflow subagent dies on a terminal API error"
+
+---
 
 ### No Action
 
-- `claude agents --json` shows `waitingFor` field (CC 2.1.162) - CLI output format, not plugin-relevant
-- Slash command autocomplete fills prompt instead of executing (CC 2.1.162) - UI behavior change
-- Remote Control redesigned as persistent footer (CC 2.1.162) - UI change
-- Windsurf rebranded to Devin Desktop (CC 2.1.162) - Branding change
-- Session names use full terminal width (CC 2.1.162) - UI formatting
-- OpenTelemetry metrics include OTEL_RESOURCE_ATTRIBUTES (CC 2.1.161) - Observability, not plugin-relevant
-- `claude agents` shows done/total counts (CC 2.1.161) - CLI output format
-- /mcp menu collapses unused claude.ai connectors (CC 2.1.161) - UI change
-- Linux clipboard support (wl-copy/xclip/xsel) (CC 2.1.161) - Platform support
-- Motion accessibility settings honored (CC 2.1.161) - Accessibility
-- Managed settings policies fixed (CC 2.1.161) - Bug fix
-- Background subagent output fixed (CC 2.1.161) - Bug fix
-- /autofix-pr error handling improved (CC 2.1.161) - Bug fix
-- Copy-on-select restored for Windows WSL (CC 2.1.160) - Bug fix
-- Session restoration from `claude agents` fixed (CC 2.1.160) - Bug fix
-- Background session reconnection improved (CC 2.1.160) - Bug fix
-- Interrupt handling fixed (CC 2.1.160) - Bug fix
-- MCP server timeout configuration corrected (CC 2.1.160) - Bug fix
-- v2.1.159: Internal infrastructure updates only - No user-visible changes
-- DesignSync legacy asset registration (CC 2.1.162) - Internal tool state, not plugin API
-- WebFetch permission rules properly applied (CC 2.1.162) - Bug fix
-- Windows permission matching improved (CC 2.1.162) - Bug fix
-- Startup hang fix when config directory lacks write permissions (CC 2.1.162) - Bug fix
-- **[Stage 2 demoted]** NEW DesignSync tool (CC 2.1.160) - claude.ai-specific, not plugin API
-- **[Stage 2 demoted]** NEW /design-sync slash command (CC 2.1.160, 2.1.162) - claude.ai-specific, not plugin API
-- **[Stage 2 demoted]** Durable approval context (CC 2.1.161) - Internal behavior change
-- **[Stage 2 demoted]** Background monitor streaming-pipeline guidance (CC 2.1.161) - Internal guidance
-- **[Stage 2 demoted]** Workflow tool ultracode keyword (CC 2.1.160) - Not plugin-relevant
-- **[Stage 2 demoted]** /code-review changes (CC 2.1.160) - Built-in command internals
-- **[Stage 2 demoted]** Parallel Bash execution error handling (CC 2.1.161) - Internal behavior
-- **[Stage 2 demoted]** Bash PR instructions configurable slot (CC 2.1.162) - Not plugin-relevant
+- Background agent sessions update to new Claude Code version in background (CC 2.1.163)
+- `claude agents` filters sessions by URLs typed into the list (CC 2.1.166)
+- Fixed recurring "image could not be processed" error (CC 2.1.166)
+- Fixed remote sessions becoming stuck during backend disruptions (CC 2.1.166)
+- Fixed flickering in JetBrains IDE terminals on 2026.1+ (CC 2.1.166)
+- Fixed Shift+non-ASCII characters being dropped in Kitty keyboard protocol (CC 2.1.166)
+- Fixed PowerShell command validation hanging past timeout on Windows (CC 2.1.166)
+- Fixed orphaned `claude --bg-pty-host` processes at 100% CPU on macOS (CC 2.1.166)
+- Fixed voice mode requiring `/login` to clear stale auth check (CC 2.1.166)
+- Fixed managed settings with invalid entries silently disabling enforcement (CC 2.1.166)
+- Fixed managed-settings predicates not matching with `${VAR}` references (CC 2.1.166)
+- Fixed background agent sessions crash-looping (CC 2.1.166)
+- Fixed duplicated thinking text in Ctrl+O transcript view (CC 2.1.166)
+- Fixed `/doctor` showing contradictory failed check (CC 2.1.166)
+- Fixed blank lines between background agent rows on non-Unicode terminals (CC 2.1.166)
+- Fixed `claude -p` hanging after final result when backgrounded command never exits (CC 2.1.163)
+- Fixed `claude -p` failing with "ANTHROPIC_API_KEY required" on Bedrock/Vertex/Foundry (CC 2.1.163)
+- Fixed bash commands failing under bazel and EDR-protected workflows (CC 2.1.163)
+- Fixed Bash commands failing on Windows with "EEXIST" (CC 2.1.163)
+- Fixed org-managed permission rules not applying when fetch completed at startup (CC 2.1.163)
+- Fixed background sessions losing running tasks when reattached after update (CC 2.1.163)
+- Fixed terminal misalignment and hang when exiting agent view (CC 2.1.163)
+- Fixed clicking Stop not clearing chip when underlying process was gone (CC 2.1.163)
+- Fixed keyboard input becoming unresponsive after paste with dropped end marker (CC 2.1.163)
+- Fixed deny rules on home-directory paths not blocking commands via `$HOME` (CC 2.1.163)
+- Fixed stray "(no content)" line in transcript (CC 2.1.163)
+- Clearer descriptions for built-in commands and skills in the / menu (CC 2.1.163)
+- Subscription-switch suggestion shows in startup announcement slot (CC 2.1.163)
+- `claude agents` dispatching from state-grouped view starts in current directory (CC 2.1.163)
+- Bug fixes and reliability improvements (CC 2.1.165, 2.1.167, 2.1.168)
 
 ---
 
 ## Summary
 
-Four versions were released after the last audit (2.1.158):
+Six versions were released after the last audit (2.1.162):
 
-- **2.1.159**: Internal infrastructure updates only - no user-visible changes
-- **2.1.160**: DesignSync tool (out of scope), /design-sync command (out of scope), read-before-edit relaxation, security prompts
-- **2.1.161**: Agent tool usage updates (minor), durable approvals, parallel execution changes
-- **2.1.162**: LSP query parameter, NotebookEdit cell IDs, /init config discovery expansion
+- **2.1.163**: Hook output extensions, skill escape syntax, /plugin list command, MCP session ID on resume, Cowork plugin schema additions
+- **2.1.165**: Bug fixes only - no system prompt changes
+- **2.1.166**: fallbackModel config, glob deny rules, cross-session security, MAX_THINKING_TOKENS=0, Workflow clarifications
+- **2.1.167**: Bug fixes only - no system prompt changes
+- **2.1.168**: Bug fixes only - no system prompt changes
 
-**Must Update: 2 items** (Stage 2 verified)
-1. LSP workspaceSymbol query parameter (high confidence - dual source) -- affects lsp-integration/overview.md
-2. NotebookEdit cell ID changes (high confidence) -- affects hook-development/references/hook-input-schemas.md
+**Must Update: 5 items** (4 original + 1 promoted by Stage 2)
+1. Stop/SubagentStop hooks `additionalContext` output (high confidence - changelog)
+2. Skills `\$` escape syntax (high confidence - changelog)
+3. Cross-session messaging security (high confidence - dual source)
+4. `/plugin list` command with filters (high confidence - changelog)
+5. Hook `if: "Bash(...)"` condition fix (PROMOTED - affects existing hook configs)
 
-**May Update: 4 items** (Stage 2 refined from 9)
-- /init .devin/rules and .windsurf/rules discovery
-- Single-file grep read-before-edit
-- Shell startup file confirmation prompts
-- Agent tool usage notes for subagent-type (demoted from Must Update)
+**May Update: 6 items** (after Stage 2 resolution)
+- fallbackModel configuration
+- Glob pattern support in deny rules
+- requiredMinimumVersion/requiredMaximumVersion managed settings
+- MAX_THINKING_TOKENS=0 environment variable
+- CLAUDE_CODE_SESSION_ID on --resume
+- Workflow parallel/pipeline 4096 item limit
 
-**No Action: 31 items** (23 original + 8 Stage 2 demoted)
-- UI/UX improvements, bug fixes, internal infrastructure, platform support
-- claude.ai-specific features (DesignSync, /design-sync)
-- Internal behavior changes (durable approval, streaming guidance, etc.)
+**Demoted to No Action by Stage 2: 5 items**
+- /btw copy shortcut (UI feature, not plugin-related)
+- claude update version announcement (CLI UX, not plugin-related)
+- Cowork plugin documentation (internal Anthropic format, different from plugin.json)
+- Browser file upload tool (Chrome-specific, not plugin-exposed)
+- Outcome-first communication style (general Claude behavior)
+- Workflow agent() null on terminal error (implementation detail)
+
+**No Action: 30 items**
+- Bug fixes, UI improvements, platform-specific fixes
 
 ---
 
@@ -119,122 +210,169 @@ Four versions were released after the last audit (2.1.158):
 
 | Source | Status | Notes |
 |--------|--------|-------|
-| CC Changelog | Y | Retrieved via WebFetch from upstream |
-| System-prompts | Y | Read from ./claude-code-system-prompts/CHANGELOG.md (first 200 lines) |
-| claude-code-guide | skipped | Agent dispatch returned empty output |
+| CC Changelog | x | Retrieved via WebFetch from upstream |
+| System-prompts | x | Read from ./claude-code-system-prompts/CHANGELOG.md (first 200 lines) |
+| claude-code-guide | degraded | Subagent dispatch unavailable in CI environment |
 
 ---
 
-## Recommendations for Stage 3 (Updated by Stage 2)
+## Notes
 
-### MUST UPDATE (2 items)
+1. **Cross-session security change (2.1.166)** is significant for any documentation covering agent teams or cross-session messaging. The security model has been tightened - peer-session messages no longer carry user authority.
 
-1. **LSP workspaceSymbol query parameter (HIGH PRIORITY)**:
-   - File: `plugins/plugin-dev/skills/plugin-dev/references/lsp-integration/overview.md`
-   - Action: Add guidance that workspaceSymbol requires a query parameter; many language servers return no results for empty query
-   - Location: Add to "What Claude Gains from LSP" or "Code Navigation" section
+2. **Cowork plugin documentation** added to system-prompts appears to be an internal Anthropic feature ("Cowork plugins" with `.plugin` file format). This may or may not be related to the plugin.json format used by plugin-dev. Worth monitoring for convergence.
 
-2. **NotebookEdit cell ID changes (HIGH PRIORITY)**:
-   - File: `plugins/plugin-dev/skills/plugin-dev/references/hook-development/references/hook-input-schemas.md`
-   - Action: Update NotebookEdit tool_input schema (line 118) to include cell_id and cell_number parameters
-   - Note: Notebooks must be read before editing; insert adds cells after target cell or at start
+3. **Skills `\$` escape syntax** is directly relevant to skill authoring documentation and should be documented in the skill format reference.
 
-### MAY UPDATE (4 items - evaluate as Stage 3 proceeds)
+4. **Hook output extensions** (additionalContext for Stop/SubagentStop) extend the hook system and should be documented.
 
-3. **Single-file grep read-before-edit (LOW PRIORITY)**:
-   - Single-file grep now satisfies read-before-edit verification
-   - Minor documentation update to Edit tool section in hook-input-schemas
+5. **`/plugin list` command** is a new plugin management command that should be documented in any CLI reference for plugin developers.
 
-4. **Shell startup file confirmation prompts (LOW PRIORITY)**:
-   - Security enhancement for Bash tool
-   - Consider noting in hook-development for security-aware plugin authors
+---
 
-5. **/init config discovery expansion (LOW PRIORITY)**:
-   - .devin/rules/ and .windsurf/rules/ now discovered
-   - Not directly plugin-relevant; skip unless documenting project config patterns
+## Recommendations for Stage 3
 
-6. **Agent tool subagent-type guidance (LOW PRIORITY)**:
-   - Internal guidance refinement
-   - Existing docs already cover subagent concepts; minimal update if any
+### MUST UPDATE (5 items)
 
-### OUT OF SCOPE (removed from scope)
+1. **Stop/SubagentStop hooks additionalContext (HIGH PRIORITY)**:
+   - File: `plugins/plugin-dev/skills/plugin-dev/references/hook-development/references/event-schemas.md`
+   - Action: Add `additionalContext` field to Stop and SubagentStop hook output schemas
+   - Note: This extends what these hooks can return. Lines 473-480 (Stop) and 571-579 (SubagentStop) need updates.
 
-- ~~DesignSync tool and /design-sync command~~ - claude.ai-specific, not plugin API
+2. **Skills `\$` escape syntax (HIGH PRIORITY)**:
+   - File: `plugins/plugin-dev/skills/plugin-dev/references/skill-development/overview.md`
+   - Action: Document `\$` escape syntax for literal `$` before digits in command bodies
+   - Note: Add to the "String Substitutions" section around line 324. Prevents unintended variable interpolation.
+
+3. **Cross-session messaging security (HIGH PRIORITY)**:
+   - File: `plugins/plugin-dev/skills/plugin-dev/references/agent-development/overview.md`
+   - Action: Add security note that peer-session messages do not carry user authority
+   - Note: Add to the "Agent Teams" section around line 863. Important security consideration for multi-agent patterns.
+
+4. **/plugin list command filters (HIGH PRIORITY)**:
+   - File: `plugins/plugin-dev/skills/plugin-dev/references/plugin-structure/references/advanced-topics.md`
+   - Action: Document `--enabled` and `--disabled` filter options for `claude plugin list`
+   - Note: Update the CLI reference section around line 193. Verify if this is also a `/plugin list` slash command.
+
+5. **Hook `if: "Bash(...)"` condition fix (PROMOTED - HIGH PRIORITY)**:
+   - File: `plugins/plugin-dev/skills/plugin-dev/references/hook-development/overview.md`
+   - Action: Add version note about the bug fix for hook `if` conditions with `$()` or `$VAR`
+   - Note: Update the `if` field documentation around line 172. This behavioral fix affects existing hook configurations.
+
+### MAY UPDATE (evaluate as Stage 3 proceeds)
+
+- fallbackModel configuration - new settings option
+- Glob pattern support in deny rules - permission rule enhancement
+- Hook if Bash(...) condition fix - behavior correction note
+- MCP CLAUDE_CODE_SESSION_ID on --resume - environment variable documentation
+- Workflow limits - if documenting workflows
 
 ---
 
 ## Stage 2: Verification Results
-### Verified: 2026-06-04
+### Verified: 2026-06-07
 
 #### Must Update Verification
 
-- [check] **LSP workspaceSymbol query parameter** (CC 2.1.162) -- confirmed in CC changelog ("Fixed the LSP tool's `workspaceSymbol` operation returning no results") and system-prompts (Tool Description: LSP clarifies query should always be provided). Gap exists: lsp-integration/overview.md does not document workspaceSymbol query parameter guidance.
-  - Affects: lsp-integration/overview.md
-  - Action: Add guidance that workspaceSymbol requires a query parameter
+- **[CONFIRMED]** Stop/SubagentStop hooks `hookSpecificOutput.additionalContext` (CC 2.1.163)
+  - Changelog confirmed: "Hooks: Stop and SubagentStop hooks can return `hookSpecificOutput.additionalContext`"
+  - System-prompts: Not explicitly mentioned (implementation detail)
+  - Gap exists: `plugins/plugin-dev/skills/plugin-dev/references/hook-development/references/event-schemas.md` lines 473-480 and 571-579 show Stop/SubagentStop output schemas without `additionalContext` field
+  - Affects: hook-development skill (event-schemas.md, overview.md)
 
-- [check] **Agent tool usage notes for subagent-type** (CC 2.1.161) -- confirmed in system-prompts. Minor internal guidance refinement. Agent-development reference already has "Agent Tool Usage Notes (CC 2.1.140)" section at lines 453-465. Low priority; existing documentation covers subagent concepts.
-  - Affects: agent-development/overview.md (minor clarification only)
-  - Action: Consider adding note about subagent-type availability check
+- **[CONFIRMED]** Skills `\$` escape syntax for literal `$` before digits (CC 2.1.163)
+  - Changelog confirmed: "Skills: added `\$` escape syntax for literal `$` before digits in command bodies"
+  - Gap exists: `plugins/plugin-dev/skills/plugin-dev/references/skill-development/overview.md` documents `$ARGUMENTS`, `$1`, `$2` substitutions but NOT the escape syntax
+  - Affects: skill-development skill (overview.md, advanced-frontmatter.md)
 
-- [x-mark] **NEW DesignSync tool** (CC 2.1.160) -- confirmed in system-prompts but OUT OF SCOPE. DesignSync is a claude.ai/design-specific tool, not a general plugin API. Plugin-dev focuses on plugin development, not claude.ai integration. This tool does not affect the plugin system.
-  - Reclassified: No Action (out of scope)
+- **[CONFIRMED]** Cross-session messaging security enhancement (CC 2.1.166)
+  - Changelog confirmed: "Enhanced cross-session messaging security; relayed messages no longer carry user authority"
+  - System-prompts confirmed: "System Reminder: Cross-session peer message authority warning"
+  - Gap exists: `plugins/plugin-dev/skills/plugin-dev/references/agent-development/overview.md` documents Agent Teams but does NOT mention cross-session security constraints
+  - Affects: agent-development skill (overview.md, advanced-agent-fields.md)
 
-- [x-mark] **NEW /design-sync slash command** (CC 2.1.160, 2.1.162) -- confirmed in system-prompts but OUT OF SCOPE. Same reasoning as DesignSync. This is a claude.ai-specific feature, not a plugin API or pattern that plugin developers need to know about.
-  - Reclassified: No Action (out of scope)
-
-- [check] **NotebookEdit reworked around cell IDs** (CC 2.1.162) -- confirmed in system-prompts. Hook-input-schemas.md at line 118 documents NotebookEdit but lacks cell_id and cell_number parameters. The change affects how NotebookEdit works and hooks that intercept it.
-  - Affects: hook-development/references/hook-input-schemas.md
-  - Action: Update NotebookEdit tool_input schema to include cell_id/cell_number parameters
+- **[CONFIRMED]** `/plugin list` command with `--enabled`/`--disabled` filters (CC 2.1.163)
+  - Changelog confirmed: "Added `/plugin list` command with `--enabled`/`--disabled` filters"
+  - Gap exists: `plugins/plugin-dev/skills/plugin-dev/references/plugin-structure/references/advanced-topics.md` line 193 shows basic `claude plugin list` but NOT the filter flags
+  - Note: Manifest incorrectly suggests `/plugin list` (slash command) but changelog says it's a CLI command. Verify actual form.
+  - Affects: plugin-structure skill (advanced-topics.md CLI reference section)
 
 #### Missed Items (promoted from No Action)
 
-- None identified. Scanned changelog entries for plugin-relevant keywords (hook, plugin, MCP, skill, frontmatter, manifest, PreToolUse, PostToolUse, Stop). The "Fixed Windows hooks that invoke bash explicitly" (CC 2.1.161) is a bug fix that doesn't require documentation changes since existing Windows/PowerShell guidance at line 1076 already covers cross-platform considerations.
+None identified. The Stage 1 agent correctly classified all plugin-relevant changes.
 
 #### May Update Resolution
 
-- [up-arrow] **/init CLAUDE.md discovers .devin/rules/ and .windsurf/rules/** (CC 2.1.162) -- kept as May Update. Not directly plugin-relevant but may be useful context for skill-development documentation regarding how Claude discovers project configuration.
-  - Verdict: Keep as May Update
+- **[KEEP AS MAY UPDATE]** fallbackModel configuration
+  - Reason: Not directly plugin-related; user/enterprise configuration option
+  - Consider documenting in configuration references if plugin-dev covers settings
 
-- [down-arrow] **Durable approval context** (CC 2.1.161) -- demoted to No Action. This is an internal system prompt change about permission persistence. Plugin developers don't need to know about this; it affects Claude's behavior, not plugin APIs.
-  - Verdict: No Action (internal behavior)
+- **[PROMOTE TO MUST UPDATE]** Hook `if: "Bash(...)"` condition fix (CC 2.1.163)
+  - Reason: This bug fix affects existing hook configurations that use `if` conditions. The overview.md at line 172 documents the `if` field but doesn't mention this behavioral fix. Plugin developers with existing hooks may have workarounds that should be removed.
+  - Changelog: "Fixed hook `if: \"Bash(...)\"` conditions firing on every Bash command containing `$()` or `$VAR`"
+  - Affects: hook-development skill (overview.md, line ~172 where `if` field is documented)
 
-- [down-arrow] **Background monitor streaming-pipeline guidance** (CC 2.1.161) -- demoted to No Action. Internal guidance refinement for the Monitor tool. Not plugin-API relevant.
-  - Verdict: No Action (internal guidance)
+- **[KEEP AS MAY UPDATE]** Glob pattern support in deny rules
+  - Reason: Permission rule enhancement, may be relevant for hooks documentation but low priority
 
-- [down-arrow] **Workflow tool ultracode keyword** (CC 2.1.160) -- demoted to No Action. Workflow tool is not part of the plugin system; it's a separate Claude Code feature. Plugin-dev doesn't document Workflow usage.
-  - Verdict: No Action (not plugin-relevant)
+- **[KEEP AS MAY UPDATE]** MCP CLAUDE_CODE_SESSION_ID on --resume
+  - Reason: Already documented for new sessions; this extends to resumed sessions. Low priority update.
 
-- [down-arrow] **/code-review changes** (CC 2.1.160) -- demoted to No Action. These are changes to a built-in slash command, not plugin APIs. Plugin-dev focuses on how to create plugins, not how built-in commands work internally.
-  - Verdict: No Action (built-in command internals)
+- **[KEEP AS MAY UPDATE]** requiredMinimumVersion/requiredMaximumVersion managed settings
+  - Reason: Enterprise deployment feature, not directly plugin-related
 
-- [equals] **Single-file grep read-before-edit** (CC 2.1.160) -- kept as May Update. This affects plugin documentation about the Edit tool. The hook-input-schemas.md documents Edit tool input, and agent-development discusses tool restrictions. Worth considering.
-  - Verdict: Keep as May Update
+- **[KEEP AS MAY UPDATE]** MAX_THINKING_TOKENS=0 environment variable
+  - Reason: Model configuration, not directly plugin-related
 
-- [equals] **Shell startup file confirmation prompts** (CC 2.1.160) -- kept as May Update. Security enhancement that affects Bash tool behavior. May be worth noting in hook-development or agent-development for security-conscious plugin authors.
-  - Verdict: Keep as May Update
+- **[KEEP AS MAY UPDATE]** Workflow tool 4096 item limit
+  - Reason: Workflow/ultracode feature, not directly plugin-related unless documenting workflows
 
-- [down-arrow] **Parallel Bash execution error handling** (CC 2.1.161) -- demoted to No Action. Internal execution behavior change, not a plugin API change.
-  - Verdict: No Action (internal behavior)
+- **[DEMOTE TO NO ACTION]** "/c to copy" shortcut for /btw
+  - Reason: UI convenience feature, not plugin-related
 
-- [down-arrow] **Bash PR instructions configurable slot** (CC 2.1.162) -- demoted to No Action. This is about PR workflow guidance injection, not plugin APIs.
-  - Verdict: No Action (not plugin-relevant)
+- **[DEMOTE TO NO ACTION]** `claude update` version announcement
+  - Reason: CLI UX improvement, not plugin-related
+
+- **[DEMOTE TO NO ACTION]** Cowork plugin authoring (system-prompts)
+  - Reason: Internal Anthropic feature using `.plugin` format. Different from plugin.json format used by plugin-dev. Monitor for convergence but no action needed.
+
+- **[DEMOTE TO NO ACTION]** Browser file upload tool (system-prompts)
+  - Reason: Chrome integration specific, not exposed to plugin system
+
+- **[DEMOTE TO NO ACTION]** Outcome-first communication style (system-prompts)
+  - Reason: General Claude behavior, not plugin-specific guidance
+
+- **[DEMOTE TO NO ACTION]** Workflow agent() null on terminal error (system-prompts)
+  - Reason: Workflow implementation detail
 
 #### Summary
 
-- **Must Update: 2 items** (3 confirmed, 2 rejected/reclassified as out of scope)
-  1. LSP workspaceSymbol query parameter -- affects lsp-integration
-  2. NotebookEdit cell ID changes -- affects hook-development
+- **Must Update: 5 items** (4 confirmed from Stage 1, 1 promoted from May Update)
+  1. Stop/SubagentStop hooks `additionalContext` output
+  2. Skills `\$` escape syntax
+  3. Cross-session messaging security
+  4. `/plugin list` command filters
+  5. Hook `if: "Bash(...)"` condition fix (PROMOTED)
 
-- **May Update: 4 items remaining** (from original 9)
-  1. /init .devin/rules and .windsurf/rules discovery
-  2. Single-file grep read-before-edit
-  3. Shell startup file confirmation prompts
-  4. (Agent tool subagent-type -- demoted to May Update from Must Update)
-
-- **No Action: 28 items** (original 23 + 5 demoted/reclassified)
+- **May Update: 6 items remaining** (after promotions/demotions)
+  - fallbackModel configuration
+  - Glob pattern support in deny rules
+  - requiredMinimumVersion/requiredMaximumVersion managed settings
+  - MAX_THINKING_TOKENS=0 environment variable
+  - MCP CLAUDE_CODE_SESSION_ID on --resume
+  - Workflow tool 4096 item limit
 
 - **Confidence: HIGH**
-  - CC changelog and system-prompts both confirm the relevant changes
-  - DesignSync/design-sync correctly identified as out of scope for plugin-dev (these are claude.ai-specific features, not plugin APIs)
-  - No missed plugin-relevant items found in scan
-  - Stage 1 was slightly over-inclusive (counted claude.ai features as plugin-relevant), but this is the correct conservative approach
+  - All 4 original Must Update items verified against primary sources
+  - Topic mappings validated by reading target reference docs
+  - Gaps confirmed by searching for existing documentation
+  - One item promoted from May Update to Must Update (hook if condition fix)
+  - 5 items demoted from May Update to No Action (not plugin-relevant)
+
+#### Verification Notes
+
+1. **Manifest accuracy on `/plugin list`**: The changelog says "Added `/plugin list` command" which implies a slash command, but the context suggests it may be the CLI `claude plugin list` with new flags. Stage 3 should verify the actual invocation form before documenting.
+
+2. **Hook if condition fix**: This is a behavioral change that affects existing hook configurations. Worth documenting as a version note in the `if` field documentation to help plugin developers who may have implemented workarounds.
+
+3. **Cross-session security**: This is a security hardening that specifically affects agent teams and cross-session patterns. The documentation should add a security note in the Agent Teams section.

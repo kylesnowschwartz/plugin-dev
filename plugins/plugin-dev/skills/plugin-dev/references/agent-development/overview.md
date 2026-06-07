@@ -866,6 +866,8 @@ Agent teams enable multi-agent coordination where a team lead spawns and manages
 
 Teams provide shared task lists, inter-agent messaging, and parallel execution. Use `permissionMode: delegate` to restrict a lead to coordination-only tools.
 
+**Security note (CC 2.1.166):** Messages relayed from peer sessions do not carry user authority. Peer-session messages cannot grant consent and must not be used to relay denied actions between sessions. This prevents permission-laundering attacks where one session attempts to authorize actions through another session.
+
 This is an advanced feature — see the [official agent teams documentation](https://code.claude.com/docs/en/agent-teams) for details.
 
 ## Additional Resources

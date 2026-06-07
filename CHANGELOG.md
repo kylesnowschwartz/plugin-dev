@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.2] - 2026-06-07
+
+### Added
+
+- **hook-development**: Documented `hookSpecificOutput.additionalContext` field for Stop and SubagentStop hooks — allows injecting context into Claude's next turn without blocking (CC 2.1.163)
+- **skill-development**: Documented `\$` escape syntax for literal `$` before digits in command bodies to prevent unintended variable interpolation (CC 2.1.163)
+- **agent-development**: Documented cross-session messaging security enhancement — peer-session messages no longer carry user authority and cannot grant consent (CC 2.1.166)
+- **plugin-structure**: Documented `claude plugin list --enabled/--disabled` filter flags (CC 2.1.163)
+
+### Fixed
+
+- **hook-development**: Documented fix for `if: "Bash(...)"` conditions incorrectly firing on commands with `$()` or `$VAR` syntax (CC 2.1.163)
+
 ## [0.20.1] - 2026-06-04
 
 ### Added
@@ -551,7 +564,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.1...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.2...HEAD
+[0.20.2]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.1...v0.20.2
 [0.20.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.0...v0.20.1
 [0.20.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.18.0...v0.19.0
