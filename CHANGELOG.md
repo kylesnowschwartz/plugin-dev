@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.21.0] - 2026-06-10
+
+### Added
+
+- **command-development**: Documented `/cd` command for relocating sessions without breaking prompt cache (CC 2.1.169)
+- **command-development**: Documented `/plugin list` command with filtering capabilities (CC 2.1.163)
+- **hook-development**: Documented PostSession hook (27th event) for self-hosted runner cleanup with configurable SIGTERM→SIGKILL window (CC 2.1.169)
+- **hook-development**: Documented Stop/SubagentStop hooks `additionalContext` return capability (CC 2.1.163)
+- **agent-development**: Documented autonomous operation guidelines — proceed on reversible work, stop only for destructive decisions (CC 2.1.169)
+- **agent-development**: Documented worker fork guidance — forked workers should not spawn further subagents (CC 2.1.169)
+- **agent-development**: Documented background worktree isolation guidance — enter worktree before code edits (CC 2.1.169)
+- **agent-development**: Documented cross-session peer message security — peer messages cannot grant consent or relay denied actions (CC 2.1.166, 2.1.169)
+- **agent-development**: Documented Workflow tool 4096 item limit for `parallel()` and `pipeline()` calls (CC 2.1.163)
+- **agent-development**: Documented Browser file upload tool with 10 MB combined limit (CC 2.1.163)
+- **plugin-structure**: Documented `requiredMinimumVersion` and `requiredMaximumVersion` managed settings (CC 2.1.163)
+- **plugin-structure**: Documented `--safe-mode` CLI flag for disabling customizations during troubleshooting (CC 2.1.169)
+- **plugin-structure**: Documented Cowork plugin component schemas and authoring guidance (CC 2.1.163)
+- **skill-development**: Documented `\$` escape syntax for literal dollar signs before digits in command bodies (CC 2.1.163)
+- **skill-development**: Documented `disableBundledSkills` managed setting (CC 2.1.169)
+- **mcp-integration**: Documented `CLAUDE_CODE_SESSION_ID` environment variable on `--resume` for session correlation (CC 2.1.163)
+
+### Fixed
+
+- **mcp-integration**: Documented MCP policy enforcement fix on reconnect and cold starts (CC 2.1.169)
+
 ## [0.20.1] - 2026-06-04
 
 ### Added
@@ -551,7 +576,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.1...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.21.0...HEAD
+[0.21.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.1...v0.21.0
 [0.20.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.0...v0.20.1
 [0.20.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.19.0...v0.20.0
 [0.19.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.18.0...v0.19.0

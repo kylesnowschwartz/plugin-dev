@@ -1,6 +1,6 @@
 # Hook Event Schemas Reference
 
-Complete input and output JSON schemas for all 26 Claude Code hook events.
+Complete input and output JSON schemas for all 27 Claude Code hook events.
 
 **Last verified:** 2026-05-28 against official docs, Python SDK (`claude-agent-sdk`), and TypeScript SDK.
 
@@ -162,6 +162,34 @@ Note: `permission_mode` is not present on SessionStart.
 
 **Matchers:** `clear`, `logout`, `prompt_input_exit`, `bypass_permissions_disabled`, `resume`, `other`
 **Hook types:** Command, HTTP, Prompt, Agent
+
+---
+
+### PostSession (CC 2.1.169)
+
+**When:** After session ends, before workspace deletion. Designed for self-hosted runners that need cleanup time.
+
+**Input:**
+
+```json
+{
+  "session_id": "string",
+  "transcript_path": "string",
+  "cwd": "string",
+  "hook_event_name": "PostSession"
+}
+```
+
+**Output:** Observability only. No decision control. Command hooks only.
+
+**Key features:**
+
+- Runs **after** SessionEnd, providing additional cleanup window
+- Configurable SIGTERM→SIGKILL window for graceful shutdown
+- Workspace is still available during this hook (deleted after)
+
+**Matchers:** Not supported
+**Hook types:** Command only
 
 ---
 
@@ -982,10 +1010,10 @@ Observability only. No decision control.
 
 Not all events are typed in both SDKs. As of May 2026:
 
-**Python SDK** (`claude-agent-sdk`) types 10 of 26 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
+**Python SDK** (`claude-agent-sdk`) types 10 of 27 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
 
 **TypeScript SDK** (`@anthropic-ai/claude-agent-sdk`) is closer to parity with the CLI. Events added over time: TeammateIdle and TaskCompleted (v2.1.34), ConfigChange (v0.2.49), Elicitation and ElicitationResult (v0.2.76).
 
-**CLI** supports all 26 events.
+**CLI** supports all 27 events.
 
-Events only available in CLI (not yet in either SDK): WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88), MessageDisplay (CC 2.1.152).
+Events only available in CLI (not yet in either SDK): WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88), MessageDisplay (CC 2.1.152), PostSession (CC 2.1.169).

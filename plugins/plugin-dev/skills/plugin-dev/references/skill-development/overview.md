@@ -76,6 +76,28 @@ Users can control skill behavior globally via the `skillOverrides` setting in th
 - Keep skill names descriptive since they may be the only visible identifier
 - Test skills with `skillOverrides: "user-invocable-only"` to ensure they work when explicitly invoked
 
+### disableBundledSkills Setting (CC 2.1.169)
+
+The `disableBundledSkills` managed setting hides bundled skills, workflows, and slash commands from the model:
+
+```json
+{
+  "disableBundledSkills": true
+}
+```
+
+**When enabled:**
+
+- Built-in Claude Code skills are hidden from the model
+- Plugin-provided skills remain available
+- User-defined skills remain available
+
+**Implications for plugin developers:**
+
+- This setting gives plugins more control over the skill landscape
+- Useful for enterprise environments with custom skill sets
+- Plugin skills should be self-contained and not rely on bundled skills
+
 #### SKILL.md (required)
 
 **Metadata Quality:** The `name` and `description` in YAML frontmatter determine when Claude will use the skill. Be specific about what the skill does and when to use it. Use the third-person (e.g. "This skill should be used when..." instead of "Use this skill when...").
@@ -337,6 +359,14 @@ Arguments passed: $ARGUMENTS
 - `$1`, `$2`, `$3` - 1-indexed shorthand for positional arguments
 - `${CLAUDE_SESSION_ID}` - Current session identifier
 - `${CLAUDE_PLUGIN_ROOT}` - Plugin directory path
+
+**Literal dollar sign escape (CC 2.1.163):** Use `\$` to output a literal dollar sign before digits without argument substitution:
+
+```markdown
+The regex pattern is \$1 for the first capture group.
+```
+
+This outputs `$1` literally instead of substituting the first argument.
 
 #### Dynamic Context Injection
 

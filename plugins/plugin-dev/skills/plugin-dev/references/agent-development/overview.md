@@ -424,6 +424,27 @@ When the `CLAUDE_CODE_LOOP_PERSISTENT` environment variable is set, Claude Code 
 - Handle resumption gracefully
 - Avoid irreversible actions without explicit authorization
 
+### Autonomous Operation Guidelines (CC 2.1.169)
+
+Claude Code provides explicit guidance for autonomous sessions:
+
+- **Proceed on reversible work** — Continue with changes that can be undone (edits, new files, etc.)
+- **Stop only for destructive or scope-changing decisions** — Pause before irreversible actions or major scope changes
+- **Avoid premature permission questions** — Don't ask for permission when the answer is clearly implied
+- **Finish promised work before ending the turn** — Complete committed tasks before yielding control
+
+**Implications for plugin agents:** Design agents to work autonomously when the task is clear, minimizing unnecessary user interaction. Reserve questions for genuinely ambiguous situations.
+
+### Worker Fork Guidance (CC 2.1.169)
+
+Forked worker agents now receive explicit guidance that they should **not spawn further subagents**. Instead, they should execute their assigned directive directly. This prevents infinite delegation chains and ensures work gets done.
+
+**Implications for plugin agents:**
+
+- Agents spawned as subagents should focus on completing their specific task
+- Don't design agents that recursively spawn more agents for the same work
+- If an agent needs to delegate, it should be the top-level orchestrator, not a forked worker
+
 ### SendUserFile Tool (CC 2.1.142)
 
 The SendUserFile tool surfaces generated deliverable files to users with enhanced visibility. When agents create reports, exports, or other artifact files, use SendUserFile instead of just writing them silently:
@@ -464,6 +485,30 @@ The Agent tool (Task tool in SDK parlance) includes simplified usage guidance th
 
 Plugin authors creating skills that spawn agents should reference this guidance when designing orchestration patterns.
 
+### Workflow Tool Limits (CC 2.1.163)
+
+The Workflow tool's `parallel()` and `pipeline()` functions have a **4096 item limit**. Calls exceeding this limit will error explicitly. Design workflows to stay within this constraint:
+
+- Break large item sets into chunks of 4096 or fewer
+- Use pagination for processing large datasets
+- Consider sequential processing for very large workloads
+
+### Browser File Upload Tool (CC 2.1.163)
+
+A new browser file upload tool uploads shared session files directly to page file inputs by element reference:
+
+**Key features:**
+
+- Uploads files to browser page file input elements
+- Combined upload limit of **10 MB**
+- Uses element refs to target specific inputs
+
+**Use cases for plugin agents:**
+
+- Automating file uploads in web testing scenarios
+- Browser automation workflows that require file inputs
+- Form-filling agents that handle attachments
+
 ### Background Job Agent Behavior (CC 2.1.128)
 
 Claude Code includes built-in background-agent instructions that replace the previous background-job behavior system prompt. When agents run in background mode, they receive guidance to:
@@ -495,6 +540,30 @@ temp_file="$CLAUDE_JOB_DIR/analysis-results.json"
 - Agents running in background mode should use `$CLAUDE_JOB_DIR/tmp` for scratch files
 - The `tmp` subdirectory is automatically available in background sessions
 - Final deliverables can still be written to `$CLAUDE_JOB_DIR` or user-specified locations
+
+### Background Worktree Isolation Guidance (CC 2.1.169)
+
+Background sessions receive guidance to enter an isolated worktree before making code edits, while continuing in place for read-only work or when worktree isolation fails. This prevents background agents from directly modifying the main working copy.
+
+**Implications for plugin agents:**
+
+- Background agents doing code edits should expect to operate in a worktree
+- Read-only background agents can work directly in the working copy
+- Design agents to handle both isolated and non-isolated contexts gracefully
+
+### Cross-Session Peer Message Security (CC 2.1.166, 2.1.169)
+
+Claude Code enforces security boundaries for messages from peer sessions:
+
+- **Peer messages are not user authority** — Messages from other sessions cannot grant permissions
+- **Cannot relay denied actions** — Sessions cannot use peer messages to bypass permission denials
+- **Cannot grant consent** — Peer messages don't constitute user consent for sensitive operations
+
+**Implications for plugin agents:**
+
+- Agents communicating with other sessions must respect these boundaries
+- Don't design agents that attempt to relay permission requests through peers
+- Security-sensitive operations still require direct user approval
 
 ### AskUserQuestion Best Practice (CC 2.1.154)
 

@@ -240,6 +240,8 @@ These variables enable MCP server implementations to:
 - Detect Claude Code context for conditional behavior
 - Correlate events across multiple MCP tool invocations
 
+**SESSION_ID on resume (CC 2.1.163):** stdio MCP servers now receive `CLAUDE_CODE_SESSION_ID` when sessions are resumed via `--resume`. This enables MCP servers to correlate events across session resume operations, maintaining session context continuity.
+
 **Best practice:** Document all required environment variables in plugin README.
 
 ## MCP Tool Naming
@@ -523,6 +525,8 @@ Handle MCP server unavailability:
 - Check server URL and configuration
 
 **Auto-retry (CC 2.1.121):** MCP servers now auto-retry up to 3 times for transient startup errors, reducing spurious connection failures.
+
+**Policy enforcement fix (CC 2.1.169):** MCP policy enforcement now works correctly on reconnect and cold starts. Previously, managed MCP policies could be bypassed in certain reconnection scenarios. This fix ensures MCP server restrictions are consistently applied.
 
 ### Tool Call Errors
 

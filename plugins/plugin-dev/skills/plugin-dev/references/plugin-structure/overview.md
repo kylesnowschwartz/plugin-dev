@@ -104,6 +104,28 @@ Plugins can specify whether they are enabled by default after installation:
 - Optional extensions that users should explicitly opt into
 - Plugins with security-sensitive capabilities that users should consciously enable
 
+### Version Constraints (CC 2.1.163)
+
+Managed settings can enforce Claude Code version requirements:
+
+```json
+{
+  "requiredMinimumVersion": "2.1.160",
+  "requiredMaximumVersion": "2.2.0"
+}
+```
+
+**Fields:**
+
+- `requiredMinimumVersion` — Users must have at least this version
+- `requiredMaximumVersion` — Users must have at most this version
+
+**Use cases:**
+
+- Ensuring plugins work with compatible Claude Code versions
+- Enterprise environments requiring version consistency
+- Plugins depending on features introduced in specific versions
+
 ### Component Path Configuration
 
 Specify custom paths for components (supplements default directories):
@@ -772,6 +794,57 @@ claude --plugin-url https://example.com/plugin-archive.tar.gz
 ```
 
 Fetches and loads plugins directly from URLs. Supports tar.gz and zip formats. Enables remote plugin distribution without requiring local installation or marketplace publishing.
+
+## CLI Flags for Plugin Development
+
+### Safe Mode (CC 2.1.169)
+
+The `--safe-mode` flag disables all customizations for troubleshooting:
+
+```bash
+claude --safe-mode
+```
+
+**What safe mode disables:**
+
+- Plugin loading (all plugins are temporarily disabled)
+- Custom skills and commands
+- User hooks and MCP servers
+- Custom settings overrides
+
+**Use cases:**
+
+- Debugging whether a plugin is causing issues
+- Troubleshooting session problems
+- Testing Claude Code behavior without customizations
+- Isolating plugin conflicts
+
+Safe mode is temporary for that session only — restarting normally restores all customizations.
+
+## Cowork Plugin Format (CC 2.1.163)
+
+Claude Code includes comprehensive Cowork plugin component format references for authoring plugins that integrate with the Cowork collaboration system:
+
+**Documented components:**
+
+- Skills schema and examples
+- Agents schema and examples
+- Hooks configuration
+- MCP server integration
+- Legacy command format
+- CONNECTORS.md for external integrations
+- README.md requirements
+- Plugin packaging metadata
+
+**Template types:**
+
+- **Minimal plugin** — Single skill, basic structure
+- **Standard plugin** — Multiple skills, hooks, README
+- **Complex plugin** — Full-featured with agents, MCP servers, connectors
+
+**MCP server discovery:** Cowork plugins support automatic MCP server discovery, allowing plugins to expose tools dynamically.
+
+For detailed Cowork authoring guidance, use the `claude-code-guide` agent to query "Cowork plugin authoring" or "Cowork plugin schemas".
 
 ## Troubleshooting
 
