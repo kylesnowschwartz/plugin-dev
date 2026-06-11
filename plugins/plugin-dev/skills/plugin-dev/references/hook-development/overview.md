@@ -5,9 +5,9 @@
 
 Hooks are event-driven automation that execute in response to Claude Code events. Use hooks to validate operations, enforce policies, add context, and integrate external tools into workflows.
 
-Claude Code has **26 hook events** across these categories:
+Claude Code has **27 hook events** across these categories:
 
-- **Session Lifecycle** -- SessionStart, InstructionsLoaded, SessionEnd
+- **Session Lifecycle** -- SessionStart, InstructionsLoaded, SessionEnd, PostSession
 - **User Input** -- UserPromptSubmit
 - **Tool Lifecycle** -- PreToolUse, PermissionRequest, PermissionDenied, PostToolUse, PostToolUseFailure
 - **Turn Control** -- Stop, StopFailure
@@ -316,6 +316,43 @@ Execute when a session terminates. Use for cleanup, logging, and state preservat
 
 **Gotcha:** Default timeout is only **1.5 seconds**. Override with `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` environment variable for longer-running cleanup.
 
+#### PostSession (CC 2.1.169)
+
+Execute after a session ends, before workspace deletion. Designed for self-hosted runners that need cleanup time.
+
+**Matchers:** Not supported
+**Hook types:** Command only
+**Decision control:** None (cleanup only)
+
+**Key features:**
+
+- Runs **after** SessionEnd, providing additional cleanup window
+- Configurable SIGTERM→SIGKILL window for graceful shutdown
+- Ideal for self-hosted runners that need to persist logs, artifacts, or state
+- Workspace is still available during this hook (deleted after)
+
+**Use cases:**
+
+- Upload session artifacts to external storage
+- Persist logs for debugging
+- Clean up external resources created during the session
+- Notify monitoring systems of session completion
+
+```json
+{
+  "PostSession": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/post-session-cleanup.sh"
+        }
+      ]
+    }
+  ]
+}
+```
+
 ### User Input
 
 #### UserPromptSubmit
@@ -572,6 +609,17 @@ Execute when the main agent finishes responding. Use to validate completeness be
 ```
 
 When `decision` is `"block"`, `reason` is required and Claude receives it as feedback to continue working.
+
+**Additional context return (CC 2.1.163):** Stop and SubagentStop hooks can return `hookSpecificOutput.additionalContext` to inject context into Claude's next turn without blocking:
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "Stop",
+    "additionalContext": "Remember to update the documentation after this change."
+  }
+}
+```
 
 **Impossible response (CC 2.1.143):** Stop condition evaluators can return a third response shape for conditions that can never be satisfied:
 
@@ -1350,13 +1398,14 @@ echo "$output" | jq .
 
 ## Quick Reference
 
-### All 26 Hook Events
+### All 27 Hook Events
 
 | Event              | Category      | Matchers                    | Decision Control              |
 | ------------------ | ------------- | --------------------------- | ----------------------------- |
 | SessionStart       | Lifecycle     | startup, resume, clear, compact | continue, env vars         |
 | InstructionsLoaded | Lifecycle     | session_start, nested_traversal, path_glob_match, include, compact | None (observability) |
 | SessionEnd         | Lifecycle     | clear, logout, prompt_input_exit, bypass_permissions_disabled, resume, other | None (observability) |
+| PostSession        | Lifecycle     | None                        | None (cleanup only)           |
 | UserPromptSubmit   | Input         | None                        | Block prompt                  |
 | PreToolUse         | Tool          | Tool names (regex)          | Allow/deny/ask, modify input  |
 | PermissionRequest  | Tool          | Tool names (regex)          | Allow/deny, modify input      |
@@ -1401,7 +1450,7 @@ echo "$output" | jq .
 
 For detailed patterns and advanced techniques, consult:
 
-- **`references/event-schemas.md`** -- Complete input/output JSON schemas for all 26 events
+- **`references/event-schemas.md`** -- Complete input/output JSON schemas for all 27 events
 - **`references/patterns.md`** -- Proven patterns including temporarily active and configuration-driven hooks
 - **`references/migration.md`** -- Migrating from basic to advanced hooks
 - **`references/advanced.md`** -- Advanced use cases and techniques
@@ -1445,7 +1494,7 @@ Development tools in `scripts/`:
 
 To implement hooks in a plugin:
 
-1. Identify events to hook into (see [Quick Reference](#all-26-hook-events))
+1. Identify events to hook into (see [Quick Reference](#all-27-hook-events))
 2. Decide hook type: prompt (flexible), agent (multi-step), command (deterministic), or HTTP (external)
 3. Write hook configuration in `hooks/hooks.json`
 4. For command hooks, create hook scripts
