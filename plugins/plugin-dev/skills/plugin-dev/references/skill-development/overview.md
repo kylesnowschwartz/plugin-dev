@@ -501,7 +501,7 @@ claude --plugin-dir /path/to/plugin
 # Verify skill loads correctly
 ```
 
-### Hot-Reloading Skills During Development (CC 2.1.152)
+### Hot-Reloading Skills During Development (CC 2.1.152, 2.1.174)
 
 Use the `/reload-skills` command to re-scan skill directories without restarting your session. This is useful during skill development when you're iterating on skill content:
 
@@ -510,6 +510,8 @@ Use the `/reload-skills` command to re-scan skill directories without restarting
 3. Test the updated skill immediately
 
 Changes to skill content, frontmatter, and references are picked up. No need to restart Claude Code.
+
+**Performance optimization (CC 2.1.174):** Skill hot-reload now only re-sends changed skills instead of the entire skill listing. When you modify a single skill, only that skill is re-announced to Claude, reducing token overhead during rapid iteration. This makes the edit-reload-test cycle faster for developers working on individual skills.
 
 ## Examples from Plugin-Dev
 

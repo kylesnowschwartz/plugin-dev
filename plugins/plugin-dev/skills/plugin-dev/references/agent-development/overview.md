@@ -435,15 +435,44 @@ Claude Code provides explicit guidance for autonomous sessions:
 
 **Implications for plugin agents:** Design agents to work autonomously when the task is clear, minimizing unnecessary user interaction. Reserve questions for genuinely ambiguous situations.
 
-### Worker Fork Guidance (CC 2.1.169)
+### Worker Fork Guidance (CC 2.1.169, updated 2.1.176)
 
-Forked worker agents now receive explicit guidance that they should **not spawn further subagents**. Instead, they should execute their assigned directive directly. This prevents infinite delegation chains and ensures work gets done.
+Forked worker agents receive explicit guidance that they should **not spawn further subagents**. Instead, they should execute their assigned directive directly. This prevents infinite delegation chains and ensures work gets done.
+
+**Fork syntax change (CC 2.1.176):** Creating a background fork now requires passing `subagent_type: "fork"` explicitly. Previously, omitting `subagent_type` would create a fork inheriting the current context. Now, omitting the type or using any other type starts a **fresh agent with no context**.
+
+```yaml
+# Before CC 2.1.176: omitting subagent_type created a fork
+# After CC 2.1.176: must be explicit
+subagent_type: "fork"  # Required to inherit context
+```
 
 **Implications for plugin agents:**
 
 - Agents spawned as subagents should focus on completing their specific task
 - Don't design agents that recursively spawn more agents for the same work
 - If an agent needs to delegate, it should be the top-level orchestrator, not a forked worker
+- Update any existing agent orchestration code to explicitly pass `subagent_type: "fork"` when context inheritance is needed
+
+### Sub-Agent Nesting (CC 2.1.172)
+
+Sub-agents can now spawn their own sub-agents, enabling complex orchestration patterns. Previously, sub-agents could not spawn further sub-agents.
+
+**Nesting limit:** Sub-agents can nest up to **5 levels deep**. Attempts to spawn beyond 5 levels will fail.
+
+**Reconciliation with worker fork guidance:** The CC 2.1.169 guidance that forked workers should not spawn subagents still applies — forked workers should execute their directive directly. The 5-level nesting capability is for orchestrator patterns where a top-level agent spawns sub-agents that themselves need to coordinate further sub-tasks.
+
+**Use cases:**
+
+- Multi-stage code review: orchestrator → file analyzers → specialized checkers
+- Complex refactoring: coordinator → module workers → dependency resolvers
+- Test generation: planner → test writers → validation agents
+
+**Design guidance:**
+
+- Keep nesting shallow when possible (2-3 levels is typical)
+- Top-level orchestrators handle coordination; leaf agents do the work
+- Avoid recursive patterns that could hit the 5-level limit
 
 ### SendUserFile Tool (CC 2.1.142)
 
