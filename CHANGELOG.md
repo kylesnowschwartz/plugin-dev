@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.22.0] - 2026-06-13
+
+### Added
+
+- **agent-development**: Documented fork `subagent_type: "fork"` explicit requirement — omitting subagent_type now starts a fresh agent instead of inheriting context (CC 2.1.176)
+- **agent-development**: Documented sub-agent 5-level nesting capability — sub-agents can now spawn their own sub-agents up to 5 levels deep (CC 2.1.172)
+- **skill-development**: Documented skill hot-reload optimization — only changed skills are re-announced instead of the entire listing (CC 2.1.174)
+
 ## [0.21.0] - 2026-06-10
 
 ### Added
@@ -576,7 +584,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.21.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.22.0...HEAD
+[0.22.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.1...v0.21.0
 [0.20.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.0...v0.20.1
 [0.20.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.19.0...v0.20.0
