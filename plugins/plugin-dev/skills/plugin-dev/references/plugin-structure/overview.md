@@ -613,6 +613,52 @@ project/
 
 **Precedence:** Local `.claude/skills/` are discovered at the Project level in the skill precedence hierarchy (Enterprise > Personal > Project > Plugin).
 
+### Nested .claude/ Directory Precedence (CC 2.1.178)
+
+When nested `.claude/` directories exist in a project (common in monorepos), the closest directory to the working location takes precedence for name collisions:
+
+**Affected components:**
+
+- Agents
+- Workflows
+- Output styles
+- Skills (via nested skill directory support)
+
+**Example structure:**
+
+```
+monorepo/
+├── .claude/                    # Root-level configuration
+│   ├── agents/
+│   │   └── reviewer.md         # Root reviewer agent
+│   └── workflows/
+│       └── deploy.yml          # Root deploy workflow
+├── apps/
+│   └── web/
+│       └── .claude/            # Nested configuration for apps/web
+│           ├── agents/
+│           │   └── reviewer.md # Web-specific reviewer (takes precedence here)
+│           └── workflows/
+│               └── deploy.yml  # Web-specific deploy (takes precedence here)
+└── packages/
+    └── api/
+        └── .claude/            # Nested configuration for packages/api
+            └── agents/
+                └── reviewer.md # API-specific reviewer (takes precedence here)
+```
+
+**Behavior:**
+
+- When working on files in `apps/web/`, the `apps/web/.claude/agents/reviewer.md` is used
+- When working on files in `packages/api/`, the `packages/api/.claude/agents/reviewer.md` is used
+- When working on root-level files, the root `.claude/agents/reviewer.md` is used
+
+**Implications for plugins:**
+
+- Plugin components are lowest precedence (after enterprise, personal, project, and nested project)
+- Nested `.claude/` directories allow project-specific overrides of plugin behavior
+- Monorepos can have different configurations per workspace without conflicts
+
 **Discovery timing**:
 
 - Plugin installation: Components register with Claude Code

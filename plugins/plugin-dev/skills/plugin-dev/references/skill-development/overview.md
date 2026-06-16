@@ -41,6 +41,41 @@ Both skills and commands are invoked via the Skill tool and share the same under
 
 Skills follow precedence: Enterprise > Personal (`~/.claude/skills/`) > Project (`.claude/skills/`) > Plugin skills. Higher-priority skills with the same name shadow lower-priority ones. Use distinctive, namespaced names for plugin skills to avoid collisions.
 
+### Nested Skill Directories (CC 2.1.178)
+
+Skills can be organized in nested directories within `.claude/skills/`. When working on files in a nested directory, skills from that directory's `.claude/skills/` are loaded automatically.
+
+**Collision handling:** When the same skill name exists in multiple nested directories, the skill displays as `<dir>:<name>` format (e.g., `apps/web:deploy`). This prevents name collisions while maintaining clarity about which skill is which.
+
+**Example structure:**
+
+```
+project/
+├── .claude/skills/         # Project-level skills
+│   └── shared-skill/
+├── apps/
+│   └── web/
+│       └── .claude/skills/ # Nested skills for apps/web
+│           └── deploy/     # Appears as "apps/web:deploy" if collision
+└── packages/
+    └── api/
+        └── .claude/skills/ # Nested skills for packages/api
+            └── deploy/     # Appears as "packages/api:deploy" if collision
+```
+
+### Directory-Scoped Skills (CC 2.1.178)
+
+Skills whose names are prefixed with their directory path (e.g., `apps/web:deploy`) enable targeted skill activation. When both a scoped and unscoped variant exist:
+
+1. **Files being worked on determine precedence** — the most specific directory wins
+2. **Otherwise, unscoped skill is used** — when no files provide context
+
+**Use cases:**
+
+- Monorepos with different deployment procedures per app
+- Package-specific build or test skills
+- Directory-specific conventions that shouldn't apply globally
+
 ### Automatic Local Skill Loading (CC 2.1.157)
 
 Skills in `.claude/skills/` directories now load automatically without marketplace installation or explicit configuration. Simply place a skill directory with a `SKILL.md` file in your project's `.claude/skills/` or personal `~/.claude/skills/`, and it becomes available immediately.

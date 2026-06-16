@@ -1,126 +1,124 @@
 # Upstream Change Manifest
-## CC Version Range: 2.1.171 - 2.1.176
-## Generated: 2026-06-13
-## Sources: changelog [Y], system-prompts [Y], claude-code-guide [skipped]
-
-Note: claude-code-guide agent dispatch was skipped as comprehensive data from two independent sources (official CC changelog and system-prompts changelog) provides sufficient triangulation.
+## CC Version Range: 2.1.177 - 2.1.178
+## Generated: 2026-06-16
+## Sources: changelog [Y], system-prompts [Y], claude-code-guide [skipped - no output returned]
 
 ---
 
 ### Must Update
 
-- [ ] **Fork subagent_type explicit requirement** (CC 2.1.176)
-  - Source: system-prompts changelog (2.1.176)
+- [ ] **Tool parameter matching syntax for permission rules** (CC 2.1.178)
+  - Source: changelog, verified Stage 2
   - Confidence: high
-  - Affects: agent-development reference documentation
-  - Details: Creating a background fork now requires passing `subagent_type: "fork"` explicitly instead of omitting `subagent_type`. Omitting the type or using any other type now starts a fresh agent with no context. This is a behavioral change that affects how agents are documented and created.
-  - Raw: "Fork usage guidelines - Updates the 'when to fork' instruction to fork by passing `subagent_type: \"fork\"` instead of omitting `subagent_type`."
+  - Affects: hook-development
+  - Details: Permission rules now support tool parameter matching syntax like `Agent(model:opus)`. This allows more granular permission control based on tool parameters, not just tool names. Plugin developers can now write hook rules that match specific tool invocations.
+  - Raw changelog: "Tool parameter matching syntax for permission rules (e.g., `Agent(model:opus)`)"
 
-- [ ] **Sub-agents can now spawn their own sub-agents (5 levels deep)** (CC 2.1.172)
-  - Source: official changelog (2.1.172)
+- [ ] **Nested skill directory support with collision handling** (CC 2.1.178)
+  - Source: changelog, verified Stage 2
   - Confidence: high
-  - Affects: agent-development reference documentation
-  - Details: Previously sub-agents could not spawn further sub-agents. Now they can nest up to 5 levels deep. This enables more complex orchestration patterns. Must reconcile with CC 2.1.169 worker fork guidance that says forked workers should not spawn further subagents.
-  - Raw: "Sub-agents can now spawn their own sub-agents (up to 5 levels deep)"
+  - Affects: skill-development, plugin-structure
+  - Details: Skills can now be organized in nested directories. When collisions occur (same skill name in different directories), they display as `<dir>:<name>`. This affects how plugin skills should be organized and named.
+  - Raw changelog: "Skills in nested `.claude/skills` directories now load when working on files there; naming conflicts display nested skills as `<dir>:<name>`"
 
-- [ ] **Skill hot-reload optimization** (CC 2.1.174)
-  - Source: official changelog (2.1.174)
+- [ ] **Directory-scoped skills with prefix naming** (CC 2.1.178)
+  - Source: system-prompts, verified Stage 2
   - Confidence: high
-  - Affects: skill-development reference documentation
-  - Details: Skill hot-reload now only re-sends changed skills instead of the entire skill listing. Performance improvement for skill developers iterating on skills.
-  - Raw: "Fixed skill hot-reload re-sending the entire skill listing when a single skill changed; only changed skills are now re-announced"
+  - Affects: skill-development
+  - Details: Skills whose names are prefixed with their directory (e.g., `apps/web:deploy`) are now supported. When both a scoped and unscoped variant exist, the most specific directory wins based on files being worked on, otherwise the unscoped one is used.
+  - Raw system-prompts: "Tool Description: Skill - Adds guidance on directory-scoped skills whose names are prefixed with their directory (e.g. `apps/web:deploy`): when both a scoped and unscoped variant exist, pick by the files being worked on (most specific directory wins), otherwise use the unscoped one."
+
+- [ ] **Agent tool `isolation: "remote"` option** (CC 2.1.178)
+  - Source: system-prompts, verified Stage 2
+  - Confidence: high
+  - Affects: agent-development
+  - Details: New Agent tool parameter `isolation: "remote"` runs the agent in a remote CCR (Claude Code Runner) sandbox. Always runs as a background task with completion notification. This is a significant new capability for sandboxed agent execution.
+  - Raw system-prompts: "Tool Description: Agent (usage notes) - Adds an `isolation: \"remote\"` option to run the agent in a remote CCR sandbox (always a background task, with completion notification) and drops `team_name` from the parameters listed as unavailable in subagent and teammate contexts."
+
+- [ ] **Workflow tool `effort` option for agent() spawns** (CC 2.1.178)
+  - Source: system-prompts, verified Stage 2
+  - Confidence: high
+  - Affects: skill-development (Workflow Tool Limits section), agent-development
+  - Details: The Workflow tool's `agent()` spawns now accept an `effort` option that overrides reasoning effort ('low' | 'medium' | 'high' | 'xhigh' | 'max'). Omit to inherit session effort, use 'low' for cheap mechanical stages and higher tiers for hard verify/judge stages.
+  - Raw system-prompts: "Tool Description: Workflow - Adds an `effort` option to `agent()` spawns that overrides the reasoning effort ('low' | 'medium' | 'high' | 'xhigh' | 'max'); omit to inherit the session effort, use 'low' for cheap mechanical stages and higher tiers only for the hardest verify/judge stages."
+
+- [ ] **SendMessageTool `"main"` recipient for background subagents** (CC 2.1.178)
+  - Source: system-prompts, verified Stage 2
+  - Confidence: high
+  - Affects: agent-development
+  - Details: Background subagents can now message the main conversation using `"main"` as the recipient in SendMessageTool. This enables better coordination between background agents and the primary session.
+  - Raw system-prompts: "Tool Description: SendMessageTool - Adds a `\"main\"` recipient option for messaging the main conversation (background subagents only)."
+
+- [ ] **TeamDelete and TeammateTool removed** (CC 2.1.178)
+  - Source: system-prompts, verified Stage 2
+  - Confidence: high (explicit REMOVED marker)
+  - Affects: agent-development (Agent Teams section)
+  - Details: The TeamDelete tool (for deleting completed teams) and TeammateTool (for team creation, agent-type selection, task ownership, message delivery) have been removed. Any documentation referencing these tools needs updating.
+  - Raw system-prompts: "REMOVED: Tool Description: TeamDelete - Removes the tool description for deleting a completed team's team and task directories." and "REMOVED: Tool Description: TeammateTool - Removes the TeamCreate/team-coordination tool description..."
+
+- [ ] **Nested `.claude/` directory precedence** (CC 2.1.178)
+  - Source: changelog (Stage 2 discovery)
+  - Confidence: high
+  - Affects: plugin-structure, agent-development, skill-development
+  - Details: When nested `.claude/` directories exist, the agent, workflow, and output-style closest to the working directory take precedence when names collide. This affects skill/agent namespacing in monorepos.
+  - Raw changelog: "Nested `.claude/` directories: the agent, workflow, and output-style closest to the working directory take precedence when names collide"
 
 ---
 
 ### May Update
 
-- [ ] **footerLinksRegexes setting** (CC 2.1.176)
-  - Source: official changelog (2.1.176)
-  - Confidence: low
-  - Affects: plugin-settings documentation (if managed settings are documented)
-  - Details: New setting for regex-matched link badges in the footer row. Only relevant if plugin-settings documents user/managed settings.
-  - Raw: "Added `footerLinksRegexes` setting for regex-matched link badges in the footer row"
+- [ ] **NEW Code Review skill (conventions dimension)** (CC 2.1.178)
+  - Source: system-prompts
+  - Confidence: high (NEW marker)
+  - Affects: skill examples/reference
+  - Details: New built-in skill that reads CLAUDE.md files and flags diff lines breaking stated rules. Could be referenced as an example of well-structured skills.
+  - Stage 2: Kept as May Update - example skill, not required for plugin development
 
-- [ ] **Security monitor for autonomous agents expanded** (CC 2.1.172, 2.1.174)
-  - Source: system-prompts changelog
+- [ ] **Agent tool spawn-restriction wording update** (CC 2.1.178)
+  - Source: system-prompts
   - Confidence: medium
-  - Affects: agent-development documentation (autonomous operation section)
-  - Details: Multiple expansions to security monitor guidance for autonomous agent actions. Could affect guidance for designing autonomous plugin agents.
+  - Affects: agent-development
+  - Details: Wording changed from "one of the agent types above" to "one of the available agent types" - clarifies that available types are listed in system-reminder messages.
+  - Stage 2: Kept as May Update - minor wording change, current docs adequate
 
-- [ ] **Hook if conditions bug fix** (CC 2.1.176)
-  - Source: official changelog (2.1.176)
-  - Confidence: low
-  - Affects: hook-development documentation
-  - Details: Patterns like `Edit(src/**)`, `Read(~/.ssh/**)`, and `Read(.env)` now match correctly. Existing documentation is correct; could add version note.
-  - Raw: "Fixed hook `if` conditions for Read/Edit/Write tool paths"
+- [ ] **Artifact tool WebFetch guidance** (CC 2.1.178)
+  - Source: system-prompts
+  - Confidence: medium
+  - Affects: tool documentation
+  - Details: Reading existing artifact content is now done via WebFetch with artifact URL.
+  - Stage 2: Kept as May Update - minor addition, not core to plugin development
 
 ---
 
 ### No Action
 
-**Demoted from Must Update (Stage 2 verification):**
-- claude.ai Project tool (CC 2.1.174) - New Claude capability, not plugin system documentation
-- Artifact tool for HTML/Markdown deployment (CC 2.1.172) - New Claude capability, not plugin system documentation
-- Claude Fable 5 model identity (CC 2.1.172) - Internal model identity, not plugin-dev scope
-- Cowork onboarding role picker tool (CC 2.1.172) - Cowork is separate product, not documented in plugin-dev
-
-**Demoted from May Update (Stage 2 verification):**
-- enforceAvailableModels managed setting (CC 2.1.175) - Enterprise setting, not plugin-dev relevant
-- wheelScrollAccelerationEnabled setting (CC 2.1.174) - UI setting, not plugin-dev relevant
-- Workflow tool agent() returns null (CC 2.1.166) - Outside version range (pre-2.1.171)
-- WebFetch Artifact URL exception (CC 2.1.176) - Claude tool capability, not plugin system
-- Coordinator mode parallel worker guidance (CC 2.1.176) - Claude behavior, not plugin system
-- Managed Agents scheduled deployments (CC 2.1.172) - Separate product from plugins
-
-**Original No Action items:**
-- Session titles generated in conversation language (CC 2.1.176) - UI feature
-- Bedrock credential caching improvements (CC 2.1.176) - Provider-specific
-- Fixed availableModels enforcement for alias model picks (CC 2.1.176) - Bug fix
-- Fixed auto mode failing on Fable 5 (CC 2.1.176) - Bug fix
-- Fixed Linux sandbox with symlinked settings (CC 2.1.176) - Bug fix
-- Fixed clipboard in tmux over SSH (CC 2.1.176) - Bug fix
-- Fixed Remote Control model switching (CC 2.1.176) - Bug fix
-- Fixed /cd and worktree git branch reporting (CC 2.1.176) - Bug fix
-- Fixed claude agents back navigation (CC 2.1.176) - Bug fix
-- Fixed backgrounded sessions showing "Working" forever (CC 2.1.176) - Bug fix
-- Various background agent and Windows fixes (CC 2.1.176) - Bug fixes
-- Fixed Fable 5 model name normalization (CC 2.1.173) - Bug fix
-- Fixed spurious sandbox warning on Windows (CC 2.1.173) - Bug fix
-- Fixed /model picker hiding model family (CC 2.1.174) - UI fix
-- Fixed Fable 5 usage credits banner (CC 2.1.174) - Bug fix
-- Fixed Bedrock GovCloud regions (CC 2.1.174) - Provider-specific
-- Various background session and co-author fixes (CC 2.1.174) - Bug fixes
-- Search bar in /plugin marketplace browser (CC 2.1.172) - UI feature
-- OTEL metric model attribute (CC 2.1.172) - Telemetry
-- Fixed 1M context sessions getting stuck (CC 2.1.172) - Bug fix
-- Fixed image processing errors (CC 2.1.172) - Bug fix
-- Fixed agents view spinner timing (CC 2.1.172) - UI fix
-- Fixed background agent settings issues (CC 2.1.172) - Bug fixes
-- Fixed /model suggestions and availableModels restrictions (CC 2.1.172) - Bug fixes
-- Fixed WebFetch wildcard domain rules (CC 2.1.172) - Bug fix
-- Fixed memory recall in remote sessions (CC 2.1.172) - Bug fix
-- Fixed workflow validation Date.now()/Math.random() (CC 2.1.172) - Bug fix
-- Various mouse, plugin, performance improvements (CC 2.1.172) - Misc fixes
-- REMOVED: Claude in Chrome skill note (CC 2.1.176) - Internal prompt removal
-- REMOVED: Design sync modules consolidated (CC 2.1.174) - Internal refactoring
-- Design sync workflow expansions (CC 2.1.172-2.1.176) - Anthropic internal skill
-- Claude API reference updates for Fable 5 (CC 2.1.172-2.1.176) - API docs, not plugin-dev
-- Model migration guide updates (CC 2.1.172-2.1.176) - Migration docs
-- Streaming reference updates (CC 2.1.172) - API docs
-- HTTP error codes reference updates (CC 2.1.172) - API docs
-- Live documentation sources updates (CC 2.1.172) - Reference links
-- Managed Agents client/core/endpoint/events updates (CC 2.1.172) - Managed Agents specific
+- Compact tool descriptions for newer models (Glob, Grep, ReadFile) (CC 2.1.178) - internal Claude Code behavior, not controllable by plugin developers (Stage 2 demotion)
+- Remote Control error messaging improvements (CC 2.1.178) - internal infrastructure
+- Bug fixes for subagent transcripts, background sessions, and MCP server specs (CC 2.1.178) - bug fixes
+- Quick git commit agent prompt removed (CC 2.1.178) - internal Claude Code agent, not relevant to plugin development (Stage 2 demotion)
+- Bash tool git commit guidance condensed (CC 2.1.178) - internal guidance (Stage 2 demotion)
+- Auto mode subagent evaluation before launch (CC 2.1.178) - internal auto-mode behavior (Stage 2 demotion)
+- /doctor command improved formatting (CC 2.1.178) - user-facing CLI improvement (Stage 2 demotion)
+- v2.1.177 - No changes to system prompts (pass-through release)
 
 ---
 
 ## Summary
 
-**Critical changes requiring documentation updates:**
-1. Fork subagent_type must now be explicit (`subagent_type: "fork"`)
-2. Sub-agents can now nest 5 levels deep
-3. Skill hot-reload optimization (only changed skills re-announced)
+**Key findings for plugin-dev v0.23.0:**
 
-**Version note:** The official changelog shows versions 2.1.172, 2.1.173, 2.1.174, 2.1.175, 2.1.176 after 2.1.170. The system-prompts changelog confirms prompt changes in 2.1.172, 2.1.174, and 2.1.176 (with no changes in 2.1.173, 2.1.175, 2.1.177).
+1. **Agent tool changes** are significant: new `isolation: "remote"` option, `"main"` recipient for SendMessageTool, and team tools removal
+2. **Skill organization** has new features: nested directories with collision handling, directory-scoped skill prefixes
+3. **Workflow tool** has new `effort` parameter for agent spawns
+4. **Permission rules** now support tool parameter matching (granular hook rules)
+5. **Nested .claude/ precedence** affects how plugins work in monorepos
+
+**Recommended priority (Stage 2 verified):**
+1. Update agent-development for isolation: "remote", SendMessageTool "main", team tools removal
+2. Update skill-development for nested directories and scoped names (`apps/web:deploy`)
+3. Update hook-development for permission rule parameter matching (`Agent(model:opus)`)
+4. Update skill-development and agent-development for Workflow effort option
+5. Update plugin-structure for nested .claude/ directory precedence
 
 ---
 
@@ -128,77 +126,117 @@ Note: claude-code-guide agent dispatch was skipped as comprehensive data from tw
 
 | Source | Status | Notes |
 |--------|--------|-------|
-| CC Changelog | Y | Retrieved via curl from upstream GitHub raw |
+| CC Changelog | Y | Retrieved via WebFetch from upstream GitHub raw |
 | System-prompts | Y | Read from ./claude-code-system-prompts/CHANGELOG.md (first 200 lines) |
-| claude-code-guide | skipped | Comprehensive dual-source data sufficient |
+| claude-code-guide | skipped | Agent dispatch returned no output |
 
 ---
 
-## Recommendations for Stage 3
+## Version Notes
 
-### MUST UPDATE (3 items)
-
-1. **Fork subagent_type explicit requirement (HIGH PRIORITY)**:
-   - Files: agent-development documentation
-   - Action: Update guidance to note that `subagent_type: "fork"` must be passed explicitly; omitting subagent_type now starts a fresh agent
-   - Note: Breaking behavioral change affecting agent orchestration patterns
-
-2. **Sub-agent nesting depth (MEDIUM PRIORITY)**:
-   - Files: agent-development documentation
-   - Action: Update guidance to note sub-agents can spawn sub-agents (5 levels max)
-   - Note: Enables complex orchestration patterns; reconcile with existing CC 2.1.169 worker fork guidance
-
-3. **Skill hot-reload optimization (LOW PRIORITY)**:
-   - Files: skill-development documentation
-   - Action: Add note that skill hot-reload now only re-sends changed skills (CC 2.1.174)
-   - Note: Performance improvement for skill developers
-
-### MAY UPDATE (3 items - evaluate as Stage 3 proceeds)
-
-- footerLinksRegexes setting (if plugin-settings documents managed settings)
-- Security monitor expansions (affects autonomous plugin agent behavior)
-- Hook if conditions bug fix (add version note to existing documentation)
+- Last audited version: 2.1.176 (2026-06-13)
+- Current latest version: 2.1.178
+- Version 2.1.177 had no system prompt changes (pass-through release)
+- All changes are from v2.1.178
 
 ---
 
 ## Stage 2: Verification Results
-### Verified: 2026-06-13
+### Verified: 2026-06-16
 
 #### Must Update Verification
-- ! **Fork subagent_type explicit requirement** (CC 2.1.176) -- confirmed in system-prompts changelog 2.1.176; gap exists in agent-development/overview.md (Worker Fork Guidance section at lines 438-447 does not document new explicit requirement)
-- ! **Sub-agents can now spawn their own sub-agents (5 levels deep)** (CC 2.1.172) -- confirmed in official changelog; gap exists (agent-development mentions CC 2.1.169 guidance that forked workers should not spawn subagents, but 5-level nesting is not documented)
-- ! **Skill hot-reload optimization** (CC 2.1.174) -- PROMOTED from May Update; confirmed in official changelog; gap exists in skill-development/overview.md (Hot-Reloading section at lines 504-513 does not mention this performance improvement)
-- X **claude.ai Project tool** (CC 2.1.174) -- rejected: new Claude capability, not plugin system documentation
-- X **Artifact tool** (CC 2.1.172) -- rejected: new Claude capability, not plugin system documentation
-- X **Claude Fable 5 model identity** (CC 2.1.172) -- rejected: internal model identity, not plugin-dev documentation scope
-- X **Cowork onboarding role picker** (CC 2.1.172) -- rejected: Cowork is separate product, not documented in plugin-dev
-- X **Hook if conditions for file paths** (CC 2.1.176) -- reclassified to May Update: bug fix validating existing correct documentation
+
+- [x] **Tool parameter matching syntax for permission rules** (CC 2.1.178)
+  - Confirmed in CC changelog: "Added `Tool(param:value)` syntax for permission rules to match tool input parameters using wildcards, such as `Agent(model:opus)` to restrict Opus subagents"
+  - Gap exists: hook-development/overview.md does not document tool parameter matching syntax
+  - Topic correction: Affects `hook-development` (not "hooks skill")
+
+- [x] **Nested skill directory support with collision handling** (CC 2.1.178)
+  - Confirmed in CC changelog: "Skills in nested `.claude/skills` directories now load when working on files there; naming conflicts display nested skills as `<dir>:<name>`"
+  - Gap exists: skill-development/overview.md does not mention nested directories or collision handling
+  - Topic correction: Affects `skill-development` (not "skill-authoring skill")
+
+- [x] **Directory-scoped skills with prefix naming** (CC 2.1.178)
+  - Confirmed in system-prompts: "Tool Description: Skill - Adds guidance on directory-scoped skills whose names are prefixed with their directory (e.g. `apps/web:deploy`)"
+  - Gap exists: skill-development/overview.md does not document scoped skill naming (`apps/web:deploy` format)
+  - Topic: `skill-development`
+
+- [x] **Agent tool `isolation: "remote"` option** (CC 2.1.178)
+  - Confirmed in system-prompts: "Adds an `isolation: \"remote\"` option to run the agent in a remote CCR sandbox (always a background task, with completion notification)"
+  - Gap exists: agent-development/overview.md mentions `isolation: "worktree"` but not `isolation: "remote"`
+  - Topic: `agent-development`
+
+- [x] **Workflow tool `effort` option for agent() spawns** (CC 2.1.178)
+  - Confirmed in system-prompts: "Adds an `effort` option to `agent()` spawns that overrides the reasoning effort ('low' | 'medium' | 'high' | 'xhigh' | 'max')"
+  - Gap exists: Workflow tool not documented in plugin-dev skill references
+  - Topic correction: Affects `skill-development` (Workflow section at line 517 mentions the tool but no `effort` option)
+
+- [x] **SendMessageTool `"main"` recipient for background subagents** (CC 2.1.178)
+  - Confirmed in system-prompts: "Adds a `\"main\"` recipient option for messaging the main conversation (background subagents only)"
+  - Gap exists: agent-development/overview.md does not mention SendMessageTool or messaging capabilities
+  - Topic: `agent-development`
+
+- [x] **Compact tool descriptions for newer models (Glob, Grep, ReadFile)** (CC 2.1.178)
+  - Confirmed in system-prompts: NEW entries for "Tool Description: Glob compact", "Tool Description: Grep compact", "Tool Description: ReadFile compact"
+  - Reclassified: This is internal Claude Code behavior, not something plugin developers can control or need to document
+  - Demoted to No Action
+
+- [x] **TeamDelete and TeammateTool removed** (CC 2.1.178)
+  - Confirmed in system-prompts: REMOVED markers for both tools
+  - Gap exists: agent-development/overview.md "Agent Teams" section at line 961 may reference team tools
+  - Topic: `agent-development`
 
 #### Missed Items (promoted from No Action)
-- ! **Skill hot-reload optimization** (CC 2.1.174) -- missed in original classification as "May Update" with low confidence; promoted to Must Update
-  - Affects: skill-development reference documentation
-  - Details: Performance improvement that skill developers should know about when iterating
+
+- ! **Nested `.claude/` directory precedence** (CC 2.1.178) - missed because changelog only, no system-prompts detail
+  - Source: CC changelog: "Nested `.claude/` directories: the agent, workflow, and output-style closest to the working directory take precedence when names collide"
+  - Affects: `plugin-structure`, `agent-development`, `skill-development`
+  - Details: When nested `.claude/` directories exist, the closest one to the working directory takes precedence for agents, workflows, and output-styles
 
 #### May Update Resolution
-- = footerLinksRegexes setting -- kept as May Update: only relevant if plugin-settings documents managed settings (verify during Stage 3)
-- = Security monitor expansions -- kept as May Update: may affect autonomous agent design guidance (evaluate during Stage 3)
-- = Hook if conditions bug fix -- kept as May Update: existing documentation is correct, version note optional
-- v enforceAvailableModels managed setting -- demoted to No Action: enterprise setting, not plugin-dev relevant
-- v wheelScrollAccelerationEnabled setting -- demoted to No Action: UI setting, not plugin-dev relevant
-- v Workflow tool agent() null return -- demoted to No Action: outside version range (CC 2.1.166, pre-2.1.171)
-- v WebFetch Artifact URL exception -- demoted to No Action: Claude tool capability, not plugin system
-- v Coordinator mode parallel worker guidance -- demoted to No Action: Claude behavior, not plugin system
-- v Managed Agents scheduled deployments -- demoted to No Action: separate product from plugins
+
+- = **NEW Code Review skill (conventions dimension)** (CC 2.1.178)
+  - Kept as May Update: Could be referenced as an example skill, but not required for plugin development
+  - No action unless we want to add as a skill example
+
+- = **Agent tool spawn-restriction wording update** (CC 2.1.178)
+  - Kept as May Update: Minor wording change ("available agent types" vs "agent types above")
+  - Current agent-development docs already explain agent type discovery adequately
+
+- ! **Quick git commit agent prompt removed** (CC 2.1.178)
+  - Demoted to No Action: Internal Claude Code agent prompt, not relevant to plugin development
+
+- = **Artifact tool WebFetch guidance** (CC 2.1.178)
+  - Kept as May Update: Reading artifacts via WebFetch is a minor addition, not core to plugin development
+
+- = **Bash tool git commit guidance condensed** (CC 2.1.178)
+  - Demoted to No Action: Internal guidance, not affecting plugin development
+
+- = **Auto mode subagent evaluation before launch** (CC 2.1.178)
+  - Demoted to No Action: Internal auto-mode behavior, not something plugin developers can control
+
+- = **/doctor command improved formatting** (CC 2.1.178)
+  - Demoted to No Action: User-facing CLI improvement, not relevant to plugin development
 
 #### Summary
-- Must Update: 3 items (3 confirmed, 4 rejected from original 7)
-- May Update: 3 items remaining (6 demoted to No Action)
-- No Action: 10 items added (4 from Must Update, 6 from May Update)
-- Confidence: HIGH -- independent verification against raw changelogs confirms Stage 1 captured changes correctly but over-classified non-plugin-relevant items
 
-#### Verification Notes
-- **Sources independently verified**: Fetched CC changelog via WebFetch; read system-prompts CHANGELOG.md directly
-- **Topic mappings verified**: Read agent-development/overview.md, hook-development/overview.md, skill-development/overview.md to confirm affected sections
-- **Keyword scan performed**: Searched for hook, plugin, agent, skill, tool, permission, subagent, MCP, frontmatter in changelog entries
-- **Version range confirmed**: 2.1.171-2.1.176 (last audited: 2.1.170)
-- **No significant issues**: Original Stage 1 identified changes correctly; corrections are primarily about relevance filtering for plugin-dev scope
+- **Must Update: 7 items** (6 confirmed, 1 demoted to No Action, 1 added from missed)
+  - Tool parameter matching syntax -> hook-development
+  - Nested skill directory support -> skill-development
+  - Directory-scoped skills -> skill-development
+  - Agent isolation: "remote" -> agent-development
+  - Workflow effort option -> skill-development
+  - SendMessageTool "main" recipient -> agent-development
+  - TeamDelete/TeammateTool removal -> agent-development
+  - (NEW) Nested .claude/ directory precedence -> plugin-structure, agent-development
+- **May Update: 3 items remaining** (Code Review skill, spawn-restriction wording, Artifact WebFetch)
+- **No Action: 7 items** (compact tool descriptions moved here, plus original no-action items)
+- **Confidence: HIGH** - All items verified against primary sources, topic mappings corrected
+
+#### Topic Name Corrections
+
+The manifest used incorrect topic names. Corrections for Stage 3:
+- "hooks skill" -> `hook-development`
+- "skill-authoring skill" -> `skill-development`
+- "agents skill" -> `agent-development`
+- "plugin-manifest skill" -> `plugin-structure`
