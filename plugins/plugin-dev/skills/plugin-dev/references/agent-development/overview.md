@@ -500,6 +500,30 @@ The SendUserFile tool surfaces generated deliverable files to users with enhance
 
 Hooks can match `SendUserFile` via PreToolUse/PostToolUse for validation or logging of deliverable generation.
 
+### SendMessageTool "main" Recipient (CC 2.1.178)
+
+Background subagents can now message the main conversation using `"main"` as the recipient in SendMessageTool:
+
+```json
+{
+  "recipient": "main",
+  "message": "Background task completed: processed 150 files"
+}
+```
+
+**Behavior:**
+
+- Only available to background subagents
+- Messages appear in the main conversation thread
+- Enables coordination between background agents and the primary session
+- Useful for progress updates and completion notifications
+
+**Use cases for plugin agents:**
+
+- Progress reporting from long-running background tasks
+- Alerting the user when background work completes
+- Requesting user input from a background context (though the agent cannot receive the response directly)
+
 ### Agent Tool Usage Notes (CC 2.1.140)
 
 The Agent tool (Task tool in SDK parlance) includes simplified usage guidance that clarifies:
@@ -508,6 +532,7 @@ The Agent tool (Task tool in SDK parlance) includes simplified usage guidance th
 - **Fork behavior**: Each Agent invocation starts fresh; context is not automatically inherited
 - **Resumption**: Ask Claude to "resume that agent" to restore prior transcript context
 - **Worktree isolation**: Background agents may run in isolated worktrees (controlled by `worktree.bgIsolation`)
+- **Remote isolation (CC 2.1.178)**: Use `isolation: "remote"` to run agents in a CCR (Claude Code Runner) sandbox
 - **Background execution**: Use `run_in_background` parameter for concurrent agent work
 - **Parallel launches**: Send multiple Agent calls in one message for concurrent execution
 - **Context restrictions**: Background agents cannot prompt for permissions
@@ -521,6 +546,33 @@ The Workflow tool's `parallel()` and `pipeline()` functions have a **4096 item l
 - Break large item sets into chunks of 4096 or fewer
 - Use pagination for processing large datasets
 - Consider sequential processing for very large workloads
+
+### Workflow Tool Effort Option (CC 2.1.178)
+
+The Workflow tool's `agent()` spawns now accept an `effort` option that overrides reasoning effort:
+
+**Values:** `'low'` | `'medium'` | `'high'` | `'xhigh'` | `'max'`
+
+**Behavior:**
+
+- **Omit** — Inherit the session's current effort level
+- **`'low'`** — Use for cheap mechanical stages (formatting, simple transforms)
+- **Higher tiers** — Reserve for the hardest verify/judge stages that need maximum reasoning
+
+**Example:**
+
+```javascript
+workflow.agent({
+  prompt: "Verify the refactoring is correct",
+  effort: "high"  // Use higher effort for verification
+})
+```
+
+**Design guidance:**
+
+- Default to inheriting session effort (omit the option)
+- Use `'low'` for stages that don't require deep reasoning
+- Reserve `'high'`/`'xhigh'`/`'max'` for critical validation steps
 
 ### Browser File Upload Tool (CC 2.1.163)
 
@@ -791,6 +843,36 @@ The `worktree.bgIsolation` setting controls whether background sessions automati
 
 Use `"none"` when background agents need to modify the main working directory directly (e.g., for refactoring tasks that should affect the current branch). Configure in user or project settings.
 
+### Remote Isolation (CC 2.1.178)
+
+The Agent tool supports `isolation: "remote"` to run agents in a remote CCR (Claude Code Runner) sandbox:
+
+```yaml
+isolation: "remote"
+```
+
+**Behavior:**
+
+- Agent runs in a completely isolated remote sandbox
+- Always executes as a background task
+- Completion notification is sent when the agent finishes
+- Full sandbox isolation from the local environment
+
+**Use cases:**
+
+- Untrusted code execution
+- Resource-intensive operations that shouldn't affect local machine
+- Security-sensitive tasks requiring full isolation
+- Testing in a clean environment
+
+**Comparison of isolation modes:**
+
+| Mode | Environment | Execution | Use Case |
+|------|-------------|-----------|----------|
+| (none) | Local, shared | Foreground | Standard subagent work |
+| `worktree` | Local, git worktree | Background | Parallel git branches |
+| `remote` | Remote CCR sandbox | Background | Full isolation |
+
 ### EnterWorktree Mid-Session Switching (CC 2.1.157)
 
 The `EnterWorktree` tool can now switch between Claude-managed worktrees mid-session using the `path` parameter. This enables:
@@ -965,6 +1047,8 @@ Agent teams enable multi-agent coordination where a team lead spawns and manages
 Teams provide shared task lists, inter-agent messaging, and parallel execution. Use `permissionMode: delegate` to restrict a lead to coordination-only tools.
 
 This is an advanced feature — see the [official agent teams documentation](https://code.claude.com/docs/en/agent-teams) for details.
+
+> **CC 2.1.178:** The `TeamDelete` tool (for deleting completed team directories) and `TeammateTool` (for team creation, agent-type selection, task ownership, and message delivery) have been removed. If your plugin documentation or agents reference these tools, update accordingly. Team coordination now uses different mechanisms — consult the official agent teams documentation for current APIs.
 
 ## Additional Resources
 

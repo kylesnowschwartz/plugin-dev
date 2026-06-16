@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.0] - 2026-06-16
+
+### Added
+
+- **hook-development**: Documented tool parameter matching syntax (`Agent(model:opus)`) for granular permission control based on tool input parameters (CC 2.1.178)
+- **skill-development**: Documented nested skill directories with collision handling — skills in nested `.claude/skills/` directories display as `<dir>:<name>` format when collisions occur (CC 2.1.178)
+- **skill-development**: Documented directory-scoped skills with prefix naming (`apps/web:deploy`) — most specific directory wins based on files being worked on (CC 2.1.178)
+- **agent-development**: Documented agent `isolation: "remote"` option for running agents in CCR (Claude Code Runner) sandbox as background tasks (CC 2.1.178)
+- **agent-development**: Documented SendMessageTool `"main"` recipient for background subagents to message the main conversation (CC 2.1.178)
+- **agent-development**: Documented Workflow tool `effort` option for agent() spawns — overrides reasoning effort level (`'low'` | `'medium'` | `'high'` | `'xhigh'` | `'max'`) (CC 2.1.178)
+- **plugin-structure**: Documented nested `.claude/` directory precedence — closest directory to working location takes precedence for agents, workflows, output styles, and skills (CC 2.1.178)
+
+### Removed
+
+- **agent-development**: Noted removal of `TeamDelete` and `TeammateTool` — team coordination now uses different mechanisms (CC 2.1.178)
+
 ## [0.22.0] - 2026-06-13
 
 ### Added
@@ -584,7 +600,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.22.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.23.0...HEAD
+[0.23.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.22.0...v0.23.0
 [0.22.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.1...v0.21.0
 [0.20.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.0...v0.20.1

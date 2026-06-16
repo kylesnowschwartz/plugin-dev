@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.176 (2026-06-13)
-Plugin-dev version: 0.22.0
+Last audited: Claude Code 2.1.178 (2026-06-16)
+Plugin-dev version: 0.23.0
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.23.0 | 2.1.177-2.1.178 | 2026-06-16 | Tool parameter matching syntax (`Agent(model:opus)`), nested skill directories with collision handling, directory-scoped skills (`apps/web:deploy`), agent `isolation: "remote"` option, Workflow `effort` option, SendMessageTool `"main"` recipient, nested `.claude/` directory precedence, TeamDelete/TeammateTool removed |
 | v0.22.0 | 2.1.171-2.1.176 | 2026-06-13 | Fork `subagent_type: "fork"` explicit requirement, sub-agent 5-level nesting capability, skill hot-reload optimization (only changed skills re-announced) |
 | v0.21.0 | 2.1.163-2.1.170 | 2026-06-10 | `/cd` command, `--safe-mode` flag, PostSession hook, `requiredMinimumVersion`/`requiredMaximumVersion` settings, `/plugin list` command, worker fork no-subagent rule, autonomous operation guidelines, background worktree isolation, cross-session peer message security, Cowork plugin schemas, Workflow 4096 item limit, Browser file upload tool, `disableBundledSkills` setting, MCP policy enforcement fix, Stop/SubagentStop `additionalContext`, `\$` escape syntax, `CLAUDE_CODE_SESSION_ID` on resume |
 | v0.20.1 | 2.1.159-2.1.162 | 2026-06-04 | LSP `workspaceSymbol` query parameter guidance, NotebookEdit `cell_id` parameter and read-before-edit requirement |
