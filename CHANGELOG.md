@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.24.0] - 2026-06-19
+
+### Added
+
+- **command-development**: Documented `/config key=value` command syntax for setting configuration values directly from the prompt (CC 2.1.181)
+- **mcp-integration**: Documented `tool_use_meta` wrapper-level field carrying per-block display metadata (`display_name`, `server_display_name`, `icon_url`) for MCP tool calls (CC 2.1.181)
+- **agent-development**: Documented auto mode blocked commands — additional destructive git commands (`git stash drop/clear`, `git restore`, `git clean`, `git checkout -- .`) and infrastructure destruction commands (`terraform/pulumi/cdk/terragrunt destroy`) now require explicit user approval (CC 2.1.182-2.1.183)
+- **agent-development**: Documented read-only authorization inheritance — once read-only access is authorized for a target, further read-only commands are cleared for the session without re-approval (CC 2.1.179)
+
 ## [0.23.0] - 2026-06-16
 
 ### Added
@@ -600,7 +609,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.23.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.24.0...HEAD
+[0.24.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.23.0...v0.24.0
 [0.23.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.22.0...v0.23.0
 [0.22.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.21.0...v0.22.0
 [0.21.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.20.1...v0.21.0

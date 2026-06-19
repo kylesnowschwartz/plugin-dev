@@ -435,6 +435,47 @@ Claude Code provides explicit guidance for autonomous sessions:
 
 **Implications for plugin agents:** Design agents to work autonomously when the task is clear, minimizing unnecessary user interaction. Reserve questions for genuinely ambiguous situations.
 
+### Auto Mode Blocked Commands (CC 2.1.182-2.1.183)
+
+Auto mode now blocks additional destructive commands to prevent accidental data loss or infrastructure destruction. These commands require explicit user approval even in autonomous sessions:
+
+**Blocked git commands:**
+
+- `git commit --amend` (when rewriting pre-session HEAD)
+- `git stash drop` / `git stash clear`
+- `git restore`
+- `git clean -fd` / `git clean -fdx`
+- `git checkout -- .`
+
+**Blocked infrastructure commands:**
+
+- `terraform destroy`
+- `pulumi destroy`
+- `cdk destroy`
+- `terragrunt destroy`
+
+**Implications for plugin agents:**
+
+- Agents running in auto mode cannot execute these commands without user intervention
+- Design workflows to avoid these destructive patterns when autonomous execution is needed
+- If your agent needs to perform cleanup operations, consider less destructive alternatives or document that user approval will be required
+
+### Read-Only Authorization Inheritance (CC 2.1.179)
+
+Once a user authorizes read-only access to a particular target, further read-only commands against that target are cleared for the session without per-command re-approval. Additionally, post-block reaffirmation ("yes", "go ahead") now inherits the specificity of the blocked action.
+
+**Behavior:**
+
+- Read-only access to a file/directory persists for the session after initial approval
+- Users don't see repeated permission prompts for reading the same resources
+- Reaffirmation responses inherit the same scope as the original blocked action
+
+**Implications for plugin agents:**
+
+- Agents performing read-heavy analysis get smoother permission flow after initial approval
+- Design agents to batch reads of related resources when possible
+- The user experience improves for agents that need to repeatedly access the same files
+
 ### Worker Fork Guidance (CC 2.1.169, updated 2.1.176)
 
 Forked worker agents receive explicit guidance that they should **not spawn further subagents**. Instead, they should execute their assigned directive directly. This prevents infinite delegation chains and ensures work gets done.

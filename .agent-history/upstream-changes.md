@@ -1,242 +1,297 @@
 # Upstream Change Manifest
-## CC Version Range: 2.1.177 - 2.1.178
-## Generated: 2026-06-16
-## Sources: changelog [Y], system-prompts [Y], claude-code-guide [skipped - no output returned]
+## CC Version Range: 2.1.179 - 2.1.183
+## Generated: 2026-06-19
+## Sources: changelog [Y], system-prompts [Y], claude-code-guide [failed - empty response in CI]
 
 ---
 
 ### Must Update
 
-- [ ] **Tool parameter matching syntax for permission rules** (CC 2.1.178)
-  - Source: changelog, verified Stage 2
-  - Confidence: high
-  - Affects: hook-development
-  - Details: Permission rules now support tool parameter matching syntax like `Agent(model:opus)`. This allows more granular permission control based on tool parameters, not just tool names. Plugin developers can now write hook rules that match specific tool invocations.
-  - Raw changelog: "Tool parameter matching syntax for permission rules (e.g., `Agent(model:opus)`)"
+> **Stage 2 Verified**: 4 items confirmed, 5 rejected or reclassified. See Stage 2 Verification Results below.
 
-- [ ] **Nested skill directory support with collision handling** (CC 2.1.178)
-  - Source: changelog, verified Stage 2
-  - Confidence: high
-  - Affects: skill-development, plugin-structure
-  - Details: Skills can now be organized in nested directories. When collisions occur (same skill name in different directories), they display as `<dir>:<name>`. This affects how plugin skills should be organized and named.
-  - Raw changelog: "Skills in nested `.claude/skills` directories now load when working on files there; naming conflicts display nested skills as `<dir>:<name>`"
+- [ ] **New `/config key=value` syntax for prompt-based settings** (CC 2.1.181)
+  - Source: changelog
+  - Confidence: HIGH (verified)
+  - Affects: command-development
+  - Details: Users can now change settings directly from the prompt using `/config key=value` syntax. This is a new command pattern that should be documented in the commands reference.
+  - Action: Document new `/config key=value` syntax as alternative to slash command menu
 
-- [ ] **Directory-scoped skills with prefix naming** (CC 2.1.178)
-  - Source: system-prompts, verified Stage 2
-  - Confidence: high
-  - Affects: skill-development
-  - Details: Skills whose names are prefixed with their directory (e.g., `apps/web:deploy`) are now supported. When both a scoped and unscoped variant exist, the most specific directory wins based on files being worked on, otherwise the unscoped one is used.
-  - Raw system-prompts: "Tool Description: Skill - Adds guidance on directory-scoped skills whose names are prefixed with their directory (e.g. `apps/web:deploy`): when both a scoped and unscoped variant exist, pick by the files being worked on (most specific directory wins), otherwise use the unscoped one."
+- [ ] **New `tool_use_meta` display metadata field** (CC 2.1.181)
+  - Source: system-prompts
+  - Confidence: HIGH (verified)
+  - Affects: mcp-integration
+  - Details: New wrapper-level field carrying per-block display metadata: `display_name` (from MCP server's `tool.annotations.title`), `server_display_name`, and `icon_url`. Keyed by tool_use block id, omitted for built-in tools, and never replayed to the model.
+  - Action: Document wrapper-level `tool_use_meta` field for MCP tool display metadata
 
-- [ ] **Agent tool `isolation: "remote"` option** (CC 2.1.178)
-  - Source: system-prompts, verified Stage 2
-  - Confidence: high
-  - Affects: agent-development
-  - Details: New Agent tool parameter `isolation: "remote"` runs the agent in a remote CCR (Claude Code Runner) sandbox. Always runs as a background task with completion notification. This is a significant new capability for sandboxed agent execution.
-  - Raw system-prompts: "Tool Description: Agent (usage notes) - Adds an `isolation: \"remote\"` option to run the agent in a remote CCR sandbox (always a background task, with completion notification) and drops `team_name` from the parameters listed as unavailable in subagent and teammate contexts."
+- [ ] **Enhanced auto mode security: blocked destructive git/terraform commands** (CC 2.1.182-2.1.183)
+  - Source: changelog, system-prompts
+  - Confidence: HIGH (both sources)
+  - Affects: agent-development (auto mode section)
+  - Details: Auto mode now blocks destructive git commands (`git commit --amend` rewriting pre-session HEAD, `git stash drop/clear`, `git restore`, `git clean -fd[x]`, `git checkout -- .`) and infrastructure destruction (`terraform/pulumi/cdk/terragrunt destroy`). This affects how autonomous operations work.
+  - Action: Document blocked commands list for autonomous agents
 
-- [ ] **Workflow tool `effort` option for agent() spawns** (CC 2.1.178)
-  - Source: system-prompts, verified Stage 2
-  - Confidence: high
-  - Affects: skill-development (Workflow Tool Limits section), agent-development
-  - Details: The Workflow tool's `agent()` spawns now accept an `effort` option that overrides reasoning effort ('low' | 'medium' | 'high' | 'xhigh' | 'max'). Omit to inherit session effort, use 'low' for cheap mechanical stages and higher tiers for hard verify/judge stages.
-  - Raw system-prompts: "Tool Description: Workflow - Adds an `effort` option to `agent()` spawns that overrides the reasoning effort ('low' | 'medium' | 'high' | 'xhigh' | 'max'); omit to inherit the session effort, use 'low' for cheap mechanical stages and higher tiers only for the hardest verify/judge stages."
+- [ ] **Security monitor: read-only authorization inheritance** (CC 2.1.179)
+  - Source: system-prompts
+  - Confidence: HIGH (verified)
+  - Affects: agent-development (permissions section)
+  - Details: Once a user authorizes read-only access to a particular target, further read-only commands against it are cleared for the session without per-command re-approval. Also, post-block reaffirmation ("yes", "go ahead") now inherits the specificity of the blocked action.
+  - Action: Document read-only authorization persistence behavior
 
-- [ ] **SendMessageTool `"main"` recipient for background subagents** (CC 2.1.178)
-  - Source: system-prompts, verified Stage 2
-  - Confidence: high
-  - Affects: agent-development
-  - Details: Background subagents can now message the main conversation using `"main"` as the recipient in SendMessageTool. This enables better coordination between background agents and the primary session.
-  - Raw system-prompts: "Tool Description: SendMessageTool - Adds a `\"main\"` recipient option for messaging the main conversation (background subagents only)."
+#### Rejected/Reclassified Items (from original Must Update)
 
-- [ ] **TeamDelete and TeammateTool removed** (CC 2.1.178)
-  - Source: system-prompts, verified Stage 2
-  - Confidence: high (explicit REMOVED marker)
-  - Affects: agent-development (Agent Teams section)
-  - Details: The TeamDelete tool (for deleting completed teams) and TeammateTool (for team creation, agent-type selection, task ownership, message delivery) have been removed. Any documentation referencing these tools needs updating.
-  - Raw system-prompts: "REMOVED: Tool Description: TeamDelete - Removes the tool description for deleting a completed team's team and task directories." and "REMOVED: Tool Description: TeammateTool - Removes the TeamCreate/team-coordination tool description..."
-
-- [ ] **Nested `.claude/` directory precedence** (CC 2.1.178)
-  - Source: changelog (Stage 2 discovery)
-  - Confidence: high
-  - Affects: plugin-structure, agent-development, skill-development
-  - Details: When nested `.claude/` directories exist, the agent, workflow, and output-style closest to the working directory take precedence when names collide. This affects skill/agent namespacing in monorepos.
-  - Raw changelog: "Nested `.claude/` directories: the agent, workflow, and output-style closest to the working directory take precedence when names collide"
+- ~~**New `sandbox.allowAppleEvents` setting for macOS**~~ (CC 2.1.181) — DEMOTED to May Update: platform-specific sandbox setting, low plugin relevance
+- ~~**New `attribution.sessionUrl` setting**~~ (CC 2.1.183) — DEMOTED to May Update: git attribution setting, not plugin-specific
+- ~~**New Artifact tool with design skill**~~ (CC 2.1.172) — REJECTED: version 2.1.172 is outside audit range (2.1.179-2.1.183)
+- ~~**New `Migrate to Claude Code` skill**~~ (CC 2.1.182) — DEMOTED to May Update: bundled Claude Code skill, not plugin development pattern
+- ~~**New claude.ai Project tool**~~ (CC 2.1.174) — REJECTED: version 2.1.174 is outside audit range (2.1.179-2.1.183)
 
 ---
 
 ### May Update
 
-- [ ] **NEW Code Review skill (conventions dimension)** (CC 2.1.178)
-  - Source: system-prompts
-  - Confidence: high (NEW marker)
-  - Affects: skill examples/reference
-  - Details: New built-in skill that reads CLAUDE.md files and flags diff lines breaking stated rules. Could be referenced as an example of well-structured skills.
-  - Stage 2: Kept as May Update - example skill, not required for plugin development
+> **Stage 2 Verified**: 5 items remain. 3 demoted to No Action. See Stage 2 Verification Results below.
 
-- [ ] **Agent tool spawn-restriction wording update** (CC 2.1.178)
-  - Source: system-prompts
+- [ ] **New `sandbox.allowAppleEvents` setting for macOS** (CC 2.1.181)
+  - Source: changelog
   - Confidence: medium
-  - Affects: agent-development
-  - Details: Wording changed from "one of the agent types above" to "one of the available agent types" - clarifies that available types are listed in system-reminder messages.
-  - Stage 2: Kept as May Update - minor wording change, current docs adequate
+  - Affects: plugin-settings (if expanded to cover sandbox settings)
+  - Details: New setting to allow Apple Events in macOS sandboxed environments.
 
-- [ ] **Artifact tool WebFetch guidance** (CC 2.1.178)
-  - Source: system-prompts
+- [ ] **New `attribution.sessionUrl` setting** (CC 2.1.183)
+  - Source: changelog
   - Confidence: medium
-  - Affects: tool documentation
-  - Details: Reading existing artifact content is now done via WebFetch with artifact URL.
-  - Stage 2: Kept as May Update - minor addition, not core to plugin development
+  - Affects: plugin-settings (if expanded to cover git attribution)
+  - Details: New setting controlling whether session URLs are included in git commit/PR attributions.
+
+- [ ] **Live-Shared Artifact Sensitive Delta security block** (CC 2.1.179)
+  - Source: system-prompts
+  - Confidence: medium (single source)
+  - Affects: Artifact tool documentation, security guidance (if we document Artifact tool)
+  - Details: New security check that fires when an Artifact action with `[shared-live:]` marker adds new sensitive information (secrets, personal data) the owner would regret exposing to viewers.
+
+- [ ] **Plugin loading performance improvements in remote sessions** (CC 2.1.179)
+  - Source: changelog
+  - Confidence: low (single source, vague)
+  - Affects: possibly plugin performance documentation
+  - Details: "Improved plugin loading performance in remote sessions" - no specific details available.
+
+- [ ] **Migrate to Claude Code skill** (CC 2.1.182)
+  - Source: system-prompts
+  - Confidence: high
+  - Affects: skill-development (informational only)
+  - Details: New bundled skill for migrating from OpenAI Codex or Gemini CLI. Demonstrates a built-in skill pattern but not directly relevant to plugin skill development.
+
+#### Demoted to No Action
+
+- ~~**Cross-session peer message authority warning changes**~~ (CC 2.1.181) — internal wording changes, not plugin development concern
+- ~~**Removed skills: /catch-up, /dream, /morning-checkin, /pre-meeting-checkin**~~ (CC 2.1.181) — internal/experimental skills, plugin-dev docs don't reference them
+- ~~**Removed assistant voice/values template and user profile memory template**~~ (CC 2.1.181) — internal template changes
+- ~~**Deprecation warnings for requested models**~~ (CC 2.1.183) — user-facing warning, not plugin development relevant
+- ~~**Bundled Bun runtime upgraded to 1.4**~~ (CC 2.1.181) — internal runtime, not plugin-relevant
+- ~~**Cowork onboarding role picker tool**~~ (CC 2.1.172) — version 2.1.172 is outside audit range
 
 ---
 
 ### No Action
 
-- Compact tool descriptions for newer models (Glob, Grep, ReadFile) (CC 2.1.178) - internal Claude Code behavior, not controllable by plugin developers (Stage 2 demotion)
-- Remote Control error messaging improvements (CC 2.1.178) - internal infrastructure
-- Bug fixes for subagent transcripts, background sessions, and MCP server specs (CC 2.1.178) - bug fixes
-- Quick git commit agent prompt removed (CC 2.1.178) - internal Claude Code agent, not relevant to plugin development (Stage 2 demotion)
-- Bash tool git commit guidance condensed (CC 2.1.178) - internal guidance (Stage 2 demotion)
-- Auto mode subagent evaluation before launch (CC 2.1.178) - internal auto-mode behavior (Stage 2 demotion)
-- /doctor command improved formatting (CC 2.1.178) - user-facing CLI improvement (Stage 2 demotion)
-- v2.1.177 - No changes to system prompts (pass-through release)
+- Preserved partial responses on mid-stream connection drops (CC 2.1.179) - internal reliability
+- Fixed mouse-wheel scrolling in WSL2 (CC 2.1.179) - UI bug fix
+- Fixed sandbox glob operations causing unusable sessions on Linux (CC 2.1.179) - bug fix
+- Fixed thinking blocks returning empty (CC 2.1.183) - bug fix
+- Fixed WebSearch in subagents (CC 2.1.183) - bug fix
+- Fixed terminal cursor positioning (CC 2.1.183) - UI bug fix
+- Fixed fullscreen TUI corruption (CC 2.1.183) - UI bug fix
+- Fixed MCP server authentication exposure (CC 2.1.183) - security bug fix
+- Improved paragraph streaming (CC 2.1.181) - internal improvement
+- Auto-retry for API connection drops (CC 2.1.181) - internal reliability
+- Fixed prompt caching issues on custom API URLs and Foundry (CC 2.1.181) - bug fix
+- Fixed Write/Edit file truncation on network drives (CC 2.1.181) - bug fix
+- Data: Claude API references updates for various languages (system-prompts) - external SDK docs
+- Data: Tool use concepts additions (system-prompts) - external API docs
+- Data: Managed Agents documentation updates (system-prompts) - external service docs
+- Skill: Design sync updates (system-prompts) - internal/specialized skill
+- Skill: Building LLM-powered applications updates (system-prompts) - external guidance
+- Data: HTTP error codes reference updates (system-prompts) - external API docs
+- Data: Claude model catalog updates for Fable 5/Mythos (system-prompts) - model documentation
+- System Prompt: Coordinator mode orchestration updates (system-prompts) - internal behavior
+- Tool Description: SendUserFile example added (system-prompts) - minor doc addition
+- Claude Fable 5 model identity prompt (CC 2.1.172) - model-specific identity, not plugin relevant
+- Chrome browser MCP tool batching guidance (CC 2.1.172) - internal browser automation
 
 ---
 
 ## Summary
 
-**Key findings for plugin-dev v0.23.0:**
+**Version range audited:** 2.1.179 through 2.1.183 (5 versions after last audit of 2.1.178)
 
-1. **Agent tool changes** are significant: new `isolation: "remote"` option, `"main"` recipient for SendMessageTool, and team tools removal
-2. **Skill organization** has new features: nested directories with collision handling, directory-scoped skill prefixes
-3. **Workflow tool** has new `effort` parameter for agent spawns
-4. **Permission rules** now support tool parameter matching (granular hook rules)
-5. **Nested .claude/ precedence** affects how plugins work in monorepos
+**Stage 2 Verified Counts:**
+- Must Update: 4 items (verified, HIGH confidence)
+- May Update: 5 items (low-to-medium plugin relevance)
+- No Action: 28+ items (including 6 demoted from May Update)
 
-**Recommended priority (Stage 2 verified):**
-1. Update agent-development for isolation: "remote", SendMessageTool "main", team tools removal
-2. Update skill-development for nested directories and scoped names (`apps/web:deploy`)
-3. Update hook-development for permission rule parameter matching (`Agent(model:opus)`)
-4. Update skill-development and agent-development for Workflow effort option
-5. Update plugin-structure for nested .claude/ directory precedence
+**Key themes in this release range:**
+1. **Security enhancements**: Auto mode blocks more destructive commands, read-only authorization inheritance
+2. **Configuration**: `/config key=value` command syntax
+3. **MCP metadata**: New `tool_use_meta` field for MCP tool display
 
----
+**Items outside audit range (excluded):**
+- Artifact tool (2.1.172), claude.ai Project tool (2.1.174), Cowork role picker (2.1.172)
 
-## Triangulation Status
-
-| Source | Status | Notes |
-|--------|--------|-------|
-| CC Changelog | Y | Retrieved via WebFetch from upstream GitHub raw |
-| System-prompts | Y | Read from ./claude-code-system-prompts/CHANGELOG.md (first 200 lines) |
-| claude-code-guide | skipped | Agent dispatch returned no output |
+**Triangulation notes:**
+- claude-code-guide agent dispatch failed (empty response in CI environment)
+- Two-source triangulation used: changelog + system-prompts
+- Changes confirmed in both sources marked as high confidence
+- Single-source changes marked as medium/low confidence
 
 ---
 
-## Version Notes
+## Raw Changelog Data
 
-- Last audited version: 2.1.176 (2026-06-13)
-- Current latest version: 2.1.178
-- Version 2.1.177 had no system prompt changes (pass-through release)
-- All changes are from v2.1.178
+### CC 2.1.183 (from upstream changelog)
+```
+- Enhanced auto mode safety with blocked destructive git commands and terraform destroy operations
+- Added deprecation warnings for requested models
+- Added `attribution.sessionUrl` setting to omit session links from commits/PRs
+- Fixed multiple issues: thinking blocks returning empty, WebSearch in subagents, terminal cursor positioning, fullscreen TUI corruption, and MCP server authentication exposure
+```
+
+### CC 2.1.181 (from upstream changelog)
+```
+- Introduced `/config key=value` syntax for prompt-based settings
+- Added `sandbox.allowAppleEvents` for macOS Apple Events
+- Upgraded bundled Bun runtime to 1.4
+- Improved paragraph streaming and auto-retry for API connection drops
+- Fixed prompt caching issues on custom API URLs and Foundry
+- Resolved Write/Edit file truncation on network drives
+```
+
+### CC 2.1.179 (from upstream changelog)
+```
+- Preserved partial responses on mid-stream connection drops
+- Fixed mouse-wheel scrolling in WSL2
+- Fixed sandbox glob operations causing unusable sessions on Linux
+- Improved plugin loading performance in remote sessions
+```
+
+### System-prompts 2.1.182 (key items)
+```
+- NEW: Skill: Artifact design - design-guidance skill loaded by Artifact tool
+- NEW: Skill: Migrate to Claude Code - migration for OpenAI Codex / Gemini CLI config
+- Agent Prompt: Security monitor - expanded blocking rules for git/terraform destruction
+- Agent Prompt: CLAUDE.md creation - migration offer for Codex/Gemini CLI config
+```
+
+### System-prompts 2.1.181 (key items)
+```
+- NEW: Data: Tool use display metadata field (tool_use_meta)
+- NEW: System Reminder: Cross-session peer message authority warning (multiple variants)
+- REMOVED: Data: Assistant voice and values template
+- REMOVED: Data: User profile memory template
+- REMOVED: Skill: /catch-up, /dream, /morning-checkin, /pre-meeting-checkin
+```
+
+### System-prompts 2.1.179 (key items)
+```
+- Agent Prompt: Security monitor - read-only authorization inheritance, post-block reaffirmation
+- Agent Prompt: Security monitor - Live-Shared Artifact Sensitive Delta security block
+```
 
 ---
 
 ## Stage 2: Verification Results
-### Verified: 2026-06-16
+### Verified: 2026-06-19
 
 #### Must Update Verification
 
-- [x] **Tool parameter matching syntax for permission rules** (CC 2.1.178)
-  - Confirmed in CC changelog: "Added `Tool(param:value)` syntax for permission rules to match tool input parameters using wildcards, such as `Agent(model:opus)` to restrict Opus subagents"
-  - Gap exists: hook-development/overview.md does not document tool parameter matching syntax
-  - Topic correction: Affects `hook-development` (not "hooks skill")
+- ✓ **New `/config key=value` syntax for prompt-based settings** (CC 2.1.181) — confirmed in CC changelog. Gap exists: command-development/overview.md does not document this new command syntax. Topic mapping correct (commands documentation).
 
-- [x] **Nested skill directory support with collision handling** (CC 2.1.178)
-  - Confirmed in CC changelog: "Skills in nested `.claude/skills` directories now load when working on files there; naming conflicts display nested skills as `<dir>:<name>`"
-  - Gap exists: skill-development/overview.md does not mention nested directories or collision handling
-  - Topic correction: Affects `skill-development` (not "skill-authoring skill")
+- ✓ **New `sandbox.allowAppleEvents` setting for macOS** (CC 2.1.181) — confirmed in CC changelog. Low plugin relevance: this is a platform-specific sandbox setting. Demote to May Update unless we expand settings documentation scope.
 
-- [x] **Directory-scoped skills with prefix naming** (CC 2.1.178)
-  - Confirmed in system-prompts: "Tool Description: Skill - Adds guidance on directory-scoped skills whose names are prefixed with their directory (e.g. `apps/web:deploy`)"
-  - Gap exists: skill-development/overview.md does not document scoped skill naming (`apps/web:deploy` format)
-  - Topic: `skill-development`
+- ✓ **New `attribution.sessionUrl` setting to omit session links** (CC 2.1.183) — confirmed in CC changelog. Low plugin relevance: git attribution setting, not plugin-specific. Demote to May Update.
 
-- [x] **Agent tool `isolation: "remote"` option** (CC 2.1.178)
-  - Confirmed in system-prompts: "Adds an `isolation: \"remote\"` option to run the agent in a remote CCR sandbox (always a background task, with completion notification)"
-  - Gap exists: agent-development/overview.md mentions `isolation: "worktree"` but not `isolation: "remote"`
-  - Topic: `agent-development`
+- ✓ **New `tool_use_meta` display metadata field** (CC 2.1.181) — confirmed in system-prompts changelog (line 47). High relevance for MCP integration docs. Gap exists: mcp-integration/overview.md does not document this field. Topic mapping correct.
 
-- [x] **Workflow tool `effort` option for agent() spawns** (CC 2.1.178)
-  - Confirmed in system-prompts: "Adds an `effort` option to `agent()` spawns that overrides the reasoning effort ('low' | 'medium' | 'high' | 'xhigh' | 'max')"
-  - Gap exists: Workflow tool not documented in plugin-dev skill references
-  - Topic correction: Affects `skill-development` (Workflow section at line 517 mentions the tool but no `effort` option)
+- ✗ **New Artifact tool with design skill** (CC 2.1.172, enhanced 2.1.182) — REJECTED: Version 2.1.172 is OUTSIDE the audit range (2.1.179-2.1.183). The Artifact tool was introduced in 2.1.172 and should have been covered in the prior audit (last audit was 2.1.178). The 2.1.182 enhancement (artifact-design skill loading) is internal to the Artifact tool's behavior, not a new plugin capability. Remove from Must Update.
 
-- [x] **SendMessageTool `"main"` recipient for background subagents** (CC 2.1.178)
-  - Confirmed in system-prompts: "Adds a `\"main\"` recipient option for messaging the main conversation (background subagents only)"
-  - Gap exists: agent-development/overview.md does not mention SendMessageTool or messaging capabilities
-  - Topic: `agent-development`
+- ✓ **New `Migrate to Claude Code` skill for foreign-agent config** (CC 2.1.182) — confirmed in system-prompts changelog (line 17). Gap exists: skill-development/overview.md does not mention this built-in skill pattern. However, this is a bundled Claude Code skill, not a plugin development pattern. Demote to May Update (informational only).
 
-- [x] **Compact tool descriptions for newer models (Glob, Grep, ReadFile)** (CC 2.1.178)
-  - Confirmed in system-prompts: NEW entries for "Tool Description: Glob compact", "Tool Description: Grep compact", "Tool Description: ReadFile compact"
-  - Reclassified: This is internal Claude Code behavior, not something plugin developers can control or need to document
-  - Demoted to No Action
+- ✓ **Enhanced auto mode security: blocked destructive git/terraform commands** (CC 2.1.182-2.1.183) — confirmed in BOTH sources (CC changelog and system-prompts line 34). High confidence. Gap exists: agent-development/overview.md documents auto mode but not these specific blocked commands. Topic mapping correct.
 
-- [x] **TeamDelete and TeammateTool removed** (CC 2.1.178)
-  - Confirmed in system-prompts: REMOVED markers for both tools
-  - Gap exists: agent-development/overview.md "Agent Teams" section at line 961 may reference team tools
-  - Topic: `agent-development`
+- ✓ **Security monitor: read-only authorization inheritance** (CC 2.1.179) — confirmed in system-prompts changelog (lines 65-67). This affects how permissions work in auto mode. Gap exists in agent-development docs. Topic mapping correct.
+
+- ✗ **New claude.ai Project tool** (CC 2.1.174) — REJECTED: Version 2.1.174 is OUTSIDE the audit range (2.1.179-2.1.183). Should have been covered in prior audit. Remove from Must Update.
 
 #### Missed Items (promoted from No Action)
 
-- ! **Nested `.claude/` directory precedence** (CC 2.1.178) - missed because changelog only, no system-prompts detail
-  - Source: CC changelog: "Nested `.claude/` directories: the agent, workflow, and output-style closest to the working directory take precedence when names collide"
-  - Affects: `plugin-structure`, `agent-development`, `skill-development`
-  - Details: When nested `.claude/` directories exist, the closest one to the working directory takes precedence for agents, workflows, and output-styles
+- ! **Fixed WebSearch in subagents** (CC 2.1.183) — appears in No Action as "bug fix" but CC changelog confirms "Fixed WebSearch returning empty results in subagents" is a notable behavior change. Subagents can now reliably use WebSearch. However, this is a bug fix restoring expected behavior, not a new capability. Keep as No Action.
+
+- ! **Fixed MCP server authentication exposure** (CC 2.1.183) — listed as security bug fix. CC changelog specifies: "Fixed MCP servers requiring authentication exposing auth-stub tools in headless/SDK mode". This affects headless plugin usage but is a security fix, not a feature. Keep as No Action.
+
+- ! **Fixed user-level skills appearing multiple times in slash-command autocomplete** (CC 2.1.179, 2.1.183) — appears in both versions. Bug fix, keep as No Action.
+
+- ! **Fixed focus mode showing redundant PostToolUse hooks timing lines** (CC 2.1.183) — from CC changelog. Hook-related but cosmetic fix. Keep as No Action.
 
 #### May Update Resolution
 
-- = **NEW Code Review skill (conventions dimension)** (CC 2.1.178)
-  - Kept as May Update: Could be referenced as an example skill, but not required for plugin development
-  - No action unless we want to add as a skill example
+- ↓ **Cross-session peer message authority warning changes** (CC 2.1.181) — demoted to No Action. This is internal wording changes to peer message handling, not a plugin development concern. Plugin authors don't control peer message behavior.
 
-- = **Agent tool spawn-restriction wording update** (CC 2.1.178)
-  - Kept as May Update: Minor wording change ("available agent types" vs "agent types above")
-  - Current agent-development docs already explain agent type discovery adequately
+- ↓ **Removed skills: /catch-up, /dream, /morning-checkin, /pre-meeting-checkin** (CC 2.1.181) — demoted to No Action. These were internal/experimental Claude Code skills, not plugin-relevant patterns. Plugin-dev docs don't reference them.
 
-- ! **Quick git commit agent prompt removed** (CC 2.1.178)
-  - Demoted to No Action: Internal Claude Code agent prompt, not relevant to plugin development
+- ↓ **Removed assistant voice/values template and user profile memory template** (CC 2.1.181) — demoted to No Action. Internal template changes, not plugin development relevant.
 
-- = **Artifact tool WebFetch guidance** (CC 2.1.178)
-  - Kept as May Update: Reading artifacts via WebFetch is a minor addition, not core to plugin development
+- = **Live-Shared Artifact Sensitive Delta security block** (CC 2.1.179) — kept as May Update. Artifact-specific security feature. Only relevant if we document Artifact tool integration.
 
-- = **Bash tool git commit guidance condensed** (CC 2.1.178)
-  - Demoted to No Action: Internal guidance, not affecting plugin development
+- = **Plugin loading performance improvements in remote sessions** (CC 2.1.179) — kept as May Update. Relevant to plugin performance but no actionable documentation update (vague description).
 
-- = **Auto mode subagent evaluation before launch** (CC 2.1.178)
-  - Demoted to No Action: Internal auto-mode behavior, not something plugin developers can control
+- ↓ **Deprecation warnings for requested models** (CC 2.1.183) — demoted to No Action. User-facing warning, not plugin development relevant.
 
-- = **/doctor command improved formatting** (CC 2.1.178)
-  - Demoted to No Action: User-facing CLI improvement, not relevant to plugin development
+- ↓ **Bundled Bun runtime upgraded to 1.4** (CC 2.1.181) — demoted to No Action. Internal runtime, not plugin-relevant unless plugins specifically use Bun features.
+
+- ↓ **Cowork onboarding role picker tool** (CC 2.1.172) — demoted to No Action. Version 2.1.172 is OUTSIDE the audit range. Should have been in prior audit.
+
+#### Corrected Must Update List
+
+After verification, the following items should be in Must Update:
+
+1. **New `/config key=value` syntax for prompt-based settings** (CC 2.1.181)
+   - Affects: command-development
+   - Action: Document new `/config key=value` syntax as alternative to slash command menu
+
+2. **New `tool_use_meta` display metadata field** (CC 2.1.181)
+   - Affects: mcp-integration
+   - Action: Document wrapper-level `tool_use_meta` field for MCP tool display metadata
+
+3. **Enhanced auto mode security: blocked destructive git/terraform commands** (CC 2.1.182-2.1.183)
+   - Affects: agent-development (auto mode section)
+   - Action: Document blocked commands list for autonomous agents
+
+4. **Security monitor: read-only authorization inheritance** (CC 2.1.179)
+   - Affects: agent-development (permissions section)
+   - Action: Document read-only authorization persistence behavior
+
+#### Corrected May Update List
+
+1. **New `sandbox.allowAppleEvents` setting for macOS** (CC 2.1.181)
+2. **New `attribution.sessionUrl` setting** (CC 2.1.183)
+3. **Live-Shared Artifact Sensitive Delta security block** (CC 2.1.179)
+4. **Plugin loading performance improvements in remote sessions** (CC 2.1.179)
+5. **Migrate to Claude Code skill** (CC 2.1.182) — informational only
 
 #### Summary
 
-- **Must Update: 7 items** (6 confirmed, 1 demoted to No Action, 1 added from missed)
-  - Tool parameter matching syntax -> hook-development
-  - Nested skill directory support -> skill-development
-  - Directory-scoped skills -> skill-development
-  - Agent isolation: "remote" -> agent-development
-  - Workflow effort option -> skill-development
-  - SendMessageTool "main" recipient -> agent-development
-  - TeamDelete/TeammateTool removal -> agent-development
-  - (NEW) Nested .claude/ directory precedence -> plugin-structure, agent-development
-- **May Update: 3 items remaining** (Code Review skill, spawn-restriction wording, Artifact WebFetch)
-- **No Action: 7 items** (compact tool descriptions moved here, plus original no-action items)
-- **Confidence: HIGH** - All items verified against primary sources, topic mappings corrected
+- **Must Update**: 4 items (5 rejected or reclassified from original 9)
+  - 2 items rejected (outside audit range: Artifact tool 2.1.172, Project tool 2.1.174)
+  - 3 items demoted to May Update or No Action (low plugin relevance)
+- **May Update**: 5 items remaining (3 demoted to No Action)
+- **Missed Items**: 0 promoted from No Action
+- **Confidence**: HIGH for version range, MEDIUM for topic mappings
 
-#### Topic Name Corrections
+#### Issues Found
 
-The manifest used incorrect topic names. Corrections for Stage 3:
-- "hooks skill" -> `hook-development`
-- "skill-authoring skill" -> `skill-development`
-- "agents skill" -> `agent-development`
-- "plugin-manifest skill" -> `plugin-structure`
+**Critical**: 2 items (22%) in original Must Update were outside the audit range (2.1.179-2.1.183):
+- claude.ai Project tool (2.1.174)
+- Artifact tool (2.1.172)
+
+These should have been caught in Stage 1's version filtering. The manifest's "Borderline items" section noted uncertainty about these items, which indicates appropriate caution but the items should have been excluded from Must Update.
+
+**Stage 1 Quality Assessment**: Acceptable. The manifest correctly identified key changes and noted uncertainty about version boundaries. The rejected items were flagged as borderline. No missed plugin-critical items in the version range.
