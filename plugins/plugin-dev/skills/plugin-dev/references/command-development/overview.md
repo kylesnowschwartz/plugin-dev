@@ -86,6 +86,20 @@ Claude Code provides built-in commands for managing project state:
 
 - **`/cd`** (CC 2.1.169) — Relocates the session to a different directory without breaking prompt cache. Use this when you need to change the working directory mid-session while preserving cached context.
 
+### Configuration Commands
+
+- **`/config key=value`** (CC 2.1.181) — Set configuration values directly from the prompt without using the slash command menu. This provides a quick way to adjust settings during a session.
+
+**Examples:**
+
+```
+/config model=opus
+/config theme=dark
+/config sandbox.allowAppleEvents=true
+```
+
+This syntax is an alternative to navigating the `/config` menu interactively. Use it when you know the exact setting key you want to modify.
+
 ### Plugin Management Commands
 
 - **`/plugin list`** (CC 2.1.163) — Lists installed plugins with filtering capabilities. Useful for discovering installed plugins and their status.

@@ -722,6 +722,38 @@ Design plugin MCP tools to return concise results. Paginate or summarize large o
 
 Tool descriptions and server instructions are capped at **2KB each**. This prevents OpenAPI-generated servers with verbose schemas from bloating the context window. Keep tool descriptions concise and focused on usage rather than exhaustive parameter documentation.
 
+### Tool Use Display Metadata (CC 2.1.181)
+
+Claude Code provides a wrapper-level `tool_use_meta` field that carries per-block display metadata for MCP tool calls. This field is keyed by the `tool_use` block ID and contains display information:
+
+| Field                 | Source                              | Description                          |
+|-----------------------|-------------------------------------|--------------------------------------|
+| `display_name`        | MCP server's `tool.annotations.title` | Human-readable tool name for UI     |
+| `server_display_name` | MCP server name                     | Which server provided the tool       |
+| `icon_url`            | MCP server configuration            | Icon URL for visual identification   |
+
+**Key behaviors:**
+
+- **Omitted for built-in tools** — Only populated for MCP-provided tools
+- **Never replayed to the model** — Display-only metadata, not included in model context
+- **Keyed by block ID** — Each tool_use block has its own metadata entry
+
+**Example structure (conceptual):**
+
+```json
+{
+  "tool_use_meta": {
+    "toolu_01abc123": {
+      "display_name": "Create Task",
+      "server_display_name": "Asana",
+      "icon_url": "https://example.com/asana-icon.png"
+    }
+  }
+}
+```
+
+**Relevance for plugin authors:** If your plugin bundles MCP servers, users will see enhanced UI labels derived from this metadata. Set `tool.annotations.title` in your MCP server's tool definitions for better display names.
+
 ## MCP CLI Commands
 
 ```bash
