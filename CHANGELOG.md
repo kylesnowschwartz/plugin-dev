@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.24.1] - 2026-06-22
+
+### Changed
+
+- **claude-code-compatibility**: Audited CC 2.1.184-2.1.185 — no plugin-system changes requiring documentation updates (stream-stall messaging improvement, Codex/Gemini migration features removed)
+
 ## [0.24.0] - 2026-06-19
 
 ### Added
@@ -609,7 +615,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.24.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.24.1...HEAD
+[0.24.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.24.0...v0.24.1
 [0.24.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.23.0...v0.24.0
 [0.23.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.22.0...v0.23.0
 [0.22.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.21.0...v0.22.0

@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.183 (2026-06-19)
-Plugin-dev version: 0.24.0
+Last audited: Claude Code 2.1.185 (2026-06-22)
+Plugin-dev version: 0.24.1
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.24.1 | 2.1.184-2.1.185 | 2026-06-22 | Audit only — no plugin-system changes (stream-stall messaging improvement, Codex/Gemini migration features removed) |
 | v0.24.0 | 2.1.179-2.1.183 | 2026-06-19 | `/config key=value` command syntax, `tool_use_meta` MCP display metadata field, auto mode blocked commands (git stash/restore/clean, terraform destroy), read-only authorization inheritance |
 | v0.23.0 | 2.1.177-2.1.178 | 2026-06-16 | Tool parameter matching syntax (`Agent(model:opus)`), nested skill directories with collision handling, directory-scoped skills (`apps/web:deploy`), agent `isolation: "remote"` option, Workflow `effort` option, SendMessageTool `"main"` recipient, nested `.claude/` directory precedence, TeamDelete/TeammateTool removed |
 | v0.22.0 | 2.1.171-2.1.176 | 2026-06-13 | Fork `subagent_type: "fork"` explicit requirement, sub-agent 5-level nesting capability, skill hot-reload optimization (only changed skills re-announced) |
