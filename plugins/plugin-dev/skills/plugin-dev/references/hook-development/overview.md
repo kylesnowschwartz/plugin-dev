@@ -514,6 +514,8 @@ Execute when auto mode classifier denies a tool call (CC 2.1.88). Use to request
 
 **Difference from PermissionRequest:** PermissionRequest fires when a dialog is about to show; PermissionDenied fires after auto mode has already denied the operation.
 
+**`/permissions` denials persistence fix (CC 2.1.191):** The `/permissions` command now correctly persists denials after closure. Previously, denials configured via `/permissions` would not persist across sessions. This fix ensures that PermissionRequest and PermissionDenied hooks interact correctly with persisted permission configurations.
+
 #### PostToolUse
 
 Execute after a tool completes successfully. Use to react to results, provide feedback, or log.
@@ -1170,6 +1172,8 @@ Matchers filter which hooks run for a given event. Each event defines what value
 ```
 
 **Note:** Matchers are case-sensitive. Regex is full regex, not glob.
+
+**Comma-separated matchers fix (CC 2.1.191):** Hooks with comma-separated matchers (e.g., `"matcher": "Write,Edit"`) now fire correctly. Previously, they silently failed to match. If you were using pipe-separated matchers (`"Write|Edit"`) as a workaround, both formats now work correctly.
 
 ### Source Matching (SessionStart, SessionEnd, PreCompact, PostCompact, ConfigChange, StopFailure)
 

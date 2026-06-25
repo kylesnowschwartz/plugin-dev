@@ -291,6 +291,27 @@ Claude will fetch the resource content and include it in context.
 - **https://** - HTTP resources
 - **Custom protocols** - Server-specific (postgres://, s3://, etc.)
 
+### Directory Resource Listing (CC 2.1.186)
+
+The **ReadMcpResourceDirTool** enables listing directory resources from MCP servers:
+
+**Required parameters:**
+
+- `server` — The MCP server name
+- `uri` — The directory URI to list
+
+**Behavior:**
+
+- Returns non-recursive direct-child listings only
+- Subdirectories must be descended via returned URIs
+- Server must support directory resource listing (not all MCP servers implement this)
+
+**Use cases:**
+
+- Browsing file systems exposed by MCP servers
+- Exploring database schemas or collections
+- Navigating hierarchical resources programmatically
+
 ## Tool Search
 
 For MCP servers with many tools, use Tool Search to find relevant tools:
@@ -525,6 +546,8 @@ Handle MCP server unavailability:
 - Check server URL and configuration
 
 **Auto-retry (CC 2.1.121):** MCP servers now auto-retry up to 3 times for transient startup errors, reducing spurious connection failures.
+
+**Improved retry logic (CC 2.1.191):** MCP server reliability further improved with retry logic for transient errors during operation. MCP OAuth also gained retry support for headless environments, reducing authentication failures in CI/CD contexts.
 
 **Policy enforcement fix (CC 2.1.169):** MCP policy enforcement now works correctly on reconnect and cold starts. Previously, managed MCP policies could be bypassed in certain reconnection scenarios. This fix ensures MCP server restrictions are consistently applied.
 

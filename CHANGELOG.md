@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.24.1] - 2026-06-25
+
+### Added
+
+- **command-development**: Documented `/rewind` command for resuming conversations before `/clear` was executed (CC 2.1.191)
+- **mcp-integration**: Documented ReadMcpResourceDirTool for listing MCP directory resources with `server` and `uri` parameters (CC 2.1.186)
+- **mcp-integration**: Documented improved MCP server retry logic for transient errors and MCP OAuth retry support for headless environments (CC 2.1.191)
+
+### Fixed
+
+- **hook-development**: Documented comma-separated matchers fix — hooks with comma-separated matchers now fire correctly (CC 2.1.191)
+- **hook-development**: Documented `/permissions` denials persistence fix — denials now persist correctly after closure (CC 2.1.191)
+
 ## [0.24.0] - 2026-06-19
 
 ### Added
@@ -609,7 +622,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.24.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.24.1...HEAD
+[0.24.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.24.0...v0.24.1
 [0.24.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.23.0...v0.24.0
 [0.23.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.22.0...v0.23.0
 [0.22.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.21.0...v0.22.0

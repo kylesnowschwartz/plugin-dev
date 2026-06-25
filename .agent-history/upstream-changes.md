@@ -1,297 +1,363 @@
 # Upstream Change Manifest
-## CC Version Range: 2.1.179 - 2.1.183
-## Generated: 2026-06-19
-## Sources: changelog [Y], system-prompts [Y], claude-code-guide [failed - empty response in CI]
+## CC Version Range: 2.1.184 - 2.1.191
+## Generated: 2026-06-25
+## Sources: changelog [x], system-prompts [x], claude-code-guide [skipped - agent type not available in this environment]
 
 ---
 
-### Must Update
+### Must Update (Verified)
 
-> **Stage 2 Verified**: 4 items confirmed, 5 rejected or reclassified. See Stage 2 Verification Results below.
-
-- [ ] **New `/config key=value` syntax for prompt-based settings** (CC 2.1.181)
-  - Source: changelog
-  - Confidence: HIGH (verified)
-  - Affects: command-development
-  - Details: Users can now change settings directly from the prompt using `/config key=value` syntax. This is a new command pattern that should be documented in the commands reference.
-  - Action: Document new `/config key=value` syntax as alternative to slash command menu
-
-- [ ] **New `tool_use_meta` display metadata field** (CC 2.1.181)
-  - Source: system-prompts
-  - Confidence: HIGH (verified)
-  - Affects: mcp-integration
-  - Details: New wrapper-level field carrying per-block display metadata: `display_name` (from MCP server's `tool.annotations.title`), `server_display_name`, and `icon_url`. Keyed by tool_use block id, omitted for built-in tools, and never replayed to the model.
-  - Action: Document wrapper-level `tool_use_meta` field for MCP tool display metadata
-
-- [ ] **Enhanced auto mode security: blocked destructive git/terraform commands** (CC 2.1.182-2.1.183)
-  - Source: changelog, system-prompts
-  - Confidence: HIGH (both sources)
-  - Affects: agent-development (auto mode section)
-  - Details: Auto mode now blocks destructive git commands (`git commit --amend` rewriting pre-session HEAD, `git stash drop/clear`, `git restore`, `git clean -fd[x]`, `git checkout -- .`) and infrastructure destruction (`terraform/pulumi/cdk/terragrunt destroy`). This affects how autonomous operations work.
-  - Action: Document blocked commands list for autonomous agents
-
-- [ ] **Security monitor: read-only authorization inheritance** (CC 2.1.179)
-  - Source: system-prompts
-  - Confidence: HIGH (verified)
-  - Affects: agent-development (permissions section)
-  - Details: Once a user authorizes read-only access to a particular target, further read-only commands against it are cleared for the session without per-command re-approval. Also, post-block reaffirmation ("yes", "go ahead") now inherits the specificity of the blocked action.
-  - Action: Document read-only authorization persistence behavior
-
-#### Rejected/Reclassified Items (from original Must Update)
-
-- ~~**New `sandbox.allowAppleEvents` setting for macOS**~~ (CC 2.1.181) — DEMOTED to May Update: platform-specific sandbox setting, low plugin relevance
-- ~~**New `attribution.sessionUrl` setting**~~ (CC 2.1.183) — DEMOTED to May Update: git attribution setting, not plugin-specific
-- ~~**New Artifact tool with design skill**~~ (CC 2.1.172) — REJECTED: version 2.1.172 is outside audit range (2.1.179-2.1.183)
-- ~~**New `Migrate to Claude Code` skill**~~ (CC 2.1.182) — DEMOTED to May Update: bundled Claude Code skill, not plugin development pattern
-- ~~**New claude.ai Project tool**~~ (CC 2.1.174) — REJECTED: version 2.1.174 is outside audit range (2.1.179-2.1.183)
-
----
-
-### May Update
-
-> **Stage 2 Verified**: 5 items remain. 3 demoted to No Action. See Stage 2 Verification Results below.
-
-- [ ] **New `sandbox.allowAppleEvents` setting for macOS** (CC 2.1.181)
-  - Source: changelog
-  - Confidence: medium
-  - Affects: plugin-settings (if expanded to cover sandbox settings)
-  - Details: New setting to allow Apple Events in macOS sandboxed environments.
-
-- [ ] **New `attribution.sessionUrl` setting** (CC 2.1.183)
-  - Source: changelog
-  - Confidence: medium
-  - Affects: plugin-settings (if expanded to cover git attribution)
-  - Details: New setting controlling whether session URLs are included in git commit/PR attributions.
-
-- [ ] **Live-Shared Artifact Sensitive Delta security block** (CC 2.1.179)
-  - Source: system-prompts
-  - Confidence: medium (single source)
-  - Affects: Artifact tool documentation, security guidance (if we document Artifact tool)
-  - Details: New security check that fires when an Artifact action with `[shared-live:]` marker adds new sensitive information (secrets, personal data) the owner would regret exposing to viewers.
-
-- [ ] **Plugin loading performance improvements in remote sessions** (CC 2.1.179)
-  - Source: changelog
-  - Confidence: low (single source, vague)
-  - Affects: possibly plugin performance documentation
-  - Details: "Improved plugin loading performance in remote sessions" - no specific details available.
-
-- [ ] **Migrate to Claude Code skill** (CC 2.1.182)
-  - Source: system-prompts
+- [ ] **`/rewind` command added** (CC 2.1.191)
+  - Source: CC changelog (confirmed)
   - Confidence: high
-  - Affects: skill-development (informational only)
-  - Details: New bundled skill for migrating from OpenAI Codex or Gemini CLI. Demonstrates a built-in skill pattern but not directly relevant to plugin skill development.
+  - Affects: command-development
+  - Details: New `/rewind` command for resuming conversations before `/clear` was executed. Provides undo capability for cleared conversations.
+  - Raw: "Added `/rewind` for resuming conversations before `/clear` was executed"
 
-#### Demoted to No Action
+- [ ] **MCP ReadMcpResourceDirTool added** (CC 2.1.186)
+  - Source: system-prompts CHANGELOG (confirmed)
+  - Confidence: high
+  - Affects: mcp-integration
+  - Details: New MCP directory resource listing tool with required `server`/`uri` parameters, non-recursive direct-child listings, subdirectory descent via returned URIs, and server support requirements.
+  - Raw: "NEW: Tool Description: ReadMcpResourceDirTool prompt - Adds the MCP directory resource listing tool prompt..."
 
-- ~~**Cross-session peer message authority warning changes**~~ (CC 2.1.181) — internal wording changes, not plugin development concern
-- ~~**Removed skills: /catch-up, /dream, /morning-checkin, /pre-meeting-checkin**~~ (CC 2.1.181) — internal/experimental skills, plugin-dev docs don't reference them
-- ~~**Removed assistant voice/values template and user profile memory template**~~ (CC 2.1.181) — internal template changes
-- ~~**Deprecation warnings for requested models**~~ (CC 2.1.183) — user-facing warning, not plugin development relevant
-- ~~**Bundled Bun runtime upgraded to 1.4**~~ (CC 2.1.181) — internal runtime, not plugin-relevant
-- ~~**Cowork onboarding role picker tool**~~ (CC 2.1.172) — version 2.1.172 is outside audit range
+- [ ] **Hooks comma-separated matchers fix** (CC 2.1.191)
+  - Source: CC changelog (confirmed)
+  - Confidence: high
+  - Affects: hook-development
+  - Details: Fixed hooks with comma-separated matchers silently not firing. This was a bug that affected plugin hook configurations.
+  - Raw: "Fixed hooks with comma-separated matchers silently not firing"
 
----
+- [ ] **`/permissions` denials persistence fix** (CC 2.1.191)
+  - Source: CC changelog (confirmed)
+  - Confidence: high
+  - Affects: hook-development (PermissionRequest/PermissionDenied hooks)
+  - Details: Fixed `/permissions` denials not persisting after closure. Affects permission management that plugin hooks can interact with.
+  - Raw: "Fixed `/permissions` denials not persisting after closure"
+  - Note: Promoted from May Update
 
-### No Action
-
-- Preserved partial responses on mid-stream connection drops (CC 2.1.179) - internal reliability
-- Fixed mouse-wheel scrolling in WSL2 (CC 2.1.179) - UI bug fix
-- Fixed sandbox glob operations causing unusable sessions on Linux (CC 2.1.179) - bug fix
-- Fixed thinking blocks returning empty (CC 2.1.183) - bug fix
-- Fixed WebSearch in subagents (CC 2.1.183) - bug fix
-- Fixed terminal cursor positioning (CC 2.1.183) - UI bug fix
-- Fixed fullscreen TUI corruption (CC 2.1.183) - UI bug fix
-- Fixed MCP server authentication exposure (CC 2.1.183) - security bug fix
-- Improved paragraph streaming (CC 2.1.181) - internal improvement
-- Auto-retry for API connection drops (CC 2.1.181) - internal reliability
-- Fixed prompt caching issues on custom API URLs and Foundry (CC 2.1.181) - bug fix
-- Fixed Write/Edit file truncation on network drives (CC 2.1.181) - bug fix
-- Data: Claude API references updates for various languages (system-prompts) - external SDK docs
-- Data: Tool use concepts additions (system-prompts) - external API docs
-- Data: Managed Agents documentation updates (system-prompts) - external service docs
-- Skill: Design sync updates (system-prompts) - internal/specialized skill
-- Skill: Building LLM-powered applications updates (system-prompts) - external guidance
-- Data: HTTP error codes reference updates (system-prompts) - external API docs
-- Data: Claude model catalog updates for Fable 5/Mythos (system-prompts) - model documentation
-- System Prompt: Coordinator mode orchestration updates (system-prompts) - internal behavior
-- Tool Description: SendUserFile example added (system-prompts) - minor doc addition
-- Claude Fable 5 model identity prompt (CC 2.1.172) - model-specific identity, not plugin relevant
-- Chrome browser MCP tool batching guidance (CC 2.1.172) - internal browser automation
+- [ ] **MCP server retry logic improved** (CC 2.1.191)
+  - Source: CC changelog (confirmed)
+  - Confidence: high
+  - Affects: mcp-integration
+  - Details: Improved MCP server reliability with retry logic for transient errors. Also improved MCP OAuth with retry support for headless environments. Directly affects plugins that bundle MCP servers.
+  - Raw: "Improved MCP server reliability with retry logic for transient errors"
+  - Note: Promoted from May Update
 
 ---
 
-## Summary
+### May Update (Verified)
 
-**Version range audited:** 2.1.179 through 2.1.183 (5 versions after last audit of 2.1.178)
+- [ ] **`sandbox.credentials` setting added** (CC 2.1.187)
+  - Source: CC changelog (confirmed)
+  - Confidence: medium
+  - Affects: plugin-settings (optional)
+  - Details: New setting to block sandboxed commands from reading credential files. Low direct plugin relevance but may be useful background info.
+  - Note: Demoted from Must Update
 
-**Stage 2 Verified Counts:**
-- Must Update: 4 items (verified, HIGH confidence)
-- May Update: 5 items (low-to-medium plugin relevance)
-- No Action: 28+ items (including 6 demoted from May Update)
+- [ ] **Agent proxy troubleshooting guide added** (CC 2.1.186)
+  - Source: system-prompts CHANGELOG
+  - Confidence: medium
+  - Affects: troubleshooting documentation (optional)
+  - Details: New troubleshooting guidance for Claude Code's policy-enforcing HTTPS agent proxy, covering CA-bundle trust setup, status checks, git/JVM/Docker fixes, unsupported traffic, and reporting policy denials.
 
-**Key themes in this release range:**
-1. **Security enhancements**: Auto mode blocks more destructive commands, read-only authorization inheritance
-2. **Configuration**: `/config key=value` command syntax
-3. **MCP metadata**: New `tool_use_meta` field for MCP tool display
+- [ ] **`/plugin` unused plugin surfacing** (CC 2.1.187)
+  - Source: CC changelog
+  - Confidence: medium
+  - Affects: plugin commands documentation
+  - Details: Improved `/plugin` surfacing unused plugins for cleanup.
 
-**Items outside audit range (excluded):**
-- Artifact tool (2.1.172), claude.ai Project tool (2.1.174), Cowork role picker (2.1.172)
+- [ ] **`/install-github-app` workflow setup** (CC 2.1.187)
+  - Source: CC changelog
+  - Confidence: medium
+  - Affects: GitHub integration documentation
+  - Details: Improved `/install-github-app` with optional GitHub Actions workflow setup.
+
+- [ ] **`--json-schema` structured output fix** (CC 2.1.187)
+  - Source: CC changelog
+  - Confidence: medium
+  - Affects: CLI/headless documentation
+  - Details: Fixed `--json-schema` structured output allowing indefinite `StructuredOutput` re-calls.
+
+- [ ] **Subagent depth tracking fix** (CC 2.1.187)
+  - Source: CC changelog
+  - Confidence: medium
+  - Affects: agent-development
+  - Details: Fixed subagent depth tracking for resumed and forked subagents.
+
+- [ ] **Agent stop notifications improved** (CC 2.1.187)
+  - Source: CC changelog
+  - Confidence: medium
+  - Affects: agent-development
+  - Details: Fixed agent stop notifications and improved status messaging.
+
+---
+
+### No Action (Verified)
+
+**Rejected from Must Update (not plugin-relevant):**
+- Memory prompts and reminders removed (CC 2.1.191) -- internal memory system, not plugin API
+- Context tip system added (CC 2.1.191) -- internal UX feature
+- Artifact tool rework with artifact-design skill (CC 2.1.187) -- internal tool guidance
+- Agent thread notes clarification (CC 2.1.187) -- internal agent behavior
+- Verify plan reminder removed (CC 2.1.187) -- internal system prompt
+- PR review flow replaced (CC 2.1.186) -- internal slash command implementation
+- Security monitor edit-removal guidance (CC 2.1.186) -- internal security guidance
+- Coordinator mode worker-approval pattern (CC 2.1.186) -- internal orchestration
+- Security monitor scope narrowed (CC 2.1.186) -- internal classifier changes
+- code_execution tool version updated (CC 2.1.186) -- API documentation, not plugin-dev
+- Migrate to Claude Code skill removed (CC 2.1.185) -- built-in skill, not plugin-dev
+
+**Demoted from May Update:**
+- `/btw` arrow navigation (CC 2.1.187) -- UI feature, not plugin-relevant
+- Background agents stopping fix (CC 2.1.191) -- bug fix, not documentation-worthy
+- Background jobs stuck state fix (CC 2.1.187) -- bug fix, not documentation-worthy
+- SendMessageTool protocol changes (CC 2.1.186) -- internal protocol, not plugin API
+- Mouse click support in fullscreen mode (CC 2.1.187) -- UI feature, low plugin relevance
+
+**Original No Action (confirmed):**
+- Fixed scroll position jumping during streaming responses (CC 2.1.191)
+- Improved `/voice` error messaging for organization-disabled cases (CC 2.1.191)
+- Fixed `/login` URL truncation in Windows Terminal (CC 2.1.191)
+- Fixed Cmd+click on links in fullscreen Ghostty over SSH (CC 2.1.191, 2.1.187)
+- Fixed `claude agents` sending slash commands as text instead of showing hints (CC 2.1.191)
+- Reduced CPU usage during streaming by ~37% through text update coalescing (CC 2.1.191)
+- Reduced long-session memory growth from terminal output caching (CC 2.1.191)
+- Bug fixes and reliability improvements (CC 2.1.190)
+- Added org-configured model restrictions to model picker and related interfaces (CC 2.1.187)
+- Fixed `--resume` failing with "No conversation found" for certain scenarios (CC 2.1.187)
+- Fixed remote MCP tool calls hanging beyond 5 minutes (CC 2.1.187)
+- Fixed Claude Code Remote sessions taking ~2.7s longer to start (CC 2.1.187)
+- Fixed pasted Korean/CJK text becoming mojibake in certain terminals (CC 2.1.187)
+- Fixed `/update` over Remote Control hanging during trust dialogs (CC 2.1.187)
+- Fixed channel connections dropping after navigation (CC 2.1.187)
+- Fixed leaked agent worktree registrations cleanup (CC 2.1.187)
+- Fixed Esc/Ctrl-C/Ctrl-D not working during `/share` uploads (CC 2.1.187)
+- Fixed `claude --help` not listing `--bg`/`--background` flag (CC 2.1.187)
+- Fixed VSCode extension becoming unresponsive when resuming large sessions (CC 2.1.187)
+
+---
+
+## Summary (Updated after Stage 2 Verification)
+
+**Version range audited:** 2.1.184 through 2.1.191 (8 versions after last audit of 2.1.183)
+
+**Version gap note:** Versions 2.1.184, 2.1.188, 2.1.189, and 2.1.190 have no documented changes (2.1.190 only has "bug fixes and reliability improvements").
+
+**Counts (after verification):**
+- Must Update: 5 items (3 confirmed from original 15, 2 promoted from May Update)
+- May Update: 7 items (after demotions)
+- No Action: 35+ items (11 rejected from Must Update, 5 demoted from May Update, 19+ original)
+
+**Key themes for plugin developers in this release range:**
+
+1. **MCP enhancements** (2.1.186, 2.1.191):
+   - ReadMcpResourceDirTool added for directory resource listing
+   - MCP server retry logic improved for transient errors
+   - MCP OAuth retry support for headless environments
+
+2. **Hook fixes** (2.1.191):
+   - Fixed comma-separated matchers not firing -- directly affects plugin hook configurations
+   - Fixed `/permissions` denials not persisting -- affects PermissionRequest/PermissionDenied hooks
+
+3. **New commands** (2.1.191):
+   - `/rewind` for undoing `/clear` operations
+
+**Items NOT plugin-relevant (rejected from Stage 1):**
+Most of the Stage 1 "Must Update" items were internal Claude Code behavior changes (memory system, security monitor, artifact tool, coordinator orchestration) that plugin developers cannot customize or need to document. Plugin-dev focuses on APIs, hooks, MCP tools, and features that plugin authors can directly use.
 
 **Triangulation notes:**
-- claude-code-guide agent dispatch failed (empty response in CI environment)
-- Two-source triangulation used: changelog + system-prompts
-- Changes confirmed in both sources marked as high confidence
-- Single-source changes marked as medium/low confidence
+- claude-code-guide agent type not available in this environment (skipped)
+- Two-source triangulation used: CC changelog + system-prompts CHANGELOG
+- Changes confirmed in system-prompts marked as high confidence (more detailed source)
+- Single-source changes from CC changelog marked as high confidence when clear feature additions
 
 ---
 
 ## Raw Changelog Data
 
-### CC 2.1.183 (from upstream changelog)
+### CC 2.1.191 (from upstream changelog)
 ```
-- Enhanced auto mode safety with blocked destructive git commands and terraform destroy operations
-- Added deprecation warnings for requested models
-- Added `attribution.sessionUrl` setting to omit session links from commits/PRs
-- Fixed multiple issues: thinking blocks returning empty, WebSearch in subagents, terminal cursor positioning, fullscreen TUI corruption, and MCP server authentication exposure
-```
-
-### CC 2.1.181 (from upstream changelog)
-```
-- Introduced `/config key=value` syntax for prompt-based settings
-- Added `sandbox.allowAppleEvents` for macOS Apple Events
-- Upgraded bundled Bun runtime to 1.4
-- Improved paragraph streaming and auto-retry for API connection drops
-- Fixed prompt caching issues on custom API URLs and Foundry
-- Resolved Write/Edit file truncation on network drives
-```
-
-### CC 2.1.179 (from upstream changelog)
-```
-- Preserved partial responses on mid-stream connection drops
-- Fixed mouse-wheel scrolling in WSL2
-- Fixed sandbox glob operations causing unusable sessions on Linux
-- Improved plugin loading performance in remote sessions
+- Added `/rewind` for resuming conversations before `/clear` was executed
+- Fixed scroll position jumping during streaming responses
+- Fixed background agents resurrecting after being stopped
+- Improved `/voice` error messaging for organization-disabled cases
+- Fixed `/login` URL truncation in Windows Terminal
+- Fixed Cmd+click on links in fullscreen Ghostty over SSH
+- Fixed `claude agents` sending slash commands as text instead of showing hints
+- Fixed hooks with comma-separated matchers silently not firing
+- Fixed `/permissions` denials not persisting after closure
+- Improved MCP server reliability with retry logic for transient errors
+- Improved MCP OAuth with retry support for headless environments
+- Reduced CPU usage during streaming by ~37% through text update coalescing
+- Reduced long-session memory growth from terminal output caching
 ```
 
-### System-prompts 2.1.182 (key items)
+### CC 2.1.190 (from upstream changelog)
 ```
-- NEW: Skill: Artifact design - design-guidance skill loaded by Artifact tool
-- NEW: Skill: Migrate to Claude Code - migration for OpenAI Codex / Gemini CLI config
-- Agent Prompt: Security monitor - expanded blocking rules for git/terraform destruction
-- Agent Prompt: CLAUDE.md creation - migration offer for Codex/Gemini CLI config
+- Bug fixes and reliability improvements
 ```
 
-### System-prompts 2.1.181 (key items)
+### CC 2.1.187 (from upstream changelog)
 ```
-- NEW: Data: Tool use display metadata field (tool_use_meta)
-- NEW: System Reminder: Cross-session peer message authority warning (multiple variants)
-- REMOVED: Data: Assistant voice and values template
-- REMOVED: Data: User profile memory template
-- REMOVED: Skill: /catch-up, /dream, /morning-checkin, /pre-meeting-checkin
+- Added `sandbox.credentials` setting to block sandboxed commands from reading credential files
+- Added org-configured model restrictions to model picker and related interfaces
+- Added mouse click support to select menus in fullscreen mode
+- Fixed `--resume` failing with "No conversation found" for certain scenarios
+- Fixed `--json-schema` structured output allowing indefinite `StructuredOutput` re-calls
+- Fixed remote MCP tool calls hanging beyond 5 minutes
+- Fixed Claude Code Remote sessions taking ~2.7s longer to start
+- Fixed pasted Korean/CJK text becoming mojibake in certain terminals
+- Fixed `/update` over Remote Control hanging during trust dialogs
+- Fixed background jobs getting stuck in "working" state indefinitely
+- Fixed channel connections dropping after navigation
+- Fixed agent stop notifications and improved status messaging
+- Fixed subagent depth tracking for resumed and forked subagents
+- Fixed leaked agent worktree registrations cleanup
+- Fixed Cmd+click not opening URLs in fullscreen Ghostty on macOS
+- Fixed `claude --help` not listing `--bg`/`--background` flag
+- Fixed Esc/Ctrl-C/Ctrl-D not working during `/share` uploads
+- Improved `/install-github-app` with optional GitHub Actions workflow setup
+- Improved `/btw` with arrow navigation for stepping through answers
+- Improved `/plugin` surfacing unused plugins for cleanup
+- Fixed VSCode extension becoming unresponsive when resuming large sessions
 ```
 
-### System-prompts 2.1.179 (key items)
+### System-prompts 2.1.191 (key items)
 ```
-- Agent Prompt: Security monitor - read-only authorization inheritance, post-block reaffirmation
-- Agent Prompt: Security monitor - Live-Shared Artifact Sensitive Delta security block
+- NEW: Agent Prompt: Context tip selector - deciding when a brief Claude Code feature tip would help
+- NEW: Agent Prompt: Context tip reception evaluator - tracking tip reception
+- NEW: Data: Context tip situations (manual polling, persistent memory)
+- REMOVED: Memory prompts and reminders - standalone memory synthesis/pruning agent prompts, memory-file description and staleness guidance, recalled-memory handling guidance, stale project-memory refresh guidance, immutable memory extraction/consolidation tool-constraint reminders
+```
+
+### System-prompts 2.1.187 (key items)
+```
+- REMOVED: System Reminder: Verify plan reminder - post-plan verification tool reminder
+- Agent Prompt: Explore; System Prompt: Plan vs memory guidance - Add Artifact tool to disallowed tool lists
+- Skill: Artifact design - Reworked from frontend-interface to broader artifact guidance
+- Skill: Design sync - Authorization-error guidance update
+- System Prompt: Agent thread notes - Agents return reports/analysis directly in final response
+- Tool Description: Artifact - Must load artifact-design skill before writing page
+```
+
+### System-prompts 2.1.186 (key items)
+```
+- Agent Prompt: /review slash command - Replaces /review-pr with PR-diff-only GitHub review
+- NEW: Agent Prompt: Security monitor edit-removal guidance
+- NEW: Data: Claude Code agent proxy troubleshooting guide
+- NEW: Tool Description: ReadMcpResourceDirTool prompt
+- Agent Prompt: Security monitor - Narrowed classifier scope
+- Data: Tool use - code_execution_20250825 to code_execution_20260521
+- System Prompt: Coordinator mode orchestration - Worker-approval pattern
+- Tool Description: SendMessageTool - Protocol-response section conditional
+```
+
+### System-prompts 2.1.185 (key items)
+```
+- REMOVED: Skill: Migrate to Claude Code - migration for Codex/Gemini CLI config
+- Agent Prompt: CLAUDE.md creation - Removed migration offer
+- Skill: /init CLAUDE.md and skill setup - Removed migration-offer item
 ```
 
 ---
 
 ## Stage 2: Verification Results
-### Verified: 2026-06-19
+### Verified: 2026-06-25
 
 #### Must Update Verification
 
-- ✓ **New `/config key=value` syntax for prompt-based settings** (CC 2.1.181) — confirmed in CC changelog. Gap exists: command-development/overview.md does not document this new command syntax. Topic mapping correct (commands documentation).
+- x **Memory prompts and reminders removed** (CC 2.1.191) -- REJECTED: Not plugin-relevant. This is an internal Claude Code memory system change, not affecting plugin development patterns. Plugin developers do not interact with Claude Code's memory synthesis/pruning system.
 
-- ✓ **New `sandbox.allowAppleEvents` setting for macOS** (CC 2.1.181) — confirmed in CC changelog. Low plugin relevance: this is a platform-specific sandbox setting. Demote to May Update unless we expand settings documentation scope.
+- x **Context tip system added** (CC 2.1.191) -- REJECTED: Not plugin-relevant. This is an internal UX feature for suggesting Claude Code tips to users. Does not affect plugin development patterns, hooks, or agent behavior that plugin authors can control.
 
-- ✓ **New `attribution.sessionUrl` setting to omit session links** (CC 2.1.183) — confirmed in CC changelog. Low plugin relevance: git attribution setting, not plugin-specific. Demote to May Update.
+- check **`/rewind` command added** (CC 2.1.191) -- Confirmed in CC changelog. Affects: command-development. Gap exists (not documented in command-development/overview.md). KEEP as Must Update. Plugin developers may want to document this command for completeness.
 
-- ✓ **New `tool_use_meta` display metadata field** (CC 2.1.181) — confirmed in system-prompts changelog (line 47). High relevance for MCP integration docs. Gap exists: mcp-integration/overview.md does not document this field. Topic mapping correct.
+- check **`sandbox.credentials` setting added** (CC 2.1.187) -- Confirmed in CC changelog. However, DEMOTE to May Update: This is a security setting that affects sandboxed Bash commands, but plugin developers rarely need to document individual settings unless they specifically affect plugin behavior. Low plugin relevance.
 
-- ✗ **New Artifact tool with design skill** (CC 2.1.172, enhanced 2.1.182) — REJECTED: Version 2.1.172 is OUTSIDE the audit range (2.1.179-2.1.183). The Artifact tool was introduced in 2.1.172 and should have been covered in the prior audit (last audit was 2.1.178). The 2.1.182 enhancement (artifact-design skill loading) is internal to the Artifact tool's behavior, not a new plugin capability. Remove from Must Update.
+- x **Artifact tool rework with artifact-design skill** (CC 2.1.187) -- REJECTED: Not plugin-relevant. This is about Claude Code's internal Artifact tool and design guidance, not about plugin development. Plugin developers do not create Artifacts as part of plugin functionality.
 
-- ✓ **New `Migrate to Claude Code` skill for foreign-agent config** (CC 2.1.182) — confirmed in system-prompts changelog (line 17). Gap exists: skill-development/overview.md does not mention this built-in skill pattern. However, this is a bundled Claude Code skill, not a plugin development pattern. Demote to May Update (informational only).
+- x **Agent thread notes clarification** (CC 2.1.187) -- REJECTED: Not plugin-relevant for documentation. This is guidance for Claude Code's internal agent behavior about returning reports directly. Plugin developers do not control this behavior through plugin configuration.
 
-- ✓ **Enhanced auto mode security: blocked destructive git/terraform commands** (CC 2.1.182-2.1.183) — confirmed in BOTH sources (CC changelog and system-prompts line 34). High confidence. Gap exists: agent-development/overview.md documents auto mode but not these specific blocked commands. Topic mapping correct.
+- x **Verify plan reminder removed** (CC 2.1.187) -- REJECTED: Not plugin-relevant. This is an internal system prompt change affecting Claude Code's planning behavior. Does not affect plugin hooks, agents, or skills that developers create.
 
-- ✓ **Security monitor: read-only authorization inheritance** (CC 2.1.179) — confirmed in system-prompts changelog (lines 65-67). This affects how permissions work in auto mode. Gap exists in agent-development docs. Topic mapping correct.
+- x **PR review flow replaced** (CC 2.1.186) -- REJECTED: Not plugin-relevant. This describes Claude Code's internal `/review` slash command implementation, not something plugin developers need to know or can customize.
 
-- ✗ **New claude.ai Project tool** (CC 2.1.174) — REJECTED: Version 2.1.174 is OUTSIDE the audit range (2.1.179-2.1.183). Should have been covered in prior audit. Remove from Must Update.
+- x **Security monitor edit-removal guidance added** (CC 2.1.186) -- REJECTED: Not plugin-relevant for documentation. This is internal guidance for Claude Code's security monitor, not affecting plugin development.
+
+- check **MCP ReadMcpResourceDirTool added** (CC 2.1.186) -- Confirmed in system-prompts CHANGELOG. Affects: mcp-integration. Gap exists (not documented). KEEP as Must Update. This is a new MCP tool that plugin authors should know about for directory resource listing.
+
+- x **Coordinator mode worker-approval pattern** (CC 2.1.186) -- REJECTED: Not plugin-relevant for plugin-dev documentation. This is internal agent coordination behavior. Plugin developers create agents but do not control Claude Code's coordinator mode orchestration.
+
+- x **Security monitor scope narrowed** (CC 2.1.186) -- REJECTED: Not plugin-relevant. Internal security classifier changes do not affect plugin development patterns.
+
+- x **code_execution tool version updated** (CC 2.1.186) -- REJECTED: Not plugin-relevant. This is about Claude API examples in documentation, not plugin development.
+
+- x **Migrate to Claude Code skill removed** (CC 2.1.185) -- REJECTED: Not plugin-relevant. This is about a built-in Claude Code skill for migrating from other tools, not about plugin development.
+
+- check **Hooks comma-separated matchers fix** (CC 2.1.191) -- Confirmed in CC changelog. Affects: hook-development. Gap exists (bug fix should be noted). KEEP as Must Update. This is directly plugin-relevant as it affects how hook matchers work.
 
 #### Missed Items (promoted from No Action)
 
-- ! **Fixed WebSearch in subagents** (CC 2.1.183) — appears in No Action as "bug fix" but CC changelog confirms "Fixed WebSearch returning empty results in subagents" is a notable behavior change. Subagents can now reliably use WebSearch. However, this is a bug fix restoring expected behavior, not a new capability. Keep as No Action.
+- ! **`/permissions` denials persistence fix** (CC 2.1.191) -- Promoted from May Update to Must Update. This is directly plugin-relevant as it affects permission management that plugin hooks can interact with. Should be documented as a fix in hook-development or command-development.
+  - Affects: hook-development (PermissionRequest/PermissionDenied hooks)
+  - Details: Fixed `/permissions` denials not persisting after closure
 
-- ! **Fixed MCP server authentication exposure** (CC 2.1.183) — listed as security bug fix. CC changelog specifies: "Fixed MCP servers requiring authentication exposing auth-stub tools in headless/SDK mode". This affects headless plugin usage but is a security fix, not a feature. Keep as No Action.
-
-- ! **Fixed user-level skills appearing multiple times in slash-command autocomplete** (CC 2.1.179, 2.1.183) — appears in both versions. Bug fix, keep as No Action.
-
-- ! **Fixed focus mode showing redundant PostToolUse hooks timing lines** (CC 2.1.183) — from CC changelog. Hook-related but cosmetic fix. Keep as No Action.
+- ! **MCP server retry logic improved** (CC 2.1.191) -- Promoted from May Update to Must Update. MCP reliability improvements directly affect plugins that bundle MCP servers.
+  - Affects: mcp-integration
+  - Details: Improved MCP server reliability with retry logic for transient errors; improved MCP OAuth with retry support
 
 #### May Update Resolution
 
-- ↓ **Cross-session peer message authority warning changes** (CC 2.1.181) — demoted to No Action. This is internal wording changes to peer message handling, not a plugin development concern. Plugin authors don't control peer message behavior.
+- down **`sandbox.credentials` setting** -- Demoted from Must Update: Low direct plugin relevance. Plugin developers do not typically document individual sandbox settings unless they specifically affect plugin behavior.
 
-- ↓ **Removed skills: /catch-up, /dream, /morning-checkin, /pre-meeting-checkin** (CC 2.1.181) — demoted to No Action. These were internal/experimental Claude Code skills, not plugin-relevant patterns. Plugin-dev docs don't reference them.
+- = **Agent proxy troubleshooting guide added** (CC 2.1.186) -- Kept as May Update: Useful background info but not core to plugin development.
 
-- ↓ **Removed assistant voice/values template and user profile memory template** (CC 2.1.181) — demoted to No Action. Internal template changes, not plugin development relevant.
+- = **Mouse click support in fullscreen mode** (CC 2.1.187) -- Kept as May Update (consider demoting to No Action): UI feature, low plugin relevance.
 
-- = **Live-Shared Artifact Sensitive Delta security block** (CC 2.1.179) — kept as May Update. Artifact-specific security feature. Only relevant if we document Artifact tool integration.
+- down **`/btw` arrow navigation** (CC 2.1.187) -- Demoted to No Action: UI feature, not plugin-relevant.
 
-- = **Plugin loading performance improvements in remote sessions** (CC 2.1.179) — kept as May Update. Relevant to plugin performance but no actionable documentation update (vague description).
+- = **`/plugin` unused plugin surfacing** (CC 2.1.187) -- Kept as May Update: Plugin management feature worth noting.
 
-- ↓ **Deprecation warnings for requested models** (CC 2.1.183) — demoted to No Action. User-facing warning, not plugin development relevant.
+- = **`/install-github-app` workflow setup** (CC 2.1.187) -- Kept as May Update: GitHub integration, potentially useful for CI/CD documentation.
 
-- ↓ **Bundled Bun runtime upgraded to 1.4** (CC 2.1.181) — demoted to No Action. Internal runtime, not plugin-relevant unless plugins specifically use Bun features.
+- = **`--json-schema` structured output fix** (CC 2.1.187) -- Kept as May Update: Affects headless/CI usage patterns.
 
-- ↓ **Cowork onboarding role picker tool** (CC 2.1.172) — demoted to No Action. Version 2.1.172 is OUTSIDE the audit range. Should have been in prior audit.
+- down **Background agents stopping fix** (CC 2.1.191) -- Demoted to No Action: Bug fix, not documentation-worthy.
 
-#### Corrected Must Update List
+- down **Background jobs stuck state fix** (CC 2.1.187) -- Demoted to No Action: Bug fix, not documentation-worthy.
 
-After verification, the following items should be in Must Update:
+- = **Subagent depth tracking fix** (CC 2.1.187) -- Kept as May Update: Relevant to agent development documentation.
 
-1. **New `/config key=value` syntax for prompt-based settings** (CC 2.1.181)
-   - Affects: command-development
-   - Action: Document new `/config key=value` syntax as alternative to slash command menu
+- = **Agent stop notifications improved** (CC 2.1.187) -- Kept as May Update: Relevant to agent behavior documentation.
 
-2. **New `tool_use_meta` display metadata field** (CC 2.1.181)
-   - Affects: mcp-integration
-   - Action: Document wrapper-level `tool_use_meta` field for MCP tool display metadata
-
-3. **Enhanced auto mode security: blocked destructive git/terraform commands** (CC 2.1.182-2.1.183)
-   - Affects: agent-development (auto mode section)
-   - Action: Document blocked commands list for autonomous agents
-
-4. **Security monitor: read-only authorization inheritance** (CC 2.1.179)
-   - Affects: agent-development (permissions section)
-   - Action: Document read-only authorization persistence behavior
-
-#### Corrected May Update List
-
-1. **New `sandbox.allowAppleEvents` setting for macOS** (CC 2.1.181)
-2. **New `attribution.sessionUrl` setting** (CC 2.1.183)
-3. **Live-Shared Artifact Sensitive Delta security block** (CC 2.1.179)
-4. **Plugin loading performance improvements in remote sessions** (CC 2.1.179)
-5. **Migrate to Claude Code skill** (CC 2.1.182) — informational only
+- down **SendMessageTool protocol changes** (CC 2.1.186) -- Demoted to No Action: Internal protocol change, not directly affecting plugin development.
 
 #### Summary
 
-- **Must Update**: 4 items (5 rejected or reclassified from original 9)
-  - 2 items rejected (outside audit range: Artifact tool 2.1.172, Project tool 2.1.174)
-  - 3 items demoted to May Update or No Action (low plugin relevance)
-- **May Update**: 5 items remaining (3 demoted to No Action)
-- **Missed Items**: 0 promoted from No Action
-- **Confidence**: HIGH for version range, MEDIUM for topic mappings
+- **Must Update: 5 items** (3 confirmed from original 15, 2 promoted from May Update; 12 rejected as not plugin-relevant)
+  1. `/rewind` command (CC 2.1.191) -- command-development
+  2. MCP ReadMcpResourceDirTool (CC 2.1.186) -- mcp-integration
+  3. Hooks comma-separated matchers fix (CC 2.1.191) -- hook-development
+  4. `/permissions` denials persistence fix (CC 2.1.191) -- hook-development
+  5. MCP server retry logic (CC 2.1.191) -- mcp-integration
 
-#### Issues Found
+- **May Update: 7 items** (1 demoted from Must Update, 4 demoted to No Action)
+  1. `sandbox.credentials` setting (CC 2.1.187)
+  2. Agent proxy troubleshooting (CC 2.1.186)
+  3. Mouse click fullscreen (CC 2.1.187)
+  4. `/plugin` unused surfacing (CC 2.1.187)
+  5. `/install-github-app` workflow (CC 2.1.187)
+  6. `--json-schema` fix (CC 2.1.187)
+  7. Subagent depth tracking fix (CC 2.1.187)
+  8. Agent stop notifications (CC 2.1.187)
 
-**Critical**: 2 items (22%) in original Must Update were outside the audit range (2.1.179-2.1.183):
-- claude.ai Project tool (2.1.174)
-- Artifact tool (2.1.172)
+- **Confidence: HIGH**
 
-These should have been caught in Stage 1's version filtering. The manifest's "Borderline items" section noted uncertainty about these items, which indicates appropriate caution but the items should have been excluded from Must Update.
+The Stage 1 manifest over-classified many items as plugin-relevant. The key distinction is:
+- **Plugin-relevant**: Features that plugin developers can USE (hooks, MCP tools, commands, agent configs)
+- **NOT plugin-relevant**: Internal Claude Code behavior changes (memory system, security monitor internals, artifact design, coordinator orchestration) that plugin developers cannot customize or need to know about
 
-**Stage 1 Quality Assessment**: Acceptable. The manifest correctly identified key changes and noted uncertainty about version boundaries. The rejected items were flagged as borderline. No missed plugin-critical items in the version range.
+**Significant Issue Flag**: 12 of 15 original Must Update items (80%) were rejected as not plugin-relevant. Stage 1 needs improved filtering to distinguish between:
+1. Changes to Claude Code's internal prompts/behavior (not plugin-relevant)
+2. Changes to APIs, tools, hooks, and features plugin developers can use (plugin-relevant)

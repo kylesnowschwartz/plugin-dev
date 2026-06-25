@@ -85,6 +85,7 @@ Claude Code provides built-in commands for managing project state:
 ### Session Commands
 
 - **`/cd`** (CC 2.1.169) — Relocates the session to a different directory without breaking prompt cache. Use this when you need to change the working directory mid-session while preserving cached context.
+- **`/rewind`** (CC 2.1.191) — Resumes conversations before `/clear` was executed. Provides undo capability for cleared conversations, allowing you to restore context that was cleared.
 
 ### Configuration Commands
 
