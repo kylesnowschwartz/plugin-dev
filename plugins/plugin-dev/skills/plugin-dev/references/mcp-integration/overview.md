@@ -291,6 +291,29 @@ Claude will fetch the resource content and include it in context.
 - **https://** - HTTP resources
 - **Custom protocols** - Server-specific (postgres://, s3://, etc.)
 
+### ReadMcpResourceDirTool (CC 2.1.186)
+
+List the contents of MCP directory resources:
+
+**Required parameters:**
+
+- `server` - The MCP server name
+- `uri` - The resource URI to list
+
+**Behavior:**
+
+- Returns direct children only (non-recursive)
+- Use returned URIs to descend into subdirectories
+- Same rate limiting as other MCP operations
+
+**Example usage:**
+
+```
+List @filesystem:file:///project/ to see project files
+```
+
+Claude uses this tool automatically when you reference directory-type MCP resources.
+
 ## Tool Search
 
 For MCP servers with many tools, use Tool Search to find relevant tools:
@@ -384,6 +407,19 @@ Static or environment variable tokens:
 ```
 
 Document required environment variables in README.
+
+### headersHelper Authentication Retry (CC 2.1.193)
+
+MCP servers using `headersHelper` for authentication now automatically retry on 401 responses with fresh credentials. This provides a smoother authentication experience when tokens expire:
+
+**Behavior:**
+
+- Initial request fails with 401 (Unauthorized)
+- Claude Code automatically invokes `headersHelper` to refresh credentials
+- Request is retried with new authentication headers
+- User does not need to manually re-authenticate
+
+**Use case:** Long-running sessions where tokens may expire mid-session. The retry happens transparently without user intervention.
 
 ### Environment Variables (stdio)
 
@@ -764,9 +800,42 @@ claude mcp remove <name>
 claude mcp add-json <name> '<json>'
 claude mcp add-from-claude-desktop
 claude mcp reset-project-choices
+claude mcp login <server-name>    # CC 2.1.186
+claude mcp logout <server-name>   # CC 2.1.186
 ```
 
 Key flags: `--scope` (user/project/local), `--env KEY=VALUE`, `--callback-port` (OAuth).
+
+### MCP Login/Logout Commands (CC 2.1.186)
+
+Manage OAuth authentication for MCP servers directly from the CLI:
+
+**Login:**
+
+```bash
+claude mcp login github
+```
+
+Initiates the OAuth flow for the specified MCP server. Opens browser for authentication and stores credentials.
+
+**Logout:**
+
+```bash
+claude mcp logout github
+```
+
+Clears stored OAuth credentials for the specified MCP server. Use when:
+
+- Switching accounts
+- Revoking access
+- Troubleshooting authentication issues
+- Clearing stale tokens
+
+**Use cases for plugin authors:**
+
+- Document login/logout commands in plugin README for OAuth-based MCP servers
+- Provide troubleshooting steps that include `mcp logout` followed by `mcp login`
+- Test authentication flows during development
 
 ## Additional Resources
 

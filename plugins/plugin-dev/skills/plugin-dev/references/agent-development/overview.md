@@ -249,8 +249,23 @@ tools: Read, Grep, Agent(code-reviewer), Agent(test-runner)
 - Read-only analysis: `Read, Grep, Glob`
 - Code generation: `Read, Write, Grep`
 - Testing: `Read, Bash, Grep`
-- Background monitoring: `Monitor` (CC 2.1.98) - stream stdout events from long-running scripts as chat notifications
+- Background monitoring: `Monitor` (CC 2.1.98) - stream stdout events from long-running scripts as chat notifications. **CC 2.1.195:** Monitor tool now supports `ws` (WebSocket) as a source type in addition to `stdout`, enabling real-time data streaming from WebSocket connections.
 - Full access: Omit field entirely
+
+**Agent(type) Deny Rules Enforcement (CC 2.1.186):**
+
+Permission deny rules using `Agent(type)` syntax are now correctly enforced. Previously, deny rules like `!Agent(code-reviewer)` could be bypassed. This fix ensures that tool restrictions work as expected:
+
+```json
+// In settings.json or managed settings
+{
+  "permissions": {
+    "deny": ["Agent(untrusted-agent)"]
+  }
+}
+```
+
+This correctly blocks spawning the `untrusted-agent` type.
 
 > **Note:** The Config tool was removed in CC 2.1.118. Use the `/config` slash command instead for getting/setting Claude Code settings.
 

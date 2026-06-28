@@ -104,6 +104,25 @@ Plugins can specify whether they are enabled by default after installation:
 - Optional extensions that users should explicitly opt into
 - Plugins with security-sensitive capabilities that users should consciously enable
 
+### External Plugin Loading via Settings (CC 2.1.195)
+
+External plugins specified via project settings (`.claude/settings.json`) no longer prompt for reinstall consent on each session. Once a user has consented to an external plugin, it loads automatically on subsequent sessions:
+
+```json
+{
+  "plugins": [
+    "/path/to/external/plugin"
+  ]
+}
+```
+
+**Behavior change:**
+
+- First load: User is prompted to consent to the external plugin
+- Subsequent loads: Plugin loads automatically without re-consent
+
+**Security note:** This change makes external plugin management smoother while maintaining the initial consent requirement. Users should only add trusted plugin paths to their settings.
+
 ### Version Constraints (CC 2.1.163)
 
 Managed settings can enforce Claude Code version requirements:
@@ -787,6 +806,36 @@ Cached content refreshes when:
 
 When a plugin depends on another plugin with a version constraint (e.g., `>=1.0.0`), the dependent plugin now auto-updates to the highest satisfying git tag rather than being locked to the original installation version. This ensures plugins stay up-to-date within compatible version ranges.
 
+### Plugin Auto-Rename with Marketplace Mapping (CC 2.1.193)
+
+When a plugin is renamed in its manifest and an associated marketplace entry maps the old name to the new name, Claude Code automatically updates the local plugin name. This enables smooth plugin rebranding without requiring users to manually uninstall and reinstall:
+
+**Marketplace mapping example:**
+
+```json
+{
+  "plugins": [
+    {
+      "name": "new-plugin-name",
+      "previousNames": ["old-plugin-name"]
+    }
+  ]
+}
+```
+
+**Behavior:**
+
+- User has `old-plugin-name` installed
+- Plugin author renames to `new-plugin-name` and adds `previousNames` mapping
+- On next auto-update or `/reload-plugins`, Claude Code detects the rename
+- Plugin is automatically updated to `new-plugin-name` locally
+
+**Implications for plugin authors:**
+
+- When renaming a plugin, add the old name to `previousNames` in the marketplace entry
+- Users won't lose their plugin installation or settings
+- Enables clean rebranding without disruption
+
 ### Why External Paths Fail
 
 **Important:** Paths outside the plugin directory may not work reliably because:
@@ -866,6 +915,55 @@ claude --safe-mode
 - Isolating plugin conflicts
 
 Safe mode is temporary for that session only — restarting normally restores all customizations.
+
+## Security Settings
+
+### Auto Mode Shell Classification (CC 2.1.193)
+
+The `autoMode.classifyAllShell` setting controls how shell commands are classified in auto mode:
+
+```json
+{
+  "autoMode": {
+    "classifyAllShell": true
+  }
+}
+```
+
+**Behavior:**
+
+- `false` (default) — Only potentially dangerous shell commands are classified by the auto mode classifier
+- `true` — All shell commands are classified, providing stricter security at the cost of more classification calls
+
+**Use cases:**
+
+- High-security environments requiring review of all shell operations
+- Enterprise deployments with strict command policies
+- Debugging auto mode classification behavior
+
+### Sandbox Credentials Setting (CC 2.1.187)
+
+The `sandbox.credentials` setting controls Claude Code's access to credentials within sandboxed execution:
+
+```json
+{
+  "sandbox": {
+    "credentials": "none"
+  }
+}
+```
+
+**Values:**
+
+- `"none"` — No credential access in sandboxed contexts
+- `"keychain"` — Access to system keychain credentials
+- `"env"` — Access to environment variable credentials
+
+**Security implications:**
+
+- Affects how plugins and hooks can access stored credentials
+- Managed settings can enforce credential restrictions across an organization
+- Stricter settings may break plugins that require credential access
 
 ## Cowork Plugin Format (CC 2.1.163)
 
