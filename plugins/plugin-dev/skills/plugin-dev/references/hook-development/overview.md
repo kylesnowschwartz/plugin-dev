@@ -1171,6 +1171,41 @@ Matchers filter which hooks run for a given event. Each event defines what value
 
 **Note:** Matchers are case-sensitive. Regex is full regex, not glob.
 
+### Hyphenated Matcher Exact Match Requirement (CC 2.1.195)
+
+**Breaking change:** Hook matchers with hyphens (e.g., `code-reviewer`, `mcp__brave-search`) now require **exact matches** instead of substring matching. Previously, a matcher like `brave-search` would match any tool containing that substring. Now it only matches the exact string.
+
+**Migration:** Use wildcard patterns for partial matches:
+
+```json
+// Before CC 2.1.195: substring matching
+"matcher": "mcp__brave-search"    // Would match mcp__brave-search__web_search
+
+// After CC 2.1.195: exact match only
+"matcher": "mcp__brave-search"    // Only matches literal "mcp__brave-search"
+"matcher": "mcp__brave-search__.*" // Use wildcard for partial matches
+```
+
+**Affected patterns:**
+
+- Custom agent names with hyphens (e.g., `code-reviewer`, `test-runner`)
+- MCP server names with hyphens (e.g., `mcp__brave-search__*`)
+- Any hyphenated tool or agent identifier
+
+### Multiple Matchers Syntax (CC 2.1.191)
+
+**Critical fix:** Hooks with comma-separated matchers silently never fired prior to CC 2.1.191. Use **pipe-separated patterns** for multiple matchers:
+
+```json
+// CORRECT: Pipe-separated (works)
+"matcher": "Bash|PowerShell"
+
+// WRONG: Comma-separated (silently fails)
+"matcher": "Bash,PowerShell"
+```
+
+This was a critical bug that caused multi-matcher hook definitions to never fire. Always use pipe (`|`) for OR patterns.
+
 ### Source Matching (SessionStart, SessionEnd, PreCompact, PostCompact, ConfigChange, StopFailure)
 
 These events match on a `source` or category value, not tool names. See each event's documentation for valid matcher values.

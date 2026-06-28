@@ -139,6 +139,21 @@ The `disableBundledSkills` managed setting hides bundled skills, workflows, and 
 
 **Skill Invocation Name (CC 2.1.94):** Plugin skills declared via `"skills": ["./"]` now use the skill's frontmatter `name` for invocation instead of the directory basename. Ensure the `name` field in frontmatter matches how users should invoke the skill.
 
+**Frontmatter Field Case Acceptance (CC 2.1.186):** Skill frontmatter fields now accept multiple case conventions: `kebab-case`, `snake_case`, and `camelCase`. The following are all equivalent:
+
+```yaml
+# All valid:
+allowed-tools: Read, Grep    # kebab-case (recommended)
+allowed_tools: Read, Grep    # snake_case
+allowedTools: Read, Grep     # camelCase
+
+user-invocable: false        # kebab-case (recommended)
+user_invocable: false        # snake_case
+userInvocable: false         # camelCase
+```
+
+**Recommendation:** Use kebab-case for consistency with official documentation, but all variants work.
+
 #### Optional Frontmatter Fields
 
 ##### allowed-tools

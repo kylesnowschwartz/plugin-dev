@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.25.0] - 2026-06-28
+
+### Added
+
+- **hook-development**: Documented hyphenated matcher exact match requirement — matchers with hyphens now require exact matches instead of substring matching, use wildcard patterns for partial matches (CC 2.1.195)
+- **hook-development**: Documented comma-separated matchers fix — hooks with comma-separated matchers silently never fired; use pipe-separated patterns instead (CC 2.1.191)
+- **plugin-structure**: Documented external plugins via project settings no longer re-prompting for consent on subsequent sessions (CC 2.1.195)
+- **plugin-structure**: Documented `autoMode.classifyAllShell` setting for stricter shell command classification (CC 2.1.193)
+- **plugin-structure**: Documented `sandbox.credentials` setting for controlling credential access in sandboxed execution (CC 2.1.187)
+- **plugin-structure**: Documented plugin auto-rename with marketplace `previousNames` mapping (CC 2.1.193)
+- **mcp-integration**: Documented `claude mcp login/logout` CLI commands for OAuth authentication management (CC 2.1.186)
+- **mcp-integration**: Documented MCP headersHelper automatic retry on 401 with fresh credentials (CC 2.1.193)
+- **agent-development**: Documented Monitor tool WebSocket (`ws`) source type for real-time data streaming (CC 2.1.195)
+- **agent-development**: Documented `Agent(type)` deny rules enforcement fix (CC 2.1.186)
+- **skill-development**: Documented skill frontmatter case acceptance — kebab-case, snake_case, and camelCase all work for field names (CC 2.1.186)
+- **mcp-integration**: Documented `ReadMcpResourceDirTool` for MCP directory resource listings with `server` and `uri` parameters (CC 2.1.186)
+
 ## [0.24.0] - 2026-06-19
 
 ### Added
@@ -609,7 +626,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.24.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.25.0...HEAD
+[0.25.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.24.0...v0.25.0
 [0.24.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.23.0...v0.24.0
 [0.23.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.22.0...v0.23.0
 [0.22.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.21.0...v0.22.0
