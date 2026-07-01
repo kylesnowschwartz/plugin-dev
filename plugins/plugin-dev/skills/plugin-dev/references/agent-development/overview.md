@@ -191,7 +191,7 @@ Which model the agent should use.
 **Options:**
 
 - `inherit` - Use same model as parent (recommended)
-- `sonnet` - Claude Sonnet (balanced)
+- `sonnet` - Claude Sonnet (balanced) — **Note:** As of CC 2.1.197, `sonnet` resolves to Claude Sonnet 5 with native 1M-token context window
 - `opus` - Claude Opus (most capable, expensive)
 - `haiku` - Claude Haiku (fast, cheap)
 
@@ -205,6 +205,8 @@ Which model the agent should use.
 
 - `haiku` for fast, cost-sensitive operations
 - `opus` for complex reasoning requiring maximum capability
+
+**Claude Sonnet 5 Default (CC 2.1.197):** Claude Sonnet 5 is now the default model in Claude Code, featuring a native 1M-token context window. Scheduled agent creation also defaults to `claude-sonnet-5`. If your agents rely on specific model behavior, be aware that `sonnet` now resolves to Sonnet 5.
 
 ### color (required)
 
@@ -547,6 +549,7 @@ The SendUserFile tool surfaces generated deliverable files to users with enhance
 - `file_path`: Absolute path to the generated file
 - `caption`: Optional description shown to the user
 - `status`: `"normal"` (default) or `"proactive"` (for unsolicited deliverables)
+- `display` (CC 2.1.196): Controls rendering mode — `"inline"` for charts, HTML pages, diagrams, and images that should render directly in chat; `"attachment"` for files meant to be saved and opened elsewhere
 
 **Use cases for plugin agents:**
 

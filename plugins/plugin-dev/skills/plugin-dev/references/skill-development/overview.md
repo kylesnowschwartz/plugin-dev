@@ -37,6 +37,16 @@ skill-name/
 
 Both skills and commands are invoked via the Skill tool and share the same underlying mechanism. Commands are essentially simple skills stored as single `.md` files without bundled resources. See `references/commands-vs-skills.md` for a comparison.
 
+### Invoke Skill Tool (CC 2.1.196)
+
+Claude Code includes a built-in "Invoke skill" tool that loads packaged skills by exact name or explicit user request. Key behaviors:
+
+- **Scoped skill-name resolution** — When both scoped (`apps/web:deploy`) and unscoped (`deploy`) variants exist, the tool resolves based on files being worked on
+- **Optional args** — Skills can receive arguments passed through the tool invocation
+- **No re-invocation of loaded skills** — The tool does not re-invoke a skill already loaded in the current turn
+
+This tool is how Claude programmatically loads skills — plugin developers don't need to call it directly, but understanding its behavior helps when designing skills that may be invoked automatically vs. manually.
+
 ### Skill Precedence
 
 Skills follow precedence: Enterprise > Personal (`~/.claude/skills/`) > Project (`.claude/skills/`) > Plugin skills. Higher-priority skills with the same name shadow lower-priority ones. Use distinctive, namespaced names for plugin skills to avoid collisions.
