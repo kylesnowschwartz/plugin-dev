@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.26.0] - 2026-07-01
+
+### Added
+
+- **skill-development**: Documented Invoke skill tool for programmatic skill loading — scoped skill-name resolution, optional args, and no re-invocation of already-loaded skills (CC 2.1.196)
+- **agent-development**: Documented Claude Sonnet 5 as default model with native 1M-token context window — `sonnet` now resolves to Sonnet 5, scheduled agents default to `claude-sonnet-5` (CC 2.1.197)
+- **agent-development**: Documented SendUserFile `display` parameter for inline vs attachment rendering — use `"inline"` for charts/HTML/images, `"attachment"` for files to save (CC 2.1.196)
+
 ## [0.25.0] - 2026-06-28
 
 ### Added
@@ -626,7 +634,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.25.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.26.0...HEAD
+[0.26.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.25.0...v0.26.0
 [0.25.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.24.0...v0.25.0
 [0.24.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.23.0...v0.24.0
 [0.23.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.22.0...v0.23.0

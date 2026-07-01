@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.195 (2026-06-28)
-Plugin-dev version: 0.25.0
+Last audited: Claude Code 2.1.197 (2026-07-01)
+Plugin-dev version: 0.26.0
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.26.0 | 2.1.196-2.1.197 | 2026-07-01 | Claude Sonnet 5 as default model with 1M-token context (CC 2.1.197), Invoke skill tool for programmatic skill loading (CC 2.1.196), SendUserFile `display` parameter for inline/attachment rendering (CC 2.1.196) |
 | v0.25.0 | 2.1.184-2.1.195 | 2026-06-28 | **Breaking:** Hook matchers with hyphens now require exact matches (CC 2.1.195), comma-separated matchers fix (CC 2.1.191). External plugins via project settings no longer re-prompt (CC 2.1.195), `autoMode.classifyAllShell` setting (CC 2.1.193), `sandbox.credentials` setting (CC 2.1.187), `claude mcp login/logout` commands (CC 2.1.186), Monitor tool WebSocket source (CC 2.1.195), Agent(type) deny rules enforcement (CC 2.1.186), skill frontmatter case acceptance (CC 2.1.186), MCP headersHelper auth retry (CC 2.1.193), plugin auto-rename with marketplace mapping (CC 2.1.193), ReadMcpResourceDirTool (CC 2.1.186) |
 | v0.24.0 | 2.1.179-2.1.183 | 2026-06-19 | `/config key=value` command syntax, `tool_use_meta` MCP display metadata field, auto mode blocked commands (git stash/restore/clean, terraform destroy), read-only authorization inheritance |
 | v0.23.0 | 2.1.177-2.1.178 | 2026-06-16 | Tool parameter matching syntax (`Agent(model:opus)`), nested skill directories with collision handling, directory-scoped skills (`apps/web:deploy`), agent `isolation: "remote"` option, Workflow `effort` option, SendMessageTool `"main"` recipient, nested `.claude/` directory precedence, TeamDelete/TeammateTool removed |
