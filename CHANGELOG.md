@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.27.0] - 2026-07-04
+
+### Added
+
+- **agent-development**: Documented subagents now run in background by default — Agent tool defaults to `run_in_background: true`, use `run_in_background: false` for foreground execution (CC 2.1.198)
+- **agent-development**: Documented extended thinking inheritance — subagents inherit session's extended thinking configuration (CC 2.1.198)
+- **agent-development**: Documented ListAgents tool for programmatic agent discovery — lists in-process subagents, local/cloud sessions, and remote bridge sessions (CC 2.1.200)
+- **agent-development**: Documented isolated worktree shipping instructions — background agents in worktrees should commit, push branch, and open draft PR autonomously (CC 2.1.198)
+- **agent-development**: Documented Manual default permission mode — default permission mode across all interfaces is now Manual (CC 2.1.200)
+- **skill-development**: Documented slash-skill stacking — users can load up to 5 skills simultaneously via stacked invocations (CC 2.1.199)
+- **skill-development**: Documented verify skill auto-persistence — working build/launch/drive recipes saved to `.claude/skills/verify/SKILL.md` (CC 2.1.200)
+- **skill-development**: Documented project skill shadowing warning — creating new project skills can shadow built-ins; only edit existing skills except verify (CC 2.1.200)
+- **hook-development**: Documented background agent notification matchers — `agent_needs_input` and `agent_completed` for Notification hook (CC 2.1.198)
+- **hook-development**: Documented SessionStart/Setup/SubagentStart stderr fix — stderr now properly shows in transcript with exit code 2 (CC 2.1.199)
+- **plugin-structure**: Documented plugin and skill discovery tools — SearchPlugins, SearchSkills, SearchMcpRegistry, SuggestConnectors, ListConnectors (CC 2.1.199)
+
 ## [0.26.0] - 2026-07-01
 
 ### Added
@@ -634,7 +650,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.26.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.27.0...HEAD
+[0.27.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.26.0...v0.27.0
 [0.26.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.25.0...v0.26.0
 [0.25.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.24.0...v0.25.0
 [0.24.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.23.0...v0.24.0
