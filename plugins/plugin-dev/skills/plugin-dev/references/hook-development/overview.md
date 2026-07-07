@@ -1030,11 +1030,18 @@ Execute while assistant message text streams. Use for logging, observability, or
 
 Execute when Claude Code sends notifications. Use for logging, external alerting, or custom notification routing.
 
-**Matchers:** `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog`
+**Matchers:** `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog`, `agent_needs_input`, `agent_completed`
 **Hook types:** Command, HTTP, Prompt, Agent
 **Decision control:** None (observability only)
 
 **Input includes:** `message`, `title` (optional), `notification_type`
+
+**Background Agent Notifications (CC 2.1.198):** Added matchers for background agent lifecycle events:
+
+- `agent_needs_input` — Background agent is blocked waiting for user input
+- `agent_completed` — Background agent has finished its work
+
+These matchers enable hooks to respond when background agents reach completion or need attention, facilitating automated workflows and external alerting for background agent status.
 
 ## Hook Output Format
 
@@ -1079,6 +1086,8 @@ All fields are optional. Behavior by field:
 | Other | Non-blocking. Shown in verbose/debug mode only   |
 
 **Gotcha:** If your shell profile (`.bashrc`/`.zshrc`) prints text, it contaminates stdout and breaks JSON parsing. Redirect profile output to stderr.
+
+**SessionStart/Setup/SubagentStart stderr fix (CC 2.1.199):** These hooks now properly show stderr in the transcript when exiting with code 2. Previously, stderr was silently hidden for these specific hooks, making debugging difficult. Error messages now appear correctly in the transcript.
 
 ### Async Hooks
 

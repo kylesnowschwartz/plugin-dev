@@ -47,6 +47,28 @@ Claude Code includes a built-in "Invoke skill" tool that loads packaged skills b
 
 This tool is how Claude programmatically loads skills — plugin developers don't need to call it directly, but understanding its behavior helps when designing skills that may be invoked automatically vs. manually.
 
+### Slash-Skill Stacking (CC 2.1.199)
+
+Users can load multiple skills simultaneously using stacked slash-skill invocations:
+
+```
+/skill-a /skill-b /skill-c do the task
+```
+
+**Behavior:**
+
+- Up to **5 skills** can be loaded in a single invocation
+- All leading skills are loaded (not just the first one)
+- Skills load in order and their contexts are combined
+- The remaining text after the skill names becomes the task prompt
+
+**Implications for plugin developers:**
+
+- Design skills to compose well with others — avoid conflicting instructions
+- Skills may be loaded alongside built-in or other plugin skills
+- Keep skill contexts focused to avoid context pollution when stacked
+- Test skills in combination with common complementary skills
+
 ### Skill Precedence
 
 Skills follow precedence: Enterprise > Personal (`~/.claude/skills/`) > Project (`.claude/skills/`) > Plugin skills. Higher-priority skills with the same name shadow lower-priority ones. Use distinctive, namespaced names for plugin skills to avoid collisions.
@@ -97,6 +119,35 @@ Skills in `.claude/skills/` directories now load automatically without marketpla
 3. Skill is immediately available — no install step required
 
 This streamlines local plugin development and testing. Skills loaded this way follow the standard precedence rules.
+
+### Verify Skill Auto-Persistence (CC 2.1.200)
+
+The built-in verify skill now automatically creates and persists project skills. After a cold-start verification succeeds, the working build/launch/drive recipe is saved to `.claude/skills/verify/SKILL.md` at the appropriate scope:
+
+- **Repository root** for single-package projects
+- **Touched package/app directory** in monorepos
+
+If a verify skill already exists, new learnings are folded into it rather than duplicated.
+
+**Implications for plugin developers:**
+
+- Be aware that the `verify` skill may be auto-created in user projects
+- Plugin-provided verify-related skills should avoid naming conflicts with the built-in `verify` skill
+- The auto-persistence pattern demonstrates how skills can evolve based on project learnings
+
+### Project Skill Shadowing Warning (CC 2.1.200)
+
+**Important:** Creating new project skills can shadow built-in skills with the same name. Claude Code now includes explicit guidance:
+
+- **Only edit existing project skills** — don't create new ones that could shadow built-ins
+- **Exception: `verify` skill** — the only skill that should be auto-created (for build/test recipes)
+- **Closest-scoped placement** — verify corrections go in the closest-scoped `.claude/skills/verify/SKILL.md`, never duplicated at broader scopes
+
+**Implications for plugin developers:**
+
+- Use distinctive, namespaced names for plugin skills (e.g., `my-plugin-deploy` not just `deploy`)
+- Document clearly when skills might interact with built-in skill names
+- Design skills to complement rather than conflict with built-in capabilities
 
 ### skillOverrides Setting (CC 2.1.129)
 

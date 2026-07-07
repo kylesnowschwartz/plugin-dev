@@ -1051,6 +1051,23 @@ claude --verbose          # Additional debugging
 
 Use `/plugins` in the TUI to view installed plugins and their status.
 
+### Plugin and Skill Discovery Tools (CC 2.1.199)
+
+Claude Code includes built-in tools for discovering plugins and skills:
+
+- **SearchPlugins** — Search org plugins by name, description, or keywords
+- **SearchSkills** — Search available skills across installed plugins
+- **SearchMcpRegistry** — Search MCP connector registries for available integrations
+- **SuggestConnectors** — Get recommendations for connectors based on task context
+- **ListConnectors** — List available MCP connectors
+
+**Implications for plugin developers:**
+
+- Plugins are discoverable through programmatic search, not just the marketplace UI
+- Good plugin metadata (name, description, keywords) improves discoverability
+- Skills should have clear, searchable descriptions
+- Consider how your plugin appears in search results when writing descriptions
+
 ### Plugin Scaffolding (CC 2.1.157)
 
 Create a new plugin with the recommended directory structure:

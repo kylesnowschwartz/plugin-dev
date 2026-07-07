@@ -331,6 +331,8 @@ permissionMode: acceptEdits
 
 **Default:** Standard permission model (asks user)
 
+**Manual Default Permission Mode (CC 2.1.200):** The default permission mode across all Claude Code interfaces is now "Manual" (equivalent to `default` above). This is a more conservative default that requires explicit user approval for each action. This change affects both the CLI and programmatic interfaces.
+
 **Security note:** Use restrictive modes (`plan`, `acceptEdits`) for untrusted agents. `bypassPermissions` should only be used for fully trusted agents.
 
 See `references/permission-modes-rules.md` for complete permission mode details and rule syntax.
@@ -691,6 +693,16 @@ Background sessions receive guidance to enter an isolated worktree before making
 - Read-only background agents can work directly in the working copy
 - Design agents to handle both isolated and non-isolated contexts gracefully
 
+### Isolated Worktree Shipping Instructions (CC 2.1.198)
+
+Agents running in isolated worktrees receive explicit shipping guidance: they should commit changes, push a branch, and open a draft PR without asking. This ensures background work in isolated environments produces reviewable artifacts.
+
+**Implications for plugin agents:**
+
+- Background agents in worktrees should be designed to complete the git workflow autonomously
+- Agents should create commits, push branches, and open PRs as part of their completion flow
+- The user reviews the resulting PR rather than being prompted during agent execution
+
 ### Cross-Session Peer Message Security (CC 2.1.166, 2.1.169)
 
 Claude Code enforces security boundaries for messages from peer sessions:
@@ -974,6 +986,20 @@ Create test scenarios to verify agent triggers correctly:
 
 The `claude agents` dispatch input now suggests native slash commands and bundled skills in addition to project agents. When testing agent invocation, autocomplete helps discover available agent types and skills that can be dispatched to agents.
 
+### ListAgents Tool (CC 2.1.200)
+
+The ListAgents tool enables programmatic discovery of available agents:
+
+- Lists in-process subagents, other local and cloud Claude sessions, and reply-only remote bridge sessions
+- Agents should address a row by its exact name and append its `[ref]` only when the bare name is ambiguous
+- Useful for multi-agent coordination scenarios where agents need to discover and message other agents
+
+**Use cases:**
+
+- Multi-agent orchestration discovering available teammates
+- Coordination patterns where agents need to find and communicate with specific agent types
+- Dynamic workflows that adapt based on available agents
+
 ### Load Agents at Session Start
 
 Use the `--agents` CLI flag to pre-load specific agents:
@@ -1078,8 +1104,12 @@ Ensure system prompt is complete:
 
 Agents can run in foreground (blocking) or background (concurrent) mode:
 
-- **Foreground** (default): Blocks the main conversation until the agent completes
-- **Background**: Runs concurrently; permissions must be pre-approved at spawn time since the user can't be prompted
+- **Background** (default as of CC 2.1.198): Runs concurrently; permissions must be pre-approved at spawn time since the user can't be prompted
+- **Foreground**: Blocks the main conversation until the agent completes; use `run_in_background: false` to enable
+
+**Background by Default (CC 2.1.198):** The Agent tool now defaults to `run_in_background: true`. Claude keeps working while subagents run in the background. To run an agent in foreground (blocking) mode, explicitly set `run_in_background: false` in the Agent tool call.
+
+**Extended Thinking Inheritance (CC 2.1.198):** Subagents now inherit the session's extended thinking configuration. Agent type definitions supply model, reasoning effort, and tool access, while the call-level `model` parameter overrides only the model at launch. This means subagents automatically benefit from extended thinking when enabled in the parent session.
 
 Background agents that need an unapproved permission will fail. Plan tool restrictions accordingly.
 
