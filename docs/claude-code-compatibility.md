@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.201 (2026-07-04)
+Last audited: Claude Code 2.1.202 (2026-07-07)
 Plugin-dev version: 0.27.0
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.27.0 | 2.1.202 | 2026-07-07 | Audit only — bug fixes and internal changes (no plugin-system updates) |
 | v0.27.0 | 2.1.198-2.1.201 | 2026-07-04 | Subagents background by default (CC 2.1.198), extended thinking inheritance (CC 2.1.198), slash-skill stacking up to 5 (CC 2.1.199), ListAgents tool (CC 2.1.200), Manual default permission mode (CC 2.1.200), verify skill auto-persistence (CC 2.1.200), project skill shadowing warning (CC 2.1.200), background agent notification matchers (CC 2.1.198), isolated worktree shipping instructions (CC 2.1.198), SessionStart/SubagentStart stderr fix (CC 2.1.199), plugin discovery tools (CC 2.1.199) |
 | v0.26.0 | 2.1.196-2.1.197 | 2026-07-01 | Claude Sonnet 5 as default model with 1M-token context (CC 2.1.197), Invoke skill tool for programmatic skill loading (CC 2.1.196), SendUserFile `display` parameter for inline/attachment rendering (CC 2.1.196) |
 | v0.25.0 | 2.1.184-2.1.195 | 2026-06-28 | **Breaking:** Hook matchers with hyphens now require exact matches (CC 2.1.195), comma-separated matchers fix (CC 2.1.191). External plugins via project settings no longer re-prompt (CC 2.1.195), `autoMode.classifyAllShell` setting (CC 2.1.193), `sandbox.credentials` setting (CC 2.1.187), `claude mcp login/logout` commands (CC 2.1.186), Monitor tool WebSocket source (CC 2.1.195), Agent(type) deny rules enforcement (CC 2.1.186), skill frontmatter case acceptance (CC 2.1.186), MCP headersHelper auth retry (CC 2.1.193), plugin auto-rename with marketplace mapping (CC 2.1.193), ReadMcpResourceDirTool (CC 2.1.186) |
