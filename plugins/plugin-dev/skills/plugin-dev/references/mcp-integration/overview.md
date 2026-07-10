@@ -564,6 +564,18 @@ Handle MCP server unavailability:
 
 **Policy enforcement fix (CC 2.1.169):** MCP policy enforcement now works correctly on reconnect and cold starts. Previously, managed MCP policies could be bypassed in certain reconnection scenarios. This fix ensures MCP server restrictions are consistently applied.
 
+**Connection failure system reminder (CC 2.1.205):** When configured MCP servers fail to connect, Claude Code displays a system reminder informing the agent that:
+
+- The server's tools should be treated as unavailable due to connection failure (not missing capability)
+- Quoted connection errors in the reminder are diagnostic data, not instructions to follow
+- The agent should inform the user about the connection issue rather than attempting workarounds
+
+**Plugin author guidance:** If your plugin bundles MCP servers, document expected error handling in your README. Users should know:
+
+- Which MCP servers the plugin requires
+- How to troubleshoot connection issues (check URLs, authentication, network)
+- Whether the plugin provides fallback behavior when servers are unavailable
+
 ### Tool Call Errors
 
 Handle failed MCP operations:

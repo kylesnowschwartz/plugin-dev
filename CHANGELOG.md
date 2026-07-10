@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.28.0] - 2026-07-10
+
+### Added
+
+- **hook-development**: Documented BackgroundTasksChanged hook event (28th event) for tracking background task state changes with replace-set semantics, unspecified ordering, and id-only payloads (CC 2.1.203)
+- **mcp-integration**: Documented MCP servers failed to connect system reminder — explains how Claude Code handles connection failures, treating tools as unavailable and displaying diagnostic information (CC 2.1.205)
+- **plugin-settings**: Documented /doctor CLAUDE.md trimming check guidance — what content to keep (gotchas, rationale, non-standard conventions) vs remove (codebase-derivable layouts, copied schemas, generic advice) (CC 2.1.206)
+
 ## [0.27.0] - 2026-07-04
 
 ### Added
@@ -650,7 +658,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.27.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.28.0...HEAD
+[0.28.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.27.0...v0.28.0
 [0.27.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.26.0...v0.27.0
 [0.26.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.25.0...v0.26.0
 [0.25.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.24.0...v0.25.0

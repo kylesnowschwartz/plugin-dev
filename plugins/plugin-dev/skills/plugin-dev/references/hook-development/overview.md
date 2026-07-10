@@ -5,7 +5,7 @@
 
 Hooks are event-driven automation that execute in response to Claude Code events. Use hooks to validate operations, enforce policies, add context, and integrate external tools into workflows.
 
-Claude Code has **27 hook events** across these categories:
+Claude Code has **28 hook events** across these categories:
 
 - **Session Lifecycle** -- SessionStart, InstructionsLoaded, SessionEnd, PostSession
 - **User Input** -- UserPromptSubmit
@@ -20,6 +20,7 @@ Claude Code has **27 hook events** across these categories:
 - **Worktrees** -- WorktreeCreate, WorktreeRemove
 - **MCP Elicitation** -- Elicitation, ElicitationResult
 - **Notifications** -- Notification
+- **Background Tasks** -- BackgroundTasksChanged
 
 For complete input/output JSON schemas for every event, see **`references/event-schemas.md`**.
 
@@ -1442,7 +1443,7 @@ echo "$output" | jq .
 
 ## Quick Reference
 
-### All 27 Hook Events
+### All 28 Hook Events
 
 | Event              | Category      | Matchers                    | Decision Control              |
 | ------------------ | ------------- | --------------------------- | ----------------------------- |
@@ -1473,6 +1474,7 @@ echo "$output" | jq .
 | ElicitationResult  | MCP           | MCP server name             | Override response             |
 | MessageDisplay     | Display       | None                        | Display content replacement   |
 | Notification       | Notification  | Notification types          | None (observability)          |
+| BackgroundTasksChanged | Background Tasks | None                   | None (observability)          |
 
 ### Critical Gotchas
 
@@ -1494,7 +1496,7 @@ echo "$output" | jq .
 
 For detailed patterns and advanced techniques, consult:
 
-- **`references/event-schemas.md`** -- Complete input/output JSON schemas for all 27 events
+- **`references/event-schemas.md`** -- Complete input/output JSON schemas for all 28 events
 - **`references/patterns.md`** -- Proven patterns including temporarily active and configuration-driven hooks
 - **`references/migration.md`** -- Migrating from basic to advanced hooks
 - **`references/advanced.md`** -- Advanced use cases and techniques
@@ -1538,7 +1540,7 @@ Development tools in `scripts/`:
 
 To implement hooks in a plugin:
 
-1. Identify events to hook into (see [Quick Reference](#all-27-hook-events))
+1. Identify events to hook into (see [Quick Reference](#all-28-hook-events))
 2. Decide hook type: prompt (flexible), agent (multi-step), command (deterministic), or HTTP (external)
 3. Write hook configuration in `hooks/hooks.json`
 4. For command hooks, create hook scripts

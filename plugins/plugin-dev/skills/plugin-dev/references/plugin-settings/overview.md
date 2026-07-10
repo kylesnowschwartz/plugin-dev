@@ -531,6 +531,30 @@ Plugin settings files (`.local.md`) exist alongside Claude Code's broader memory
 
 See `references/memory-rules-system.md` for the full priority hierarchy, import syntax, and design implications.
 
+### CLAUDE.md Best Practices and /doctor Trimming (CC 2.1.206)
+
+The `/doctor` command includes a check that suggests trimming verbose CLAUDE.md files. When creating CLAUDE.md files for plugins or documenting plugin usage, understand what content survives /doctor recommendations:
+
+**Content to REMOVE (codebase-derivable or mechanically enforced):**
+
+- Directory layouts the model can discover via exploration
+- Technology stack lists derivable from package files
+- Standard CLI commands the model already knows
+- Copied JSON/YAML schemas
+- Generic coding advice
+- Rules already enforced by linters or formatters
+
+**Content to KEEP (non-derivable guidance):**
+
+- Gotchas specific to the project
+- Rationale behind unusual decisions
+- Non-standard conventions unique to the codebase
+- Safety directives (e.g., "never commit to main directly")
+- Cross-cutting concerns not obvious from code structure
+- Plugin-specific configuration instructions
+
+**Plugin author guidance:** If your plugin requires CLAUDE.md documentation, keep it focused on plugin-specific gotchas and non-obvious configuration. Avoid duplicating information the model can derive from your plugin's manifest, README, or skill files.
+
 ## Additional Resources
 
 ### Reference Files
