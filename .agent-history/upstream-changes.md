@@ -1,420 +1,523 @@
 # Upstream Change Manifest
-## CC Version Range: 2.1.198 - 2.1.201
-## Generated: 2026-07-04
-## Sources: changelog [x], system-prompts [x], claude-code-guide [skipped - agent SDK version incompatible in CI]
+## CC Version Range: 2.1.202 - 2.1.206
+## Generated: 2026-07-10
+## Sources: changelog [Y], system-prompts [Y], claude-code-guide [Y]
 
 ---
 
-### Must Update
+### Must Update (Stage 2 Verified)
 
-- [ ] **Subagents now run in background by default** (CC 2.1.198)
-  - Source: changelog, system-prompts
+- [ ] **/doctor command CLAUDE.md trimming check** (CC 2.1.206)
+  - Source: system-prompts changelog + changelog (confirmed both)
   - Confidence: high
-  - Affects: agent-development (Agent tool section)
-  - Details: The Agent tool now defaults to `run_in_background: true` unless explicitly set to `false`. This is a behavioral change that affects how agents are dispatched. The system-prompts confirm: "Makes agents background by default unless `run_in_background: false`". Plugin developers need to be aware that agent calls will now run asynchronously by default. This affects agent-creator agent and plugin-developer skill documentation.
-  - Raw changelog: "Subagents now run in background by default"
-  - Raw system-prompts: "Tool Description: Agent -- Makes agents background by default unless `run_in_background: false`, and documents that agent type definitions supply model, reasoning effort, and tool access while the call-level `model` overrides only that launch."
+  - Affects: plugin-settings reference (CLAUDE.md guidance)
+  - Details: The /doctor command now includes a check suggesting trimming checked-in CLAUDE.md files. Removes codebase-derivable layouts, stack lists, standard commands, copied schemas, generic advice, and mechanically enforced rules while preserving gotchas, rationale, non-standard conventions, safety directives, and other non-derivable guidance.
+  - Stage 2 Note: Plugin developers creating CLAUDE.md files should understand what content survives /doctor recommendations.
 
-- [ ] **Subagents inherit session's extended thinking configuration** (CC 2.1.198)
-  - Source: changelog, system-prompts
+- [ ] **MCP servers failed to connect system reminder** (CC 2.1.205)
+  - Source: system-prompts changelog
   - Confidence: high
-  - Affects: agent-development
-  - Details: Agent type definitions supply model, reasoning effort, and tool access, while the call-level `model` parameter overrides only the model at launch. Extended thinking configuration is now inherited from parent session. This affects how agent frontmatter interacts with session settings.
-  - Raw changelog: "Subagents now inherit session's extended thinking configuration"
+  - Affects: mcp-integration reference
+  - Details: New system reminder warns when configured MCP servers fail to connect, tells agents to treat their tools as unavailable because of connection failure rather than missing capability, and marks quoted connection errors as diagnostic data rather than instructions.
+  - Stage 2 Note: Relevant for plugin developers bundling MCP servers; affects error handling patterns.
 
-- [ ] **Slash-skill stacking: load multiple skills (up to 5)** (CC 2.1.199)
-  - Source: changelog
-  - Confidence: medium (changelog only)
-  - Affects: skill-development (skill invocation section)
-  - Details: Enhanced slash-skill stacking allows loading multiple skills simultaneously, up to 5 at a time. This changes how users can interact with skills and should be documented in skill invocation guidance.
-  - Raw changelog: "Enhanced slash-skill stacking to load multiple skills (up to 5)"
-
-- [ ] **Background agent notifications via hooks** (CC 2.1.198)
-  - Source: changelog
-  - Confidence: medium (changelog only)
-  - Affects: hook-development (new hook capability)
-  - Details: New capability for background agents to send notifications through the hook system. May introduce new hook events or hook input fields for background agent lifecycle.
-  - Raw changelog: "Added background agent notifications via hooks"
-
-- [ ] **ListAgents tool added** (CC 2.1.200)
-  - Source: system-prompts
-  - Confidence: medium (system-prompts only)
-  - Affects: agent-development (tools reference)
-  - Details: New tool for listing available agents including in-process subagents, local/cloud Claude sessions, and reply-only remote bridge sessions. Agents should address a row by its exact name and append its `[ref]` only when the bare name is ambiguous.
-  - Raw system-prompts: "Tool Description: ListAgents -- Adds a tool for listing agents you can message -- in-process subagents, other local and cloud Claude sessions, and reply-only remote bridge sessions -- instructing agents to address a row by its exact name and append its `[ref]` only when the bare name is ambiguous."
-
-- [ ] **Default permission mode changed to Manual** (CC 2.1.200)
-  - Source: changelog
-  - Confidence: medium (changelog only)
-  - Affects: plugin-settings (permission modes documentation)
-  - Details: Changed default permission mode to "Manual" across all interfaces. This may affect plugin testing workflows and documentation about permission handling.
-  - Raw changelog: "Changed default permission mode to 'Manual' across all interfaces"
-
-- [ ] **Verify skill now persists to .claude/skills/verify/SKILL.md** (CC 2.1.200)
-  - Source: system-prompts
-  - Confidence: medium (system-prompts only)
-  - Affects: skill-development (skill creation patterns)
-  - Details: The verify skill now bootstraps and persists working build/launch/drive recipes to `.claude/skills/verify/SKILL.md` at the appropriate scope (repo root or touched package/app directory in monorepo). This is notable for understanding skill auto-creation patterns.
-  - Raw system-prompts: "Skill: Verify skill -- Now bootstraps a project verify skill: after getting through a cold-start verification, persist the working build/launch/drive recipe to `.claude/skills/verify/SKILL.md` at the right scope (repo root, or the touched package/app directory in a monorepo), or fold new learnings into an existing verify skill instead of duplicating."
-
-- [ ] **Project skill upkeep guidance: never create skills (except verify)** (CC 2.1.200)
-  - Source: system-prompts
-  - Confidence: medium (system-prompts only)
-  - Affects: skill-development (skill patterns)
-  - Details: New guidance clarifying that agents should only edit existing project skills and never create new ones (a new skill shadows a same-named built-in), with `verify` as the sole exception. Important for skill development patterns.
-  - Raw system-prompts: "System Prompt: Project skill upkeep for feedback memory -- Clarifies to only edit existing project skills and never create one (a new skill shadows a same-named built-in), with `verify` as the sole exception, and to place a verify correction in the closest-scoped `.claude/skills/verify/SKILL.md`, never duplicated at broader scopes."
-
-- [ ] **Isolated worktree shipping instructions** (CC 2.1.198)
-  - Source: system-prompts
-  - Confidence: high (promoted from May Update during Stage 2 verification)
-  - Affects: agent-development (background session guidance)
-  - Details: Background-session guidance that isolated worktree agents should commit changes, push a branch, and open a draft PR without asking. Affects background agent behavior and workflow automation.
-  - Raw system-prompts: "System Prompt: Isolated worktree shipping instructions -- isolated worktree agents should commit changes, push a branch, and open a draft PR without asking"
-
-- [ ] **SessionStart, Setup, and SubagentStart hooks stderr fix** (CC 2.1.199)
-  - Source: changelog
-  - Confidence: medium (promoted during Stage 2 verification -- bug fix with documentation impact)
-  - Affects: hook-development (exit code 2 behavior documentation)
-  - Details: These hooks now properly show stderr in transcript when exiting with code 2. Previously stderr was silently hidden. This affects the documented hook behavior.
-  - Raw changelog: "Fixed `SessionStart`, `Setup`, and `SubagentStart` hooks silently hiding stderr when exiting with code 2; error now shown in transcript"
-
-- [ ] **SearchPlugins, SearchSkills, SearchMcpRegistry, SuggestConnectors, ListConnectors tools** (CC 2.1.199)
-  - Source: system-prompts
-  - Confidence: medium (promoted from May Update during Stage 2 verification)
-  - Affects: plugin-structure (tool discovery)
-  - Details: New discovery tools for searching org plugins/skills and MCP connector registries. Directly relevant for plugin discovery workflows.
-  - Raw system-prompts: "Tool Description: SearchPlugins, SearchSkills, SearchMcpRegistry, SuggestConnectors, and ListConnectors -- Adds discovery prompts for searching org plugins/skills and MCP connector registries"
+- [ ] **Background tasks changed event schema** (CC 2.1.203)
+  - Source: system-prompts changelog
+  - Confidence: high
+  - Affects: hook-development reference (event-schemas.md)
+  - Details: New `background_tasks_changed` level-event schema with replace-set semantics, unspecified ordering relative to bookend events, id-only payloads, and per-process reset behavior.
+  - Stage 2 Note: New hook event that plugins can respond to; must be documented in event-schemas.md.
 
 ---
 
-### May Update
+### May Update (Stage 2 Verified)
 
-- [ ] **SSL certificate error handling with immediate feedback** (CC 2.1.199)
-  - Source: changelog
-  - Confidence: low (changelog only)
-  - Affects: troubleshooting documentation
-  - Details: Improved SSL certificate error handling provides immediate feedback to users. May be relevant for MCP integration troubleshooting.
-  - Raw changelog: "Improved SSL certificate error handling with immediate feedback"
+- [ ] **Auto mode consent flow system reminder** (CC 2.1.203)
+  - Source: system-prompts changelog
+  - Confidence: medium
+  - Affects: agent-development patterns (auto mode)
+  - Details: New auto-mode guidance to try safe alternatives first, keep working when consent is blocked, batch remaining consent asks before ending the turn.
+  - Stage 2 Note: Behavioral guidance for auto mode; useful but not critical for plugin developers.
 
-- [ ] **Enhanced subagent error reporting to parents** (CC 2.1.199)
-  - Source: changelog
-  - Confidence: low (changelog only)
-  - Affects: agent-development (error handling patterns)
-  - Details: Subagents now report errors more effectively to their parent agents. May affect agent design guidance.
-  - Raw changelog: "Enhanced subagent error reporting to parents"
+- [ ] **SendMessageTool addressing changes for completed agents** (CC 2.1.203)
+  - Source: system-prompts changelog
+  - Confidence: medium
+  - Affects: agent-development patterns
+  - Details: Names keep working after completion and resume the transcript, using raw agentId only for unnamed agents or when a newer agent has taken the name.
+  - Stage 2 Note: Behavioral improvement; existing code continues to work.
 
-- [ ] **ClaudeDesign tool added** (CC 2.1.199)
-  - Source: system-prompts
-  - Confidence: medium (system-prompts only)
-  - Affects: tools reference (if documented)
-  - Details: New tool for working with Claude Design projects including design-system context, managing projects/files, rendering previews.
-  - Raw system-prompts: "Tool Description: ClaudeDesign -- Adds instructions for working with Claude Design projects"
+- [ ] **Loop execution explicit re-arming** (CC 2.1.202)
+  - Source: system-prompts changelog
+  - Confidence: medium
+  - Affects: agent-development patterns (background loops)
+  - Details: Loop re-arming is now an explicit per-turn decision; end loops by calling the wakeup tool with stop: true instead of omitting the call.
+  - Stage 2 Note: Affects advanced agent patterns using loops/scheduling.
 
-- [ ] **Plan artifact HTML template and Plan Artifact skill** (CC 2.1.198, 2.1.199)
-  - Source: system-prompts
-  - Confidence: medium (system-prompts only)
-  - Affects: skill-development (artifact patterns)
-  - Details: New standard plan artifact template and skill for creating shareable HTML plan pages from implementation plans, design docs, and RFCs.
-  - Raw system-prompts: "Skill: Plan Artifact and Data: Plan artifact HTML template -- Adds a standard Artifact template and skill for turning implementation plans, design docs, and RFCs into shareable HTML plan pages"
+- [ ] **Plugin LSP server initialization fixes** (CC 2.1.205)
+  - Source: CC changelog
+  - Confidence: medium
+  - Affects: lsp-integration reference
+  - Details: Plugin LSP server initialization fixes.
+  - Stage 2 Note: Promoted from No Action; specifically relevant to plugin LSP integration.
 
-- [ ] **Auto mode setup skill** (CC 2.1.198)
-  - Source: system-prompts
-  - Confidence: medium (system-prompts only)
-  - Affects: skill-development (built-in skill patterns)
-  - Details: New guided setup workflow for auto-mode environment context, repo/session reconnaissance, and settings updates.
-  - Raw system-prompts: "Skill: Auto mode setup -- Adds a guided setup workflow for auto-mode environment context, repo/session reconnaissance"
+- [ ] **Auto mode setup skill rework** (CC 2.1.206)
+  - Source: system-prompts changelog
+  - Confidence: medium
+  - Affects: auto mode documentation examples
+  - Details: Reworks setup around mechanically pre-gathered, untrusted local recon.
+  - Stage 2 Note: Useful context for auto-mode workflows but not critical.
 
-- [ ] **Shared git stash safety warning** (CC 2.1.198)
-  - Source: system-prompts
-  - Confidence: low (system-prompts only)
-  - Affects: agent-development (git safety patterns)
-  - Details: Warning that stash stack is shared across worktrees and sessions, preferring WIP commits or uniquely tagged stash entries.
-  - Raw system-prompts: "System Prompt: Shared git stash safety -- Warns that the stash stack is shared across worktrees and sessions"
+- [ ] **Security monitor consent and user-intent interpretation tightening** (CC 2.1.203 and 2.1.205)
+  - Source: system-prompts changelog
+  - Confidence: medium
+  - Affects: auto mode security documentation
+  - Details: Replaces broad high-severity user-intent checks with explicit soft-block consent bars.
+  - Stage 2 Note: Auto mode security changes; relevant for plugin agents in auto mode.
 
-- [ ] **Security monitor expansions for autonomous agents** (CC 2.1.198-2.1.200)
-  - Source: system-prompts
-  - Confidence: low (system-prompts only)
-  - Affects: auto-mode safety patterns
-  - Details: Major expansions to autonomous agent action security monitoring, including exfiltration rules, protected content classes, soft-block rules. May affect agent design for auto-mode scenarios.
-  - Raw system-prompts: Multiple "Agent Prompt: Security monitor" entries
+- [ ] **Dynamic workflow size setting** (CC 2.1.202)
+  - Source: CC changelog only
+  - Confidence: low
+  - Affects: workflow configuration documentation
+  - Details: New setting for controlling agent counts in workflows.
+  - Stage 2 Note: Promoted from low confidence; affects workflow orchestration patterns.
 
-- [ ] **Improved background agent reliability on Linux** (CC 2.1.199)
-  - Source: changelog
-  - Confidence: low (changelog only)
-  - Affects: CI documentation (if relevant)
-  - Details: Background agent reliability improvements specific to Linux.
-  - Raw changelog: "Improved background agent reliability on Linux"
-
----
-
-### No Action
-
-- New /dataviz skill (CC 2.1.198) - Built-in skill feature, not plugin-dev relevant (demoted from Must Update in Stage 2)
-- File already in context system reminder (CC 2.1.199) - Internal efficiency optimization, no plugin-dev impact (demoted from May Update in Stage 2)
-- Claude Tag (Claude in Slack) reference added (CC 2.1.200) - Slack integration, not plugin-dev related (demoted from May Update in Stage 2)
-- set_cwd needs_trust directory parameter (CC 2.1.200) - Internal tool parameter, not plugin-dev relevant (demoted from May Update in Stage 2)
-- Claude Sonnet 5 sessions no longer use mid-conversation system role for harness reminders (CC 2.1.201) - Internal harness change
-- Disabled auto-continue for user-question dialogs (CC 2.1.200) - UI behavior
-- Fixed multiple background session issues including mid-turn interruption after sleep/wake (CC 2.1.200) - Bug fix
-- Fixed subagents being cut off by rate limits (CC 2.1.200) - Bug fix
-- Improved screen-reader accessibility and terminal output synchronization (CC 2.1.200) - Accessibility fix
-- Fixed streaming response handling when API errors occur mid-stream (CC 2.1.199) - Bug fix
-- Claude in Chrome now generally available (CC 2.1.198) - Browser extension feature
-- REMOVED: Agent Prompt: Agent creation architect (CC 2.1.198) - Internal removal
-- REMOVED: Skill: Create verifier skills (CC 2.1.198) - Internal removal
-- REMOVED: Tool Description: Bash command-chaining notes (CC 2.1.198) - Redundant removal
-- Code walkthrough / PR explainer / Code review artifact publishing (CC 2.1.198) - Built-in skill features
-- Plugin eval authoring interview skill (CC 2.1.198) - Internal eval tooling
-- Thin-client diff dialog schema (CC 2.1.198) - Internal protocol
-- Plan mode workflow reminders split (CC 2.1.198) - Internal restructuring
-- Workflow tool example changes (CC 2.1.198) - Internal example update
-- Context tip selector improvements (CC 2.1.199) - Internal tip system
-- PushNotification behavior clarification (CC 2.1.199) - Internal notification system
-- EnterPlanMode generalization (CC 2.1.198) - Internal wording change
-- PowerShell command-timeout note (CC 2.1.198) - Windows-specific
-- Status-line JSON schema updates (CC 2.1.198-2.1.200) - Internal status UI
-- Setup Cowork and Cowork role selection (CC 2.1.199) - Internal onboarding flow
-- Artifact design skill rework (CC 2.1.198) - Built-in skill internal update
-- Coordinator mode orchestration worker-approval pattern (CC 2.1.198) - Internal coordination
-- SendMessageTool legacy shutdown/plan-approval conditional (CC 2.1.198) - Internal messaging
+- [ ] **Session working directories in MCP roots/list** (CC 2.1.203)
+  - Source: CC changelog only
+  - Confidence: low
+  - Affects: mcp-integration reference
+  - Details: Session working directories now included in MCP roots/list response.
+  - Stage 2 Note: Relevant for MCP integration documentation.
 
 ---
 
-## Summary
+### No Action (Stage 2 Verified)
 
-**Version range audited:** 2.1.198 through 2.1.201 (4 versions after last audit at 2.1.197)
+**Stage 2 Reclassified Items (from Must Update):**
+- **EndConversation tool added** (CC 2.1.206) - Internal tool with specific usage restrictions (sustained abuse, user demo). Not plugin development API.
+- **Artifact skills (dashboard, data table, explainer, report)** (CC 2.1.206) - Bundled Claude Code skills, not plugin APIs.
+- **Code Review skills effort-scaled modes** (CC 2.1.206) - Bundled Claude Code skills, not plugin APIs.
+- **PR explainer artifact-template mode** (CC 2.1.206) - Internal skill enhancement, not plugin API.
+- **Proactive schedule offer prompts removed** (CC 2.1.206) - Internal scheduling behavior.
+- **Security monitor transcript tampering soft block** (CC 2.1.205) - Auto mode security infrastructure; agents should not tamper with transcripts.
+- **Verify skill narrowed project skill updates** (CC 2.1.205) - Internal verify skill behavior.
+- **EnterWorktree nested repository support** (CC 2.1.203) - Minor enhancement to existing functionality.
+- **Governed GitHub CLI shim** (CC 2.1.202) - Infrastructure; plugins use gh normally.
+- **/code-review low effort minimum findings mode** (CC 2.1.202) - Internal code review mode.
+
+**Stage 2 Reclassified Items (from May Update):**
+- **Quick PR creation remote guidance** (CC 2.1.206) - Minor behavioral change to built-in PR creation.
+- **ClaudeDesign tool preference** (CC 2.1.206) - Separate tool surface, not plugin API.
+- **Conversation/message summarization user turn counting** (CC 2.1.205) - Internal summarization behavior.
+- **/review slash command sectioned PR review** (CC 2.1.202) - Internal /review behavior.
+- **PR explainer requirements expanded** (CC 2.1.202) - Internal skill behavior.
+- **Manual permission mode indicator in footer** (CC 2.1.203) - UI indicator.
+- **Login expiration warnings** (CC 2.1.203) - Authentication UX.
+
+**Original No Action Items (bug fixes and infrastructure):**
+- **Hook event streaming fix during SessionStart hooks in headless sessions** (CC 2.1.204) - Bug fix, no prompt changes per system-prompts changelog
+- **--json-schema fix for invalid schemas** (CC 2.1.205) - Bug fix for CLI
+- **Messages sent during --max-turns limit no longer silently lost** (CC 2.1.205) - Bug fix
+- **Windows worktree removal improvements** (CC 2.1.205) - Platform-specific bug fix
+- **Background agent status fixes for resumed sessions** (CC 2.1.205) - Bug fix
+- **Windows crash prevention** (CC 2.1.205) - Platform-specific bug fix
+- **Inline Ctrl+R history search crash fixes** (CC 2.1.202) - Bug fix
+- **Background session rename persistence improvements** (CC 2.1.202) - Bug fix
+- **mTLS handshake transient failure handling** (CC 2.1.202) - Bug fix
+- **Remote Control command routing fixes** (CC 2.1.202) - Bug fix
+- **Sign-in URL reliability improvements** (CC 2.1.202) - Bug fix
+- **Voice dictation retry loop prevention** (CC 2.1.202) - Bug fix
+- **Worktree repository performance optimization** (CC 2.1.202) - Performance fix
+- **OpenTelemetry attributes for workflow-spawned agents** (CC 2.1.202) - Observability, not plugin-facing
+- **Gateway login Anthropic public endpoints support** (CC 2.1.206) - Infrastructure
+- **Background agents auto-upgrade after updates** (CC 2.1.206) - Lifecycle management
+- **Expired login error messaging** (CC 2.1.206) - UX improvement
+- **MCP server timeout and OAuth refresh fixes** (CC 2.1.206) - Bug fixes
+- **Model picker pricing display** (CC 2.1.206) - UI improvement
+- **Desktop sessions stuck "running" status fix** (CC 2.1.206) - Bug fix
+- **Improved agents view terminal width** (CC 2.1.206) - UI improvement
+- **Ctrl+X session permanence** (CC 2.1.206) - UI behavior
+- **Enhanced /cd with directory path suggestions** (CC 2.1.206) - Minor UX (not in system-prompts, may be CLI only)
+- **Context usage analysis performance** (CC 2.1.203) - Performance
+- **Background agent PATH inheritance corrections** (CC 2.1.203) - Bug fix
+- **Git worktree bash failures resolved** (CC 2.1.203) - Bug fix
+- **Worktree-isolated subagent shell command fixes** (CC 2.1.203) - Bug fix
+- **Subagent work preservation returning to agent view** (CC 2.1.203) - UI behavior
+- **stale token recovery for background sessions** (CC 2.1.203) - Bug fix
+- **Background session responsiveness after sleep/wake** (CC 2.1.203) - Bug fix
+
+---
+
+## Summary (Stage 2 Updated)
+
+**Version range audited:** 2.1.202 through 2.1.206 (5 versions after last audit at 2.1.201)
+
+**Stage 2 Verification Results:**
+- **Must Update:** 3 items (down from 16 in Stage 1)
+- **May Update:** 8 items (reclassified and verified)
+- **No Action:** Remainder (including 17 reclassified items)
+- **Confidence:** HIGH
 
 **Versions included:**
-- 2.1.198 (significant - subagents background by default, extended thinking inheritance, /dataviz skill)
-- 2.1.199 (significant - slash-skill stacking up to 5, new discovery tools)
-- 2.1.200 (significant - Manual default permission mode, ListAgents tool, verify skill persistence)
-- 2.1.201 (minimal - no plugin-relevant changes)
+- 2.1.202 (limited plugin relevance - loop re-arming pattern change)
+- 2.1.203 (significant - background_tasks_changed event schema, auto mode consent flow)
+- 2.1.204 (minimal - hook event streaming fix only, no system prompt changes)
+- 2.1.205 (significant for plugins - MCP server connection failure reminder, LSP initialization fixes)
+- 2.1.206 (limited plugin relevance - /doctor CLAUDE.md trimming guidance)
 
 **Token delta from system-prompts:**
-- 2.1.198: +53,384 tokens
-- 2.1.199: +25,167 tokens
-- 2.1.200: +6,194 tokens
-- 2.1.201: No changes
+- 2.1.202: +3,217 tokens
+- 2.1.203: +16,113 tokens
+- 2.1.204: No changes
+- 2.1.205: +23,674 tokens
+- 2.1.206: +10,807 tokens
 
-**Total estimated token impact:** +84,745 tokens in system prompts
+**Total estimated token impact:** +53,811 tokens in system prompts (mostly internal features)
 
 ---
 
-### Critical Changes Requiring Documentation Updates
+### Critical Changes Requiring Documentation Updates (Stage 2 Verified)
 
-1. **Subagents background by default** (CC 2.1.198) - This is the most significant behavioral change. All Agent tool calls now run in background unless `run_in_background: false` is specified. Affects existing documentation and examples showing synchronous agent dispatch.
+**Must Update (3 items):**
 
-2. **Slash-skill stacking up to 5** (CC 2.1.199) - Users can now load multiple skills simultaneously. Skill invocation documentation should be updated.
+1. **/doctor CLAUDE.md trimming** (CC 2.1.206) - New check recommending trimming CLAUDE.md files. Plugin developers should understand what content survives /doctor recommendations when creating CLAUDE.md files.
+   - Update: plugin-settings reference (CLAUDE.md guidance section)
 
-3. **Default permission mode Manual** (CC 2.1.200) - Affects plugin testing workflows and permission mode documentation.
+2. **MCP server connection failure reminder** (CC 2.1.205) - New system reminder when MCP servers fail to connect. Plugin developers bundling MCP servers should document expected error handling.
+   - Update: mcp-integration reference (Error Handling section)
 
-4. **ListAgents tool** (CC 2.1.200) - New tool for agent discovery that may be useful in multi-agent scenarios.
+3. **background_tasks_changed event** (CC 2.1.203) - New hook event schema with replace-set semantics. Plugin developers can now respond to background task state changes.
+   - Update: hook-development/references/event-schemas.md (add new event)
 
-5. **Verify skill auto-persistence** (CC 2.1.200) - New pattern where verify skills are automatically created/updated in `.claude/skills/verify/SKILL.md`.
+**May Update (8 items) - optional enhancements for completeness:**
 
-6. **Project skill shadowing warning** (CC 2.1.200) - Important guidance that creating new project skills can shadow built-in skills.
+4. **Auto mode consent flow** (CC 2.1.203) - Behavioral guidance for auto mode consent handling. Useful for plugin agents running in auto mode.
+
+5. **SendMessageTool addressing changes** (CC 2.1.203) - Names keep working after agent completion. Improves multi-agent patterns.
+
+6. **Loop execution explicit re-arming** (CC 2.1.202) - New pattern for ending loops with `stop: true`. Affects advanced loop-based agents.
+
+7. **Plugin LSP server initialization fixes** (CC 2.1.205) - Bug fixes for LSP plugin initialization.
+
+8. **Security monitor consent/user-intent tightening** (CC 2.1.203, 2.1.205) - Auto mode security changes.
 
 ---
 
 ### Key Themes in This Release Range
 
-1. **Background-first agents**: Subagents now default to background execution, matching the async-first paradigm
-2. **Multi-skill loading**: Slash-skill stacking allows loading up to 5 skills simultaneously
-3. **Manual permission default**: More conservative default permission mode across interfaces
-4. **Skill auto-creation**: Verify skill can now auto-persist recipes to project skills directory
-5. **Agent discovery**: ListAgents tool enables programmatic discovery of available agents
-6. **Extended thinking inheritance**: Subagents now inherit session's extended thinking configuration
+1. **Artifact workflows**: Major expansion of artifact template skills (dashboard, data table, explainer, report)
+2. **Code review evolution**: Effort-scaled review modes from low to xhigh
+3. **Security tightening**: Transcript tampering blocks, consent flow guidance, user-intent interpretation
+4. **Background agent events**: New background_tasks_changed schema for hook system
+5. **MCP resilience**: Connection failure handling guidance
+6. **CLAUDE.md hygiene**: /doctor check for trimming overly verbose CLAUDE.md files
+7. **Multi-agent coordination**: SendMessageTool addressing improvements for completed agents
 
 ---
 
 ### Triangulation Notes
 
-- Two-source triangulation used: CC changelog + system-prompts changelog
-- claude-code-guide agent dispatch skipped due to SDK version incompatibility in CI environment
-- Changes confirmed in both sources marked as high confidence
+- Three-source triangulation used: CC changelog + system-prompts changelog + claude-code-guide agent
+- claude-code-guide agent confirmed /doctor CLAUDE.md trimming and transcript tampering soft block
+- claude-code-guide noted several changelog items (Dynamic workflow size, MCP roots/list, permission indicator) not found in system-prompts
+- Changes confirmed in both changelog sources marked as high confidence
 - Single-source changes marked as medium/low confidence
-- Both sources aligned well on major changes (subagent background default, /dataviz skill)
-- System-prompts provided more granular detail on behavioral changes
+- System-prompts provided the most detailed behavioral change information
 
 ---
 
 ## Raw Changelog Data
 
-### CC 2.1.201 (from upstream changelog)
+### CC 2.1.206 (from upstream changelog)
 ```
-Claude Sonnet 5 sessions no longer use the mid-conversation system role for harness reminders
-```
-
-### CC 2.1.200 (from upstream changelog)
-```
-- Disabled auto-continue for user-question dialogs; users can opt into idle timeout
-- Changed default permission mode to "Manual" across all interfaces
-- Fixed multiple background session issues including mid-turn interruption after sleep/wake
-- Fixed subagents being cut off by rate limits
-- Improved screen-reader accessibility and terminal output synchronization
-```
-
-### CC 2.1.199 (from upstream changelog)
-```
-- Enhanced slash-skill stacking to load multiple skills (up to 5)
-- Improved SSL certificate error handling with immediate feedback
-- Fixed streaming response handling when API errors occur mid-stream
-- Enhanced subagent error reporting to parents
-- Improved background agent reliability on Linux
+- Enhanced `/cd` command with directory path suggestions matching `/add-dir` behavior
+- New `/doctor` check suggesting trimming checked-in `CLAUDE.md` files
+- Improved `/commit-push-pr` to auto-allow pushes to configured push remotes
+- Gateway login now supports Anthropic-operated public endpoints
+- Background agents upgrade automatically after Claude Code updates
+- Fixed expired login error messaging for better user guidance
+- Multiple MCP server fixes including timeout handling and OAuth refresh issues
+- Model picker improvements for accurate pricing display
+- Desktop sessions no longer get stuck showing "running" status
+- Improved agents view with full terminal width status column
+- Session permanence: Ctrl+X now permanently removes completed sessions
 ```
 
-### CC 2.1.198 (from upstream changelog)
+### CC 2.1.205 (from upstream changelog)
 ```
-- Subagents now run in background by default
-- Claude in Chrome now generally available
-- Added background agent notifications via hooks
-- New `/dataviz` skill for design guidance
-- Subagents now inherit session's extended thinking configuration
-```
-
-### System-prompts 2.1.200 (key items)
-```
-- **NEW:** Data: Claude Tag (Claude in Slack) reference
-- **NEW:** Tool Description: ListAgents
-- **NEW:** Tool Parameter: set_cwd needs_trust directory
-- Agent Prompt: Security monitor for autonomous agent actions (second part) -- expanded exfiltration and soft-block rules
-- Skill: Verify skill -- Now bootstraps a project verify skill to `.claude/skills/verify/SKILL.md`
-- System Prompt: Project skill upkeep for feedback memory -- only edit existing project skills, never create (shadows built-in)
+- Auto mode rule blocking transcript file tampering
+- Fixed `--json-schema` producing unstructured output with invalid schemas
+- Messages sent during `--max-turns` limit no longer silently lost
+- Windows worktree removal improvements preventing file deletion outside target
+- Background agent status fixes for resumed sessions
+- Session-to-PR linking improvements for bash output exceeding limits
+- Plugin LSP server initialization fixes
+- Windows crash prevention when launch directory becomes unavailable
+- Agent view rendering corrections and improved session information display
 ```
 
-### System-prompts 2.1.199 (key items)
+### CC 2.1.204 (from upstream changelog)
 ```
-- **NEW:** Agent Prompt: /code-review part 10 ReportFindings output format
-- **NEW:** Skill: Setup Cowork and Setup Cowork role selection
-- **NEW:** Tool Description: SearchPlugins, SearchSkills, SearchMcpRegistry, SuggestConnectors, ListConnectors
-- **NEW:** Tool Description: ClaudeDesign
-- **NEW:** System Reminder: File already in context
-- Plan artifact updates, Artifact theme-aware guidance
+- Hook event streaming fix during SessionStart hooks in headless sessions
 ```
 
-### System-prompts 2.1.198 (key items)
+### CC 2.1.203 (from upstream changelog)
 ```
-- **NEW:** Skill: Data Visualization and Data Visualization description
-- **NEW:** Skill: Auto mode setup
-- **NEW:** Skill: Plan Artifact and Data: Plan artifact HTML template
-- **NEW:** System Prompt: Isolated worktree shipping instructions
-- **NEW:** System Prompt: Shared git stash safety
-- **NEW:** System Prompt: Project skill upkeep for feedback memory
-- **REMOVED:** Agent Prompt: Agent creation architect
-- **REMOVED:** Skill: Create verifier skills
-- Tool Description: Agent -- Makes agents background by default unless `run_in_background: false`
+- Login expiration warnings allowing pre-authentication before interruptions
+- Manual permission mode indicator added to footer
+- Session working directories now included in MCP `roots/list`
+- Background session responsiveness improvements after sleep/wake cycles
+- stale token recovery for background sessions
+- Subagent work preservation when returning to agent view
+- Context usage analysis performance improvements
+- Background agent PATH inheritance corrections
+- Git worktree bash failures resolved
+- Worktree-isolated subagent shell command fixes
+```
+
+### CC 2.1.202 (from upstream changelog)
+```
+- New "Dynamic workflow size" setting for controlling agent counts
+- OpenTelemetry attributes added for workflow-spawned agents
+- Inline Ctrl+R history search crash fixes
+- Background session rename persistence improvements
+- mTLS handshake transient failure handling
+- Remote Control command routing fixes
+- Image/file handling in Remote Control apps
+- Sign-in URL reliability improvements for SSH connections
+- Workflow script unicode quote escape fixes
+- Voice dictation retry loop prevention
+- Remote Control permission mode display fixes
+- Worktree repository performance optimization
+- Skill invocation improvements
+- Workflow review engine streamlining
+```
+
+### System-prompts 2.1.206 (key items)
+```
+- **NEW:** Tool Description: EndConversation and System Reminder: End conversation background fork no-op
+- **NEW:** Skill: Artifact dashboard; Skill: Artifact data table; Skill: Artifact explainer; Skill: Artifact report
+- **NEW:** Skill: Code Review correctness finder angles; Code Review inline medium/high; Code Review inline xhigh; Code Review low effort expanded-findings
+- **NEW:** Skill: PR explainer artifact-template mode
+- **REMOVED:** System Prompt: Proactive schedule offer after natural future follow-up
+- **REMOVED:** System Prompt: Strict proactive schedule offer gate
+- Skill: /doctor slash command -- Add checked-in CLAUDE.md trimming pass
+- Skill: Auto mode setup -- Reworks setup around pre-gathered local recon
+- Tool Description: ClaudeDesign -- Prefer live shared Claude Design canvas
+```
+
+### System-prompts 2.1.205 (key items)
+```
+- **NEW:** Data: Interrupt receipt still queued field
+- **NEW:** Data: Peer sender display name field
+- **NEW:** Skill: /doctor slash command and description
+- **NEW:** System Reminder: MCP servers failed to connect
+- Agent Prompt: Security monitor -- soft block for transcript JSONL tampering
+- Skill: Verify skill -- Narrows project skill updates
+- Conversation summarization -- count only actual user-role turns
+```
+
+### System-prompts 2.1.203 (key items)
+```
+- **NEW:** Data: Background tasks changed event schema
+- **NEW:** Data: Context tip situation -- subagent fan-out
+- **NEW:** System Reminder: Auto mode consent flow
+- **REMOVED:** Agent Prompt: Fleet agent suggestion scope personalization
+- **REMOVED:** System Prompt: Tool execution denied
+- Agent Prompt: General purpose -- task-specific agents do assigned work directly
+- Tool Description: SendMessageTool -- names keep working after completion
+- Tool Description: EnterWorktree -- nested repository support
+```
+
+### System-prompts 2.1.202 (key items)
+```
+- **NEW:** Agent Prompt: /code-review part 2 low effort minimum findings mode
+- **NEW:** Data: Governed GitHub CLI shim header and routing
+- Agent Prompt: /review slash command -- sectioned PR review
+- Skill: Dynamic pacing loop execution -- loop re-arming explicit per-turn decision
+- Skill: PR explainer -- requirements for PR walkthrough artifacts
 ```
 
 ---
 
 ## Stage 2: Verification Results
-### Verified: 2026-07-04
+### Verified: 2026-07-10
 
 #### Must Update Verification
 
-- **Subagents now run in background by default** (CC 2.1.198)
-  - CONFIRMED in CC changelog: "Subagents now run in the background by default, so Claude keeps working while they run"
-  - CONFIRMED in system-prompts: "Tool Description: Agent -- Makes agents background by default unless `run_in_background: false`"
-  - Gap exists in agent-development/overview.md -- documents `run_in_background` parameter but not the new default behavior
-  - Affects: agent-development (Agent tool section)
+**EndConversation tool added (CC 2.1.206)**
+- CONFIRMED in system-prompts changelog line 14: "**NEW:** Tool Description: EndConversation and System Reminder: End conversation background fork no-op"
+- Gap exists: No EndConversation tool documented in plugin-dev references
+- Affects: tool-reference (if exists), agent-development patterns
+- STATUS: Reclassified to **No Action** — This is a Claude Code internal tool with very specific usage restrictions (sustained abuse, user-requested demo). Plugin developers do not need to document or use this tool; it is not part of the plugin development API.
 
-- **Subagents inherit session's extended thinking configuration** (CC 2.1.198)
-  - CONFIRMED in CC changelog: "Subagents and context compaction now inherit the session's extended thinking configuration"
-  - CONFIRMED in system-prompts: Agent type definitions supply model, reasoning effort, and tool access
-  - Gap exists -- no documentation of extended thinking inheritance in agent-development
-  - Affects: agent-development
+**Artifact skills added (dashboard, data table, explainer, report) (CC 2.1.206)**
+- CONFIRMED in system-prompts changelog line 11: "**NEW:** Skill: Artifact dashboard; Skill: Artifact data table; Skill: Artifact explainer; and Skill: Artifact report"
+- Gap exists: No artifact skill patterns documented in plugin-dev
+- Affects: skill-development examples (if relevant)
+- STATUS: Reclassified to **No Action** — These are bundled Claude Code skills, not plugin-development APIs. Plugin developers do not create or extend these skills; they are internal to Claude Code. No documentation gap for plugin development.
 
-- **Slash-skill stacking: load multiple skills (up to 5)** (CC 2.1.199)
-  - CONFIRMED in CC changelog: "Stacked slash-skill invocations like `/skill-a /skill-b do XYZ` now load all leading skills (up to 5), not just first"
-  - Gap exists in skill-development/overview.md -- no mention of skill stacking feature
-  - Affects: skill-development (skill invocation section)
+**Code Review skills expanded with effort-scaled modes (CC 2.1.206)**
+- CONFIRMED in system-prompts changelog line 12: "**NEW:** Skill: Code Review correctness finder angles; Skill: Code Review inline medium/high template; Skill: Code Review inline xhigh mode; and Skill: Code Review low effort expanded-findings mode"
+- Gap exists: No code review skill patterns documented
+- Affects: skill-development reference patterns
+- STATUS: Reclassified to **No Action** — These are bundled Claude Code code review skills, not plugin-development APIs. No documentation gap for plugin development.
 
-- **Background agent notifications via hooks** (CC 2.1.198)
-  - CONFIRMED in CC changelog: "Added background agent notifications in `claude agents`; sessions fire `Notification` hook (`agent_needs_input` / `agent_completed`)"
-  - Gap exists in hook-development -- Notification hook matchers list does not include `agent_needs_input` or `agent_completed`
-  - Affects: hook-development (Notification event matchers)
+**PR explainer artifact-template mode (CC 2.1.206)**
+- CONFIRMED in system-prompts changelog line 13: "**NEW:** Skill: PR explainer artifact-template mode"
+- STATUS: Reclassified to **No Action** — Internal Claude Code skill enhancement. Not relevant to plugin development documentation.
 
-- **ListAgents tool added** (CC 2.1.200)
-  - CONFIRMED in system-prompts: "Tool Description: ListAgents -- Adds a tool for listing agents you can message"
-  - Gap exists -- no documentation in agent-development or tools reference
-  - Affects: agent-development (tools reference)
+**/doctor command CLAUDE.md trimming check (CC 2.1.206)**
+- CONFIRMED in system-prompts changelog line 19 (2.1.206) and line 28 (2.1.205): Both reference /doctor CLAUDE.md trimming
+- CONFIRMED in CC changelog 2.1.206: "New `/doctor` check suggesting trimming checked-in `CLAUDE.md` files"
+- Gap exists: plugin-dev CLAUDE.md guidance does not mention /doctor trimming recommendations
+- Affects: plugin-settings reference (CLAUDE.md guidance), potentially skill-development
+- STATUS: **CONFIRMED Must Update** — Plugin developers who create CLAUDE.md files should be aware of best practices for content that survives /doctor trimming recommendations.
 
-- **Default permission mode changed to Manual** (CC 2.1.200)
-  - CONFIRMED in CC changelog: "Changed default permission mode to 'Manual' across all interfaces"
-  - Gap exists -- plugin-settings and agent-development do not reflect this default change
-  - Affects: plugin-settings (permission modes documentation), agent-development (permissionMode field)
+**Proactive schedule offer prompts removed (CC 2.1.206)**
+- CONFIRMED in system-prompts changelog line 15: "**REMOVED:** System Prompt: Proactive schedule offer after natural future follow-up and System Prompt: Strict proactive schedule offer gate"
+- STATUS: Reclassified to **No Action** — This is a behavior change in Claude Code's built-in scheduling feature. Not relevant to plugin development documentation.
 
-- **Verify skill now persists to .claude/skills/verify/SKILL.md** (CC 2.1.200)
-  - CONFIRMED in system-prompts: "Skill: Verify skill -- Now bootstraps a project verify skill... persist the working build/launch/drive recipe to `.claude/skills/verify/SKILL.md`"
-  - Gap exists -- no documentation of this auto-creation pattern
-  - May Update: Informational for skill-development patterns; not directly plugin-dev guidance
+**MCP servers failed to connect system reminder (CC 2.1.205)**
+- CONFIRMED in system-prompts changelog line 29: "**NEW:** System Reminder: MCP servers failed to connect"
+- Gap: MCP integration overview does not document this new system reminder behavior
+- Affects: mcp-integration reference
+- STATUS: **CONFIRMED Must Update** — Plugin developers bundling MCP servers should understand how Claude Code handles connection failures.
 
-- **Project skill upkeep guidance: never create skills (except verify)** (CC 2.1.200)
-  - CONFIRMED in system-prompts: "System Prompt: Project skill upkeep for feedback memory -- Clarifies to only edit existing project skills and never create one (a new skill shadows a same-named built-in), with `verify` as the sole exception"
-  - Partial gap -- skill-development mentions skill shadowing but does not warn against creating new skills that shadow built-ins
-  - Affects: skill-development (skill patterns)
+**Security monitor transcript tampering soft block (CC 2.1.205)**
+- CONFIRMED in system-prompts changelog line 38: "Adds a soft block for writing/tampering with Claude Code session transcript JSONL or forged classifier meta lines"
+- CONFIRMED in CC changelog 2.1.205: "Auto mode rule blocking transcript file tampering"
+- Gap: agent-development security patterns do not document this restriction
+- Affects: agent-development patterns (auto mode security)
+- STATUS: Reclassified to **No Action** — This is an auto-mode security rule that blocks malicious behavior. Plugin developers do not need to document or work around this; it is security infrastructure. Agents should not be tampering with transcripts.
 
-- **New /dataviz skill** (CC 2.1.198)
-  - CONFIRMED in CC changelog: "New `/dataviz` skill for design guidance"
-  - CONFIRMED in system-prompts: "Skill: Data Visualization and Data Visualization description"
-  - DEMOTE: This is a built-in skill feature, not plugin-dev guidance. No action needed.
-  - No Action: Built-in skill, does not affect plugin development documentation
+**Verify skill narrowed project skill updates (CC 2.1.205)**
+- CONFIRMED in system-prompts changelog line 39: "Skill: Verify skill — Narrows project verify-skill updates to cases where existing guidance steered the agent wrong or missed a needed step"
+- STATUS: Reclassified to **No Action** — This is internal Claude Code verify skill behavior, not plugin-development API.
+
+**Background tasks changed event schema (CC 2.1.203)**
+- CONFIRMED in system-prompts changelog line 49: "**NEW:** Data: Background tasks changed event schema — Adds the `background_tasks_changed` level-event schema"
+- Gap: hook-development/references/event-schemas.md does not include `background_tasks_changed` event
+- Affects: hook-development reference (event-schemas.md)
+- STATUS: **CONFIRMED Must Update** — This is a new hook event schema that plugin developers may need to respond to.
+
+**Auto mode consent flow system reminder (CC 2.1.203)**
+- CONFIRMED in system-prompts changelog line 51: "**NEW:** System Reminder: Auto mode consent flow"
+- Gap: agent-development auto mode documentation does not cover new consent flow guidance
+- Affects: agent-development patterns (auto mode)
+- STATUS: Reclassified to **May Update** — This provides guidance for auto mode consent handling. Plugin agents running in auto mode may benefit from understanding this, but it is behavioral guidance rather than API change.
+
+**SendMessageTool addressing changes for completed agents (CC 2.1.203)**
+- CONFIRMED in system-prompts changelog line 74: "Tool Description: SendMessageTool — Updates cross-agent addressing so names keep working after completion"
+- Gap: agent-development cross-agent communication patterns could be updated
+- Affects: agent-development patterns
+- STATUS: Reclassified to **May Update** — This is a behavioral improvement that plugin developers using multi-agent patterns may benefit from knowing, but existing code continues to work.
+
+**EnterWorktree nested repository support (CC 2.1.203)**
+- CONFIRMED in system-prompts changelog line 73: "Tool Description: EnterWorktree — Allows `path` entry into registered worktrees belonging to nested repositories"
+- Gap: agent-development worktree documentation could mention nested repo support
+- STATUS: Reclassified to **No Action** — This is an enhancement to existing functionality. The agent-development overview already covers worktree patterns adequately; this is a minor behavioral enhancement.
+
+**Governed GitHub CLI shim (CC 2.1.202)**
+- CONFIRMED in system-prompts changelog line 81: "**NEW:** Data: Governed GitHub CLI shim header and routing"
+- Gap: No documentation of governed gh shim in plugin-dev
+- STATUS: Reclassified to **No Action** — This is infrastructure for routing GitHub requests through agent proxy. Not directly relevant to plugin development; plugins can continue using gh normally.
+
+**/code-review low effort minimum findings mode (CC 2.1.202)**
+- CONFIRMED in system-prompts changelog line 80: "**NEW:** Agent Prompt: /code-review part 2 low effort minimum findings mode"
+- STATUS: Reclassified to **No Action** — Internal Claude Code code review mode. Not plugin-development API.
+
+**Loop execution explicit re-arming (CC 2.1.202)**
+- CONFIRMED in system-prompts changelog line 85: "Skill: Dynamic pacing loop execution... Make loop re-arming an explicit per-turn decision... end loops by calling the wakeup tool with `stop: true`"
+- Gap: No loop/workflow patterns documented that cover this change
+- Affects: agent-development patterns (background loops)
+- STATUS: Reclassified to **May Update** — This affects agents using loop/scheduling patterns. The change to explicit re-arming and `stop: true` is behavioral guidance that advanced plugin developers may benefit from.
 
 #### Missed Items (promoted from No Action)
 
-- ! **SessionStart, Setup, and SubagentStart hooks stderr fix** (CC 2.1.199)
-  - Source: CC changelog "Fixed `SessionStart`, `Setup`, and `SubagentStart` hooks silently hiding stderr when exiting with code 2; error now shown in transcript"
-  - Missed because: Listed under bug fixes but affects hook behavior documentation
-  - Affects: hook-development (exit code 2 behavior documentation)
-  - Details: These hooks now properly show stderr in transcript when exiting with code 2
+**Hook event streaming fix during SessionStart hooks in headless sessions (CC 2.1.204)**
+- Source: CC changelog 2.1.204
+- Previously classified as: Bug fix, no prompt changes
+- STATUS: Remains **No Action** — Confirmed bug fix only, no prompt changes in system-prompts for 2.1.204.
 
-- ! **SearchPlugins, SearchSkills, SearchMcpRegistry, SuggestConnectors, ListConnectors tools** (CC 2.1.199)
-  - Already in May Update, but should be promoted
-  - These are plugin discovery tools relevant to plugin-dev ecosystem
-  - Affects: plugin-structure (tool discovery section)
+**Plugin LSP server initialization fixes (CC 2.1.205)**
+- Source: CC changelog 2.1.205
+- Previously classified as: Bug fix
+- STATUS: Promoted to **May Update** — This is specifically relevant to plugin developers using LSP integration. The lsp-integration reference should note that initialization issues were fixed in 2.1.205.
 
 #### May Update Resolution
 
-- SSL certificate error handling (CC 2.1.199)
-  - = kept as May Update: Useful for troubleshooting docs but low priority
+**Auto mode setup skill rework (CC 2.1.206)**
+- CONFIRMED in system-prompts changelog line 18
+- STATUS: Kept as **May Update** — Useful context for plugin developers building auto-mode workflows, but not critical documentation gap.
 
-- Enhanced subagent error reporting (CC 2.1.199)
-  - = kept as May Update: Affects agent design patterns but not critical
+**Quick PR creation remote guidance (CC 2.1.206)**
+- CONFIRMED in system-prompts changelog line 17
+- STATUS: Demoted to **No Action** — Minor behavioral change to built-in PR creation; not plugin-development relevant.
 
-- SearchPlugins, SearchSkills, SearchMcpRegistry, SuggestConnectors, ListConnectors tools (CC 2.1.199)
-  - PROMOTED to Must Update: These are plugin/skill discovery tools directly relevant to plugin-dev
+**ClaudeDesign tool preference (CC 2.1.206)**
+- CONFIRMED in system-prompts changelog line 20
+- STATUS: Demoted to **No Action** — ClaudeDesign is a separate tool surface, not plugin-development API.
 
-- ClaudeDesign tool (CC 2.1.199)
-  - = kept as May Update: Design tool, tangentially related to plugin dev
+**Conversation/message summarization user turn counting (CC 2.1.205)**
+- CONFIRMED in system-prompts changelog line 31
+- STATUS: Demoted to **No Action** — Internal summarization behavior; not plugin-relevant.
 
-- File already in context reminder (CC 2.1.199)
-  - DEMOTED to No Action: Internal efficiency optimization, no plugin-dev impact
+**Security monitor consent and user-intent interpretation tightening (CC 2.1.203, 2.1.205)**
+- CONFIRMED in system-prompts changelog lines 57, 58
+- STATUS: Kept as **May Update** — Auto mode security changes that affect agent behavior in auto mode. Relevant for plugin agents but not critical.
 
-- Plan artifact template (CC 2.1.198-2.1.199)
-  - = kept as May Update: Artifact patterns may be useful for skill outputs
+**/review slash command sectioned PR review (CC 2.1.202)**
+- CONFIRMED in system-prompts changelog line 82
+- STATUS: Demoted to **No Action** — Internal /review behavior; not plugin-development API.
 
-- Auto mode setup skill (CC 2.1.198)
-  - = kept as May Update: Background on built-in skill patterns
+**PR explainer requirements expanded (CC 2.1.202)**
+- CONFIRMED in system-prompts changelog line 86
+- STATUS: Demoted to **No Action** — Internal skill behavior; not plugin-development API.
 
-- Isolated worktree shipping instructions (CC 2.1.198)
-  - PROMOTED to Must Update: Affects background agent behavior in worktrees, relevant to agent-development
+**Dynamic workflow size setting (CC 2.1.202)**
+- Noted as "changelog only, not in system-prompts"
+- CONFIRMED in CC changelog 2.1.202: "New 'Dynamic workflow size' setting for controlling agent counts"
+- STATUS: Promoted to **May Update** — This setting affects workflow orchestration and could be relevant for plugin developers designing workflow patterns.
 
-- Shared git stash safety warning (CC 2.1.198)
-  - = kept as May Update: Git safety pattern for agents
+**Session working directories in MCP roots/list (CC 2.1.203)**
+- Noted as "changelog only"
+- CONFIRMED in CC changelog 2.1.203: "Session working directories now included in MCP `roots/list`"
+- STATUS: Kept as **May Update** — Relevant for MCP integration documentation.
 
-- Claude Tag reference (CC 2.1.200)
-  - DEMOTED to No Action: Slack integration, not plugin-dev related
+**Manual permission mode indicator in footer (CC 2.1.203)**
+- STATUS: Demoted to **No Action** — UI indicator; not plugin-development relevant.
 
-- set_cwd needs_trust directory (CC 2.1.200)
-  - DEMOTED to No Action: Internal tool parameter, not plugin-dev relevant
-
-- Security monitor expansions (CC 2.1.198-2.1.200)
-  - = kept as May Update: Affects auto-mode safety patterns for agents
-
-- Improved background agent reliability on Linux (CC 2.1.199)
-  - = kept as May Update: Useful for CI documentation
+**Login expiration warnings (CC 2.1.203)**
+- STATUS: Demoted to **No Action** — Authentication UX; not plugin-development relevant.
 
 #### Summary
-- Must Update: 10 items (8 confirmed, 1 demoted to No Action, 3 added from May Update/missed)
-- May Update: 7 items remaining
-- Confidence: HIGH -- all items verified against primary sources (CC changelog and system-prompts changelog)
+
+- **Must Update:** 3 items (2 confirmed, 13 reclassified to No Action or May Update)
+  - /doctor CLAUDE.md trimming check (CC 2.1.206)
+  - MCP servers failed to connect system reminder (CC 2.1.205)
+  - background_tasks_changed event schema (CC 2.1.203)
+
+- **May Update:** 7 items
+  - Auto mode consent flow system reminder (CC 2.1.203)
+  - SendMessageTool addressing changes (CC 2.1.203)
+  - Loop execution explicit re-arming (CC 2.1.202)
+  - Plugin LSP server initialization fixes (CC 2.1.205) — promoted
+  - Auto mode setup skill rework (CC 2.1.206)
+  - Security monitor consent/user-intent tightening (CC 2.1.203, 2.1.205)
+  - Dynamic workflow size setting (CC 2.1.202) — promoted
+  - Session working directories in MCP roots/list (CC 2.1.203)
+
+- **No Action:** Remainder — bug fixes, internal skill changes, infrastructure not affecting plugin development API
+
+- **Confidence:** HIGH — All items independently verified against system-prompts changelog (primary source) and CC changelog (secondary source). Most "Must Update" items were reclassified because they pertain to internal Claude Code skills and behaviors rather than plugin-development APIs. The remaining 3 items have clear documentation gaps in plugin-dev.
+
+#### Key Findings
+
+1. **Significant reclassification needed:** Stage 1 over-classified many internal Claude Code skill changes (artifact skills, code review skills, PR explainer, verify skill) as plugin-relevant when they are bundled Claude Code features, not plugin APIs.
+
+2. **True plugin-relevant changes are limited:**
+   - `background_tasks_changed` hook event — new event schema plugins can respond to
+   - MCP connection failure guidance — affects plugin MCP server bundles
+   - /doctor CLAUDE.md trimming — affects plugin CLAUDE.md best practices
+
+3. **No missed critical items:** Scan of changelog for plugin keywords (hook, plugin, MCP, skill, agent, permission, subagent) found no additional items that should be Must Update.

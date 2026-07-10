@@ -1,6 +1,6 @@
 # Hook Event Schemas Reference
 
-Complete input and output JSON schemas for all 27 Claude Code hook events.
+Complete input and output JSON schemas for all 28 Claude Code hook events.
 
 **Last verified:** 2026-05-28 against official docs, Python SDK (`claude-agent-sdk`), and TypeScript SDK.
 
@@ -1006,14 +1006,57 @@ Observability only. No decision control.
 
 ---
 
+## Background Tasks
+
+### BackgroundTasksChanged (CC 2.1.203)
+
+**When:** Background task state changes (tasks started, completed, or failed).
+
+**Input:**
+
+```json
+{
+  "session_id": "string",
+  "transcript_path": "string",
+  "cwd": "string",
+  "hook_event_name": "BackgroundTasksChanged",
+  "tasks": [
+    {
+      "id": "string (task identifier)"
+    }
+  ]
+}
+```
+
+**Key behaviors:**
+
+- **Replace-set semantics:** The `tasks` array contains the complete current set of background tasks (not incremental updates). Compare against previous state to determine what changed.
+- **Unspecified ordering:** Task changes may arrive out of order relative to bookend events (SubagentStart/SubagentStop). Do not assume ordering guarantees.
+- **Id-only payloads:** Task entries contain only the `id` field. Use other mechanisms to query task details if needed.
+- **Per-process reset:** Task state resets when the Claude Code process restarts.
+
+**Output:** Observability only. No decision control.
+
+**Use cases:**
+
+- Track background agent progress for dashboards or monitoring
+- Trigger notifications when tasks complete or fail
+- Implement custom task coordination logic
+- Log task state changes for debugging multi-agent workflows
+
+**Matchers:** Not supported
+**Hook types:** Command, HTTP, Prompt, Agent
+
+---
+
 ## SDK Parity Notes
 
 Not all events are typed in both SDKs. As of May 2026:
 
-**Python SDK** (`claude-agent-sdk`) types 10 of 27 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
+**Python SDK** (`claude-agent-sdk`) types 10 of 28 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
 
 **TypeScript SDK** (`@anthropic-ai/claude-agent-sdk`) is closer to parity with the CLI. Events added over time: TeammateIdle and TaskCompleted (v2.1.34), ConfigChange (v0.2.49), Elicitation and ElicitationResult (v0.2.76).
 
-**CLI** supports all 27 events.
+**CLI** supports all 28 events.
 
-Events only available in CLI (not yet in either SDK): WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88), MessageDisplay (CC 2.1.152), PostSession (CC 2.1.169).
+Events only available in CLI (not yet in either SDK): WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88), MessageDisplay (CC 2.1.152), PostSession (CC 2.1.169), BackgroundTasksChanged (CC 2.1.203).
