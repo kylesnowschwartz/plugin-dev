@@ -527,6 +527,20 @@ fi
 
 Settings follow precedence: Managed > CLI flags > Local (`.claude/settings.local.json`) > Project (`.claude/settings.json`) > User (`~/.claude/settings.json`). Plugin hooks and MCP servers are merged across scopes, not replaced. A plugin-settings `.local.md` file is separate from this system -- it's a custom per-project state file your plugin reads directly.
 
+### Plugin Option Values Scope Restriction (CC 2.1.207)
+
+**Breaking change:** `pluginConfigs` are no longer read from project-level `.claude/settings.json`. Only these sources are honored:
+
+- **User settings** (`~/.claude/settings.json`)
+- **CLI `--settings` flag** (explicit settings file)
+- **Managed settings** (organization policy)
+
+**Migration required:** If you or your plugin's users stored `pluginConfigs.<plugin-id>.options` in project-level `.claude/settings.json`, those values must be moved to user settings (`~/.claude/settings.json`) or specified via `--settings`.
+
+**Rationale:** This change prevents project-level configuration from overriding security-sensitive plugin options that should be user-controlled.
+
+**Unaffected:** Plugin `.local.md` state files (the pattern documented above) are not affected by this change — they are read directly by plugin hooks and are not part of the `pluginConfigs` system.
+
 Plugin settings files (`.local.md`) exist alongside Claude Code's broader memory and rules system. Understanding how CLAUDE.md imports, `.claude/rules/` path-specific rules, and the memory priority hierarchy interact with plugin content helps design plugins that complement rather than conflict with user configurations.
 
 See `references/memory-rules-system.md` for the full priority hierarchy, import syntax, and design implications.

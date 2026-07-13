@@ -1281,6 +1281,37 @@ Plugin hooks merge with user hooks. All matching hooks run in parallel. Duplicat
 
 ## Security Best Practices
 
+### Shell-Injection Prevention (CC 2.1.207)
+
+**Critical security fix:** `${user_config.*}` interpolation in shell-form hook commands is now rejected. This prevents shell injection vulnerabilities when user-configurable plugin options contain malicious input.
+
+**Affected hook types:** Command hooks using shell-form execution (plain `command` string without `args`).
+
+**Resolution options:**
+
+1. **Use exec form (`args` array)** — bypasses shell interpolation entirely:
+
+```json
+{
+  "type": "command",
+  "command": "bash",
+  "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh", "--token", "$CLAUDE_PLUGIN_OPTION_API_TOKEN"]
+}
+```
+
+2. **Use `$CLAUDE_PLUGIN_OPTION_<KEY>` environment variables** — read values inside the script:
+
+```bash
+#!/bin/bash
+# Script reads the env var instead of receiving shell-interpolated value
+API_TOKEN="$CLAUDE_PLUGIN_OPTION_API_TOKEN"
+# Use $API_TOKEN safely within the script
+```
+
+**Migration:** Audit any hooks using `${user_config.KEY}` in shell-form commands. Replace with exec form or read the value via the corresponding environment variable inside your script.
+
+**Monitors and headersHelper:** The same restriction applies. Read configuration values inside the script (via config file path or `env` block) rather than using `${user_config.*}` interpolation.
+
 ### Input Validation
 
 Always validate inputs in command hooks:

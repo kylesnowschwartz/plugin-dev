@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.29.0] - 2026-07-13
+
+### Changed
+
+- **Breaking: Plugin option values no longer read from project settings** — `pluginConfigs` are no longer read from project-level `.claude/settings.json`; only user settings (`~/.claude/settings.json`), `--settings` flag, and managed settings are honored. Plugin developers and users who stored plugin configuration in project settings must migrate to user settings. (CC 2.1.207)
+
+### Fixed
+
+- **hook-development**: Documented shell-injection prevention fix — `${user_config.*}` interpolation in shell-form hook commands is now rejected. Hooks must use exec form (`args` array) or read values via `$CLAUDE_PLUGIN_OPTION_<KEY>` environment variables. Also affects monitors and headersHelper. (CC 2.1.207)
+
 ## [0.28.0] - 2026-07-10
 
 ### Added
@@ -658,7 +668,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.28.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.29.0...HEAD
+[0.29.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.28.0...v0.29.0
 [0.28.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.27.0...v0.28.0
 [0.27.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.26.0...v0.27.0
 [0.26.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.25.0...v0.26.0
