@@ -193,6 +193,8 @@ Declare configurable values in `.claude-plugin/plugin.json` that users are promp
 - Non-sensitive values: stored in `settings.json` under `pluginConfigs[<plugin-id>].options`
 - Sensitive values (`sensitive: true`): stored in the system keychain (macOS) or `~/.claude/.credentials.json` elsewhere
 
+> **CC 2.1.207 Breaking Change:** `pluginConfigs` are no longer read from project-level `.claude/settings.json`. Only user settings (`~/.claude/settings.json`), `--settings` flag, and managed settings are honored. Plugin developers should document this restriction and guide users to store configuration in user settings.
+
 **Accessing configured values:**
 
 - In MCP/LSP server configs, hook commands, and skill/agent content: `${user_config.KEY}` (non-sensitive only)
