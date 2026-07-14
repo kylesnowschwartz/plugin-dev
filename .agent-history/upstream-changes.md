@@ -1,226 +1,248 @@
 # Upstream Change Manifest
-## CC Version Range: 2.1.207 - 2.1.207
-## Generated: 2026-07-13
-## Sources: changelog [x], system-prompts [x], claude-code-guide [skipped - single version, minimal plugin-system changes]
-
----
-
-### Must Update
-
-- [ ] **Plugin security: shell-injection fix -- `${user_config.*}` rejected in shell-form commands** (CC 2.1.207)
-  - Source: changelog (verified Stage 2)
-  - Confidence: HIGH
-  - Affects: hook-development (overview.md, Security Best Practices section)
-  - Details: `${user_config.*}` interpolation in shell-form hook commands is now rejected for security. Plugin developers must use exec form (`args` array) or read values via `$CLAUDE_PLUGIN_OPTION_<KEY>` environment variables. The hook-development docs already document `args` (CC 2.1.139) but need security context.
-  - Raw changelog text: "Plugin hooks/monitors/MCP headersHelper: `${user_config.*}` in shell-form commands is now rejected (shell-injection fix). Hooks: use exec form (`args` array) or `$CLAUDE_PLUGIN_OPTION_<KEY>`; monitors and headersHelper: read the value inside the script (config file or the server's `env` block)."
-
-- [ ] **Plugin option values no longer read from project-level settings** (CC 2.1.207) [BREAKING CHANGE]
-  - Source: changelog (missed by Stage 1, promoted by Stage 2)
-  - Confidence: HIGH
-  - Affects: plugin-settings (overview.md), plugin-structure (plugin.json docs)
-  - Details: `pluginConfigs` are no longer read from project-level `.claude/settings.json`. Only user settings (`~/.claude/settings.json`), `--settings` flag, and managed settings are honored. Plugin developers and users who stored plugin configuration in project settings must migrate.
-  - Raw changelog text: "Plugin option values (`pluginConfigs`) are no longer read from project-level `.claude/settings.json`; only user, `--settings`, and managed settings are honored"
-
----
-
-### May Update
-
-- [ ] **NEW: Data: Structured tool output field schema** (CC 2.1.207)
-  - Source: system-prompts only
-  - Confidence: medium
-  - Affects: mcp-integration (advanced tool output patterns)
-  - Details: Documents the per-tool `tool_use_result` output contract, including completed Agent/Task reports and run totals. Tells clients to render structured output instead of parsing model-facing result text. This may be relevant for advanced plugin authors building MCP tools that return structured data.
-
----
-
-### No Action
-
-**Demoted from May Update by Stage 2:**
-- REMOVED: Tool Description: Bash (sandbox - user permission prompt) (CC 2.1.207) - internal CC doc simplification
-- NEW: Skill: /morning slash command (CC 2.1.207) - new built-in skill, not plugin-relevant
-- Skill: Auto mode setup expanded guidance (CC 2.1.207) - CC auto-mode setup flow, not plugin-relevant
-- Model default updated to Opus 4.8 (CC 2.1.207) - platform configuration
-- Auto mode expanded across platforms (CC 2.1.207) - platform availability
-
-**Demoted from Must Update by Stage 2:**
-- ScheduleWakeup/Snooze tool changes (CC 2.1.207) - internal CC tools not accessible to plugins
-
-**Internal behavior and UI improvements:**
-- Terminal responsiveness enhanced when streaming lengthy content (CC 2.1.207) - internal performance
-- Security fix: remote managed settings dialog (CC 2.1.207) - internal security fix
-- Spurious prompt-injection warnings eliminated (CC 2.1.207) - internal bug fix
-- Auto-updater preserves custom launcher scripts (CC 2.1.207) - user-facing but not plugin-relevant
-- Compound commands with cd redirection fix (CC 2.1.207) - internal behavior fix
-- Transcript positioning corrected (CC 2.1.207) - UI fix
-- Git configuration cleanup after removing worktrees (CC 2.1.207) - internal cleanup
-- Pattern validation improved for rules globs and skill paths (CC 2.1.207) - internal validation
-
-**Bug fixes:**
-- Agent teams: crash loop fix for malformed teammate messages (CC 2.1.207) - bug fix
-- Background sessions: naming persistence and git worktree handling (CC 2.1.207) - bug fix
-- Remote Control: task status preservation during network interruptions (CC 2.1.207) - bug fix
-- Deep research: agent labeling accuracy (CC 2.1.207) - internal improvement
-- Windows credential resolution: 60-second stall guard (CC 2.1.207) - platform-specific fix
-- Usage confirmation: malformed credit amounts rejected (CC 2.1.207) - validation fix
-
-**Platform-specific fixes:**
-- Bedrock: eliminated repeated AWS SSO credential requests (CC 2.1.207) - platform-specific fix
-
-**System-prompts internal changes:**
-- NEW: System Reminder: ClaudeDesign project grant unavailable without verified identity (CC 2.1.207) - ClaudeDesign-specific, not plugin-relevant
-- System Prompt: Harness instructions - conditional system-reminder guidance (CC 2.1.207) - internal behavior
-- Tool Description: Artifact - proactive private publishing guidance (CC 2.1.207) - artifact publishing rules, not plugin API
-- Agent Prompt: /code-review part 9 fix application simplification (CC 2.1.207) - internal /code-review behavior
-- Agent Prompt: Quick PR creation remote guidance (CC 2.1.207) - minor guidance change
+## CC Version Range: 2.1.207 - 2.1.208
+## Generated: 2026-07-14
+## Sources: changelog [x], system-prompts [x], claude-code-guide [skipped - only 1 version delta]
 
 ---
 
 ## Summary
 
-**Version range audited:** 2.1.207 (1 version after last audit at 2.1.206)
-
-**Stage 1 Classification Results:**
-- **Must Update:** 2 items
-- **May Update:** 6 items
-- **No Action:** Remainder (bug fixes, internal improvements, platform-specific changes)
-- **Confidence:** MEDIUM (single-source changes, no critical API changes)
-
-**Token delta from system-prompts:**
-- 2.1.207: +6,150 tokens
-
-**Key Findings:**
-
-1. **Security fix in hooks/monitors** - A shell-injection vulnerability was addressed. While the fix is in CC core (not plugins), this is the most notable change for plugin developers from a security awareness perspective.
-
-2. **Scheduling tool guidance changes** - ScheduleWakeup/Snooze tool descriptions updated with pacing guidance. This affects how plugins interact with scheduling tools.
-
-3. **Relatively light release for plugin-dev** - Most changes are bug fixes, platform-specific improvements, or internal behavior changes not affecting plugin APIs.
+Only **one version** (2.1.208) has been released since the last audit (2.1.207). This is a relatively minor release focused on accessibility, configuration options, and bug fixes. No breaking changes to the plugin system were identified.
 
 ---
 
-## Stage 2: Verification Results
-### Verified: 2026-07-13
+### Must Update
 
-#### Must Update Verification
+_(None identified)_
 
-- ! **Plugin security: shell-injection fix** (CC 2.1.207) -- RECLASSIFIED with expanded details
-  - Original manifest description was incomplete
-  - Actual change: `${user_config.*}` in shell-form commands now rejected; use exec form (`args` array) or `$CLAUDE_PLUGIN_OPTION_<KEY>` environment variable
-  - Gap confirmed: hook-development/overview.md documents `args` field (CC 2.1.139) but lacks security context and `${user_config.*}` rejection warning
-  - Affects: hook-development (overview.md, security best practices section)
+There are no changes in v2.1.208 that directly affect plugin manifests, hook events, skill formats, or agent behavior in ways that require documentation updates.
 
-- X **ScheduleWakeup/Snooze tool changes** (CC 2.1.207) -- REJECTED
-  - Reason: ScheduleWakeup/Snooze are internal CC tools not accessible to plugins
-  - Topic mapping "tool-reference documentation" does not exist in plugin-dev
-  - These are background loop pacing tools for CC's own scheduled tasks
-  - Demoted to No Action
+---
 
-#### Missed Items (promoted from No Action)
+### May Update
 
-- ! **Plugin option values no longer read from project settings** (CC 2.1.207)
-  - MISSED by Stage 1 -- this is a BREAKING CHANGE
-  - Source: CC changelog (exact text: "Plugin option values (`pluginConfigs`) are no longer read from project-level `.claude/settings.json`; only user, `--settings`, and managed settings are honored")
-  - Affects: plugin-settings (overview.md settings precedence section), plugin-structure (plugin.json documentation)
-  - Details: Plugin developers and users who stored pluginConfigs in project `.claude/settings.json` must migrate to user settings or managed settings
-  - Priority: HIGH (breaking change)
+_(None remaining after Stage 2 verification - all 4 items demoted to No Action)_
 
-#### May Update Resolution
+---
 
-- = **Structured tool output field schema** (CC 2.1.207) -- kept as May Update
-  - Reason: Potentially useful for advanced MCP tool development but not core plugin functionality
-  - Affects: mcp-integration (if documenting advanced tool output patterns)
+### No Action
 
-- v **Bash sandbox permission prompt removed** (CC 2.1.207) -- demoted to No Action
-  - Reason: Internal CC documentation simplification, not affecting plugin development
+_System-prompts changes (demoted from May Update by Stage 2):_
 
-- v **/morning slash command** (CC 2.1.207) -- demoted to No Action
-  - Reason: New built-in skill, does not affect plugin development patterns
+- **Artifact tool: Native Mermaid rendering** (CC 2.1.208) - plugin-dev does not document the Artifact tool
+- **Auto mode setup: Deterministic pre-gathering changes** (CC 2.1.208) - internal CC behavior, not plugin authoring
+- **Artifact themes: OS color scheme support** (CC 2.1.208) - Artifact-related, not plugin authoring
+- **Background monitor: Foreground fallback guidance** (CC 2.1.208) - system prompt guidance for built-in tool
 
-- v **Auto mode setup expansion** (CC 2.1.207) -- demoted to No Action
-  - Reason: CC auto-mode setup flow, not plugin development
+_CC changelog items (confirmed by Stage 2):_
 
-- v **Model default updated to Opus 4.8** (CC 2.1.207) -- demoted to No Action
-  - Reason: Platform configuration, not plugin-relevant
+- **Screen reader mode** (`--ax-screen-reader` flag) (CC 2.1.208) - Accessibility feature, not plugin-related
+- **`vimInsertModeRemaps` setting** (CC 2.1.208) - Editor configuration, not plugin-related
+- **`CLAUDE_CODE_PROCESS_WRAPPER` env var** (CC 2.1.208) - Corporate launcher execution, not plugin-related
+- **Mouse-click support for multi-select menus** (CC 2.1.208) - UI enhancement, not plugin-related
+- **Fast mode auto-restore after model switches** (CC 2.1.208) - Internal behavior, not plugin-related
+- **Background agent reply persistence** (CC 2.1.208) - Bug fix, not plugin-related
+- **Background daemon attach failures fix** (CC 2.1.208) - Bug fix, not plugin-related
+- **Context window reset fix after CLI auto-updates** (CC 2.1.208) - Bug fix, not plugin-related
+- **HTTP/2 GOAWAY connection handling** (CC 2.1.208) - Network fix, not plugin-related
+- **Stream-json/JSON output truncation fix** (CC 2.1.208) - Bug fix, not plugin-related
+- **Scientific notation env vars parsing** (CC 2.1.208) - Bug fix, not plugin-related
+- **Large markdown tables pagination** (CC 2.1.208) - UI enhancement, not plugin-related
+- **Edit tool modified-file handling** (CC 2.1.208) - Tool bug fix, not plugin-system change
+- **Read/Grep/Glob tool improvements** (CC 2.1.208) - Tool bug fixes (empty files, regex, null bytes)
+- **`apiKeyHelper` script error display** (CC 2.1.208) - Error handling improvement
+- **Bedrock streaming error clarification** (CC 2.1.208) - Error messaging, not plugin-related
+- **`/upgrade` login flow fix** (CC 2.1.208) - Command bug fix, not plugin-related
+- **Stream-json input handling for Windows SDK hosts** (CC 2.1.208) - Platform fix, not plugin-related
+- **Headless stream-json session hang fix** (CC 2.1.208) - Bug fix, not plugin-related
+- **Background task orphan notice consolidation** (CC 2.1.208) - UI improvement, not plugin-related
+- **Remote Control client improvements** (CC 2.1.208) - Feature enhancement, not plugin-related
+- **Agent tool error messaging improvement** (CC 2.1.208) - Error messaging, not plugin-system change
+- **`/usage` and `/mcp` caching fixes** (CC 2.1.208) - Command bug fixes, not plugin-related
+- **"Change directory" SDK host fix** (CC 2.1.208) - Bug fix, not plugin-related
+- **Workflow save dialog path fix** (CC 2.1.208) - UI fix, not plugin-related
+- **`/release-notes` context injection fix** (CC 2.1.208) - Command fix, not plugin-related
+- **Memory leak fixes** (agent view, MCP stderr, LSP docs, async hooks, file read) (CC 2.1.208) - Performance fixes
+- **Permission rule matcher optimization** (CC 2.1.208) - Performance improvement
+- **Input responsiveness during task list updates** (CC 2.1.208) - Performance improvement
+- **Tool-call CPU overhead reduction** (CC 2.1.208) - Performance improvement
+- **File edit read cache bounded to 16 MB** (CC 2.1.208) - Performance improvement
+- **Session transcript/checkpoint size reduction** (CC 2.1.208) - Performance improvement
+- **Background agent/fork session memory improvements** (CC 2.1.208) - Performance improvement
+- **Completed background agents in `/tasks`** (CC 2.1.208) - Behavior refinement, not plugin-related
+- **Stopped background agents transcript display** (CC 2.1.208) - UI improvement, not plugin-related
+- **Background daemon worker version compatibility** (CC 2.1.208) - Compatibility improvement
+- **Agent view Ctrl+X handling for worktrees** (CC 2.1.208) - UI improvement, not plugin-related
+- **Catastrophic removal prompts with `$(...)` and backticks** (CC 2.1.208) - UI fix, not plugin-related
+- **`/install-github-app` and `/mcp` blocked in background sessions** (CC 2.1.208) - Security hardening
+- **Empty MCP server URLs display** (CC 2.1.208) - UI improvement, not plugin-related
+- **`/usage` rate-limited display** (CC 2.1.208) - UI improvement, not plugin-related
+- **Bedrock AWS SSO profile authentication fix** (CC 2.1.208) - Authentication fix, not plugin-related
 
-- v **Auto mode expanded across platforms** (CC 2.1.207) -- demoted to No Action
-  - Reason: Platform availability, not plugin development
+---
 
-#### Summary
+## Raw Changelog Data
 
-- **Must Update:** 2 items (1 confirmed with expanded detail, 1 promoted from missed)
-- **May Update:** 1 item remaining
-- **Rejected:** 1 item (demoted from original Must Update)
-- **Demoted from May Update:** 5 items
-- **Confidence:** HIGH (verified against primary sources, found one missed breaking change)
+### CC Changelog v2.1.208
 
-#### Notes for Stage 3
+```
+- Screen reader mode with plain-text rendering (opt-in via `claude --ax-screen-reader`)
+- `vimInsertModeRemaps` setting for two-key sequences like `jj` to Escape
+- `CLAUDE_CODE_PROCESS_WRAPPER` for corporate launcher execution
+- Mouse-click support for multi-select menus in fullscreen
+- Fast mode now restores automatically after model switches
+- Background agent replies saved when delivery fails
+- Background daemon attach failures fixed after binary updates
+- Context window reset issue resolved after CLI auto-updates
+- HTTP/2 GOAWAY connection handling in supervised/background sessions
+- Stream-json/JSON output truncation fixed for large responses
+- Scientific notation environment variables now parse correctly
+- Large markdown tables (200+ rows) display with pagination
+- Edit tool now handles files modified after reading
+- Read, Grep, and Glob tool improvements (empty files, regex patterns, null bytes)
+- `apiKeyHelper` script errors shown within 3 attempts
+- Bedrock streaming with gateway transformation errors clarified
+- `/upgrade` login flow fixed for browser failures
+- Stream-json input handling for Windows-style SDK hosts
+- Headless stream-json sessions no longer hang on control requests
+- Background task orphan notices consolidated into summaries
+- Remote Control clients now see background agents and workflow progress
+- Agent tool error messaging improved for unrecognized subagents
+- `/usage` and `/mcp` caching issues addressed
+- "Change directory" in SDK hosts fixed for idle sessions
+- Workflow save dialog shows correct `CLAUDE_CONFIG_DIR`
+- `/release-notes` no longer injects changelog into context
+- Memory leak fixed in agent view image retention
+- SDK sessions preserve agents after plugin refresh
+- Multiple memory leaks resolved (MCP stderr, LSP documents, async hooks)
+- File read memory issue fixed for extremely long lines
+- Permission rule matcher compilation and caching optimized
+- Input responsiveness improved during task list updates
+- Tool-call CPU overhead reduced through tool-pool caching
+- File edit read cache bounded to 16 MB
+- Session transcript and checkpoint sizes reduced significantly
+- Background agent and fork session memory usage improved
+- Completed background agents remain in `/tasks` until cleanup
+- Stopped background agents show transcript immediately
+- Background daemon worker version compatibility improved
+- Agent view Ctrl+X handling enhanced for worktrees
+- Catastrophic removal prompts now work with `$(...)` and backticks
+- `/install-github-app` and `/mcp` blocked in background sessions
+- Empty MCP server URLs display as "not configured"
+- `/usage` shows last-known bars when rate-limited
+- Bedrock AWS SSO profile authentication fixed
+```
 
-1. **Hook security update (Must Update):** Add to hook-development/overview.md in the Security Best Practices section. Document that `${user_config.*}` interpolation in shell-form hook commands is now rejected for security. Recommend using exec form (`args` array) or reading values via `$CLAUDE_PLUGIN_OPTION_<KEY>` environment variables.
+### System-Prompts Changelog v2.1.208
 
-2. **Plugin settings scope change (Must Update - BREAKING):** Update plugin-settings/overview.md settings precedence section to note that `pluginConfigs` are no longer read from project-level `.claude/settings.json`. Only user settings, `--settings` flag, and managed settings are honored. This is a CC 2.1.207 breaking change requiring user migration.
+```
+_+2,947 tokens_
 
-3. **Structured tool output (May Update):** Consider documenting in mcp-integration for advanced tool authors who want to return structured output that clients can render specially.
+- Data: Data visualization reference palette; Data: Plan artifact HTML template;
+  Skill: Artifact dashboard; Skill: Artifact data table; Skill: Artifact explainer;
+  Skill: Artifact report; and Skill: Plan Artifact - Make artifact themes follow
+  both the OS color scheme and the viewer's explicit light/dark toggle, keep
+  applicable print output light, preserve the plan template's theme shim, and
+  require restyling palette values consistently across every theme and print scope.
+
+- Skill: Auto mode setup - Moves repository visibility, ruleset, branch-protection,
+  shell-command-word, and nearby-repository discovery into deterministic pre-gathering;
+  treats gathered names as untrusted data; forbids agents from reading raw shell
+  history or repeating filesystem and GitHub scans; and scopes optional recon to
+  the user's project and source selections.
+
+- Tool Description: Artifact - Documents native Mermaid rendering for Markdown
+  `mermaid` fences and HTML `<pre class="mermaid">` blocks without external libraries.
+
+- Tool Description: Background monitor (streaming events) - When background tasks
+  are disabled, directs one-shot readiness and completion waits to foreground Bash
+  loops instead of unavailable background execution.
+```
+
+---
+
+## Recommendation
+
+This audit covers a **single minor release** with no plugin-system breaking changes. Stage 2 verified all classifications and demoted the 4 "May Update" items to "No Action" (plugin-dev does not document Artifact functionality).
+
+1. **No documentation updates required** - v2.1.208 is a maintenance/bugfix release
+2. **Update compatibility doc** to record the audit: `CC 2.1.208 audited, no plugin-dev changes needed`
+
+---
+
+## Next Steps
+
+1. ~~Stage 2 (update-manifest-verifier) should confirm no false negatives~~ **DONE**
+2. Update `docs/claude-code-compatibility.md` audit log
+3. No Stage 3/4 work needed - no documentation changes required
 
 ---
 
 ## Triangulation Notes
 
 - Two-source triangulation used: CC changelog + system-prompts changelog
-- claude-code-guide agent dispatch skipped: Single version with minimal plugin-system changes; triangulation value is low for this update.
-- The shell-injection security fix is notable but changelog-only, making details limited.
-- System-prompts provided detailed behavioral change information for scheduling tools.
-- No breaking changes or new hook events in this release.
-
----
-
-## Raw Changelog Data
-
-### CC 2.1.207 (from upstream changelog)
-```
-- Auto mode availability expanded across Bedrock, Vertex AI, and Foundry platforms without requiring opt-in
-- Terminal responsiveness enhanced when streaming particularly lengthy lists, tables, paragraphs, or code blocks
-- Security fix: remote managed settings no longer recorded as consented without displaying the security dialog
-- Spurious prompt-injection warnings eliminated for system-generated conversation updates
-- Auto-updater now preserves custom launcher scripts at `~/.local/bin/claude`
-- Compound commands with `cd` redirection to `/dev/null` no longer prompt unnecessarily
-- Transcript positioning corrected when responses finish streaming
-- Git configuration cleanup after removing worktrees
-- Pattern validation improved for rules globs and skill paths
-- Agent teams: resolved crash loop caused by malformed teammate messages
-- Background sessions: naming persistence and git worktree handling improvements
-- Remote Control: task status preservation during network interruptions
-- Deep research: agent labeling accuracy enhanced
-- Bedrock: eliminated repeated AWS SSO credential requests
-- Model default: Bedrock, Vertex, and Claude Platform on AWS updated to Opus 4.8
-- Windows credential resolution: 60-second stall guard now prevents indefinite hangs
-- Plugin security: shell-injection vulnerability addressed in hooks/monitors
-- Usage confirmation: malformed credit amounts now rejected with error messaging
-```
-
-### System-prompts 2.1.207 (key items)
-```
-- **NEW:** Data: Structured tool output field schema — Documents the per-tool `tool_use_result` output contract
-- **NEW:** Skill: /morning slash command — Adds morning-brief workflow for calendar/communication data
-- **NEW:** System Reminder: ClaudeDesign project grant unavailable without verified identity
-- **NEW:** Tool Description: ScheduleWakeup delay and reason guidance; Tool Description: Snooze; Skill: /loop self-pacing mode
-- **REMOVED:** Tool Description: Bash (sandbox — user permission prompt)
-- Skill: Auto mode setup — Expands setup to review and safely remove rules, migrate legacy entries
-- System Prompt: Harness instructions — Makes system-reminder tag guidance conditional on tool context
-- Tool Description: Artifact — Allows proactive private publishing with content restrictions
-```
+- claude-code-guide agent dispatch skipped: Single version with minimal plugin-system changes; triangulation value is low for this small delta
+- Both sources confirm v2.1.208 is primarily bug fixes and accessibility improvements
+- System-prompts token delta: +2,947 tokens (relatively small, indicating minor changes)
+- No new hook events, no manifest schema changes, no skill format changes identified
 
 ---
 
 ## Comparison to Previous Audit
 
-**Previous audit (2.1.202-2.1.206):**
-- 3 Must Update items
-- 8 May Update items
-- Significant changes: background_tasks_changed hook event, MCP connection failure reminder, /doctor CLAUDE.md trimming
-
-**This audit (2.1.207) -- Stage 2 verified:**
+**Previous audit (2.1.207):**
 - 2 Must Update items (shell-injection security fix, plugin settings scope change [BREAKING])
 - 1 May Update item (structured tool output schema)
-- Impact: Contains one breaking change that Stage 1 missed
+- Impact: Contained breaking change for pluginConfigs project-settings behavior
 
-**Stage 2 Assessment:** Stage 1 missed a breaking change (`pluginConfigs` no longer read from project settings) and incorrectly classified ScheduleWakeup/Snooze as plugin-relevant. The quality threshold was not met (>30% items needed correction: 1 rejected, 1 missed of 2 original Must Update items). Stage 1 process should be reviewed for future runs to ensure better plugin-relevance filtering and complete changelog parsing.
+**This audit (2.1.208):**
+- 0 Must Update items (confirmed by Stage 2)
+- 0 May Update items (4 demoted to No Action by Stage 2)
+- Impact: No plugin-system changes requiring documentation updates
+
+**Assessment:** v2.1.208 is a maintenance release with no impact on plugin development documentation.
+
+---
+
+## Stage 2: Verification Results
+### Verified: 2026-07-14
+
+#### Must Update Verification
+
+Stage 1 identified zero Must Update items. After independent verification against:
+- CC changelog (WebFetch of raw GitHub CHANGELOG.md)
+- System-prompts changelog (local `claude-code-system-prompts/CHANGELOG.md`)
+
+**Conclusion:** Confirmed. No Must Update items required.
+
+#### Missed Items (promoted from No Action)
+
+No items promoted. All No Action classifications verified correct:
+
+- **"SDK sessions preserve agents after plugin refresh"** - SDK host behavior improvement, not plugin authoring guidance. Correct as No Action.
+- **"async hooks memory leak fix"** - Bug fix, no documentation change needed. Correct as No Action.
+- **"Agent tool error messaging improved"** - UX improvement to error messages, not API/behavior change. Correct as No Action.
+- **"/mcp blocked in background sessions"** - Security hardening for user-facing command, not plugin authoring. Correct as No Action.
+- **"Permission rule matcher optimization"** - Performance improvement, no behavior change. Correct as No Action.
+
+#### May Update Resolution
+
+- ↓ **Artifact tool: Native Mermaid rendering** — demoted to No Action: plugin-dev does not document the Artifact tool; Mermaid support is not relevant to plugin authoring
+- ↓ **Auto mode setup: Deterministic pre-gathering changes** — demoted to No Action: internal CC behavior for auto-mode setup, not plugin authoring
+- ↓ **Artifact themes: OS color scheme support** — demoted to No Action: Artifact-related, plugin-dev does not cover Artifact functionality
+- ↓ **Background monitor: Foreground fallback guidance** — demoted to No Action: system prompt guidance for built-in tool, not plugin authoring
+
+#### Summary
+
+- Must Update: 0 items (0 confirmed, 0 rejected, 0 added)
+- May Update: 0 items remaining (4 demoted to No Action)
+- Confidence: **HIGH** — v2.1.208 is a maintenance/bugfix release with no plugin-system changes requiring documentation updates
+
+#### Verification Method
+
+1. Independently fetched CC changelog via WebFetch (not relying on Stage 1's cache)
+2. Read system-prompts CHANGELOG.md lines 1-200 (covers v2.1.208 and v2.1.207)
+3. Scanned for plugin-relevant keywords: hook, plugin, agent, skill, command, MCP, mcp, LSP, lsp, tool, permission, subagent, frontmatter, manifest, plugin.json, PreToolUse, PostToolUse, SessionStart, Stop
+4. Verified topic mappings by reading reference docs at `plugins/plugin-dev/skills/plugin-dev/references/<topic>/overview.md`
+5. Confirmed Artifact tool is not documented in plugin-dev (grep for "Artifact" returned no matches in skill content)
+6. Cross-referenced CC 2.1.208 raw changelog entries (lines 102-147 of manifest) against system-prompts changes

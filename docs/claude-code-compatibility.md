@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.207 (2026-07-13)
-Plugin-dev version: 0.29.0
+Last audited: Claude Code 2.1.208 (2026-07-14)
+Plugin-dev version: 0.31.0
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.31.0 | 2.1.208 | 2026-07-14 | Maintenance release: no plugin-system changes (accessibility, bug fixes, performance improvements) |
 | v0.29.0 | 2.1.207 | 2026-07-13 | **Breaking:** pluginConfigs no longer read from project settings (CC 2.1.207), shell-injection fix rejects `${user_config.*}` in shell-form hook commands (CC 2.1.207) |
 | v0.28.0 | 2.1.202-2.1.206 | 2026-07-10 | BackgroundTasksChanged hook event schema (CC 2.1.203), MCP servers failed to connect system reminder (CC 2.1.205), /doctor CLAUDE.md trimming check (CC 2.1.206) |
 | v0.27.0 | 2.1.198-2.1.201 | 2026-07-04 | Subagents background by default (CC 2.1.198), extended thinking inheritance (CC 2.1.198), slash-skill stacking up to 5 (CC 2.1.199), ListAgents tool (CC 2.1.200), Manual default permission mode (CC 2.1.200), verify skill auto-persistence (CC 2.1.200), project skill shadowing warning (CC 2.1.200), background agent notification matchers (CC 2.1.198), isolated worktree shipping instructions (CC 2.1.198), SessionStart/SubagentStart stderr fix (CC 2.1.199), plugin discovery tools (CC 2.1.199) |
