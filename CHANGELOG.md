@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.30.1] - 2026-07-14
+
+### Fixed
+
+- **hook-development**: `validate-hook-schema.sh` rejected the plugin `hooks/hooks.json` wrapper format — now detects and unwraps it (settings format still accepted)
+- **hook-development**: `validate-hook-schema.sh` aborted on the first warning or error under `set -e` (`((count++))` returns 1 from 0); counters now use safe arithmetic
+- **hook-development**: `validate-hook-schema.sh` stale tables — knows all 28 events (was 22), accepts `mcp_tool` type (requires `server`/`tool`), warns on commas in matchers (CC 2.1.191), per-event type support matrix updated (PostSession command-only, WorktreeCreate command+http), removed outdated prompt-hook support warning
+
 ## [0.30.0] - 2026-07-14
 
 ### Added
