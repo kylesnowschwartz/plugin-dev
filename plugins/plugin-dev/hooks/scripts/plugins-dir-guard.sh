@@ -15,8 +15,7 @@ target=$(jq -r '.tool_input.file_path // .tool_input.path // .tool_input.command
 
 plugins_dir="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/plugins"
 case "$target" in
-"$plugins_dir" | "$plugins_dir"/* | *"$plugins_dir"*) ;;
-*".claude/plugins"*) ;;
+*"$plugins_dir"* | *".claude/plugins"*) ;;
 *) exit 0 ;;
 esac
 

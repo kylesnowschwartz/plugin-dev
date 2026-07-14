@@ -1,0 +1,10 @@
+# Config for the markdownlint step in docs/release-procedure.md.
+# Disabled rules conflict with established file conventions, not oversights.
+
+# Long lines are house style in CHANGELOG entries and reference tables
+MD013: false
+
+# Keep a Changelog requires repeating "### Added" etc. across releases;
+# only flag duplicates within the same section level
+MD024:
+  siblings_only: true
