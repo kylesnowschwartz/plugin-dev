@@ -6,6 +6,8 @@
 # the plugins directory).
 set -euo pipefail
 
+command -v jq >/dev/null 2>&1 || exit 0
+
 input=$(cat)
 
 target=$(jq -r '.tool_input.file_path // .tool_input.path // .tool_input.command // empty' <<<"$input")
