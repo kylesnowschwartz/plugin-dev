@@ -590,3 +590,22 @@ plugin/
 1. **Avoid deep nesting**: Impacts discovery time
 2. **Minimize custom paths**: Use defaults when possible
 3. **Keep configurations small**: Large configs slow loading
+
+### Manifest and Documentation
+
+1. **Minimal manifest**: Keep `plugin.json` lean — only specify custom paths when necessary, rely on auto-discovery for standard layouts, and use inline configuration only for simple cases
+2. **Include README files**: Plugin root (overall purpose and usage), component directories (specific guidance), and script directories (usage and requirements)
+
+### Portability
+
+1. **Always use `${CLAUDE_PLUGIN_ROOT}`**: Never hardcode paths
+2. **Test on multiple systems**: Verify on macOS, Linux, Windows
+3. **Document dependencies**: List required tools and versions
+4. **Avoid system-specific features**: Use portable bash/Python constructs
+
+### Maintenance and Versioning
+
+1. **Version consistently**: Update version in plugin.json for releases
+2. **Deprecate gracefully**: Mark old components clearly before removal
+3. **Document breaking changes**: Note changes affecting existing users
+4. **Test thoroughly**: Verify all components work after changes

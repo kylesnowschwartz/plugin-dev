@@ -15,22 +15,11 @@ Slash commands are frequently-used prompts defined as Markdown files that Claude
 - Bash execution for context
 - Command organization and namespacing
 
-## Command Basics
+## Commands Are Instructions FOR Claude
 
-### What is a Slash Command?
+A slash command is a Markdown file containing a prompt that Claude executes when invoked. Commands provide reusability (define once, use repeatedly), consistency (standardize common workflows), sharing (across team or projects), and efficiency (quick access to complex prompts).
 
-A slash command is a Markdown file containing a prompt that Claude executes when invoked. Commands provide:
-
-- **Reusability**: Define once, use repeatedly
-- **Consistency**: Standardize common workflows
-- **Sharing**: Distribute across team or projects
-- **Efficiency**: Quick access to complex prompts
-
-### Critical: Commands are Instructions FOR Claude
-
-**Commands are written for agent consumption, not human consumption.**
-
-When a user invokes `/command-name`, the command content becomes Claude's instructions. Write commands as directives TO Claude about what to do, not as messages TO the user.
+**Commands are written for agent consumption, not human consumption.** When a user invokes `/command-name`, the command content becomes Claude's instructions. Write commands as directives TO Claude about what to do, not as messages TO the user describing what will happen.
 
 **Correct approach (instructions for Claude):**
 
@@ -44,71 +33,33 @@ Review this code for security vulnerabilities including:
 Provide specific line numbers and severity ratings.
 ```
 
-**Incorrect approach (messages to user):**
+Avoid the inverse -- text like "This command will review your code and you'll receive a report." That tells the user what happens but never instructs Claude. Always write the directive form.
 
-```markdown
-This command will review your code for security issues.
-You'll receive a report with vulnerability details.
-```
-
-The first example tells Claude what to do. The second tells the user what will happen but doesn't instruct Claude. Always use the first approach.
-
-### Command Locations
+## Command Locations
 
 **Project commands** (shared with team):
 
 - Location: `.claude/commands/`
-- Scope: Available in specific project
-- Label: Shown as "(project)" in `/help`
+- Label: "(project)" in `/help`
 - Use for: Team workflows, project-specific tasks
 
 **Personal commands** (available everywhere):
 
 - Location: `~/.claude/commands/`
-- Scope: Available in all projects
-- Label: Shown as "(user)" in `/help`
+- Label: "(user)" in `/help`
 - Use for: Personal workflows, cross-project utilities
 
 **Plugin commands** (bundled with plugins):
 
 - Location: `plugin-name/commands/`
-- Scope: Available when plugin installed
-- Label: Shown as "(plugin-name)" in `/help`
+- Label: "(plugin-name)" in `/help`
 - Use for: Plugin-specific functionality
 
-### State Management Commands
-
-Claude Code provides built-in commands for managing project state:
-
-- **`claude project purge [path]`** (CC 2.1.126) — Deletes all Claude Code state for a project. Supports `--dry-run`, `-y/--yes`, `-i/--interactive`, and `--all` flags. Different from `claude plugin prune` (which removes orphaned plugin dependencies) — this removes ALL project state including conversation history and settings.
-
-### Session Commands
-
-- **`/cd`** (CC 2.1.169) — Relocates the session to a different directory without breaking prompt cache. Use this when you need to change the working directory mid-session while preserving cached context.
-
-### Configuration Commands
-
-- **`/config key=value`** (CC 2.1.181) — Set configuration values directly from the prompt without using the slash command menu. This provides a quick way to adjust settings during a session.
-
-**Examples:**
-
-```
-/config model=opus
-/config theme=dark
-/config sandbox.allowAppleEvents=true
-```
-
-This syntax is an alternative to navigating the `/config` menu interactively. Use it when you know the exact setting key you want to modify.
-
-### Plugin Management Commands
-
-- **`/plugin list`** (CC 2.1.163) — Lists installed plugins with filtering capabilities. Useful for discovering installed plugins and their status.
+Claude Code also ships built-in commands for managing state, sessions, configuration, and plugins (`claude project purge`, `/cd`, `/config`, `/plugin list`). See `references/built-in-commands.md`.
 
 ## File Format
 
-### Basic Structure
-
-Commands are Markdown files with `.md` extension:
+Commands are Markdown files with a `.md` extension -- one file per command:
 
 ```
 .claude/commands/
@@ -117,22 +68,14 @@ Commands are Markdown files with `.md` extension:
 └── deploy.md           # /deploy command
 ```
 
-**Simple command:**
+A basic command needs no frontmatter -- the file body is the prompt:
 
 ```markdown
-Review this code for security vulnerabilities including:
-
-- SQL injection
-- XSS attacks
-- Authentication bypass
-- Insecure data handling
+Review this code for security vulnerabilities including SQL injection,
+XSS attacks, authentication bypass, and insecure data handling.
 ```
 
-No frontmatter needed for basic commands.
-
-### With YAML Frontmatter
-
-Add configuration using YAML frontmatter:
+Add configuration with optional YAML frontmatter:
 
 ```markdown
 ---
@@ -144,233 +87,57 @@ model: sonnet
 Review this code for security vulnerabilities...
 ```
 
-## YAML Frontmatter Fields
+## Frontmatter Fields (Quick Reference)
 
-### description
+All fields are optional. Commands work without any frontmatter.
 
-**Purpose:** Brief description shown in `/help`
-**Type:** String
-**Default:** First line of command prompt
+| Field                      | Type         | Purpose                                                                                                   |
+| -------------------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
+| `description`              | String       | Shown in `/help`; required for Skill-tool visibility. Keep under ~60 chars. Defaults to first prompt line. |
+| `allowed-tools`            | String/Array | Tools the command may use (e.g. `Read, Bash(git *)`). Defaults to conversation permissions.               |
+| `disallowed-tools`         | String/Array | Tools to remove from the pool while the command runs (e.g. `AskUserQuestion, WebSearch`). (CC 2.1.152)    |
+| `model`                    | String       | `haiku`/`sonnet`/`opus` shorthand or full model ID (e.g. `claude-sonnet-4-5-20250929`). Defaults to conversation model. |
+| `argument-hint`            | String       | Documents expected args for autocomplete (e.g. `[pr-number] [priority]`).                                 |
+| `disable-model-invocation` | Boolean      | When `true`, only the user can invoke the command (not the Skill tool). Default `false`.                  |
 
-```yaml
----
-description: Review pull request for code quality
----
-```
-
-**Best practice:** Clear, actionable description (under 60 characters)
-
-### allowed-tools
-
-**Purpose:** Specify which tools command can use
-**Type:** String or Array
-**Default:** Inherits from conversation
-
-```yaml
----
-allowed-tools: Read, Write, Edit, Bash(git *)
----
-```
-
-**Patterns:**
-
-- `Read, Write, Edit` - Specific tools
-- `Bash(git *)` - Bash with git commands only
-- `*` - All tools (rarely needed)
-
-**Use when:** Command requires specific tool access
-
-### model
-
-**Purpose:** Specify model for command execution
-**Type:** String
-**Values:** Shorthand (`sonnet`, `opus`, `haiku`) or full model ID (e.g., `claude-sonnet-4-5-20250929`)
-**Default:** Inherits from conversation
-
-```yaml
----
-model: haiku
----
-```
-
-**Use cases:**
-
-- `haiku` - Fast, simple commands
-- `sonnet` - Standard workflows
-- `opus` - Complex analysis
-
-Shorthand names use the current default version of each model family.
-
-### argument-hint
-
-**Purpose:** Document expected arguments for autocomplete
-**Type:** String
-**Default:** None
-
-```yaml
----
-argument-hint: [pr-number] [priority] [assignee]
----
-```
-
-**Benefits:**
-
-- Helps users understand command arguments
-- Improves command discovery
-- Documents command interface
-
-### disable-model-invocation
-
-**Purpose:** Prevent Skill tool from programmatically calling command
-**Type:** Boolean
-**Default:** false
-
-```yaml
----
-disable-model-invocation: true
----
-```
-
-**Use when:** Command should only be manually invoked
+For full field specifications, valid values, comparison tables, and a validation checklist, see `references/frontmatter-reference.md`.
 
 ## Dynamic Arguments
 
-### Using $ARGUMENTS
-
-Capture all arguments as single string:
+**`$ARGUMENTS`** captures all arguments as a single string:
 
 ```markdown
----
-description: Fix issue by number
-argument-hint: [issue-number]
----
-
 Fix issue #$ARGUMENTS following our coding standards and best practices.
 ```
 
-**Usage:**
+`> /fix-issue 123` expands to `Fix issue #123 following...`.
 
-```
-> /fix-issue 123
-> /fix-issue 456
-```
-
-**Expands to:**
-
-```
-Fix issue #123 following our coding standards...
-Fix issue #456 following our coding standards...
-```
-
-### Using Positional Arguments
-
-Capture individual arguments with `$1`, `$2`, `$3`, etc.:
+**Positional arguments** (`$1`, `$2`, `$3`, ...) capture individual arguments:
 
 ```markdown
----
-description: Review PR with priority and assignee
-argument-hint: [pr-number] [priority] [assignee]
----
-
 Review pull request #$1 with priority level $2.
 After review, assign to $3 for follow-up.
 ```
 
-**Usage:**
-
-```
-> /review-pr 123 high alice
-```
-
-**Expands to:**
-
-```
-Review pull request #123 with priority level high.
-After review, assign to alice for follow-up.
-```
-
-### Combining Arguments
-
-Mix positional and remaining arguments:
-
-```markdown
-Deploy $1 to $2 environment with options: $3
-```
-
-**Usage:**
-
-```
-> /deploy api staging --force --skip-tests
-```
-
-**Expands to:**
-
-```
-Deploy api to staging environment with options: --force --skip-tests
-```
+`> /review-pr 123 high alice` substitutes each position in order. Positional and trailing arguments combine freely, e.g. `Deploy $1 to $2 environment with options: $3`.
 
 ## File References
 
-### Using @ Syntax
-
-Include file contents in command:
+The `@` syntax injects file contents into the command before Claude processes it:
 
 ```markdown
----
-description: Review specific file
-argument-hint: [file-path]
----
-
-Review @$1 for:
-
-- Code quality
-- Best practices
-- Potential bugs
+Review @$1 for code quality, best practices, and potential bugs.
 ```
 
-**Usage:**
-
-```
-> /review-file src/api/users.ts
-```
-
-**Effect:** Claude reads `src/api/users.ts` before processing command
-
-### Multiple File References
-
-Reference multiple files:
-
-```markdown
-Compare @src/old-version.js with @src/new-version.js
-
-Identify:
-
-- Breaking changes
-- New features
-- Bug fixes
-```
-
-### Static File References
-
-Reference known files without arguments:
-
-```markdown
-Review @package.json and @tsconfig.json for consistency
-
-Ensure:
-
-- TypeScript version matches
-- Dependencies are aligned
-- Build configuration is correct
-```
+`> /review-file src/api/users.ts` reads that file first. Reference multiple or static files the same way: `Compare @src/old-version.js with @src/new-version.js`, or `Review @package.json and @tsconfig.json for consistency`.
 
 ## Bash Execution in Commands
 
-Commands can execute bash commands inline to dynamically gather context before Claude processes the command. This is useful for including repository state, environment information, or project-specific context.
+Commands can execute bash inline to gather context (repository state, environment info) before Claude processes the prompt.
 
-### Syntax: The `[BANG]` Prefix
+### The `[BANG]` Prefix
 
-In actual command files, use `[BANG]` (exclamation mark) before backticks for pre-execution:
+In actual command files, put `[BANG]` (an exclamation mark) before the backticks:
 
 ```markdown
 Current branch: [BANG]`git branch --show-current`
@@ -378,52 +145,21 @@ Files changed: [BANG]`git diff --name-only`
 Environment: [BANG]`echo $NODE_ENV`
 ```
 
-**How it works:**
+Before Claude sees the command, Claude Code executes each `[BANG]`command`` block and replaces the whole expression with its output. Claude then receives the expanded prompt with actual values -- for example, `Review the 3 changed files on branch feature/add-auth.`
 
-1. Before Claude sees the command, Claude Code executes `[BANG]`command`` blocks
-2. The bash output replaces the entire `[BANG]`command`` expression
-3. Claude receives the expanded prompt with actual values
+Use bash execution to include dynamic context (git status, environment variables), gather project/repository state, and build context-aware workflows.
 
-**Example expansion:**
-
-Command file contains:
-
-```markdown
-Review the [BANG]`git diff --name-only | wc -l | tr -d ' '` changed files on branch [BANG]`git branch --show-current`.
-```
-
-Claude receives (after pre-execution):
-
-```markdown
-Review the 3 changed files on branch feature/add-auth.
-```
-
-### Why Skill Examples Omit `[BANG]`
-
-Examples in skill documentation use plain backticks without `[BANG]`:
-
-```markdown
-Files changed: `git diff --name-only`
-```
-
-This is intentional. When skill content loads into Claude's context, `[BANG]` followed by `[command name]` would actually execute. Skill examples show the conceptual pattern; add the `[BANG]` prefix when writing actual command files.
-
-**When to use:**
-
-- Include dynamic context (git status, environment vars, etc.)
-- Gather project/repository state
-- Build context-aware workflows
-
-**Implementation details:**
-For advanced patterns, environment-specific configurations, and plugin integration, see `references/plugin-features-reference.md`
+**Why skill examples omit `[BANG]`:** when skill content loads into Claude's context, `[BANG]` followed by a command name would actually execute. Skill and reference examples therefore show the conceptual pattern with plain backticks (`` `git diff --name-only` ``); add the `[BANG]` prefix when writing real command files.
 
 ### Load-Time Injection vs Runtime Execution
 
-The `[BANG]` syntax performs **load-time context injection**: commands execute when the skill or command is loaded, and their output becomes static text in the prompt Claude receives. This is different from Claude choosing to run commands at runtime via the Bash tool. Use `[BANG]` for gathering context (git status, environment variables, config files) that informs Claude's starting state, not for actions Claude should perform during the task.
+The `[BANG]` syntax performs **load-time context injection**: commands execute when the command loads, and their output becomes static text in the prompt Claude receives. This differs from Claude choosing to run commands at runtime via the Bash tool. Use `[BANG]` for gathering starting context (git status, environment variables, config files), not for actions Claude should perform during the task.
 
 **Disable shell execution (CC 2.1.91):** Organizations can disable inline shell execution in skills, custom slash commands, and plugin commands via the `disableSkillShellExecution` setting. When enabled, `[BANG]`command`` blocks are not executed. Design commands to work gracefully when shell execution is unavailable.
 
-### Commands and Skills: Same Mechanism, Different Complexity
+For advanced bash patterns, environment-specific configs, and `${CLAUDE_PLUGIN_ROOT}` script execution, see `references/plugin-features-reference.md`.
+
+## Commands vs Skills: When to Use Which
 
 Commands and skills are both invoked via the same **Skill tool**. The difference is organizational complexity:
 
@@ -434,354 +170,32 @@ Commands and skills are both invoked via the same **Skill tool**. The difference
 | Resources | None                            | scripts/, references/, examples/  |
 | Best for  | Quick prompts, simple workflows | Complex knowledge, bundled assets |
 
-**Invocation control** (works for both):
+**Invocation control** (works for both): `disable-model-invocation: true` makes an item user-only (for side effects like deploy or commit); the default lets both Claude and the user invoke it.
 
-- `disable-model-invocation: true` → User-only (for side effects: deploy, commit)
-- Default → Both Claude and user can invoke
-
-**When to graduate a command to a skill**: If you need scripts, reference files, or progressive disclosure, convert the command to a skill. See the Skill Development reference for guidance.
+**When to graduate a command to a skill:** if you need scripts, reference files, or progressive disclosure, convert the command to a skill. For how the Skill tool discovers and invokes commands (visibility, character budget, permission rules, `user-invocable`), see `references/skill-tool.md`.
 
 ## Command Organization
 
-### Flat Structure
-
-Simple organization for small command sets:
-
-```
-.claude/commands/
-├── build.md
-├── test.md
-├── deploy.md
-├── review.md
-└── docs.md
-```
-
-**Use when:** 5-15 commands, no clear categories
-
-### Namespaced Structure
-
-Organize commands in subdirectories:
-
-```
-.claude/commands/
-├── ci/
-│   ├── build.md        # /build (project:ci)
-│   ├── test.md         # /test (project:ci)
-│   └── lint.md         # /lint (project:ci)
-├── git/
-│   ├── commit.md       # /commit (project:git)
-│   └── pr.md           # /pr (project:git)
-└── docs/
-    ├── generate.md     # /generate (project:docs)
-    └── publish.md      # /publish (project:docs)
-```
-
-**Benefits:**
-
-- Logical grouping by category
-- Namespace shown in `/help`
-- Easier to find related commands
-
-**Use when:** 15+ commands, clear categories
-
-## Best Practices
-
-### Command Design
-
-1. **Single responsibility:** One command, one task
-2. **Clear descriptions:** Self-explanatory in `/help`
-3. **Explicit dependencies:** Use `allowed-tools` when needed
-4. **Document arguments:** Always provide `argument-hint`
-5. **Consistent naming:** Use verb-noun pattern (review-pr, fix-issue)
-
-### Argument Handling
-
-1. **Validate arguments:** Check for required arguments in prompt
-2. **Provide defaults:** Suggest defaults when arguments missing
-3. **Document format:** Explain expected argument format
-4. **Handle edge cases:** Consider missing or invalid arguments
-
-```markdown
----
-argument-hint: [pr-number]
----
-
-$IF($1,
-Review PR #$1,
-Please provide a PR number. Usage: /review-pr [number]
-)
-```
-
-### File References
-
-1. **Explicit paths:** Use clear file paths
-2. **Check existence:** Handle missing files gracefully
-3. **Relative paths:** Use project-relative paths
-4. **Glob support:** Consider using Glob tool for patterns
-
-### Bash Commands
-
-1. **Limit scope:** Use `Bash(git *)` not `Bash(*)`
-2. **Safe commands:** Avoid destructive operations
-3. **Handle errors:** Consider command failures
-4. **Keep fast:** Long-running commands slow invocation
-5. **Cross-platform:** Consider Windows PowerShell users (see below)
-
-### Windows PowerShell Consideration (CC 2.1.126)
-
-When the PowerShell tool is enabled on Windows, Claude treats PowerShell as the primary shell instead of Bash. Plugin commands using Bash-specific syntax may fail for Windows users. Design commands with cross-platform compatibility:
-
-- Use portable shell constructs where possible
-- Document Windows-specific alternatives in command descriptions
-- Consider providing separate commands for Bash and PowerShell workflows
-
-### Documentation
-
-1. **Add comments:** Explain complex logic
-2. **Provide examples:** Show usage in comments
-3. **List requirements:** Document dependencies
-4. **Version commands:** Note breaking changes
-
-## Common Patterns
-
-### Review Pattern
-
-```markdown
----
-description: Review code changes
-allowed-tools: Read, Bash(git *)
----
-
-Files changed: `git diff --name-only`
-
-Review each file for code quality, bugs, test coverage, documentation needs.
-```
-
-### Testing Pattern
-
-```markdown
----
-description: Run tests for specific file
-argument-hint: [test-file]
-allowed-tools: Bash(npm *)
----
-
-Run tests: `npm test $1`
-Analyze results and suggest fixes for failures.
-```
-
-### Workflow Pattern
-
-```markdown
----
-description: Complete PR workflow
-argument-hint: [pr-number]
-allowed-tools: Bash(gh *), Read
----
-
-PR #$1 Workflow:
-
-1. Fetch PR: `gh pr view $1`
-2. Review changes
-3. Run checks
-4. Approve or request changes
-```
-
-## Troubleshooting
-
-**Command not appearing:**
-
-- Check file is in correct directory
-- Verify `.md` extension present
-- Ensure valid Markdown format
-- Restart Claude Code
-
-**Arguments not working:**
-
-- Verify `$1`, `$2` syntax correct
-- Check `argument-hint` matches usage
-- Ensure no extra spaces
-
-**Bash execution failing:**
-
-- Check `allowed-tools` includes Bash
-- Verify command syntax in backticks
-- Test command in terminal first
-- Check for required permissions
-
-**File references not working:**
-
-- Verify `@` syntax correct
-- Check file path is valid
-- Ensure Read tool allowed
-- Use absolute or project-relative paths
-
-## Plugin-Specific Features
-
-### CLAUDE_PLUGIN_ROOT Variable
-
-Plugin commands have access to `${CLAUDE_PLUGIN_ROOT}`, an environment variable that resolves to the plugin's absolute path.
-
-**Purpose:**
-
-- Reference plugin files portably
-- Execute plugin scripts
-- Load plugin configuration
-- Access plugin templates
-
-**Basic usage:**
-
-```markdown
----
-description: Analyze using plugin script
-allowed-tools: Bash(node *)
----
-
-Run analysis: `node ${CLAUDE_PLUGIN_ROOT}/scripts/analyze.js $1`
-
-Review results and report findings.
-```
-
-**Common patterns:**
-
-```markdown
-# Execute plugin script
-
-`bash ${CLAUDE_PLUGIN_ROOT}/scripts/script.sh`
-
-# Load plugin configuration
-
-@${CLAUDE_PLUGIN_ROOT}/config/settings.json
-
-# Use plugin template
-
-@${CLAUDE_PLUGIN_ROOT}/templates/report.md
-
-# Access plugin resources
-
-@${CLAUDE_PLUGIN_ROOT}/docs/reference.md
-```
-
-**Why use it:**
-
-- Works across all installations
-- Portable between systems
-- No hardcoded paths needed
-- Essential for multi-file plugins
-
-### Plugin Command Organization
-
-Plugin commands discovered automatically from `commands/` directory:
-
-```
-plugin-name/
-├── commands/
-│   ├── foo.md              # /foo (plugin:plugin-name)
-│   ├── bar.md              # /bar (plugin:plugin-name)
-│   └── utils/
-│       └── helper.md       # /helper (plugin:plugin-name:utils)
-└── plugin.json
-```
-
-**Namespace benefits:**
-
-- Logical command grouping
-- Shown in `/help` output
-- Avoid name conflicts
-- Organize related commands
-
-**Naming conventions:**
-
-- Use descriptive action names
-- Avoid generic names (test, run)
-- Consider plugin-specific prefix
-- Use hyphens for multi-word names
-
-### Plugin Command Patterns
-
-**Configuration-based pattern:**
-
-```markdown
----
-description: Deploy using plugin configuration
-argument-hint: [environment]
-allowed-tools: Read, Bash(*)
----
-
-Load configuration: @${CLAUDE_PLUGIN_ROOT}/config/$1-deploy.json
-
-Deploy to $1 using configuration settings.
-Monitor deployment and report status.
-```
-
-**Template-based pattern:**
-
-```markdown
----
-description: Generate docs from template
-argument-hint: [component]
----
-
-Template: @${CLAUDE_PLUGIN_ROOT}/templates/docs.md
-
-Generate documentation for $1 following template structure.
-```
-
-**Multi-script pattern:**
-
-```markdown
----
-description: Complete build workflow
-allowed-tools: Bash(*)
----
-
-Build: `bash ${CLAUDE_PLUGIN_ROOT}/scripts/build.sh`
-Test: `bash ${CLAUDE_PLUGIN_ROOT}/scripts/test.sh`
-Package: `bash ${CLAUDE_PLUGIN_ROOT}/scripts/package.sh`
-
-Review outputs and report workflow status.
-```
-
-**See `references/plugin-features-reference.md` for detailed patterns.**
-
-## Integration with Plugin Components
-
-Commands integrate with other plugin components for powerful workflows:
-
-- **Agents**: Launch plugin agents for complex tasks (agent must exist in `plugin/agents/`)
-- **Skills**: Leverage plugin skills for specialized knowledge (mention skill name to trigger)
-- **Hooks**: Coordinate with hooks that execute on tool events
-- **Multi-component**: Combine agents, skills, and scripts in phased workflows
-
-**See `references/plugin-integration.md` for detailed patterns and examples.**
-
-## Validation Patterns
-
-Commands should validate inputs and resources before processing:
-
-- **Argument validation**: Check required arguments match expected values
-- **File existence**: Verify files exist before processing
-- **Plugin resources**: Validate scripts and configs are present
-- **Error handling**: Capture failures and provide helpful messages
-
-**Best practices:** Validate early, provide helpful errors, suggest corrections.
-
-**See `references/plugin-integration.md` for validation examples.**
-
----
-
-## Additional Resources
-
-For detailed frontmatter field specifications, see `references/frontmatter-reference.md`.
-For Skill tool, programmatic invocation, and permission configuration, see `references/skill-tool.md`.
-For plugin-specific features and patterns, see `references/plugin-features-reference.md`.
-For plugin integration and validation patterns, see `references/plugin-integration.md`.
-For interactive user input patterns using AskUserQuestion, see `references/interactive-commands.md`.
-For multi-step command sequences and state management, see `references/advanced-workflows.md`.
-For self-documenting command patterns and maintenance docs, see `references/documentation-patterns.md`.
-For testing approaches from syntax validation to user acceptance, see `references/testing-strategies.md`.
-For distribution guidelines and quality standards, see `references/marketplace-considerations.md`.
-For command pattern examples, see `examples/` directory.
+Use a flat structure for small sets (5-15 commands, no clear categories). For 15+ commands with clear categories, group them in subdirectories -- the subdirectory name becomes a namespace shown in `/help` (e.g. `commands/git/commit.md` → `/commit (project:git)`). Plugin commands follow the same auto-discovery and namespacing rules; see `references/plugin-features-reference.md`.
+
+Commands also integrate with other plugin components -- launch agents, trigger skills, coordinate with hooks -- and should validate inputs and resources before processing. See `references/plugin-integration.md` for integration and validation patterns.
+
+## Reference Map
+
+| Reference                                | When to read                                                                                                                                          |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `references/frontmatter-reference.md`    | Need full specs for a frontmatter field, valid values, allowlist vs denylist comparison, or a pre-commit validation checklist                         |
+| `references/skill-tool.md`               | Understanding how Claude auto-invokes commands/skills: visibility rules, character budget, permission rules, `user-invocable`                          |
+| `references/plugin-features-reference.md`| Writing plugin commands: `${CLAUDE_PLUGIN_ROOT}`, auto-discovery, namespacing, and plugin-specific bash/config/template patterns                       |
+| `references/plugin-integration.md`       | Wiring a command to plugin agents, skills, or hooks, or adding argument/file/resource validation                                                      |
+| `references/interactive-commands.md`     | The command needs interactive user input via AskUserQuestion (multi-choice, multi-select, conditional flows)                                          |
+| `references/advanced-workflows.md`       | Building multi-step/stateful workflows, chaining commands, advanced argument handling (`$IF`, defaults, validation), or command authoring best practices |
+| `references/documentation-patterns.md`   | Adding self-documenting comments, help subcommands, changelogs, or a companion README                                                                 |
+| `references/testing-strategies.md`       | Validating and testing commands, or troubleshooting a command that will not appear, substitute arguments, run bash, or read file references           |
+| `references/marketplace-considerations.md`| Distributing commands: cross-platform compatibility (incl. Windows PowerShell), graceful degradation, discovery, and quality standards               |
+| `references/built-in-commands.md`        | Looking up a built-in Claude Code command (`claude project purge`, `/cd`, `/config`, `/plugin list`)                                                   |
+| `examples/simple-commands.md`            | Want copy-paste examples of standalone commands (review, test, deploy, compare) plus quick pattern templates                                          |
+| `examples/plugin-commands.md`            | Want copy-paste examples of plugin commands using `${CLAUDE_PLUGIN_ROOT}`, scripts, templates, agents, and skills                                     |
 
 ## Validation Scripts
 

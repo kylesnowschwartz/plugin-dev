@@ -75,6 +75,8 @@ This hook fires only for Bash commands starting with `git`. The `if` field uses 
 
 > **CC 2.1.88:** Fixed `if` field filtering to properly match compound commands (e.g., `ls && git push`) and commands with environment variable prefixes (e.g., `FOO=bar git push`). Previously, such commands could bypass `if` patterns.
 
+> **CC 2.1.178:** Added tool parameter matching syntax (e.g., `Agent(model:opus)`) for granular permission control based on tool input parameters using wildcards.
+
 ### Script-Level Conditionals
 
 Execute hooks based on environment or context in the script itself:
@@ -354,6 +356,89 @@ exit 0
 
 ## Security Patterns
 
+### Shell-Injection Prevention (CC 2.1.207)
+
+**Critical security fix:** `${user_config.*}` interpolation in shell-form hook commands is now rejected. This prevents shell injection vulnerabilities when user-configurable plugin options contain malicious input.
+
+**Affected hook types:** Command hooks using shell-form execution (plain `command` string without `args`).
+
+**Resolution options:**
+
+1. **Use exec form (`args` array)** — bypasses shell interpolation entirely:
+
+```json
+{
+  "type": "command",
+  "command": "bash",
+  "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh", "--token", "$CLAUDE_PLUGIN_OPTION_API_TOKEN"]
+}
+```
+
+2. **Use `$CLAUDE_PLUGIN_OPTION_<KEY>` environment variables** — read values inside the script:
+
+```bash
+#!/bin/bash
+# Script reads the env var instead of receiving shell-interpolated value
+API_TOKEN="$CLAUDE_PLUGIN_OPTION_API_TOKEN"
+# Use $API_TOKEN safely within the script
+```
+
+**Migration:** Audit any hooks using `${user_config.KEY}` in shell-form commands. Replace with exec form or read the value via the corresponding environment variable inside your script.
+
+**Monitors and headersHelper:** The same restriction applies. Read configuration values inside the script (via config file path or `env` block) rather than using `${user_config.*}` interpolation.
+
+### Input Validation
+
+Always validate inputs in command hooks:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+input=$(cat)
+tool_name=$(echo "$input" | jq -r '.tool_name')
+
+# Validate tool name format
+if [[ ! "$tool_name" =~ ^[a-zA-Z0-9_]+$ ]]; then
+  echo '{"decision": "deny", "reason": "Invalid tool name"}' >&2
+  exit 2
+fi
+```
+
+### Path Safety
+
+Check for path traversal and sensitive files:
+
+```bash
+file_path=$(echo "$input" | jq -r '.tool_input.file_path')
+
+# Deny path traversal
+if [[ "$file_path" == *".."* ]]; then
+  echo '{"decision": "deny", "reason": "Path traversal detected"}' >&2
+  exit 2
+fi
+
+# Deny sensitive files
+if [[ "$file_path" == *".env"* ]]; then
+  echo '{"decision": "deny", "reason": "Sensitive file"}' >&2
+  exit 2
+fi
+```
+
+See `examples/validate-write.sh` and `examples/validate-bash.sh` for complete examples.
+
+### Quote All Variables
+
+```bash
+# GOOD: Quoted
+echo "$file_path"
+cd "$CLAUDE_PROJECT_DIR"
+
+# BAD: Unquoted (injection risk)
+echo $file_path
+cd $CLAUDE_PROJECT_DIR
+```
+
 ### Rate Limiting
 
 ```bash
@@ -547,7 +632,28 @@ hooks:
 ---
 ```
 
-> **Caveat -- `${CLAUDE_PLUGIN_ROOT}` resolves only under plugin-loaded discovery.** When the host skill or agent file is loaded via the `--agent` CLI flag from `.claude/agents/` or `~/.claude/agents/` -- a non-plugin discovery path -- `${CLAUDE_PLUGIN_ROOT}` is unbound and the hook fails with "Hook command references ${CLAUDE_PLUGIN_ROOT} but the hook is not associated with a plugin." For frontmatter hooks that may run under `--agent`, substitute `${CLAUDE_PROJECT_DIR}` with a project-relative path. See `references/hook-development/overview.md` (Scoped Hooks section) for the full diagnostic and related upstream issues.
+#### Caveat: `${CLAUDE_PLUGIN_ROOT}` resolution depends on the loader
+
+Frontmatter hooks resolve `${CLAUDE_PLUGIN_ROOT}` **only** when the host file is loaded through plugin discovery (i.e., the file Claude Code loads is the one declared by a plugin's `plugin.json`). When the same `.md` file is loaded via the `--agent` CLI flag from `.claude/agents/` or `~/.claude/agents/` -- a separate, non-plugin discovery path -- the variable is unbound at hook-exec time and Claude Code emits:
+
+> Hook command references ${CLAUDE_PLUGIN_ROOT} but the hook is not associated with a plugin. This variable is only available in hooks defined in a plugin's hooks/hooks.json file...
+
+This surface became newly reachable when CC 2.1.116 enabled main-thread agent frontmatter hooks via `--agent`. The behavior is observed at runtime; it is not specified in the official Claude Code documentation.
+
+**Workaround.** For frontmatter hooks that may run under `--agent` (rather than only as plugin-discovered subagents), substitute `${CLAUDE_PROJECT_DIR}` and use a project-relative path:
+
+```yaml
+hooks:
+  PreToolUse:
+    - matcher: Agent
+      hooks:
+        - type: command
+          command: "bash ${CLAUDE_PROJECT_DIR}/path/to/script.sh"
+```
+
+`${CLAUDE_PROJECT_DIR}` is bound regardless of which loader read the agent file.
+
+**Related issues:** [#24529](https://github.com/anthropics/claude-code/issues/24529), [#27145](https://github.com/anthropics/claude-code/issues/27145), [#50357](https://github.com/anthropics/claude-code/issues/50357) (the last documents the same loader-divergence pattern for the `isolation: worktree` frontmatter field).
 
 ### Supported Events
 
@@ -660,7 +766,30 @@ The agent will autonomously read files, run tests, check linting, and make a com
 
 ## Handler Configuration Fields
 
-Beyond `type`, `command`/`prompt`, and `timeout`, hook handlers support additional fields:
+Each hook entry in a matcher group supports these fields:
+
+```json
+{
+  "type": "command|http|prompt|agent|mcp_tool",
+  "command": "string (command type only)",
+  "args": ["arg1", "arg2"],
+  "url": "string (http type only)",
+  "headers": { "X-Key": "$ENV_VAR" },
+  "allowedEnvVars": ["ENV_VAR"],
+  "prompt": "string (prompt/agent type only)",
+  "model": "string (prompt/agent, optional)",
+  "if": "string (permission rule syntax, optional)",
+  "timeout": 600,
+  "statusMessage": "Validating...",
+  "once": false,
+  "async": false
+}
+```
+
+- `args`: Array of command arguments for exec-form spawning (CC 2.1.139). When provided, the command is executed directly without shell interpolation, which is safer for hooks that pass user-controlled data. Example: `"args": ["--file", "$FILE_PATH"]`. The `command` field becomes the executable path when `args` is present.
+- `timeout`: Max execution time in seconds. Defaults vary by type — command 60s, prompt 30s, http 30s, agent 60s.
+
+For the `if` field, see the [Declarative `if` Field](#declarative-if-field-cc-2185) section above. Beyond these, hook handlers support additional fields:
 
 ### once
 

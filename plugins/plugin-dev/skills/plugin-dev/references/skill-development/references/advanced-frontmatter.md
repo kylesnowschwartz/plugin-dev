@@ -1,6 +1,205 @@
 # Advanced Skill Frontmatter Fields
 
-This reference covers frontmatter fields that go beyond the core `name` and `description` requirements. These fields enable model selection, scoped hooks, and context budget optimization.
+This reference covers frontmatter fields that go beyond the core `name` and `description` requirements. These fields enable tool restriction, forked execution, model selection, scoped hooks, file scoping, and context budget optimization.
+
+## Skill Invocation Name (CC 2.1.94)
+
+Plugin skills declared via `"skills": ["./"]` use the skill's frontmatter `name` for invocation instead of the directory basename. Ensure the `name` field in frontmatter matches how users should invoke the skill.
+
+## Frontmatter Field Case Acceptance (CC 2.1.186)
+
+Skill frontmatter fields accept multiple case conventions: `kebab-case`, `snake_case`, and `camelCase`. The following are all equivalent:
+
+```yaml
+# All valid:
+allowed-tools: Read, Grep    # kebab-case (recommended)
+allowed_tools: Read, Grep    # snake_case
+allowedTools: Read, Grep     # camelCase
+
+user-invocable: false        # kebab-case (recommended)
+user_invocable: false        # snake_case
+userInvocable: false         # camelCase
+```
+
+**Recommendation:** Use kebab-case for consistency with official documentation, but all variants work.
+
+## allowed-tools
+
+Optionally restrict which tools Claude can use when the skill is active:
+
+```yaml
+---
+name: code-reviewer
+description: Review code for best practices...
+allowed-tools: Read, Grep, Glob
+---
+```
+
+Use `allowed-tools` for:
+
+- Read-only skills that shouldn't modify files
+- Security-sensitive workflows
+- Skills with limited scope
+
+When specified, Claude can only use the listed tools without needing permission. If omitted, Claude follows the standard permission model.
+
+## context
+
+Control how the skill's context is loaded:
+
+```yaml
+---
+name: analysis-skill
+description: Perform deep code analysis...
+context: fork
+---
+```
+
+**Values:**
+
+- `fork` - Run skill in a subagent (separate context), preserving main agent's context
+- Not specified - Run in main agent's context (default)
+
+Use `context: fork` for:
+
+- Skills that load large reference files
+- Skills that might pollute the main context
+- Expensive operations you want isolated
+
+**Deferred tools (CC 2.1.126):** Skills with `context: fork` now correctly receive access to deferred tools (WebSearch, WebFetch, etc.) on their first turn. Previously, these tools were unavailable until the second turn in forked contexts.
+
+## agent
+
+Specify which agent type handles the forked skill. The agent provides the **execution environment** (system prompt, tools, behavioral rules). The skill body provides the **task** (what to do). The forked agent does not inherit your conversation history.
+
+```yaml
+---
+name: exploration-skill
+description: Explore codebase patterns...
+context: fork
+agent: Explore
+---
+Find all React components that accept a `userId` prop and trace how they fetch user data.
+```
+
+In this example, the `Explore` agent's system prompt controls behavior and available tools. The skill body ("Find all React components...") becomes the task prompt the agent receives.
+
+**Values:**
+
+- `Explore` - Fast, read-only agent for codebase exploration
+- `Plan` - Architect agent for implementation planning
+- `general-purpose` - Full-capability agent (default when `context: fork` is set)
+- Custom agent name - Any agent defined in `.claude/agents/` or by a plugin
+
+When using a custom agent, you control both sides: the agent definition sets the system prompt, tools, MCP servers, and hooks. The skill sets the task and triggering conditions. This lets one agent serve many skills, and the same skill shape could target different agents.
+
+**Design guidance:** Put *what to do* in the skill. Put *how to behave* in the agent definition.
+
+Requires `context: fork` to be set.
+
+### Skill + Agent vs. Direct Agent Tool Call
+
+Both approaches delegate work to a sub-agent, but they serve different design needs:
+
+| Dimension | Skill `context: fork` | Direct Agent tool call |
+|---|---|---|
+| **Interface** | Declarative YAML + markdown body | Imperative prompt string |
+| **Triggering** | Automatic (description matching) | Manual (caller decides when) |
+| **Context** | Inherits parent context, shares prompt cache | Fresh start, no inherited context |
+| **Task prompt** | SKILL.md body (static) | Whatever you pass at runtime (dynamic) |
+| **System prompt** | From agent type or agent definition | From `subagent_type` |
+
+**Use skill `context: fork`** when the task instructions are stable, the trigger is predictable, and you want automatic invocation with cache sharing.
+
+**Use direct Agent calls** when you need dynamic prompts computed at runtime, parallel orchestration (spawning N agents from a loop), or worktree isolation for parallel git branches.
+
+## skills
+
+Load other skills into the forked agent's context:
+
+```yaml
+---
+name: comprehensive-review
+description: Full code review with testing...
+context: fork
+agent: general
+skills: testing-patterns, security-audit
+---
+```
+
+Requires `context: fork` to be set. Only skills from the same plugin can be loaded.
+
+## user-invocable
+
+Control whether the skill appears in the slash command menu:
+
+```yaml
+---
+name: internal-review-standards
+description: Apply internal code review standards...
+user-invocable: false
+---
+```
+
+**Default:** `true` (skills are visible in the `/` menu)
+
+**Important:** This field only controls slash menu visibility. It does NOT affect:
+
+- **Skill tool access** - Claude can still invoke the skill programmatically
+- **Auto-discovery** - Claude still discovers and uses the skill based on context
+
+Use `user-invocable: false` for skills that Claude should use automatically but users shouldn't invoke directly.
+
+## disable-model-invocation
+
+Prevent Claude from programmatically invoking the skill via the Skill tool:
+
+```yaml
+---
+name: dangerous-operation
+description: Perform dangerous operation...
+disable-model-invocation: true
+---
+```
+
+**Default:** `false` (programmatic invocation allowed)
+
+Use for skills that should only be manually invoked by users, such as:
+
+- Destructive operations requiring human judgment
+- Interactive workflows needing user input
+- Approval processes
+
+**Visibility comparison:**
+
+| Setting                          | Slash Menu | Skill Tool | Auto-Discovery |
+| -------------------------------- | ---------- | ---------- | -------------- |
+| `user-invocable: true` (default) | Visible    | Allowed    | Yes            |
+| `user-invocable: false`          | Hidden     | Allowed    | Yes            |
+| `disable-model-invocation: true` | Visible    | Blocked    | Yes            |
+
+## paths
+
+Scope the skill to specific files using glob patterns:
+
+```yaml
+paths:
+  - "src/**/*.{ts,tsx}"
+  - "lib/**/*.ts"
+  - "tests/**/*.test.ts"
+```
+
+When set, the skill only loads into context when Claude is working with files matching these patterns. Reduces token usage by making skills contextual rather than always-loaded. Accepts a YAML list of glob patterns with brace expansion support.
+
+> **Resolved (CC 2.1.86):** Write, Edit, and Read tools previously failed on files outside the project root when conditional (path-scoped) skills were configured. This is now fixed.
+
+## argument-hint
+
+```yaml
+argument-hint: "<file-path> [--verbose]"
+```
+
+Provides autocomplete hint text in the `/` menu. Cosmetic only; doesn't affect argument parsing.
 
 ## model
 

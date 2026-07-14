@@ -70,6 +70,14 @@ echo "Clipboard not available on this platform"
 fi
 ```
 
+### Windows PowerShell Consideration (CC 2.1.126)
+
+When the PowerShell tool is enabled on Windows, Claude treats PowerShell as the primary shell instead of Bash. Plugin commands using Bash-specific syntax may fail for Windows users. Design commands with cross-platform compatibility:
+
+- Use portable shell constructs where possible
+- Document Windows-specific alternatives in command descriptions
+- Consider providing separate commands for Bash and PowerShell workflows
+
 ### Minimal Dependencies
 
 **Check for required tools:**

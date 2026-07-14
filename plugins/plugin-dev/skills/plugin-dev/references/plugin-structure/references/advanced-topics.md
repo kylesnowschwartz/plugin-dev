@@ -285,5 +285,356 @@ Managed settings can also restrict hook and permission rule sources:
 
 - Document recommended scope in README
 - Test plugin at both user and project scopes
-- For team plugins, provide `.claude/settings.json` snippets
 - Note that managed settings can override plugin availability
+
+### Version Constraints via Managed Settings (CC 2.1.163)
+
+Managed settings can enforce Claude Code version requirements:
+
+```json
+{
+  "requiredMinimumVersion": "2.1.160",
+  "requiredMaximumVersion": "2.2.0"
+}
+```
+
+**Fields:**
+
+- `requiredMinimumVersion` — Users must have at least this version
+- `requiredMaximumVersion` — Users must have at most this version
+
+**Use cases:**
+
+- Ensuring plugins work with compatible Claude Code versions
+- Enterprise environments requiring version consistency
+- Plugins depending on features introduced in specific versions
+
+## External Plugin Loading via Settings (CC 2.1.195)
+
+External plugins specified via project settings (`.claude/settings.json`) no longer prompt for reinstall consent on each session. Once a user has consented to an external plugin, it loads automatically on subsequent sessions:
+
+```json
+{
+  "plugins": [
+    "/path/to/external/plugin"
+  ]
+}
+```
+
+**Behavior change:**
+
+- First load: User is prompted to consent to the external plugin
+- Subsequent loads: Plugin loads automatically without re-consent
+
+**Security note:** This change makes external plugin management smoother while maintaining the initial consent requirement. Users should only add trusted plugin paths to their settings.
+
+## Automatic Local Skill Loading (CC 2.1.157)
+
+Skills placed in `.claude/skills/` directories load automatically without requiring marketplace installation or explicit plugin configuration. This enables a streamlined local development workflow:
+
+```
+project/
+└── .claude/
+    └── skills/
+        └── my-skill/
+            └── SKILL.md    # Automatically discovered and loaded
+```
+
+**Benefits:**
+
+- No marketplace publishing required for local skills
+- Skills are immediately available in the project
+- Simplifies plugin development iteration
+- Works alongside installed marketplace plugins
+
+**Precedence:** Local `.claude/skills/` are discovered at the Project level in the skill precedence hierarchy (Enterprise > Personal > Project > Plugin).
+
+## Nested .claude/ Directory Precedence (CC 2.1.178)
+
+When nested `.claude/` directories exist in a project (common in monorepos), the closest directory to the working location takes precedence for name collisions.
+
+**Affected components:** Agents, Workflows, Output styles, Skills (via nested skill directory support).
+
+**Example structure:**
+
+```
+monorepo/
+├── .claude/                    # Root-level configuration
+│   ├── agents/
+│   │   └── reviewer.md         # Root reviewer agent
+│   └── workflows/
+│       └── deploy.yml          # Root deploy workflow
+├── apps/
+│   └── web/
+│       └── .claude/            # Nested configuration for apps/web
+│           ├── agents/
+│           │   └── reviewer.md # Web-specific reviewer (takes precedence here)
+│           └── workflows/
+│               └── deploy.yml  # Web-specific deploy (takes precedence here)
+└── packages/
+    └── api/
+        └── .claude/            # Nested configuration for packages/api
+            └── agents/
+                └── reviewer.md # API-specific reviewer (takes precedence here)
+```
+
+**Behavior:**
+
+- When working on files in `apps/web/`, the `apps/web/.claude/agents/reviewer.md` is used
+- When working on files in `packages/api/`, the `packages/api/.claude/agents/reviewer.md` is used
+- When working on root-level files, the root `.claude/agents/reviewer.md` is used
+
+**Implications for plugins:**
+
+- Plugin components are lowest precedence (after enterprise, personal, project, and nested project)
+- Nested `.claude/` directories allow project-specific overrides of plugin behavior
+- Monorepos can have different configurations per workspace without conflicts
+
+## Caching Details
+
+### What Gets Cached and Invalidation
+
+Claude Code caches plugin content for performance. Cached content includes:
+
+- Plugin manifest (plugin.json)
+- Component files (commands, agents, skills)
+- Configuration files (hooks.json, .mcp.json)
+
+Cached content refreshes when:
+
+- Claude Code session restarts
+- Plugin is reinstalled or updated
+- User runs `/reload-plugins`
+
+### Dependency Auto-Install (CC 2.1.116)
+
+`/reload-plugins` and background plugin auto-update now auto-install missing plugin dependencies from marketplaces you've already added. If a plugin declares dependencies on other plugins, they will be fetched automatically during refresh or auto-update cycles.
+
+### Version Constraint Auto-Update (CC 2.1.119)
+
+When a plugin depends on another plugin with a version constraint (e.g., `>=1.0.0`), the dependent plugin now auto-updates to the highest satisfying git tag rather than being locked to the original installation version. This ensures plugins stay up-to-date within compatible version ranges.
+
+### Plugin Auto-Rename with Marketplace Mapping (CC 2.1.193)
+
+When a plugin is renamed in its manifest and an associated marketplace entry maps the old name to the new name, Claude Code automatically updates the local plugin name. This enables smooth plugin rebranding without requiring users to manually uninstall and reinstall:
+
+**Marketplace mapping example:**
+
+```json
+{
+  "plugins": [
+    {
+      "name": "new-plugin-name",
+      "previousNames": ["old-plugin-name"]
+    }
+  ]
+}
+```
+
+**Behavior:**
+
+- User has `old-plugin-name` installed
+- Plugin author renames to `new-plugin-name` and adds `previousNames` mapping
+- On next auto-update or `/reload-plugins`, Claude Code detects the rename
+- Plugin is automatically updated to `new-plugin-name` locally
+
+**Implications for plugin authors:**
+
+- When renaming a plugin, add the old name to `previousNames` in the marketplace entry
+- Users won't lose their plugin installation or settings
+- Enables clean rebranding without disruption
+
+### Why External Paths Fail
+
+Paths outside the plugin directory may not work reliably because:
+
+1. **Security boundary** — Plugins are sandboxed to their directory
+2. **Caching** — External paths aren't monitored for changes
+3. **Portability** — External paths break on different machines
+
+**Always use:**
+
+- `${CLAUDE_PLUGIN_ROOT}` for paths within the plugin
+- Bundled resources instead of external file references
+- Environment variables for user-specific paths
+
+## Plugin Loading Options (CC 2.1.128-2.1.129)
+
+Claude Code supports multiple ways to load plugins for development and distribution.
+
+**Local directory:**
+
+```bash
+claude --plugin-dir /path/to/plugin
+```
+
+**ZIP archive (CC 2.1.128):**
+
+```bash
+claude --plugin-dir /path/to/plugin.zip
+```
+
+Zip archives are unpacked automatically. Useful for distributing self-contained plugin bundles.
+
+**Remote URL (CC 2.1.129):**
+
+```bash
+claude --plugin-url https://example.com/plugin-archive.tar.gz
+```
+
+Fetches and loads plugins directly from URLs. Supports tar.gz and zip formats. Enables remote plugin distribution without requiring local installation or marketplace publishing.
+
+## Safe Mode (CC 2.1.169)
+
+The `--safe-mode` flag disables all customizations for troubleshooting:
+
+```bash
+claude --safe-mode
+```
+
+**What safe mode disables:**
+
+- Plugin loading (all plugins are temporarily disabled)
+- Custom skills and commands
+- User hooks and MCP servers
+- Custom settings overrides
+
+**Use cases:**
+
+- Debugging whether a plugin is causing issues
+- Troubleshooting session problems
+- Testing Claude Code behavior without customizations
+- Isolating plugin conflicts
+
+Safe mode is temporary for that session only — restarting normally restores all customizations.
+
+## Security Settings
+
+### Auto Mode Shell Classification (CC 2.1.193)
+
+The `autoMode.classifyAllShell` setting controls how shell commands are classified in auto mode:
+
+```json
+{
+  "autoMode": {
+    "classifyAllShell": true
+  }
+}
+```
+
+**Behavior:**
+
+- `false` (default) — Only potentially dangerous shell commands are classified by the auto mode classifier
+- `true` — All shell commands are classified, providing stricter security at the cost of more classification calls
+
+**Use cases:**
+
+- High-security environments requiring review of all shell operations
+- Enterprise deployments with strict command policies
+- Debugging auto mode classification behavior
+
+### Sandbox Credentials Setting (CC 2.1.187)
+
+The `sandbox.credentials` setting controls Claude Code's access to credentials within sandboxed execution:
+
+```json
+{
+  "sandbox": {
+    "credentials": "none"
+  }
+}
+```
+
+**Values:**
+
+- `"none"` — No credential access in sandboxed contexts
+- `"keychain"` — Access to system keychain credentials
+- `"env"` — Access to environment variable credentials
+
+**Security implications:**
+
+- Affects how plugins and hooks can access stored credentials
+- Managed settings can enforce credential restrictions across an organization
+- Stricter settings may break plugins that require credential access
+
+## Cowork Plugin Format (CC 2.1.163)
+
+Claude Code includes comprehensive Cowork plugin component format references for authoring plugins that integrate with the Cowork collaboration system.
+
+**Documented components:**
+
+- Skills schema and examples
+- Agents schema and examples
+- Hooks configuration
+- MCP server integration
+- Legacy command format
+- CONNECTORS.md for external integrations
+- README.md requirements
+- Plugin packaging metadata
+
+**Template types:**
+
+- **Minimal plugin** — Single skill, basic structure
+- **Standard plugin** — Multiple skills, hooks, README
+- **Complex plugin** — Full-featured with agents, MCP servers, connectors
+
+**MCP server discovery:** Cowork plugins support automatic MCP server discovery, allowing plugins to expose tools dynamically.
+
+For detailed Cowork authoring guidance, use the `claude-code-guide` agent to query "Cowork plugin authoring" or "Cowork plugin schemas".
+
+## Plugin Discovery and Management CLI Additions
+
+### Plugin and Skill Discovery Tools (CC 2.1.199)
+
+Claude Code includes built-in tools for discovering plugins and skills:
+
+- **SearchPlugins** — Search org plugins by name, description, or keywords
+- **SearchSkills** — Search available skills across installed plugins
+- **SearchMcpRegistry** — Search MCP connector registries for available integrations
+- **SuggestConnectors** — Get recommendations for connectors based on task context
+- **ListConnectors** — List available MCP connectors
+
+**Implications for plugin developers:**
+
+- Plugins are discoverable through programmatic search, not just the marketplace UI
+- Good plugin metadata (name, description, keywords) improves discoverability
+- Skills should have clear, searchable descriptions
+- Consider how your plugin appears in search results when writing descriptions
+
+### Plugin Scaffolding (CC 2.1.157)
+
+Create a new plugin with the recommended directory structure:
+
+```bash
+claude plugin init my-plugin
+```
+
+This scaffolds a new plugin in `.claude/skills/my-plugin/` with:
+
+- `.claude-plugin/plugin.json` manifest
+- Basic `SKILL.md` template
+- Proper directory structure
+
+**Use cases:** starting a new plugin from scratch, creating plugins with correct structure automatically, avoiding common structural mistakes.
+
+### Plugin Pruning (CC 2.1.121)
+
+Remove orphaned auto-installed dependencies after uninstalling plugins:
+
+```bash
+claude plugin prune
+```
+
+**Use case:** When you uninstall a plugin that had auto-installed dependencies, those dependencies may remain. Running `plugin prune` cleans up these orphaned dependencies to free disk space and reduce clutter.
+
+### Plugin Install Improvements (CC 2.1.117)
+
+- **Dependency handling**: `plugin install` now automatically handles missing dependencies, installing required plugins from configured marketplaces
+- **Marketplace blocking enforced**: Plugins from blocked marketplaces (configured via `blockedMarketplaces` in managed settings) cannot be installed
+
+### Additional Source Types
+
+```bash
+claude plugin install npm-package-name
+claude plugin install pip-package-name
+```

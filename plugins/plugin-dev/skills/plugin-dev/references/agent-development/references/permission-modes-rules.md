@@ -29,6 +29,8 @@ The standard interactive permission model. Claude asks the user before performin
 
 **When to use:** General-purpose agents, agents handling sensitive operations, agents in untrusted contexts.
 
+**Manual Default Permission Mode (CC 2.1.200):** The default permission mode across all Claude Code interfaces is now "Manual" (equivalent to `default` above). This is a more conservative default that requires explicit user approval for each action, and it affects both the CLI and programmatic interfaces.
+
 #### acceptEdits
 
 Auto-accepts file writing operations (Write, Edit, NotebookEdit) without prompting. Other operations (Bash, etc.) still require user permission.

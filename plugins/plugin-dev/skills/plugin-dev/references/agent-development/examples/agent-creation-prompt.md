@@ -25,6 +25,33 @@ Return ONLY the JSON object, no other text.
 
 **Replace [YOUR DESCRIPTION] with your agent requirements.**
 
+**Condensed inline variant** (when you want the requirements spelled out in the prompt itself rather than loading the full agent-creation system prompt):
+
+```
+Create an agent configuration based on this request: "[YOUR DESCRIPTION]"
+
+Requirements:
+1. Extract core intent and responsibilities
+2. Design expert persona for the domain
+3. Create comprehensive system prompt with:
+   - Clear behavioral boundaries
+   - Specific methodologies
+   - Edge case handling
+   - Output format
+4. Create identifier (lowercase, hyphens, 3-50 chars)
+5. Write description with triggering conditions
+6. Include 2-3 <example> blocks showing when to use
+
+Return JSON with:
+{
+  "identifier": "agent-name",
+  "whenToUse": "Use this agent when... Examples: <example>...</example>",
+  "systemPrompt": "You are..."
+}
+```
+
+Then convert to agent file format with frontmatter.
+
 ### Step 3: Claude Returns JSON
 
 Claude will return:

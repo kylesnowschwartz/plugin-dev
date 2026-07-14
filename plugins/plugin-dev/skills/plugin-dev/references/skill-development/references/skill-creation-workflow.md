@@ -377,3 +377,147 @@ Why bad: Claude doesn't know references exist
 ```
 
 Why good: Claude knows where to find additional information
+
+## Validation Checklist
+
+Before finalizing a skill:
+
+**Structure:**
+
+- [ ] SKILL.md file exists with valid YAML frontmatter
+- [ ] Frontmatter has `name` and `description` fields
+- [ ] Name uses only lowercase letters, numbers, and hyphens (max 64 chars)
+- [ ] Description is under 1024 characters
+- [ ] (Optional) `allowed-tools` field if restricting tool access
+- [ ] (Optional) `disallowed-tools` field if blocking specific tools
+- [ ] (Optional) `context: fork` if running in subagent
+- [ ] (Optional) `agent` field if specifying agent type (requires `context: fork`)
+- [ ] (Optional) `skills` array if loading other skills (requires `context: fork`)
+- [ ] (Optional) `user-invocable` field if hiding from slash menu
+- [ ] (Optional) `disable-model-invocation` field if blocking programmatic use
+- [ ] (Optional) `model` field if overriding default model
+- [ ] (Optional) `hooks` field if using scoped hooks
+- [ ] (Optional) `argument-hint` field for autocomplete hints
+- [ ] (Optional) `paths` field for file-scoped activation
+- [ ] Markdown body is present and substantial
+- [ ] Referenced files actually exist
+
+**Description Quality:**
+
+- [ ] Uses third person ("This skill should be used when...")
+- [ ] Includes specific trigger phrases users would say
+- [ ] Lists concrete scenarios ("create X", "configure Y")
+
+**Content Quality:**
+
+- [ ] SKILL.md body uses imperative/infinitive form
+- [ ] Body is focused and lean (1,500-2,000 words ideal, <3k max)
+- [ ] Detailed content moved to references/
+- [ ] Examples are complete and working
+
+**Testing:**
+
+- [ ] Skill triggers on expected user queries
+- [ ] Content is helpful for intended tasks
+- [ ] No duplicated information across files
+
+## Skill Structure Patterns
+
+### Minimal Skill
+
+```
+skill-name/
+└── SKILL.md
+```
+
+Good for: Simple knowledge, no complex resources needed
+
+### Standard Skill (Recommended)
+
+```
+skill-name/
+├── SKILL.md
+├── references/
+│   └── detailed-guide.md
+└── examples/
+    └── working-example.sh
+```
+
+Good for: Most plugin skills with detailed documentation
+
+### Complete Skill
+
+```
+skill-name/
+├── SKILL.md
+├── references/
+│   ├── patterns.md
+│   └── advanced.md
+├── examples/
+│   ├── example1.sh
+│   └── example2.json
+└── scripts/
+    └── validate.sh
+```
+
+Good for: Complex domains with validation utilities
+
+## Best Practices Summary
+
+**DO:**
+
+- Use third-person in description ("This skill should be used when...")
+- Include specific trigger phrases ("create X", "configure Y")
+- Keep SKILL.md lean (1,500-2,000 words)
+- Use progressive disclosure (move details to references/)
+- Write in imperative/infinitive form
+- Reference supporting files clearly
+- Provide working examples
+- Create utility scripts for common operations
+- Prefer dedicated tools (Read, Grep, Glob) over Bash commands (CC 2.1.133)
+
+**DON'T:**
+
+- Use second person ("You should...")
+- Have vague trigger conditions
+- Put everything in SKILL.md (>3,000 words without references/)
+- Leave resources unreferenced
+- Include broken or incomplete examples
+
+## Examples from Plugin-Dev
+
+Study the skills in this plugin as examples of best practices:
+
+**hook-development skill:**
+
+- Excellent trigger phrases: "create a hook", "add a PreToolUse hook", etc.
+- Lean SKILL.md (2,125 words)
+- 3 references/ files for detailed content
+- 3 examples/ of working hooks
+- 3 scripts/ utilities
+
+**agent-development skill:**
+
+- Strong triggers: "create an agent", "agent frontmatter", etc.
+- Focused SKILL.md (1,896 words)
+- References include the AI generation prompt from Claude Code
+- Complete agent examples
+
+**plugin-settings skill:**
+
+- Specific triggers: "plugin settings", ".local.md files", "YAML frontmatter"
+- References show real implementations (multi-agent-swarm, ralph-wiggum)
+- Working parsing scripts
+
+Each demonstrates progressive disclosure and strong triggering.
+
+### Study These Skills
+
+Plugin-dev's skills demonstrate best practices:
+
+- `../hook-development/` - Progressive disclosure, utilities
+- `../agent-development/` - AI-assisted creation, references
+- `../mcp-integration/` - Comprehensive references
+- `../plugin-settings/` - Real-world examples
+- `../command-development/` - Clear critical concepts
+- `../plugin-structure/` - Good organization

@@ -425,6 +425,112 @@ Background monitoring scripts that run independently and stream events as chat n
 
 **Output format**: Monitors should emit JSON objects to stdout that the Monitor tool can process and display as chat notifications.
 
+**Nesting (CC 2.1.129):** As of CC 2.1.129, `monitors` (and `themes`) must be declared under the `experimental` key, not at the plugin.json root. The root-level form shown above is the pre-2.1.129 layout. See the `experimental` field below.
+
+### experimental (CC 2.1.129)
+
+**Type**: Object
+
+Experimental plugin features must be declared under the `"experimental"` key in plugin.json:
+
+```json
+{
+  "name": "my-plugin",
+  "version": "1.0.0",
+  "experimental": {
+    "themes": ["./themes/"],
+    "monitors": ["./monitors/"]
+  }
+}
+```
+
+**Currently experimental:**
+
+- **themes** — Custom UI themes for Claude Code
+- **monitors** — Background monitoring scripts (see the `monitors` section above and `references/advanced-topics.md`)
+
+**Breaking change:** Prior to CC 2.1.129, `themes` and `monitors` were declared at the plugin.json root level. They must now be nested under `"experimental"`. Plugins using the old format will fail to load these features.
+
+**Migration:**
+
+```json
+// Before (CC < 2.1.129)
+{
+  "themes": ["./themes/"],
+  "monitors": ["./monitors/"]
+}
+
+// After (CC >= 2.1.129)
+{
+  "experimental": {
+    "themes": ["./themes/"],
+    "monitors": ["./monitors/"]
+  }
+}
+```
+
+### defaultEnabled (CC 2.1.154)
+
+**Type**: Boolean
+**Default**: `true`
+
+Specifies whether the plugin is enabled by default after installation:
+
+```json
+{
+  "name": "my-plugin",
+  "defaultEnabled": false
+}
+```
+
+**Values:**
+
+- `true` (default) — Plugin is enabled immediately after installation
+- `false` — Plugin is installed but disabled; users must manually enable it via `/plugin` command
+
+**Use cases for `defaultEnabled: false`:**
+
+- Plugins with significant resource requirements
+- Plugins that require configuration before use
+- Optional extensions that users should explicitly opt into
+- Plugins with security-sensitive capabilities that users should consciously enable
+
+### userConfig
+
+**Type**: Object
+
+Declares configurable values in `.claude-plugin/plugin.json` that users are prompted for when enabling the plugin:
+
+```json
+{
+  "name": "plugin-name",
+  "userConfig": {
+    "api_endpoint": {
+      "description": "Your team's API endpoint",
+      "sensitive": false
+    },
+    "api_token": {
+      "description": "API authentication token",
+      "sensitive": true
+    }
+  }
+}
+```
+
+**Storage:**
+
+- Non-sensitive values: stored in `settings.json` under `pluginConfigs[<plugin-id>].options`
+- Sensitive values (`sensitive: true`): stored in the system keychain (macOS) or `~/.claude/.credentials.json` elsewhere
+
+> **CC 2.1.207 Breaking Change:** `pluginConfigs` are no longer read from project-level `.claude/settings.json`. Only user settings (`~/.claude/settings.json`), `--settings` flag, and managed settings are honored. Plugin developers should document this restriction and guide users to store configuration in user settings.
+
+**Accessing configured values:**
+
+- In MCP/LSP server configs, hook commands, and skill/agent content: `${user_config.KEY}` (non-sensitive only)
+- As environment variables in plugin subprocesses: `CLAUDE_PLUGIN_OPTION_<KEY>`
+
+**Constraints:** Keychain storage has an approximately 2KB total limit for sensitive values. Keep sensitive values small.
+
 ## Path Resolution
 
 ### Relative Path Rules

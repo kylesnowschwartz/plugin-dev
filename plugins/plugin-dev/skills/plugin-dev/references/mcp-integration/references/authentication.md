@@ -316,6 +316,19 @@ echo "{\"Authorization\": \"Bearer $TOKEN\"}"
 - Time-based authentication
 - Dynamic tenant/workspace selection
 
+### headersHelper Authentication Retry (CC 2.1.193)
+
+MCP servers using `headersHelper` for authentication now automatically retry on 401 responses with fresh credentials. This provides a smoother authentication experience when tokens expire:
+
+**Behavior:**
+
+- Initial request fails with 401 (Unauthorized)
+- Claude Code automatically invokes `headersHelper` to refresh credentials
+- Request is retried with new authentication headers
+- User does not need to manually re-authenticate
+
+**Use case:** Long-running sessions where tokens may expire mid-session. The retry happens transparently without user intervention.
+
 ## Security Best Practices
 
 ### DO

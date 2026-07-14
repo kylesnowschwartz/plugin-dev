@@ -671,6 +671,53 @@ If any step fails, resume with:
 4. **State preservation**: Keep state for recovery
 5. **Rollback capability**: Support undoing changes
 
+## Command Authoring Best Practices
+
+General best practices for writing individual commands (complementing the workflow-level practices above).
+
+### Command Design
+
+1. **Single responsibility:** One command, one task
+2. **Clear descriptions:** Self-explanatory in `/help`
+3. **Explicit dependencies:** Use `allowed-tools` when needed
+4. **Document arguments:** Always provide `argument-hint`
+5. **Consistent naming:** Use verb-noun pattern (review-pr, fix-issue)
+
+### Argument Handling
+
+1. **Validate arguments:** Check for required arguments in prompt
+2. **Provide defaults:** Suggest defaults when arguments missing
+3. **Document format:** Explain expected argument format
+4. **Handle edge cases:** Consider missing or invalid arguments
+
+Inline validation can be expressed directly in the prompt with `$IF`:
+
+```markdown
+---
+argument-hint: [pr-number]
+---
+
+$IF($1,
+Review PR #$1,
+Please provide a PR number. Usage: /review-pr [number]
+)
+```
+
+### File References
+
+1. **Explicit paths:** Use clear file paths
+2. **Check existence:** Handle missing files gracefully
+3. **Relative paths:** Use project-relative paths
+4. **Glob support:** Consider using Glob tool for patterns
+
+### Bash Commands
+
+1. **Limit scope:** Use `Bash(git *)` not `Bash(*)`
+2. **Safe commands:** Avoid destructive operations
+3. **Handle errors:** Consider command failures
+4. **Keep fast:** Long-running commands slow invocation
+5. **Cross-platform:** Consider Windows PowerShell users (see `marketplace-considerations.md`)
+
 ## Example: Complete Deployment Workflow
 
 ### Initialize Command

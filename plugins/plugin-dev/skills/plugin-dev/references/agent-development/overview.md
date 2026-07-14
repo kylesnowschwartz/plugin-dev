@@ -3,14 +3,14 @@
 
 ## Overview
 
-Agents are autonomous subprocesses that handle complex, multi-step tasks independently. Master agent structure, triggering conditions, and system prompt design to create powerful autonomous capabilities.
+Agents are autonomous subprocesses that handle complex, multi-step tasks independently. This overview covers core concepts, frontmatter fields, and decision rules; the reference and example files (see the routing table at the end) carry the full detail.
 
 **Key concepts:**
 
-- Agents are FOR autonomous work, commands are FOR user-initiated actions
+- Agents are FOR autonomous work, commands are FOR user-initiated actions, skills are FOR knowledge and guidance
 - Markdown file format with YAML frontmatter
-- Triggering via description field with examples
-- System prompt defines agent behavior
+- Triggering via the `description` field with `<example>` blocks
+- The markdown body becomes the agent's system prompt
 - Model and color customization
 
 > **Important - Field Name Difference:** Agents use `tools` to restrict tool access. Skills use `allowed-tools` for the same purpose. Don't confuse these when switching between component types.
@@ -50,7 +50,7 @@ You are a code reviewer. Analyze code for issues and provide feedback.
 **Output:** Summary with file:line references for each finding.
 ```
 
-For complete format with all options, see [Agent File Structure](#agent-file-structure).
+The full frontmatter template (all fields, system-prompt scaffold) is shown in `examples/complete-agent-examples.md`.
 
 ## When to Use Agents vs Commands vs Skills
 
@@ -60,677 +60,41 @@ For complete format with all options, see [Agent File Structure](#agent-file-str
 | **Commands** | User-initiated actions      | Explicit `/command` invocation   | `/deploy production`                |
 | **Skills**   | Knowledge and guidance      | Model-invoked based on context   | Domain expertise for PDF processing |
 
-> **See also:** For command development, see the Command Development reference. For skill development, see the Skill Development reference.
+- **Choose agents** when the task needs autonomous, multi-step execution, proactive triggering after events, a focused-tool subprocess, or background/subagent work.
+- **Choose commands** when the user should explicitly trigger the action, the task has clear start/end inputs, or the workflow needs user confirmation at each step.
+- **Choose skills** when providing knowledge or procedural guidance on-demand with no autonomous execution needed.
 
-### Choose Agents When
-
-- Task requires autonomous, multi-step execution
-- Proactive triggering after certain events is desired
-- Specialized subprocess with focused tools needed
-- Work should happen in the background or as a subagent
-
-### Choose Commands When
-
-- User should explicitly trigger the action
-- Task has clear start/end with specific inputs
-- Action should not happen automatically
-- Workflow requires user confirmation at each step
-
-### Choose Skills When
-
-- Providing knowledge or procedural guidance
-- Extending Claude's domain expertise
-- No autonomous execution needed
-- Information should be available contextually on-demand
-
-## Agent File Structure
-
-### Complete Format
-
-```markdown
----
-name: agent-identifier
-description: Use this agent when [triggering conditions]. Examples:
-
-<example>
-Context: [Situation description]
-user: "[User request]"
-assistant: "[How assistant should respond and use this agent]"
-<commentary>
-[Why this agent should be triggered]
-</commentary>
-</example>
-
-<example>
-[Additional example...]
-</example>
-
-model: inherit
-color: blue
-tools: Read, Write, Grep
----
-
-You are [agent role description]...
-
-**Your Core Responsibilities:**
-
-1. [Responsibility 1]
-2. [Responsibility 2]
-
-**Analysis Process:**
-[Step-by-step workflow]
-
-**Output Format:**
-[What to return]
-```
+> **See also:** the Command Development and Skill Development references for those component types.
 
 ## Frontmatter Fields
 
-### name (required)
-
-Agent identifier used for namespacing and invocation.
-
-**Format:** lowercase, numbers, hyphens only
-**Length:** 3-50 characters
-**Pattern:** Must start and end with alphanumeric
-
-**Good examples:**
-
-- `code-reviewer`
-- `test-generator`
-- `api-docs-writer`
-- `security-analyzer`
-
-**Bad examples:**
-
-- `helper` (too generic)
-- `-agent-` (starts/ends with hyphen)
-- `my_agent` (underscores not allowed)
-- `ag` (too short, < 3 chars)
-
-### description (required)
-
-Defines when Claude should trigger this agent. **This is the most critical field.**
-
-**Must include:**
-
-1. Triggering conditions ("Use this agent when...")
-2. Multiple `<example>` blocks showing usage
-3. Context, user request, and assistant response in each example
-4. `<commentary>` explaining why agent triggers
-
-**Format:**
-
-```
-Use this agent when [conditions]. Examples:
-
-<example>
-Context: [Scenario description]
-user: "[What user says]"
-assistant: "[How Claude should respond]"
-<commentary>
-[Why this agent is appropriate]
-</commentary>
-</example>
-
-[More examples...]
-```
-
-**Best practices:**
-
-- Include 2-4 concrete examples
-- Show proactive and reactive triggering
-- Cover different phrasings of same intent
-- Explain reasoning in commentary
-- Be specific about when NOT to use the agent
-
-### model (required)
-
-Which model the agent should use.
-
-**Options:**
-
-- `inherit` - Use same model as parent (recommended)
-- `sonnet` - Claude Sonnet (balanced) — **Note:** As of CC 2.1.197, `sonnet` resolves to Claude Sonnet 5 with native 1M-token context window
-- `opus` - Claude Opus (most capable, expensive)
-- `haiku` - Claude Haiku (fast, cheap)
-
-**When to choose:**
-
-- `haiku` - Fast, simple tasks; quick analysis; cost-sensitive operations
-- `sonnet` - Balanced performance; most use cases (default recommendation)
-- `opus` - Complex reasoning; detailed analysis; highest capability needed
-
-**Recommendation:** Use `inherit` (recommended default) unless the agent specifically needs:
-
-- `haiku` for fast, cost-sensitive operations
-- `opus` for complex reasoning requiring maximum capability
-
-**Claude Sonnet 5 Default (CC 2.1.197):** Claude Sonnet 5 is now the default model in Claude Code, featuring a native 1M-token context window. Scheduled agent creation also defaults to `claude-sonnet-5`. If your agents rely on specific model behavior, be aware that `sonnet` now resolves to Sonnet 5.
-
-### color (required)
-
-Visual identifier for agent in UI.
-
-> **Note:** This field is supported by Claude Code but not yet in official documentation. See the [Overview note](#overview) for details.
-
-**Options:** `blue`, `cyan`, `green`, `yellow`, `magenta`, `red`
-
-**Guidelines:**
-
-- Choose distinct colors for different agents in same plugin
-- Use consistent colors for similar agent types
-- Blue/cyan: Analysis, review
-- Green: Success-oriented tasks
-- Yellow: Caution, validation
-- Red: Critical, security
-- Magenta: Creative, generation
-
-### tools (optional)
-
-Restrict agent to specific tools.
-
-**Format:** Comma-separated tool names
-
-```yaml
-tools: Read, Write, Grep, Bash
-```
-
-**Default:** If omitted, agent has access to all tools
-
-**Best practice:** Limit tools to minimum needed (principle of least privilege)
-
-**Multiple Agent types (CC 2.1.147):** When declaring multiple `Agent(...)` types in the `tools:` field, all entries are now correctly retained. Previously, only the last entry was kept. This enables agents that can spawn multiple agent types:
-
-```yaml
-tools: Read, Grep, Agent(code-reviewer), Agent(test-runner)
-```
-
-**Common tool sets:**
-
-- Read-only analysis: `Read, Grep, Glob`
-- Code generation: `Read, Write, Grep`
-- Testing: `Read, Bash, Grep`
-- Background monitoring: `Monitor` (CC 2.1.98) - stream stdout events from long-running scripts as chat notifications. **CC 2.1.195:** Monitor tool now supports `ws` (WebSocket) as a source type in addition to `stdout`, enabling real-time data streaming from WebSocket connections.
-- Full access: Omit field entirely
-
-**Agent(type) Deny Rules Enforcement (CC 2.1.186):**
-
-Permission deny rules using `Agent(type)` syntax are now correctly enforced. Previously, deny rules like `!Agent(code-reviewer)` could be bypassed. This fix ensures that tool restrictions work as expected:
-
-```json
-// In settings.json or managed settings
-{
-  "permissions": {
-    "deny": ["Agent(untrusted-agent)"]
-  }
-}
-```
-
-This correctly blocks spawning the `untrusted-agent` type.
-
-> **Note:** The Config tool was removed in CC 2.1.118. Use the `/config` slash command instead for getting/setting Claude Code settings.
-
-> **Bash Tool Guidance (CC 2.1.133):** Claude Code now guides agents to prefer dedicated tools (Read, Grep, Glob) over Bash for file operations like `find`, `grep`, and `cat` unless explicitly instructed otherwise. When designing agents, consider whether dedicated tools can replace Bash commands for better user experience and token efficiency.
-
-> **Important:** Agents use `tools` while Skills use `allowed-tools`. The field names differ between component types. For skill tool restrictions, see the `skill-development` skill.
-
-### disallowedTools (optional)
-
-Denylist complement to `tools`. Block specific tools while allowing all others:
-
-```yaml
-disallowedTools: Bash, Write
-```
-
-**Format:** Comma-separated tool names
-
-**Default:** No tools blocked
-
-| Field             | Approach  | Use When                                |
-| ----------------- | --------- | --------------------------------------- |
-| `tools`           | Allowlist | Few tools needed, restrict to minimum   |
-| `disallowedTools` | Denylist  | Most tools needed, block specific risks |
-
-**Best practice:** Prefer `tools` (allowlist) for tighter security. Use `disallowedTools` when an agent needs broad access but specific tools are dangerous.
-
-> **Note:** Use one or the other. If both are specified, behavior is undefined.
-
-### skills (optional)
-
-Load specific skills into the agent's context:
-
-```yaml
-skills: testing-patterns, security-audit, api-design
-```
-
-**Use cases:**
-
-- Give agent domain expertise via skills
-- Combine multiple skills for comprehensive workflows
-- Share knowledge between agents and skills
-
-Skills must be from the same plugin. The skill's SKILL.md content loads into the agent's context.
-
-### permissionMode (optional)
-
-Control how the agent handles permission requests:
-
-```yaml
-permissionMode: acceptEdits
-```
-
-**Values:**
-
-- `default` - Standard permission model, prompts user for each action (implicit when omitted)
-- `acceptEdits` - Auto-accept file edit operations (Write, Edit, NotebookEdit)
-- `dontAsk` - Skip permission dialogs for all operations
-- `bypassPermissions` - Full bypass (requires trust)
-- `plan` - Planning mode, propose changes without executing
-- `delegate` - Coordination-only, restricted to team management tools (spawn, message, manage tasks)
-
-**Default:** Standard permission model (asks user)
-
-**Manual Default Permission Mode (CC 2.1.200):** The default permission mode across all Claude Code interfaces is now "Manual" (equivalent to `default` above). This is a more conservative default that requires explicit user approval for each action. This change affects both the CLI and programmatic interfaces.
-
-**Security note:** Use restrictive modes (`plan`, `acceptEdits`) for untrusted agents. `bypassPermissions` should only be used for fully trusted agents.
-
-See `references/permission-modes-rules.md` for complete permission mode details and rule syntax.
-
-### maxTurns (optional)
-
-Limit the maximum number of agentic turns before the agent stops:
-
-```yaml
-maxTurns: 50
-```
-
-**Use cases:**
-
-- Prevent runaway agents from consuming excessive resources
-- Set reasonable bounds for task complexity
-- Higher values (50-100) for complex multi-file tasks; lower values (10-20) for focused checks
-
-If omitted, the agent runs until it completes or the user interrupts.
-
-### memory (optional)
-
-Enable persistent memory across sessions:
-
-```yaml
-memory: user
-```
-
-**Scopes:** `user` (~/.claude/agent-memory/), `project` (.claude/agent-memory/), `local` (.claude/agent-memory-local/)
-
-When enabled, the agent's first 200 lines of `MEMORY.md` are auto-injected into its system prompt. The agent can read/write its memory directory to learn across sessions. See `references/advanced-agent-fields.md` for details.
-
-### mcpServers (optional)
-
-Scope MCP servers to this agent:
-
-```yaml
-mcpServers:
-  slack:
-```
-
-Reference an already-configured server by name, or provide inline config. Restricts which MCP servers the agent can access.
-
-**Main-thread agent loading (CC 2.1.117):** When an agent is launched as the main session agent via `--agent`, its frontmatter `mcpServers` now load for the main-thread session. Previously, agent-scoped MCP servers only loaded when the agent ran as a subagent. This extends MCP configuration to standalone agent sessions.
-
-**MCP policy enforcement fix (CC 2.1.153):** Subagent frontmatter MCP servers now correctly respect `--strict-mcp-config`, `--bare`, remote mode, and managed MCP config policies. Previously, these policies could be bypassed by defining MCP servers in subagent frontmatter. This fix makes MCP policies consistent across all invocation contexts.
-
-**`--strict-mcp-config` behavior change (CC 2.1.153):** `--strict-mcp-config` no longer strips inline `mcpServers` from explicitly-passed agent definitions. This allows agents passed via CLI to retain their MCP server configurations while still enforcing strict policies on dynamically-discovered servers.
-
-See `references/advanced-agent-fields.md` for configuration examples.
-
-### hooks (optional)
-
-Define lifecycle hooks scoped to this agent:
-
-```yaml
-hooks:
-  PreToolUse:
-    - matcher: Bash
-      hooks:
-        - type: command
-          command: "${CLAUDE_PLUGIN_ROOT}/scripts/validate-bash.sh"
-```
-
-Supports all hook events. Note: `Stop` hooks in agent frontmatter are auto-converted to `SubagentStop` at runtime. Hooks activate when the agent starts and deactivate when it finishes.
-
-**Main-thread agent hook firing (CC 2.1.116):** Agent frontmatter `hooks:` now fire when running as the main session agent via `--agent`. Previously, agent frontmatter hooks only fired when the agent ran as a subagent. This extends hook functionality to standalone agent sessions.
-
-See `references/advanced-agent-fields.md` for full details.
-
-> **Caveat -- `${CLAUDE_PLUGIN_ROOT}` and `--agent` loading:** Frontmatter hooks resolve `${CLAUDE_PLUGIN_ROOT}` only when the agent file is loaded through plugin discovery. When the same file is loaded via the `--agent` CLI flag from `.claude/agents/` or `~/.claude/agents/`, the variable is unbound and the hook fails with "Hook command references ${CLAUDE_PLUGIN_ROOT} but the hook is not associated with a plugin." Use `${CLAUDE_PROJECT_DIR}` with a project-relative path for hooks that may run under `--agent`. See `references/hook-development/overview.md` (Scoped Hooks section) for the full diagnostic. Related: issues [#24529](https://github.com/anthropics/claude-code/issues/24529), [#50357](https://github.com/anthropics/claude-code/issues/50357).
-
-### initialPrompt (optional)
-
-Auto-submit a prompt as the first user turn when the agent runs as the main session agent:
-
-```yaml
-initialPrompt: "Scan the codebase for lint errors, test failures, and report a summary."
-```
-
-**Behavior:**
-
-- Only fires when the agent is the **main session agent** (launched via `--agent` flag or `agent` setting)
-- Does **not** fire when the agent is spawned as a subagent by another agent
-- The prompt is submitted automatically — no manual input required
-- If the user also provides a prompt, both are submitted
-
-**Use cases:**
-
-- Agents that should immediately start working without user input
-- Daily standup or health-check agents
-- Automated validation that runs on session start
-
-### Autonomous Loop Guidance (CC 2.1.129)
-
-When the `CLAUDE_CODE_LOOP_PERSISTENT` environment variable is set, Claude Code provides timer-invocation guidance for autonomous work loops. This affects agents running in persistent/background modes.
-
-**Guidance includes:**
-
-- When to continue established work vs. stop
-- How to maintain current PRs and in-progress tasks
-- When to broaden scope before stopping
-- Requirements for authorization before irreversible actions
-
-**Relevance for plugin agents:** If your plugin provides agents intended for autonomous or scheduled execution (e.g., daily review agents, monitoring agents), be aware that users may run them with `CLAUDE_CODE_LOOP_PERSISTENT=1`. Design agents to:
-
-- Check for in-progress work before starting new tasks
-- Handle resumption gracefully
-- Avoid irreversible actions without explicit authorization
-
-### Autonomous Operation Guidelines (CC 2.1.169)
-
-Claude Code provides explicit guidance for autonomous sessions:
-
-- **Proceed on reversible work** — Continue with changes that can be undone (edits, new files, etc.)
-- **Stop only for destructive or scope-changing decisions** — Pause before irreversible actions or major scope changes
-- **Avoid premature permission questions** — Don't ask for permission when the answer is clearly implied
-- **Finish promised work before ending the turn** — Complete committed tasks before yielding control
-
-**Implications for plugin agents:** Design agents to work autonomously when the task is clear, minimizing unnecessary user interaction. Reserve questions for genuinely ambiguous situations.
-
-### Auto Mode Blocked Commands (CC 2.1.182-2.1.183)
-
-Auto mode now blocks additional destructive commands to prevent accidental data loss or infrastructure destruction. These commands require explicit user approval even in autonomous sessions:
-
-**Blocked git commands:**
-
-- `git commit --amend` (when rewriting pre-session HEAD)
-- `git stash drop` / `git stash clear`
-- `git restore`
-- `git clean -fd` / `git clean -fdx`
-- `git checkout -- .`
-
-**Blocked infrastructure commands:**
-
-- `terraform destroy`
-- `pulumi destroy`
-- `cdk destroy`
-- `terragrunt destroy`
-
-**Implications for plugin agents:**
-
-- Agents running in auto mode cannot execute these commands without user intervention
-- Design workflows to avoid these destructive patterns when autonomous execution is needed
-- If your agent needs to perform cleanup operations, consider less destructive alternatives or document that user approval will be required
-
-### Read-Only Authorization Inheritance (CC 2.1.179)
-
-Once a user authorizes read-only access to a particular target, further read-only commands against that target are cleared for the session without per-command re-approval. Additionally, post-block reaffirmation ("yes", "go ahead") now inherits the specificity of the blocked action.
-
-**Behavior:**
-
-- Read-only access to a file/directory persists for the session after initial approval
-- Users don't see repeated permission prompts for reading the same resources
-- Reaffirmation responses inherit the same scope as the original blocked action
-
-**Implications for plugin agents:**
-
-- Agents performing read-heavy analysis get smoother permission flow after initial approval
-- Design agents to batch reads of related resources when possible
-- The user experience improves for agents that need to repeatedly access the same files
-
-### Worker Fork Guidance (CC 2.1.169, updated 2.1.176)
-
-Forked worker agents receive explicit guidance that they should **not spawn further subagents**. Instead, they should execute their assigned directive directly. This prevents infinite delegation chains and ensures work gets done.
-
-**Fork syntax change (CC 2.1.176):** Creating a background fork now requires passing `subagent_type: "fork"` explicitly. Previously, omitting `subagent_type` would create a fork inheriting the current context. Now, omitting the type or using any other type starts a **fresh agent with no context**.
-
-```yaml
-# Before CC 2.1.176: omitting subagent_type created a fork
-# After CC 2.1.176: must be explicit
-subagent_type: "fork"  # Required to inherit context
-```
-
-**Implications for plugin agents:**
-
-- Agents spawned as subagents should focus on completing their specific task
-- Don't design agents that recursively spawn more agents for the same work
-- If an agent needs to delegate, it should be the top-level orchestrator, not a forked worker
-- Update any existing agent orchestration code to explicitly pass `subagent_type: "fork"` when context inheritance is needed
-
-### Sub-Agent Nesting (CC 2.1.172)
-
-Sub-agents can now spawn their own sub-agents, enabling complex orchestration patterns. Previously, sub-agents could not spawn further sub-agents.
-
-**Nesting limit:** Sub-agents can nest up to **5 levels deep**. Attempts to spawn beyond 5 levels will fail.
-
-**Reconciliation with worker fork guidance:** The CC 2.1.169 guidance that forked workers should not spawn subagents still applies — forked workers should execute their directive directly. The 5-level nesting capability is for orchestrator patterns where a top-level agent spawns sub-agents that themselves need to coordinate further sub-tasks.
-
-**Use cases:**
-
-- Multi-stage code review: orchestrator → file analyzers → specialized checkers
-- Complex refactoring: coordinator → module workers → dependency resolvers
-- Test generation: planner → test writers → validation agents
-
-**Design guidance:**
-
-- Keep nesting shallow when possible (2-3 levels is typical)
-- Top-level orchestrators handle coordination; leaf agents do the work
-- Avoid recursive patterns that could hit the 5-level limit
-
-### SendUserFile Tool (CC 2.1.142)
-
-The SendUserFile tool surfaces generated deliverable files to users with enhanced visibility. When agents create reports, exports, or other artifact files, use SendUserFile instead of just writing them silently:
-
-```json
-{
-  "file_path": "/path/to/report.pdf",
-  "caption": "Analysis report for Q4 metrics",
-  "status": "normal"
-}
-```
-
-**Parameters:**
-
-- `file_path`: Absolute path to the generated file
-- `caption`: Optional description shown to the user
-- `status`: `"normal"` (default) or `"proactive"` (for unsolicited deliverables)
-- `display` (CC 2.1.196): Controls rendering mode — `"inline"` for charts, HTML pages, diagrams, and images that should render directly in chat; `"attachment"` for files meant to be saved and opened elsewhere
-
-**Use cases for plugin agents:**
-
-- Report generators: Surface the final PDF/HTML report
-- Export tools: Highlight generated export files
-- Build artifacts: Call out compiled outputs or packages
-
-Hooks can match `SendUserFile` via PreToolUse/PostToolUse for validation or logging of deliverable generation.
-
-### SendMessageTool "main" Recipient (CC 2.1.178)
-
-Background subagents can now message the main conversation using `"main"` as the recipient in SendMessageTool:
-
-```json
-{
-  "recipient": "main",
-  "message": "Background task completed: processed 150 files"
-}
-```
-
-**Behavior:**
-
-- Only available to background subagents
-- Messages appear in the main conversation thread
-- Enables coordination between background agents and the primary session
-- Useful for progress updates and completion notifications
-
-**Use cases for plugin agents:**
-
-- Progress reporting from long-running background tasks
-- Alerting the user when background work completes
-- Requesting user input from a background context (though the agent cannot receive the response directly)
-
-### Agent Tool Usage Notes (CC 2.1.140)
-
-The Agent tool (Task tool in SDK parlance) includes simplified usage guidance that clarifies:
-
-- **When to delegate**: Use subagents for tasks requiring focused context or parallel execution
-- **Fork behavior**: Each Agent invocation starts fresh; context is not automatically inherited
-- **Resumption**: Ask Claude to "resume that agent" to restore prior transcript context
-- **Worktree isolation**: Background agents may run in isolated worktrees (controlled by `worktree.bgIsolation`)
-- **Remote isolation (CC 2.1.178)**: Use `isolation: "remote"` to run agents in a CCR (Claude Code Runner) sandbox
-- **Background execution**: Use `run_in_background` parameter for concurrent agent work
-- **Parallel launches**: Send multiple Agent calls in one message for concurrent execution
-- **Context restrictions**: Background agents cannot prompt for permissions
-
-Plugin authors creating skills that spawn agents should reference this guidance when designing orchestration patterns.
-
-### Workflow Tool Limits (CC 2.1.163)
-
-The Workflow tool's `parallel()` and `pipeline()` functions have a **4096 item limit**. Calls exceeding this limit will error explicitly. Design workflows to stay within this constraint:
-
-- Break large item sets into chunks of 4096 or fewer
-- Use pagination for processing large datasets
-- Consider sequential processing for very large workloads
-
-### Workflow Tool Effort Option (CC 2.1.178)
-
-The Workflow tool's `agent()` spawns now accept an `effort` option that overrides reasoning effort:
-
-**Values:** `'low'` | `'medium'` | `'high'` | `'xhigh'` | `'max'`
-
-**Behavior:**
-
-- **Omit** — Inherit the session's current effort level
-- **`'low'`** — Use for cheap mechanical stages (formatting, simple transforms)
-- **Higher tiers** — Reserve for the hardest verify/judge stages that need maximum reasoning
-
-**Example:**
-
-```javascript
-workflow.agent({
-  prompt: "Verify the refactoring is correct",
-  effort: "high"  // Use higher effort for verification
-})
-```
-
-**Design guidance:**
-
-- Default to inheriting session effort (omit the option)
-- Use `'low'` for stages that don't require deep reasoning
-- Reserve `'high'`/`'xhigh'`/`'max'` for critical validation steps
-
-### Browser File Upload Tool (CC 2.1.163)
-
-A new browser file upload tool uploads shared session files directly to page file inputs by element reference:
-
-**Key features:**
-
-- Uploads files to browser page file input elements
-- Combined upload limit of **10 MB**
-- Uses element refs to target specific inputs
-
-**Use cases for plugin agents:**
-
-- Automating file uploads in web testing scenarios
-- Browser automation workflows that require file inputs
-- Form-filling agents that handle attachments
-
-### Background Job Agent Behavior (CC 2.1.128)
-
-Claude Code includes built-in background-agent instructions that replace the previous background-job behavior system prompt. When agents run in background mode, they receive guidance to:
-
-- **Narrate progress** — Provide status updates during long-running operations
-- **Restate results in text** — Include final results in message text, not just tool calls, so classifiers can extract them
-- **Delegate noisy investigations** — Hand off verbose exploration to focused sub-tasks
-- **Signal completion status explicitly** — End with clear status markers:
-  - `result:` — Task completed successfully
-  - `needs input:` — Blocked, waiting for user input
-  - `failed:` — Task failed with error
-
-**Relevance for plugin agents:** If your agent may run in background mode (via `/loop`, scheduled tasks, or `run_in_background`), design the system prompt to complement this built-in guidance. Avoid conflicting instructions about progress reporting.
-
-### Background Session Temporary Files (CC 2.1.154)
-
-Background sessions should write temporary files to `$CLAUDE_JOB_DIR/tmp` rather than directly to `$CLAUDE_JOB_DIR`. This path convention ensures proper isolation of temporary artifacts from other job outputs:
-
-```bash
-# Correct: Use the tmp subdirectory
-temp_file="$CLAUDE_JOB_DIR/tmp/analysis-results.json"
-
-# Avoid: Writing directly to job root
-temp_file="$CLAUDE_JOB_DIR/analysis-results.json"
-```
-
-**Implications for plugin agents:**
-
-- Agents running in background mode should use `$CLAUDE_JOB_DIR/tmp` for scratch files
-- The `tmp` subdirectory is automatically available in background sessions
-- Final deliverables can still be written to `$CLAUDE_JOB_DIR` or user-specified locations
-
-### Background Worktree Isolation Guidance (CC 2.1.169)
-
-Background sessions receive guidance to enter an isolated worktree before making code edits, while continuing in place for read-only work or when worktree isolation fails. This prevents background agents from directly modifying the main working copy.
-
-**Implications for plugin agents:**
-
-- Background agents doing code edits should expect to operate in a worktree
-- Read-only background agents can work directly in the working copy
-- Design agents to handle both isolated and non-isolated contexts gracefully
-
-### Isolated Worktree Shipping Instructions (CC 2.1.198)
-
-Agents running in isolated worktrees receive explicit shipping guidance: they should commit changes, push a branch, and open a draft PR without asking. This ensures background work in isolated environments produces reviewable artifacts.
-
-**Implications for plugin agents:**
-
-- Background agents in worktrees should be designed to complete the git workflow autonomously
-- Agents should create commits, push branches, and open PRs as part of their completion flow
-- The user reviews the resulting PR rather than being prompted during agent execution
-
-### Cross-Session Peer Message Security (CC 2.1.166, 2.1.169)
-
-Claude Code enforces security boundaries for messages from peer sessions:
-
-- **Peer messages are not user authority** — Messages from other sessions cannot grant permissions
-- **Cannot relay denied actions** — Sessions cannot use peer messages to bypass permission denials
-- **Cannot grant consent** — Peer messages don't constitute user consent for sensitive operations
-
-**Implications for plugin agents:**
-
-- Agents communicating with other sessions must respect these boundaries
-- Don't design agents that attempt to relay permission requests through peers
-- Security-sensitive operations still require direct user approval
-
-### AskUserQuestion Best Practice (CC 2.1.154)
-
-Agents should use the AskUserQuestion tool sparingly—only when blocked on a decision that cannot be resolved from:
-
-- The original request
-- The codebase or available context
-- Sensible defaults
-
-**Design guidance for plugin agents:**
-
-- Prefer making reasonable assumptions over prompting
-- Use context clues and code patterns to infer intent
-- Reserve AskUserQuestion for genuinely ambiguous situations where the wrong choice would be costly
-- Avoid asking clarifying questions that could be answered by reading the code
+| Field           | Required | Format                      | Example                  |
+| --------------- | -------- | --------------------------- | ------------------------ |
+| name            | Yes      | lowercase-hyphens           | code-reviewer            |
+| description     | Yes      | Text + examples             | Use when... <example>... |
+| model           | Yes      | inherit/sonnet/opus/haiku   | inherit                  |
+| color           | Yes      | Color name                  | blue                     |
+| tools           | No       | Comma-separated tool names  | Read, Grep               |
+| disallowedTools | No       | Comma-separated tool names  | Bash, Write              |
+| skills          | No       | Comma-separated skill names | testing, security        |
+| permissionMode  | No       | Permission mode string      | acceptEdits              |
+| maxTurns        | No       | Integer                     | 50                       |
+| memory          | No       | Scope string                | user                     |
+| mcpServers      | No       | Server name map             | slack:                   |
+| hooks           | No       | Hook event map              | PreToolUse: [...]        |
+| initialPrompt   | No       | String                      | "Run health check..."    |
+
+**Field notes:**
+
+- **name** — lowercase letters, numbers, hyphens only; 3-50 chars; must start and end with alphanumeric. See Validation Rules below.
+- **description** — the most critical field. Must state triggering conditions ("Use this agent when...") plus 2-4 `<example>` blocks (Context, user, assistant, `<commentary>`). Anatomy, example types, templates, and debugging live in `references/triggering-examples.md`.
+- **model** — `inherit` (recommended default), `sonnet`, `opus`, or `haiku`. Use `haiku` for fast/cost-sensitive work, `opus` for complex reasoning. **As of CC 2.1.197, `sonnet` resolves to Claude Sonnet 5 (native 1M-token context) and is the default model in Claude Code; scheduled agent creation also defaults to `claude-sonnet-5`.** If your agents rely on specific model behavior, note that `sonnet` now resolves to Sonnet 5.
+- **color** — `blue`, `cyan`, `green`, `yellow`, `magenta`, `red`. Choose distinct colors per plugin; color→purpose conventions are in `examples/complete-agent-examples.md`.
+- **tools** — allowlist of comma-separated tool names; omit for full access. Follow least privilege. Common sets: read-only analysis `Read, Grep, Glob`; code generation `Read, Write, Grep`; testing `Read, Bash, Grep`; background monitoring `Monitor`. Version-specific behaviors (multiple `Agent(...)` types, `Monitor`, `Agent(type)` deny rules, Config-tool removal, Bash guidance) are in `references/advanced-agent-fields.md`.
+- **disallowedTools** — denylist complement to `tools`; block specific tools while allowing the rest. Prefer `tools` (allowlist) for tighter security; use one or the other (specifying both is undefined).
+- **skills** — load specific plugin skills into the agent's context; the skill's SKILL.md content loads in. Skills must be from the same plugin.
+- **permissionMode** — `default` (implicit), `acceptEdits`, `dontAsk`, `bypassPermissions`, `plan`, `delegate`. Use restrictive modes for untrusted agents; `bypassPermissions` only for fully trusted ones. Full mode details and permission rule syntax are in `references/permission-modes-rules.md`.
+- **maxTurns, memory, mcpServers, hooks, initialPrompt** — turn limits, persistent cross-session memory, agent-scoped MCP servers, lifecycle hooks, and auto-submitted first prompts. All documented in `references/advanced-agent-fields.md`.
 
 ### Fields NOT Available for Agents
 
@@ -744,115 +108,55 @@ Some frontmatter fields are specific to skills and do not apply to agents:
 | `disable-model-invocation` | Block programmatic Skill tool usage    | Agents use Task tool, not Skill tool                    |
 | `allowed-tools`            | Restrict tool access (skill syntax)    | Agents use `tools` field instead (different field name) |
 
-**Key distinction:** Skills provide knowledge and guidance that loads into context. Agents are autonomous subprocesses that execute independently. This architectural difference explains why context-forking options don't apply to agents — they're already isolated processes.
+Skills provide knowledge that loads into context; agents are autonomous subprocesses that execute independently — which is why context-forking options don't apply to agents.
 
 ### How Agents Compose with Skills
 
 A skill with `context: fork` and `agent: your-agent-name` creates a clean separation:
 
-- **Agent definition** (the `.md` file in `agents/`) → becomes the **system prompt**. This controls behavior, tools, MCP servers, and hooks.
-- **Skill body** (the SKILL.md content) → becomes the **task prompt**. This is the work the agent receives.
+- **Agent definition** (the `.md` file in `agents/`) → becomes the **system prompt** (behavior, tools, MCP servers, hooks).
+- **Skill body** (the SKILL.md content) → becomes the **task prompt** (the work the agent receives).
 
-The forked agent does not inherit conversation history. One agent can serve many skills, each providing a different task. This is the declarative alternative to spawning agents directly via the Agent tool — use it when the task instructions are stable and you want automatic trigger matching with prompt cache sharing. For dynamic prompts or parallel orchestration, use direct Agent tool calls instead.
-
-See the Skill Development reference (`references/skill-development/overview.md`) for the full comparison table.
+The forked agent does not inherit conversation history. One agent can serve many skills, each providing a different task. This is the declarative alternative to spawning agents via the Agent tool — use it when task instructions are stable and you want automatic trigger matching with prompt cache sharing. For dynamic prompts or parallel orchestration, use direct Agent tool calls instead. See the Skill Development reference (`../skill-development/overview.md`) for the full comparison table.
 
 ## System Prompt Design
 
 The markdown body becomes the agent's system prompt. Write in second person, addressing the agent directly.
 
-**Key elements:**
+**Key elements:** role definition ("You are [role] specializing in [domain]"), core responsibilities (numbered), concrete process steps, measurable quality standards, specific output format, and edge-case handling. Be specific, not vague; keep under 10,000 characters.
 
-- Role definition ("You are [role] specializing in [domain]")
-- Core responsibilities (numbered list)
-- Process steps (concrete, actionable)
-- Quality standards (measurable criteria)
-- Output format (specific structure)
-- Edge cases (how to handle exceptions)
-
-**Best practices:**
-
-- Write in second person ("You are...", "You will...")
-- Be specific, not vague
-- Keep under 10,000 characters
-- Include concrete steps, not generic instructions
-
-For detailed templates and patterns (Analysis, Generation, Validation, Orchestration agents), see `references/system-prompt-design.md`.
+For detailed templates and patterns (Analysis, Generation, Validation, Orchestration agents), writing-style guidance, common pitfalls, and upstream prompt evolution, see `references/system-prompt-design.md`.
 
 ## Creating Agents
 
-### Method 1: AI-Assisted Generation
+**Method 1 — AI-assisted generation:** Feed a description of the agent to Claude using the agent-generation prompt, get back JSON (`identifier`, `whenToUse`, `systemPrompt`), then convert it to an agent file with frontmatter. The exact prompt Claude Code uses is in `references/agent-creation-system-prompt.md`; a step-by-step template with worked examples is in `examples/agent-creation-prompt.md`.
 
-Use this prompt pattern (extracted from Claude Code):
+**Method 2 — Manual creation:**
 
-```
-Create an agent configuration based on this request: "[YOUR DESCRIPTION]"
-
-Requirements:
-1. Extract core intent and responsibilities
-2. Design expert persona for the domain
-3. Create comprehensive system prompt with:
-   - Clear behavioral boundaries
-   - Specific methodologies
-   - Edge case handling
-   - Output format
-4. Create identifier (lowercase, hyphens, 3-50 chars)
-5. Write description with triggering conditions
-6. Include 2-3 <example> blocks showing when to use
-
-Return JSON with:
-{
-  "identifier": "agent-name",
-  "whenToUse": "Use this agent when... Examples: <example>...</example>",
-  "systemPrompt": "You are..."
-}
-```
-
-Then convert to agent file format with frontmatter.
-
-See `examples/agent-creation-prompt.md` for complete template.
-
-### Method 2: Manual Creation
-
-1. Choose agent identifier (3-50 chars, lowercase, hyphens)
-2. Write description with examples
+1. Choose an agent identifier (3-50 chars, lowercase, hyphens)
+2. Write the description with `<example>` blocks
 3. Select model (usually `inherit`)
-4. Choose color for visual identification
-5. Define tools (if restricting access)
-6. Write system prompt with structure above
+4. Choose a color
+5. Define tools if restricting access
+6. Write the system prompt with the structure above
 7. Save as `agents/agent-name.md`
 
 ## Validation Rules
 
-### Identifier Validation
+**Identifier:** 3-50 characters; lowercase letters, numbers, hyphens only; must start and end with alphanumeric; no underscores, spaces, or special characters.
 
 ```
 ✅ Valid: code-reviewer, test-gen, api-analyzer-v2
 ❌ Invalid: ag (too short), -start (starts with hyphen), my_agent (underscore)
 ```
 
-**Rules:**
+**Description:** 10-5,000 characters; must include triggering conditions and examples. Best: 200-1,000 characters with 2-4 examples.
 
-- 3-50 characters
-- Lowercase letters, numbers, hyphens only
-- Must start and end with alphanumeric
-- No underscores, spaces, or special characters
-
-### Description Validation
-
-**Length:** 10-5,000 characters
-**Must include:** Triggering conditions and examples
-**Best:** 200-1,000 characters with 2-4 examples
-
-### System Prompt Validation
-
-**Length:** 20-10,000 characters
-**Best:** 500-3,000 characters
-**Structure:** Clear responsibilities, process, output format
+**System prompt:** 20-10,000 characters. Best: 500-3,000 characters with clear responsibilities, process, and output format.
 
 ## Agent Organization
 
-### Plugin Agents Directory
+All `.md` files in a plugin's `agents/` directory are auto-discovered:
 
 ```
 plugin-name/
@@ -862,231 +166,48 @@ plugin-name/
     └── generator.md
 ```
 
-All `.md` files in `agents/` are auto-discovered.
+**Precedence:** `--agents` CLI flag > `.claude/agents/` (project) > `~/.claude/agents/` (personal) > plugin `agents/` directory. Higher-priority agents with the same name shadow lower-priority ones. Use distinctive, namespaced names to avoid collisions.
 
-**Agent precedence:** `--agents` CLI flag > `.claude/agents/` (project) > `~/.claude/agents/` (personal) > Plugin `agents/` directory. Higher-priority agents with the same name shadow lower-priority ones. Use distinctive, namespaced names for plugin agents to avoid collisions.
+**Namespacing:** single plugin → `agent-name`; with subdirectories → `plugin:subdir:agent-name`.
 
-### Portable Paths
-
-When referencing files within your plugin (scripts, references, etc.) from agent system prompts, use `${CLAUDE_PLUGIN_ROOT}` for portable paths:
+**Portable paths:** reference files inside your plugin with `${CLAUDE_PLUGIN_ROOT}` (resolves to the plugin's install directory at runtime):
 
 ```markdown
 Run the validation script at `${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh`
 ```
 
-This variable resolves to the plugin's installation directory at runtime, ensuring paths work regardless of where the plugin is installed.
-
-### Absolute File Paths Required (CC 2.1.97)
-
-Agent threads always require absolute file paths unconditionally. When agents use file operations (Read, Write, Edit, etc.), all paths must be absolute—relative paths are not supported in agent contexts. Use `${CLAUDE_PLUGIN_ROOT}` or construct absolute paths from known locations.
-
-### Self-Modification Protected Paths (CC 2.1.140)
-
-The security monitor enforces Self-Modification rules on agent-config paths. Modifying these paths triggers enhanced security scrutiny:
-
-- `.claude/settings*.json`
-- `CLAUDE.md`, `CLAUDE.local.md`, `.claude.json`
-- `.claude/rules/`, `.claude/hooks/`, `.claude/commands/`
-- `.claude/agents/`, `.claude/skills/`, `.claude/output-styles/`
-- `.claude/workflows/`, `.claude/routines/`
-- `.claude/scheduled_tasks.json`, `.claude/loop.md`
-- `.mcp.json`
-
-**Exception:** Files under `.claude/worktrees/<name>/` are treated as ordinary project files, not Self-Modification.
-
-Plugin agents that modify user configuration should be aware users may see additional security prompts. Design agents to explain why config changes are needed before attempting them.
-
-### Worktree Base Reference (CC 2.1.133)
-
-The `worktree.baseRef` setting controls the base reference for new worktrees created via `--worktree`, `EnterWorktree`, or agent-isolation worktrees:
-
-- **`fresh`** (default): Branch from `origin/<default-branch>` — starts with clean upstream state
-- **`head`**: Branch from current local HEAD — preserves local changes
-
-This affects agents using `isolation: "worktree"` in their frontmatter. The setting is configured in user or project settings.
-
-### Background Session Worktree Isolation (CC 2.1.143)
-
-The `worktree.bgIsolation` setting controls whether background sessions automatically enter worktrees:
-
-- **`"worktree"`** (default): Background sessions enter a worktree via `EnterWorktree` before editing
-- **`"none"`**: Background sessions edit the working copy directly without entering a worktree
-
-Use `"none"` when background agents need to modify the main working directory directly (e.g., for refactoring tasks that should affect the current branch). Configure in user or project settings.
-
-### Remote Isolation (CC 2.1.178)
-
-The Agent tool supports `isolation: "remote"` to run agents in a remote CCR (Claude Code Runner) sandbox:
-
-```yaml
-isolation: "remote"
-```
-
-**Behavior:**
-
-- Agent runs in a completely isolated remote sandbox
-- Always executes as a background task
-- Completion notification is sent when the agent finishes
-- Full sandbox isolation from the local environment
-
-**Use cases:**
-
-- Untrusted code execution
-- Resource-intensive operations that shouldn't affect local machine
-- Security-sensitive tasks requiring full isolation
-- Testing in a clean environment
-
-**Comparison of isolation modes:**
-
-| Mode | Environment | Execution | Use Case |
-|------|-------------|-----------|----------|
-| (none) | Local, shared | Foreground | Standard subagent work |
-| `worktree` | Local, git worktree | Background | Parallel git branches |
-| `remote` | Remote CCR sandbox | Background | Full isolation |
-
-### EnterWorktree Mid-Session Switching (CC 2.1.157)
-
-The `EnterWorktree` tool can now switch between Claude-managed worktrees mid-session using the `path` parameter. This enables:
-
-- Switching from one worktree to another without ending the session
-- Moving between parallel feature branches during a single session
-- Returning to the main worktree after isolated work
-
-**Usage:** Agents in an existing worktree session or pinned agent can call `EnterWorktree` with a `path` pointing to another registered `.claude/worktrees/` worktree. Cleanup and writability limits are enforced during the switch.
-
-**Implications for plugin agents:**
-
-- Agents can now orchestrate work across multiple worktrees
-- Design multi-branch workflows that switch context as needed
-- Be aware of writability restrictions when switching worktrees
-
-### Subagent Skill Discovery (CC 2.1.133)
-
-**Resolved:** Subagents now correctly discover project, user, and plugin skills via the Skill tool. Prior to CC 2.1.133, subagents could not invoke skills, which limited their ability to leverage plugin-provided knowledge. If your agents depend on skills, ensure users are on CC 2.1.133 or later.
-
-### Namespacing
-
-Agents are namespaced automatically:
-
-- Single plugin: `agent-name`
-- With subdirectories: `plugin:subdir:agent-name`
+Agent threads require **absolute** file paths, config-path edits trigger Self-Modification security scrutiny, and worktree/isolation settings all have version-specific behavior — see `references/advanced-agent-fields.md`.
 
 ## Testing Agents
 
-### Test Triggering
+**Test triggering:** write specific triggering examples, use similar phrasing in a test prompt, check that Claude loads the agent, and verify it provides the expected functionality.
 
-Create test scenarios to verify agent triggers correctly:
-
-1. Write agent with specific triggering examples
-2. Use similar phrasing to examples in test
-3. Check Claude loads the agent
-4. Verify agent provides expected functionality
-
-### Agent Autocomplete (CC 2.1.153)
-
-The `claude agents` dispatch input now suggests native slash commands and bundled skills in addition to project agents. When testing agent invocation, autocomplete helps discover available agent types and skills that can be dispatched to agents.
-
-### ListAgents Tool (CC 2.1.200)
-
-The ListAgents tool enables programmatic discovery of available agents:
-
-- Lists in-process subagents, other local and cloud Claude sessions, and reply-only remote bridge sessions
-- Agents should address a row by its exact name and append its `[ref]` only when the bare name is ambiguous
-- Useful for multi-agent coordination scenarios where agents need to discover and message other agents
-
-**Use cases:**
-
-- Multi-agent orchestration discovering available teammates
-- Coordination patterns where agents need to find and communicate with specific agent types
-- Dynamic workflows that adapt based on available agents
-
-### Load Agents at Session Start
-
-Use the `--agents` CLI flag to pre-load specific agents:
+**Pre-load agents** with the `--agents` CLI flag (useful for testing without triggering, or debugging system prompts):
 
 ```bash
-# Load single agent
 claude --agents code-reviewer
-
-# Load multiple agents
 claude --agents "code-reviewer,test-generator"
 ```
 
-**Use cases:**
+**Test the system prompt:** give the agent a typical task, confirm it follows the process steps, verify the output format, test edge cases, and confirm quality standards are met.
 
-- Testing agent behavior without triggering
-- Workflows requiring specific agents
-- Debugging agent system prompts
+CLI/testing behaviors with version notes (print-mode tool enforcement, `permissionMode` via `--agent`, the `settings.json` `agent` field, agent autocomplete, the ListAgents tool) are documented in `references/advanced-agent-fields.md`.
 
-### Print Mode Frontmatter Enforcement (CC 2.1.119)
+## Execution Modes
 
-Agent frontmatter `tools:` and `disallowedTools:` restrictions now work in print mode (`-p` / `--print`), not just interactive mode. This is important for headless agent usage where you want tool restrictions to apply even when running non-interactively.
+Agents run in **background** (default as of CC 2.1.198, concurrent, permissions must be pre-approved at spawn time) or **foreground** (blocking; set `run_in_background: false`). Background agents that need an unapproved permission will fail, so plan tool restrictions accordingly. See `references/advanced-agent-fields.md` for background job behavior, extended-thinking inheritance, resuming, spawnable-type restrictions, built-in agent types, and isolation modes; `references/orchestration-and-tools.md` for orchestration tools.
 
-### Agent permissionMode via CLI (CC 2.1.119)
+## Agent Teams (Experimental)
 
-When launching an agent via `--agent <name>`, Claude Code now respects the agent's frontmatter `permissionMode` for built-in agents. This means permission modes defined in agent definitions are honored when launched via the CLI flag.
+Agent teams enable multi-agent coordination where a team lead spawns and manages multiple independent Claude Code sessions as teammates. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. Teams provide shared task lists, inter-agent messaging, and parallel execution; use `permissionMode: delegate` to restrict a lead to coordination-only tools. Full guidance (team lead/teammate design, display modes, team hooks, plan-approval mode, removed team tools) is in `references/advanced-agent-fields.md`. This is an advanced feature — see the [official agent teams documentation](https://code.claude.com/docs/en/agent-teams).
 
-### Settings Agent Field for Dispatched Sessions (CC 2.1.157)
-
-The `agent` field in `settings.json` is now honored when dispatching sessions via `claude agents`. This enables:
-
-```json
-{
-  "agent": "my-custom-agent"
-}
-```
-
-**Behavior:**
-
-- Dispatched sessions inherit the `agent` setting from the dispatching context
-- Allows default agent configuration at the project or user level
-- Consistent agent selection across interactive and dispatched sessions
-
-**Use cases:**
-
-- Set a default agent for all dispatched work in a project
-- Ensure dispatched sessions use the same specialized agent as interactive sessions
-- Configure team-wide agent defaults via project settings
-
-### Test System Prompt
-
-Ensure system prompt is complete:
-
-1. Give agent typical task
-2. Check it follows process steps
-3. Verify output format is correct
-4. Test edge cases mentioned in prompt
-5. Confirm quality standards are met
-
-## Quick Reference
-
-### Frontmatter Fields Summary
-
-| Field            | Required | Format                     | Example                  |
-| ---------------- | -------- | -------------------------- | ------------------------ |
-| name             | Yes      | lowercase-hyphens          | code-reviewer            |
-| description      | Yes      | Text + examples            | Use when... <example>... |
-| model            | Yes      | inherit/sonnet/opus/haiku  | inherit                  |
-| color            | Yes      | Color name                 | blue                     |
-| tools            | No       | Comma-separated tool names | Read, Grep               |
-| disallowedTools  | No       | Comma-separated tool names | Bash, Write              |
-| skills           | No       | Comma-separated skill names | testing, security        |
-| permissionMode   | No       | Permission mode string     | acceptEdits              |
-| maxTurns         | No       | Integer                    | 50                       |
-| memory           | No       | Scope string               | user                     |
-| mcpServers       | No       | Server name map            | slack:                   |
-| hooks            | No       | Hook event map             | PreToolUse: [...]        |
-| initialPrompt    | No       | String                     | "Run health check..."    |
-
-> **Note:** Agents use `tools` to restrict tool access. Skills use `allowed-tools` for the same purpose. The field names differ between component types.
-
-### Best Practices
+## Best Practices
 
 **DO:**
 
-- ✅ Include 2-4 concrete examples in description
+- ✅ Include 2-4 concrete examples in the description
 - ✅ Write specific triggering conditions
-- ✅ Use `inherit` for model unless specific need
+- ✅ Use `inherit` for model unless a specific need applies
 - ✅ Choose appropriate tools (least privilege)
 - ✅ Write clear, structured system prompts
 - ✅ Test agent triggering thoroughly
@@ -1095,73 +216,26 @@ Ensure system prompt is complete:
 
 - ❌ Use generic descriptions without examples
 - ❌ Omit triggering conditions
-- ❌ Give all agents same color
+- ❌ Give all agents the same color
 - ❌ Grant unnecessary tool access
 - ❌ Write vague system prompts
 - ❌ Skip testing
 
-## Execution Modes
+## Reference Files
 
-Agents can run in foreground (blocking) or background (concurrent) mode:
+| Reference | When to read |
+| --------- | ------------ |
+| `references/system-prompt-design.md` | Writing an agent's system prompt: the four patterns (Analysis, Generation, Validation, Orchestration), templates, writing style, common pitfalls, length guidelines, upstream prompt evolution |
+| `references/triggering-examples.md` | Writing or debugging `description` `<example>` blocks: anatomy, four example types, multiple-examples strategy, template library, triggering-issue diagnosis |
+| `references/agent-creation-system-prompt.md` | Using AI-assisted generation: the exact system prompt Claude Code uses, plus customization tips |
+| `references/advanced-agent-fields.md` | Configuring maxTurns, memory, mcpServers, hooks, or initialPrompt; tools/model/mcpServers version behaviors; autonomous, background, or isolated execution; CLI/testing behaviors; agent teams |
+| `references/permission-modes-rules.md` | Choosing a `permissionMode` or writing permission rules: all modes, specifier syntax, evaluation order, blocked categories, plugin-developer guidance |
+| `references/orchestration-and-tools.md` | Designing agents that spawn or coordinate others: Agent tool notes, sub-agent nesting, SendUserFile, SendMessage "main", Workflow tool limits/effort, browser file upload |
+| `examples/agent-creation-prompt.md` | Step-by-step AI-assisted generation walkthrough with worked request→JSON→file examples |
+| `examples/complete-agent-examples.md` | Copy a full, production-ready agent (code review, test generator, docs, security) or the complete frontmatter template; color/tool-set conventions |
 
-- **Background** (default as of CC 2.1.198): Runs concurrently; permissions must be pre-approved at spawn time since the user can't be prompted
-- **Foreground**: Blocks the main conversation until the agent completes; use `run_in_background: false` to enable
+## Utility Scripts
 
-**Background by Default (CC 2.1.198):** The Agent tool now defaults to `run_in_background: true`. Claude keeps working while subagents run in the background. To run an agent in foreground (blocking) mode, explicitly set `run_in_background: false` in the Agent tool call.
-
-**Extended Thinking Inheritance (CC 2.1.198):** Subagents now inherit the session's extended thinking configuration. Agent type definitions supply model, reasoning effort, and tool access, while the call-level `model` parameter overrides only the model at launch. This means subagents automatically benefit from extended thinking when enabled in the parent session.
-
-Background agents that need an unapproved permission will fail. Plan tool restrictions accordingly.
-
-### Background Job Behavior (CC 2.1.117)
-
-When designing agents that run as background jobs or forks:
-
-- **Narrate progress**: Emit periodic status updates so users can track progress
-- **Restate results in text**: Include final results in message text, not just tool calls, so classifiers can extract them for inbox summaries
-- **Signal completion status**: Explicitly signal `done`, `blocked`, or `failed` status when finishing
-
-**MCP limitation:** MCP tools are unavailable in background subagents. If your agent relies on MCP tools (from the plugin's `.mcp.json`), it must run in foreground mode. Design agents that may run in background to use only built-in tools.
-
-**Resuming agents:** Each Task invocation creates a fresh agent. To continue with full prior context, ask Claude to "resume that agent" — it will restore the previous transcript.
-
-**Restricting spawnable agents:** Use `Task(agent_type1, agent_type2)` syntax in settings.json allow rules to control which agent types can be spawned. Omitting `Task` entirely prevents subagent spawning.
-
-**Built-in agent types:** Explore (read-only, Haiku), Plan (read-only research), general-purpose (all tools), Bash (terminal commands), statusline-setup (Haiku), Claude Code Guide (Haiku).
-
-## Agent Teams (Experimental)
-
-Agent teams enable multi-agent coordination where a team lead spawns and manages multiple independent Claude Code sessions as teammates. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
-
-Teams provide shared task lists, inter-agent messaging, and parallel execution. Use `permissionMode: delegate` to restrict a lead to coordination-only tools.
-
-This is an advanced feature — see the [official agent teams documentation](https://code.claude.com/docs/en/agent-teams) for details.
-
-> **CC 2.1.178:** The `TeamDelete` tool (for deleting completed team directories) and `TeammateTool` (for team creation, agent-type selection, task ownership, and message delivery) have been removed. If your plugin documentation or agents reference these tools, update accordingly. Team coordination now uses different mechanisms — consult the official agent teams documentation for current APIs.
-
-## Additional Resources
-
-### Reference Files
-
-For detailed guidance, consult:
-
-- **`references/system-prompt-design.md`** - Four system prompt patterns (Analysis, Generation, Validation, Orchestration) with complete templates and common pitfalls
-- **`references/triggering-examples.md`** - Example block anatomy, four example types, template library, and debugging guide
-- **`references/agent-creation-system-prompt.md`** - The exact prompt used by Claude Code's agent generation feature with usage patterns
-- **`references/advanced-agent-fields.md`** - Detailed docs for maxTurns, memory, mcpServers, hooks, execution modes, and agent teams
-- **`references/permission-modes-rules.md`** - Complete permission mode details and permission rule syntax for fine-grained access control
-
-### Example Files
-
-Working examples in `examples/`:
-
-- **`agent-creation-prompt.md`** - AI-assisted agent generation template
-- **`complete-agent-examples.md`** - Full agent examples for different use cases
-
-### Utility Scripts
-
-Development tools in `scripts/`:
-
-- **`create-agent-skeleton.sh`** - Generate new agent file from template
-- **`validate-agent.sh`** - Validate agent file structure
-- **`test-agent-trigger.sh`** - Test if agent triggers correctly
+- **`scripts/create-agent-skeleton.sh`** — generate a new agent file with valid frontmatter, a placeholder example block, and a basic system-prompt structure
+- **`scripts/validate-agent.sh`** — validate an agent file's frontmatter, required fields, formats, system-prompt length, and example blocks
+- **`scripts/test-agent-trigger.sh`** — extract `<example>` blocks, parse triggering phrases, validate example formatting, and give manual testing guidance

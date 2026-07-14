@@ -61,6 +61,8 @@ All fields are optional. Omitted fields use defaults.
 | 2     | Blocking error. stderr content fed to Claude or user     |
 | Other | Non-blocking error. Shown in verbose/debug mode only     |
 
+**SessionStart/Setup/SubagentStart stderr fix (CC 2.1.199):** These hooks now properly show stderr in the transcript when exiting with code 2. Previously, stderr was silently hidden for these specific hooks, making debugging difficult. Error messages now appear correctly in the transcript.
+
 ---
 
 ## Session Lifecycle
@@ -186,7 +188,10 @@ Note: `permission_mode` is not present on SessionStart.
 
 - Runs **after** SessionEnd, providing additional cleanup window
 - Configurable SIGTERM→SIGKILL window for graceful shutdown
+- Ideal for self-hosted runners that need to persist logs, artifacts, or state
 - Workspace is still available during this hook (deleted after)
+
+**Use cases:** Upload session artifacts to external storage, persist logs for debugging, clean up external resources created during the session, notify monitoring systems of session completion.
 
 **Matchers:** Not supported
 **Hook types:** Command only
@@ -273,7 +278,7 @@ Note: `permission_mode` is not present on SessionStart.
 {
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
-    "permissionDecision": "allow|deny|ask",
+    "permissionDecision": "allow|deny|ask|defer",
     "permissionDecisionReason": "string (optional)",
     "updatedInput": {
       "command": "string (modified tool input)"
@@ -283,10 +288,12 @@ Note: `permission_mode` is not present on SessionStart.
 }
 ```
 
-- `permissionDecision`: `"allow"` approves without prompting, `"deny"` blocks execution, `"ask"` shows permission dialog
+- `permissionDecision`: `"allow"` approves without prompting, `"deny"` blocks execution, `"ask"` shows permission dialog, `"defer"` pauses execution
 - `permissionDecisionReason`: Explanation logged for the decision
 - `updatedInput`: Replace specific tool_input fields (merged, not replaced wholesale). For `AskUserQuestion` tool calls, return `updatedInput` alongside `permissionDecision: "allow"` to provide answers programmatically (CC 2.1.85), enabling headless integrations that collect answers via their own UI.
 - `additionalContext`: Injected into Claude's context for this tool call
+
+**Defer pattern (CC 2.1.89):** Return `permissionDecision: "defer"` to pause tool execution in headless sessions. The session can be resumed later with `-p --resume`. Use `defer` when you need external approval or want to batch decisions for later processing.
 
 **Deprecated fields:** Top-level `decision: "approve|block"` still works but `hookSpecificOutput.permissionDecision` takes precedence.
 
@@ -353,7 +360,9 @@ Note: `permission_mode` is not present on SessionStart.
 - `message`: Reason for denial, shown to user (deny only)
 - `interrupt`: If true, stops Claude entirely (deny only)
 
-**Known issue:** `additionalContext` is parsed but silently dropped ([anthropics/claude-code#28035](https://github.com/anthropics/claude-code/issues/28035)).
+**Difference from PreToolUse:** PreToolUse runs before every tool execution regardless of permission status. PermissionRequest runs only when a permission dialog would be shown to the user.
+
+**Known issues:** `additionalContext` is parsed but silently dropped ([anthropics/claude-code#28035](https://github.com/anthropics/claude-code/issues/28035)) — it works in PreToolUse but not here. Race condition where the dialog may briefly show despite returning "allow" ([#12176](https://github.com/anthropics/claude-code/issues/12176)).
 
 **Matchers:** Tool names (same as PreToolUse)
 **Hook types:** Command, HTTP, Prompt, Agent
@@ -391,6 +400,8 @@ Note: `permission_mode` is not present on SessionStart.
 
 - `retry`: If `true`, requests Claude to retry the denied operation
 
+**Difference from PermissionRequest:** PermissionRequest fires when a dialog is about to show; PermissionDenied fires after auto mode has already denied the operation.
+
 **Matchers:** Tool names (same as PreToolUse)
 **Hook types:** Command, HTTP, Prompt, Agent
 
@@ -412,9 +423,12 @@ Note: `permission_mode` is not present on SessionStart.
   "tool_name": "string",
   "tool_input": {},
   "tool_response": "any (tool's return value)",
-  "tool_use_id": "string"
+  "tool_use_id": "string",
+  "duration_ms": "number (CC 2.1.119, how long the tool execution took)"
 }
 ```
+
+> **CC 2.1.119:** PostToolUse and PostToolUseFailure hooks now include a `duration_ms` field in the input, showing how long the tool execution took. Useful for performance monitoring hooks.
 
 **Output:**
 
@@ -433,6 +447,16 @@ Note: `permission_mode` is not present on SessionStart.
 
 - `updatedToolOutput`: Replace tool output for **any** tool (CC 2.1.121). Use this for general tool output modification.
 - `updatedMCPToolOutput`: Replace tool output for **MCP tools only** (legacy, still works). Prefer `updatedToolOutput` for new hooks.
+
+**Continue on block (CC 2.1.139):** PostToolUse hooks support a `continueOnBlock` option on the hook entry. When set and the hook returns `decision: "block"`, the rejection reason is fed back to Claude as context instead of stopping execution entirely. This lets the hook provide corrective feedback while letting Claude continue working.
+
+```json
+{
+  "type": "command",
+  "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/check-style.sh",
+  "continueOnBlock": true
+}
+```
 
 **Matchers:** Tool names (same as PreToolUse)
 **Hook types:** Command, HTTP, Prompt, Agent
@@ -456,7 +480,8 @@ Note: `permission_mode` is not present on SessionStart.
   "tool_input": {},
   "tool_use_id": "string",
   "error": "string (error message)",
-  "is_interrupt": false
+  "is_interrupt": false,
+  "duration_ms": "number (CC 2.1.119, how long the tool ran before failing)"
 }
 ```
 
@@ -508,6 +533,31 @@ Note: `permission_mode` is not present on SessionStart.
 ```
 
 When `decision` is `"block"`, Claude receives `reason` as feedback and attempts another turn.
+
+**Additional context return (CC 2.1.163):** Stop and SubagentStop hooks can return `hookSpecificOutput.additionalContext` to inject context into Claude's next turn without blocking:
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "Stop",
+    "additionalContext": "Remember to update the documentation after this change."
+  }
+}
+```
+
+**Impossible response (CC 2.1.143):** Stop condition evaluators can return a third response shape for conditions that can never be satisfied:
+
+```json
+{
+  "ok": false,
+  "impossible": true,
+  "reason": "The required API endpoint does not exist in this codebase"
+}
+```
+
+Use `impossible` when the goal is self-contradictory, requires a missing capability, or the assistant has exhausted all approaches. The evaluator independently verifies impossibility rather than trusting the assistant's self-assessment.
+
+**Block cap (CC 2.1.143):** Stop hooks have an 8-block safety cap. Turns end with a warning after 8 consecutive blocks to prevent infinite loops. Override with the `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` environment variable if needed.
 
 **Matchers:** Not supported.
 **Hook types:** Command, HTTP, Prompt, Agent
@@ -773,6 +823,68 @@ Use to verify what survived compaction, log compaction results, or send alerts i
 
 ---
 
+## Environment
+
+### CwdChanged
+
+**When:** The working directory changes during a session (e.g., Claude runs `cd`).
+
+**Input:**
+
+```json
+{
+  "session_id": "string",
+  "transcript_path": "string",
+  "cwd": "string",
+  "hook_event_name": "CwdChanged",
+  "old_cwd": "string",
+  "new_cwd": "string"
+}
+```
+
+**Output:** Cannot block directory changes. Special capabilities:
+
+- Supports `$CLAUDE_ENV_FILE` — write `export VAR=value` to persist env vars into subsequent Bash commands
+- Can return a `watchPaths` array to dynamically update file monitoring
+
+**Use case:** Reactive environment management with tools like direnv — reload env vars, activate project-specific toolchains, or run setup scripts on directory change.
+
+**Matchers:** Not supported (fires on every directory change).
+**Hook types:** Command, HTTP, Prompt, Agent
+
+---
+
+### FileChanged
+
+**When:** A watched file changes on disk.
+
+**Input:**
+
+```json
+{
+  "session_id": "string",
+  "transcript_path": "string",
+  "cwd": "string",
+  "hook_event_name": "FileChanged",
+  "file_path": "string (absolute)",
+  "event": "change|add|unlink"
+}
+```
+
+**Output:** Cannot block file changes. Special capabilities:
+
+- Supports `$CLAUDE_ENV_FILE` for persisting environment variable changes
+- Can return a `watchPaths` array to dynamically update monitored paths
+
+**File modification budget-exceeded reminder (CC 2.1.124):** When a user or linter changes a file but the diff is omitted because other modified files exceeded the snippet budget, Claude receives a system reminder directing it to read the file if current content is needed. Hooks processing FileChanged events should be aware that detailed diff content may not always be available in Claude's context.
+
+**Use case:** Reloading environment variables when config files change, triggering rebuilds on config modifications.
+
+**Matchers:** Pipe-separated basenames (filenames without directory paths), e.g. `".envrc|.env"`.
+**Hook types:** Command, HTTP, Prompt, Agent
+
+---
+
 ## Worktrees
 
 ### WorktreeCreate
@@ -791,16 +903,24 @@ Use to verify what survived compaction, log compaction results, or send alerts i
 }
 ```
 
-**Output:** This event is unique -- stdout is the return value, not JSON.
+**Output:** The hook must return the **absolute path** to the created worktree directory.
 
-- **stdout:** Must print the **absolute path** to the created worktree directory
-- **Exit code 0:** Worktree creation succeeds using the printed path
-- **Non-zero exit code:** Worktree creation fails
+- **Command hooks:** print the path on stdout. Exit code 0 succeeds using the printed path; non-zero exit code fails. This is the only command hook where stdout is a plain path string rather than JSON.
+- **HTTP hooks:** return the path via `hookSpecificOutput.worktreePath`:
 
-This is the only hook where the output is a plain path string rather than JSON.
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "WorktreeCreate",
+    "worktreePath": "/absolute/path/to/worktree"
+  }
+}
+```
+
+> **worktree.baseRef setting (CC 2.1.133):** The `worktree.baseRef` setting controls the base reference for new worktrees. Options are `fresh` (default, branch from `origin/<default-branch>`) and `head` (branch from current local HEAD). Hooks processing WorktreeCreate events can check this setting to understand the worktree's origin point.
 
 **Matchers:** Not supported.
-**Hook types:** Command only.
+**Hook types:** Command, HTTP.
 
 ---
 
@@ -958,7 +1078,9 @@ This is the only hook where the output is a plain path string rather than JSON.
 
 Observability only. No decision control.
 
-**Matchers:** `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog`
+**Background Agent Notifications (CC 2.1.198):** Added matchers for background agent lifecycle events — `agent_needs_input` (background agent is blocked waiting for user input) and `agent_completed` (background agent has finished its work). These enable hooks to respond when background agents reach completion or need attention, facilitating automated workflows and external alerting for background agent status.
+
+**Matchers:** `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog`, `agent_needs_input` (CC 2.1.198), `agent_completed` (CC 2.1.198)
 **Hook types:** Command, HTTP, Prompt, Agent
 
 ---
@@ -1000,6 +1122,8 @@ Observability only. No decision control.
 - Matchers are not supported
 - Does not affect what Claude sees or the transcript record
 - Fires during streaming, may be called multiple times per message
+
+**Use cases:** Custom message formatting or styling, redacting sensitive information from display, logging assistant output in real-time, observability and monitoring.
 
 **Matchers:** Not supported
 **Hook types:** Command, HTTP, Prompt, Agent

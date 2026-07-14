@@ -525,3 +525,50 @@ Analyze...
 5. **Document arguments:** Always use argument-hint
 6. **Provide examples:** Show usage in comments
 7. **Handle errors:** Consider missing arguments or files
+
+## Quick Command Patterns
+
+Compact templates for the most common command shapes.
+
+### Review Pattern
+
+```markdown
+---
+description: Review code changes
+allowed-tools: Read, Bash(git *)
+---
+
+Files changed: `git diff --name-only`
+
+Review each file for code quality, bugs, test coverage, documentation needs.
+```
+
+### Testing Pattern
+
+```markdown
+---
+description: Run tests for specific file
+argument-hint: [test-file]
+allowed-tools: Bash(npm *)
+---
+
+Run tests: `npm test $1`
+Analyze results and suggest fixes for failures.
+```
+
+### Workflow Pattern
+
+```markdown
+---
+description: Complete PR workflow
+argument-hint: [pr-number]
+allowed-tools: Bash(gh *), Read
+---
+
+PR #$1 Workflow:
+
+1. Fetch PR: `gh pr view $1`
+2. Review changes
+3. Run checks
+4. Approve or request changes
+```
