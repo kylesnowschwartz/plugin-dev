@@ -2,6 +2,49 @@
 
 Full, production-ready agent examples for common use cases. Use these as templates for your own agents.
 
+## Generic Template
+
+The skeleton every agent file follows — frontmatter plus system-prompt scaffold:
+
+```markdown
+---
+name: agent-identifier
+description: Use this agent when [triggering conditions]. Examples:
+
+<example>
+Context: [Situation description]
+user: "[User request]"
+assistant: "[How assistant should respond and use this agent]"
+<commentary>
+[Why this agent should be triggered]
+</commentary>
+</example>
+
+<example>
+[Additional example...]
+</example>
+
+model: inherit
+color: blue
+tools: Read, Write, Grep
+---
+
+You are [agent role description]...
+
+**Your Core Responsibilities:**
+
+1. [Responsibility 1]
+2. [Responsibility 2]
+
+**Analysis Process:**
+[Step-by-step workflow]
+
+**Output Format:**
+[What to return]
+```
+
+Optional fields beyond this skeleton (`maxTurns`, `memory`, `mcpServers`, `hooks`, `initialPrompt`, `permissionMode`, `disallowedTools`, `skills`) are documented in `../references/advanced-agent-fields.md`.
+
 ## Example 1: Code Review Agent
 
 **File:** `agents/code-reviewer.md`

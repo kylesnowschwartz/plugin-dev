@@ -146,7 +146,7 @@ Working examples in `examples/`:
 
 **Use the skill-reviewer agent:**
 
-```
+```text
 Ask: "Review my skill and check if it follows best practices"
 ```
 
@@ -227,7 +227,7 @@ Write using verb-first instructions, not second person:
 
 **Correct (imperative):**
 
-```
+```text
 To create a hook, define the event type.
 Configure the MCP server with authentication.
 Validate settings before use.
@@ -235,7 +235,7 @@ Validate settings before use.
 
 **Incorrect (second person):**
 
-```
+```text
 You should create a hook by defining the event type.
 You need to configure the MCP server.
 You must validate settings before use.
@@ -264,7 +264,7 @@ Focus on what to do, not who should do it:
 
 **Correct:**
 
-```
+```text
 Parse the frontmatter using sed.
 Extract fields with grep.
 Validate values before use.
@@ -272,7 +272,7 @@ Validate values before use.
 
 **Incorrect:**
 
-```
+```text
 You can parse the frontmatter...
 Claude should extract fields...
 The user might validate values...
@@ -302,7 +302,7 @@ Why good: Third person, specific phrases, concrete scenarios
 
 **Bad:**
 
-```
+```text
 skill-name/
 └── SKILL.md  (8,000 words - everything in one file)
 ```
@@ -311,7 +311,7 @@ Why bad: Bloats context when skill loads, detailed content always loaded
 
 **Good:**
 
-```
+```text
 skill-name/
 ├── SKILL.md  (1,800 words - core essentials)
 └── references/
@@ -425,7 +425,7 @@ Before finalizing a skill:
 
 ### Minimal Skill
 
-```
+```text
 skill-name/
 └── SKILL.md
 ```
@@ -434,7 +434,7 @@ Good for: Simple knowledge, no complex resources needed
 
 ### Standard Skill (Recommended)
 
-```
+```text
 skill-name/
 ├── SKILL.md
 ├── references/
@@ -447,7 +447,7 @@ Good for: Most plugin skills with detailed documentation
 
 ### Complete Skill
 
-```
+```text
 skill-name/
 ├── SKILL.md
 ├── references/

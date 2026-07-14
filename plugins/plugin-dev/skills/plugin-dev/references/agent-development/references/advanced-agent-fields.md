@@ -123,7 +123,7 @@ hooks:
           prompt: "Verify all tasks are complete before stopping."
 ```
 
-> **Caveat -- `${CLAUDE_PLUGIN_ROOT}` and `--agent` loading:** This variable resolves only when the agent file is loaded through plugin discovery. Agents loaded via the `--agent` CLI flag from `.claude/agents/` or `~/.claude/agents/` see it unbound, and the hook fails with "Hook command references ${CLAUDE_PLUGIN_ROOT} but the hook is not associated with a plugin." Use `${CLAUDE_PROJECT_DIR}` with a project-relative path for hooks that may run under `--agent`. See`references/hook-development/overview.md` (Scoped Hooks section) for the full diagnostic. Related: issues [#24529](https://github.com/anthropics/claude-code/issues/24529), [#50357](https://github.com/anthropics/claude-code/issues/50357).
+> **Caveat -- `${CLAUDE_PLUGIN_ROOT}` and `--agent` loading:** This variable resolves only when the agent file is loaded through plugin discovery. Agents loaded via the `--agent` CLI flag from `.claude/agents/` or `~/.claude/agents/` see it unbound, and the hook fails with "Hook command references ${CLAUDE_PLUGIN_ROOT} but the hook is not associated with a plugin." Use `${CLAUDE_PROJECT_DIR}` with a project-relative path for hooks that may run under the CLI agent flag. The full diagnostic is in `../../hook-development/references/advanced.md` (Scoped Hooks in Skill/Agent Frontmatter section). Related: issues [#24529](https://github.com/anthropics/claude-code/issues/24529), [#50357](https://github.com/anthropics/claude-code/issues/50357).
 
 ### Supported Events
 
@@ -320,7 +320,7 @@ tools: Read, Grep, Agent(code-reviewer), Agent(test-runner)
 This correctly blocks spawning the `untrusted-agent` type.
 
 > **Note:** The Config tool was removed in CC 2.1.118. Use the `/config` slash command instead for getting/setting Claude Code settings.
-
+>
 > **Bash Tool Guidance (CC 2.1.133):** Claude Code now guides agents to prefer dedicated tools (Read, Grep, Glob) over Bash for file operations like `find`, `grep`, and `cat` unless explicitly instructed otherwise. When designing agents, consider whether dedicated tools can replace Bash commands for better user experience and token efficiency.
 
 ## initialPrompt
@@ -423,19 +423,11 @@ The Agent tool now defaults to `run_in_background: true`. Claude keeps working w
 
 Subagents now inherit the session's extended thinking configuration. Agent type definitions supply model, reasoning effort, and tool access, while the call-level `model` parameter overrides only the model at launch. This means subagents automatically benefit from extended thinking when enabled in the parent session.
 
-### Background Job Behavior (CC 2.1.117)
-
-When designing agents that run as background jobs or forks:
-
-- **Narrate progress**: Emit periodic status updates so users can track progress
-- **Restate results in text**: Include final results in message text, not just tool calls, so classifiers can extract them for inbox summaries
-- **Signal completion status**: Explicitly signal `done`, `blocked`, or `failed` status when finishing
+### Background Job Agent Behavior (CC 2.1.128)
 
 **MCP limitation:** MCP tools are unavailable in background subagents. If your agent relies on MCP tools (from the plugin's `.mcp.json`), it must run in foreground mode. Design agents that may run in background to use only built-in tools.
 
-### Background Job Agent Behavior (CC 2.1.128)
-
-Claude Code includes built-in background-agent instructions that replace the previous background-job behavior system prompt. When agents run in background mode, they receive guidance to:
+Claude Code includes built-in background-agent instructions (introduced in CC 2.1.117, reworked in CC 2.1.128 to replace the earlier background-job behavior system prompt). When agents run in background mode, they receive guidance to:
 
 - **Narrate progress** — Provide status updates during long-running operations
 - **Restate results in text** — Include final results in message text, not just tool calls, so classifiers can extract them

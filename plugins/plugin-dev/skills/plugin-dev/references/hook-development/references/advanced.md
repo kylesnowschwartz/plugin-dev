@@ -74,7 +74,7 @@ Hooks support a declarative `if` field using permission rule syntax to filter wh
 This hook fires only for Bash commands starting with `git`. The `if` field uses the same permission rule syntax as `settings.json` allow/deny rules (e.g., `Bash(npm *)`, `Edit(src/**)`, `Write(tests/**)`). Combine with `matcher` for two-level filtering: `matcher` selects the event type, `if` narrows to specific invocations.
 
 > **CC 2.1.88:** Fixed `if` field filtering to properly match compound commands (e.g., `ls && git push`) and commands with environment variable prefixes (e.g., `FOO=bar git push`). Previously, such commands could bypass `if` patterns.
-
+>
 > **CC 2.1.178:** Added tool parameter matching syntax (e.g., `Agent(model:opus)`) for granular permission control based on tool input parameters using wildcards.
 
 ### Script-Level Conditionals
@@ -366,13 +366,13 @@ exit 0
 
 1. **Use exec form (`args` array)** — bypasses shell interpolation entirely:
 
-```json
-{
-  "type": "command",
-  "command": "bash",
-  "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh", "--token", "$CLAUDE_PLUGIN_OPTION_API_TOKEN"]
-}
-```
+   ```json
+   {
+     "type": "command",
+     "command": "bash",
+     "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh", "--token", "$CLAUDE_PLUGIN_OPTION_API_TOKEN"]
+   }
+   ```
 
 2. **Use `$CLAUDE_PLUGIN_OPTION_<KEY>` environment variables** — read values inside the script:
 
@@ -726,7 +726,7 @@ While `command` hooks execute bash scripts and `prompt` hooks evaluate a single 
 
 ### Supported Events
 
-Agent hooks are supported on **Stop** and **SubagentStop** events only. They aren't suitable for PreToolUse (too slow) or session-level events.
+Agent hooks are supported on all hook events, but they're most useful on decision-control events like **Stop** and **SubagentStop**. Their multi-turn latency makes them a poor fit for hot-path events like PreToolUse.
 
 ### When to Use Agent Hooks
 
@@ -787,7 +787,7 @@ Each hook entry in a matcher group supports these fields:
 ```
 
 - `args`: Array of command arguments for exec-form spawning (CC 2.1.139). When provided, the command is executed directly without shell interpolation, which is safer for hooks that pass user-controlled data. Example: `"args": ["--file", "$FILE_PATH"]`. The `command` field becomes the executable path when `args` is present.
-- `timeout`: Max execution time in seconds. Defaults vary by type — command 60s, prompt 30s, http 30s, agent 60s.
+- `timeout`: Max execution time in seconds. Defaults vary by type — command/http/mcp_tool 600s, prompt 30s, agent 60s. UserPromptSubmit lowers the command/http/mcp_tool default to 30s; MessageDisplay lowers it to 10s.
 
 For the `if` field, see the [Declarative `if` Field](#declarative-if-field-cc-2185) section above. Beyond these, hook handlers support additional fields:
 
@@ -823,7 +823,7 @@ Some hook events support matcher values beyond tool names:
 | ------------- | ------------------------------------------------------------------------------ |
 | SessionStart  | `startup`, `resume`, `clear`, `compact`                                        |
 | SessionEnd    | `clear`, `logout`, `prompt_input_exit`, `bypass_permissions_disabled`, `other` |
-| Notification  | `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog`       |
+| Notification  | `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog`, `agent_needs_input`, `agent_completed` (CC 2.1.198) |
 | PreCompact    | `manual`, `auto`                                                               |
 | SubagentStart | Agent type name (e.g., `Bash`, `Explore`, `Plan`, or custom agent names)       |
 | SubagentStop  | Agent type name (same as SubagentStart)                                        |
@@ -839,7 +839,7 @@ Different hook events support different output formats for controlling Claude's 
 {
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
-    "permissionDecision": "allow|deny|ask",
+    "permissionDecision": "allow|deny|ask|defer",
     "permissionDecisionReason": "Explanation",
     "updatedInput": { "field": "modified_value" },
     "additionalContext": "Extra context for Claude"
@@ -847,7 +847,7 @@ Different hook events support different output formats for controlling Claude's 
 }
 ```
 
-- `permissionDecision`: `allow` (proceed), `deny` (block), `ask` (prompt user)
+- `permissionDecision`: `allow` (proceed), `deny` (block), `ask` (prompt user), `defer` (CC 2.1.89 — fall through to the normal permission flow)
 - `updatedInput`: Optionally modify tool parameters before execution
 - `additionalContext`: Injected into Claude's context
 
@@ -888,15 +888,16 @@ These events share a simpler top-level schema:
 - `decision`: Set to `"block"` to prevent the action (stopping, prompt processing, etc.)
 - `reason`: Required when blocking; fed back to Claude or shown to user
 
-PostToolUse specifically supports an additional field for replacing MCP tool output:
+PostToolUse specifically supports additional fields for replacing tool output:
 
 ```json
 {
+  "updatedToolOutput": "Replacement output for the tool response",
   "updatedMCPToolOutput": "Replacement output for MCP tool response"
 }
 ```
 
-This allows hooks to replace what Claude sees as the MCP tool response before processing. Only applies to MCP tools in PostToolUse events.
+This allows hooks to replace what Claude sees as the tool response before processing. `updatedToolOutput` (CC 2.1.121) works for any tool; the older `updatedMCPToolOutput` applies to MCP tools only. See `event-schemas.md` for the authoritative per-event schemas.
 
 ### PostToolUseFailure Decision Control
 

@@ -88,7 +88,7 @@ claude mcp serve
 
 Users can reference MCP resources inline using the `@` syntax:
 
-```
+```text
 @server-name:protocol://resource/path
 ```
 
@@ -332,7 +332,7 @@ External plugins specified via project settings (`.claude/settings.json`) no lon
 
 Skills placed in `.claude/skills/` directories load automatically without requiring marketplace installation or explicit plugin configuration. This enables a streamlined local development workflow:
 
-```
+```text
 project/
 └── .claude/
     └── skills/
@@ -357,7 +357,7 @@ When nested `.claude/` directories exist in a project (common in monorepos), the
 
 **Example structure:**
 
-```
+```text
 monorepo/
 ├── .claude/                    # Root-level configuration
 │   ├── agents/

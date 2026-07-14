@@ -5,7 +5,7 @@
 
 Hooks are event-driven automation that execute in response to Claude Code events — use them to validate operations, enforce policies, add context, and integrate external tools. Claude Code has **28 hook events** (categorized in the [reference table](#hook-events-reference) below).
 
-This overview is the concept map and quick reference; complete per-event input/output schemas, matchers, and version notes are in **`references/event-schemas.md`**.
+This overview is the concept map and quick reference; complete per-event input/output schemas live in **`references/event-schemas.md`**, per-event matcher values in `references/advanced.md` (Event-Specific Matchers).
 
 ## Hook Types
 
@@ -14,7 +14,7 @@ Five hook types are available. Not all events support all types (see the [event 
 | Type       | Best for                                                        | Notes                                                                 |
 | ---------- | --------------------------------------------------------------- | --------------------------------------------------------------------- |
 | `prompt`   | Context-aware, flexible validation (recommended default)        | LLM-driven; supports `model` and `timeout`                            |
-| `agent`    | Multi-step verification needing tool access                     | Reads files, runs commands; higher cost/latency. Stop/SubagentStop only |
+| `agent`    | Multi-step verification needing tool access                     | Reads files, runs commands; higher cost/latency, so best on decision-control events |
 | `command`  | Fast deterministic checks, file ops, external tool integration  | Runs a bash command; the only type supporting `async`                 |
 | `mcp_tool` | Validation via MCP tools without agent overhead (CC 2.1.118)    | `server` + `tool`; same event support as command                      |
 | `http`     | External service integration, logging, webhooks                 | Posts event data to `url`; non-2xx treated as non-blocking            |
@@ -31,7 +31,7 @@ Each event holds matcher groups; each group holds hook entries. An entry has a `
 
 - `args`: exec-form spawning (CC 2.1.139) — the command runs without shell interpolation and `command` becomes the executable path.
 - `if`: conditional execution using permission rule syntax, e.g. `Bash(git *)` fires only for git commands (CC 2.1.85). Combines with `matcher` (matcher selects the event, `if` filters within it). See `references/advanced.md` for compound-command handling (CC 2.1.88) and tool-parameter matching like `Agent(model:opus)` (CC 2.1.178).
-- `timeout` (defaults: command 60s, prompt 30s, http 30s, agent 60s), `statusMessage` (UI text while running), `once` (run once per session), `async` (fire-and-forget, command hooks only). Full entry schema: `references/advanced.md` (Handler Configuration Fields).
+- `timeout` (defaults: command/http/mcp_tool 600s, prompt 30s, agent 60s; UserPromptSubmit and MessageDisplay lower the 600s types to 30s/10s), `statusMessage` (UI text while running), `once` (run once per session), `async` (fire-and-forget, command hooks only). Full entry schema: `references/advanced.md` (Handler Configuration Fields).
 
 **Scoped hooks in frontmatter:** Skills and agents can declare `hooks:` in YAML frontmatter (events `PreToolUse`, `PostToolUse`, `Stop`), lifecycle-bound to run only while the skill/agent is active. **Caveat:** `${CLAUDE_PLUGIN_ROOT}` resolves only under plugin discovery; agents loaded via the `--agent` CLI flag see it unbound — use `${CLAUDE_PROJECT_DIR}` with a project-relative path. Full diagnostic and related issues: `references/advanced.md` (Scoped Hooks section).
 
@@ -107,7 +107,7 @@ Other events match on source/category values, agent type names, MCP server name,
 
 ## Hook Events Reference
 
-Category, decision control, and hook types for all 28 events. "All" = Command, HTTP, Prompt, Agent. Per-event matcher values and full schemas: `references/event-schemas.md`.
+Category, decision control, and hook types for all 28 events. "All" = Command, HTTP, Prompt, Agent. Full schemas: `references/event-schemas.md`; per-event matcher values: `references/advanced.md` (Event-Specific Matchers).
 
 | Event                  | Category    | Decision control                   | Types         |
 | ---------------------- | ----------- | ---------------------------------- | ------------- |
@@ -186,7 +186,7 @@ Debug with `claude --debug` (shows registration, execution logs, input/output JS
 
 | Reference                          | When to read                                                                                          |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `references/event-schemas.md`      | Need the exact input/output JSON, matchers, or version notes for a specific event; SDK parity         |
+| `references/event-schemas.md`      | Need the exact input/output JSON or version notes for a specific event; SDK parity (matcher values: `advanced.md`) |
 | `references/hook-input-schemas.md` | Need per-event input fields or the `tool_input` schema for a specific tool (Bash, Write, Edit, etc.)  |
 | `references/advanced.md`           | Multi-stage validation, full hook-entry schema, `if`/agent/async/scoped hooks, `${CLAUDE_PLUGIN_ROOT}` loader caveat, security patterns, shell-injection migration |
 | `references/patterns.md`           | Ready-made pattern for a common goal (security validation, test enforcement, worktree mgmt, elicitation, config auditing) |

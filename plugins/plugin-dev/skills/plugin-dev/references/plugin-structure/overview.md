@@ -101,7 +101,7 @@ Each component type has a default location and auto-discovers on plugin enable. 
 - **Commands (legacy)** — `.md` files in `commands/` with YAML frontmatter (`name`, `description`) become slash commands. The `commands/` directory is a legacy format; for new plugins prefer `skills/<name>/SKILL.md`, which supports progressive disclosure via `references/` and `examples/`. Both formats load identically and are invoked via the Skill tool — commands are essentially simple skills.
 - **Agents** — `.md` files in `agents/` with YAML frontmatter (`description`, `capabilities`). Users invoke them manually or Claude Code selects them automatically by task context.
 - **Skills** — each in its own `skills/<name>/` directory with a required `SKILL.md` (frontmatter `name`, `description`). Optional `allowed-tools` frontmatter (e.g. `Read, Grep, Glob`) restricts tool access for read-only or security-sensitive workflows. Skills can bundle `scripts/`, `references/`, `examples/`, or `assets/`. Claude Code autonomously activates skills based on the description.
-- **Hooks** — JSON config in `hooks/hooks.json` or inline in `plugin.json`; register automatically on enable. Available events: PreToolUse, PermissionRequest, PostToolUse, Stop, SubagentStop, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, Notification.
+- **Hooks** — JSON config in `hooks/hooks.json` or inline in `plugin.json`; register automatically on enable. 28 events are available (PreToolUse, PostToolUse, Stop, SessionStart, and more) — see the hook-development topic (`../hook-development/overview.md`) for the full event table.
 
   ```json
   {

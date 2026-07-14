@@ -18,7 +18,7 @@ Claude Code provides built-in commands for managing project state:
 
 **Examples:**
 
-```
+```text
 /config model=opus
 /config theme=dark
 /config sandbox.allowAppleEvents=true

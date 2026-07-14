@@ -43,13 +43,13 @@ MCP servers can expose resources that Claude can access using the `@` syntax:
 
 ### Resource Syntax
 
-```
+```text
 @server-name:protocol://path
 ```
 
 **Examples:**
 
-```
+```text
 @filesystem:file:///Users/me/project/README.md
 @database:postgres://localhost/mydb/users
 @github:https://github.com/user/repo
@@ -59,7 +59,7 @@ MCP servers can expose resources that Claude can access using the `@` syntax:
 
 Reference resources directly in your prompts:
 
-```
+```text
 Look at @filesystem:file:///path/to/config.json and suggest improvements
 ```
 
@@ -88,7 +88,7 @@ List the contents of MCP directory resources:
 
 **Example usage:**
 
-```
+```text
 List @filesystem:file:///project/ to see project files
 ```
 

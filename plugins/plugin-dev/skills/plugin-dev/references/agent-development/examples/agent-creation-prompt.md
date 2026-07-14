@@ -17,7 +17,7 @@ Think about:
 
 Send this to Claude (with the agent-creation-system-prompt loaded):
 
-```
+```text
 Create an agent configuration based on this request: "[YOUR DESCRIPTION]"
 
 Return ONLY the JSON object, no other text.
@@ -27,7 +27,7 @@ Return ONLY the JSON object, no other text.
 
 **Condensed inline variant** (when you want the requirements spelled out in the prompt itself rather than loading the full agent-creation system prompt):
 
-```
+```text
 Create an agent configuration based on this request: "[YOUR DESCRIPTION]"
 
 Requirements:
@@ -84,7 +84,7 @@ tools: Read, Write, Grep # Optional: restrict tools
 
 **Your request:**
 
-```
+```text
 I need an agent that reviews code changes for quality issues, security vulnerabilities, and adherence to best practices. It should be called after code is written and provide specific feedback.
 ```
 
@@ -168,7 +168,7 @@ Include file names and line numbers for all findings.
 
 **Your request:**
 
-```
+```text
 Create an agent that generates unit tests for code. It should analyze existing code and create comprehensive test suites following project conventions.
 ```
 
@@ -188,7 +188,7 @@ Create an agent that generates unit tests for code. It should analyze existing c
 
 **Your request:**
 
-```
+```text
 Build an agent that writes and updates API documentation. It should analyze code and generate clear, comprehensive docs.
 ```
 
@@ -200,13 +200,13 @@ Build an agent that writes and updates API documentation. It should analyze code
 
 **Vague:**
 
-```
+```text
 "I need an agent that helps with code"
 ```
 
 **Specific:**
 
-```
+```text
 "I need an agent that reviews pull requests for type safety issues in TypeScript, checking for proper type annotations, avoiding 'any', and ensuring correct generic usage"
 ```
 
@@ -214,19 +214,19 @@ Build an agent that writes and updates API documentation. It should analyze code
 
 Tell Claude when the agent should activate:
 
-```
+```text
 "Create an agent that generates tests. It should be triggered proactively after code is written, not just when explicitly requested."
 ```
 
 ### Mention Project Context
 
-```
+```text
 "Create a code review agent. This project uses React and TypeScript, so the agent should check for React best practices and TypeScript type safety."
 ```
 
 ### Define Output Expectations
 
-```
+```text
 "Create an agent that analyzes performance. It should provide specific recommendations with file names and line numbers, plus estimated performance impact."
 ```
 

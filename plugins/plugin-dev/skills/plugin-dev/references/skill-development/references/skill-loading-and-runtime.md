@@ -16,7 +16,7 @@ This tool is how Claude programmatically loads skills — plugin developers don'
 
 Users can load multiple skills simultaneously using stacked slash-skill invocations:
 
-```
+```text
 /skill-a /skill-b /skill-c do the task
 ```
 
@@ -46,7 +46,7 @@ Skills can be organized in nested directories within `.claude/skills/`. When wor
 
 **Example structure:**
 
-```
+```text
 project/
 ├── .claude/skills/         # Project-level skills
 │   └── shared-skill/

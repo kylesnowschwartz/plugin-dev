@@ -117,7 +117,7 @@ A skill with `context: fork` and `agent: your-agent-name` creates a clean separa
 - **Agent definition** (the `.md` file in `agents/`) → becomes the **system prompt** (behavior, tools, MCP servers, hooks).
 - **Skill body** (the SKILL.md content) → becomes the **task prompt** (the work the agent receives).
 
-The forked agent does not inherit conversation history. One agent can serve many skills, each providing a different task. This is the declarative alternative to spawning agents via the Agent tool — use it when task instructions are stable and you want automatic trigger matching with prompt cache sharing. For dynamic prompts or parallel orchestration, use direct Agent tool calls instead. See the Skill Development reference (`../skill-development/overview.md`) for the full comparison table.
+The forked agent does not inherit conversation history. One agent can serve many skills, each providing a different task. This is the declarative alternative to spawning agents via the Agent tool — use it when task instructions are stable and you want automatic trigger matching with prompt cache sharing. For dynamic prompts or parallel orchestration, use direct Agent tool calls instead. See the Skill + Agent vs. Direct Agent Tool Call comparison table in `../skill-development/references/advanced-frontmatter.md`.
 
 ## System Prompt Design
 
@@ -145,7 +145,7 @@ For detailed templates and patterns (Analysis, Generation, Validation, Orchestra
 
 **Identifier:** 3-50 characters; lowercase letters, numbers, hyphens only; must start and end with alphanumeric; no underscores, spaces, or special characters.
 
-```
+```text
 ✅ Valid: code-reviewer, test-gen, api-analyzer-v2
 ❌ Invalid: ag (too short), -start (starts with hyphen), my_agent (underscore)
 ```
@@ -158,7 +158,7 @@ For detailed templates and patterns (Analysis, Generation, Validation, Orchestra
 
 All `.md` files in a plugin's `agents/` directory are auto-discovered:
 
-```
+```text
 plugin-name/
 └── agents/
     ├── analyzer.md

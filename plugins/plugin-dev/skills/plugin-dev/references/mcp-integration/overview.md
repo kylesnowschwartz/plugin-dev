@@ -100,14 +100,7 @@ Claude Code supports four transport types. Pick by where the server runs and how
 - **HTTP** connects to a RESTful MCP endpoint with token authentication for stateless request/response interactions.
 - **ws** connects over WebSocket for real-time bidirectional streaming and push notifications.
 
-**Choosing a type:**
-
-- Use **stdio** when running local tools or custom servers, when you need the lowest latency, when working with file systems or local databases, or when distributing the server with the plugin.
-- Use **SSE** when connecting to hosted services, when you need OAuth authentication, when using official MCP servers (Asana, GitHub), or when you want automatic reconnection.
-- Use **HTTP** when integrating with REST APIs, when you need stateless interactions, when using token-based auth, or for a simple request/response pattern.
-- Use **WebSocket** when you need real-time updates, when building collaborative features, when low latency is critical, or when bidirectional streaming is required.
-
-For full per-type configuration, process/connection lifecycle, comparison matrix, migration between types, multiple-server setups, and per-transport security, see `references/server-types.md`. Ready-to-copy configs live in `examples/` (`stdio-server.json`, `sse-server.json`, `http-server.json`, `ws-server.json`).
+For the full decision guide ("Choosing the Right Type"), per-type configuration, process/connection lifecycle, comparison matrix, migration between types, multiple-server setups, and per-transport security, see `references/server-types.md`. Ready-to-copy configs live in `examples/` (`stdio-server.json`, `sse-server.json`, `http-server.json`, `ws-server.json`).
 
 ## Environment Variable Expansion
 
