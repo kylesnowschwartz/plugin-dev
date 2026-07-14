@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.31.0] - 2026-07-14
+
+### Changed
+
+- **All six oversized topic overviews restructured to concept-map + routing tier** — hook-development (6,884 → 2,093 words), agent-development (6,765 → 2,096), skill-development (4,280 → 1,524), plugin-structure (4,103 → 1,756), mcp-integration (3,096 → 1,511), command-development (2,703 → 1,500). Each overview now holds core concepts, decision tables, and a routing table with when-to-read triggers covering every file in its references/, examples/, and scripts/; full-manual detail relocated into the references tier (deduped against existing coverage, zero content loss — all CC version annotations verified preserved)
+
+### Added
+
+- **skill-development**: `references/skill-loading-and-runtime.md` — skill discovery, precedence, nested/scoped skills, Invoke Skill tool, slash-skill stacking, `skillOverrides`/`disableBundledSkills`, dynamic content, hot-reload, `/skills` menu, compaction behavior
+- **mcp-integration**: `references/operations.md` — server lifecycle, session env vars, resources, tool search, managed server controls, error handling, debugging, performance, output limits, `claude mcp` CLI
+- **agent-development**: `references/orchestration-and-tools.md` — Agent tool usage notes, sub-agent nesting, SendUserFile, SendMessage "main", Workflow tool limits and effort, browser file upload
+- **command-development**: `references/built-in-commands.md` — built-in state/session/config/plugin management commands (`claude project purge`, `/cd`, `/config`, `/plugin list`)
+
+### Fixed
+
+- **hook-development**: agent-type hooks documented as Stop/SubagentStop-only — corrected to all events per current upstream docs (most useful on decision-control events)
+- **hook-development**: per-type timeout defaults corrected — command/http/mcp_tool default to 600s (not 60s/30s), prompt 30s, agent 60s; UserPromptSubmit and MessageDisplay lower the 600s types to 30s/10s
+- **hook-development**: `advanced.md` output schemas aligned with `event-schemas.md` — PreToolUse `defer` (CC 2.1.89), PostToolUse `updatedToolOutput` (CC 2.1.121), Notification `agent_needs_input`/`agent_completed` matchers (CC 2.1.198)
+- **hook-development**: `event-schemas.md` said WorktreeCreate was Command-only, contradicting the support matrix — corrected to Command + HTTP
+- **plugin-structure**: `manifest-reference.md` self-contradiction on the `experimental` field — root-level layout marked as pre-CC 2.1.129, nested layout documented as current
+- **plugin-structure**: overview carried a stale 10-event hook list — replaced with a route to the hook-development topic's 28-event table
+- **agent-development**: superseded CC 2.1.117 background-job guidance merged into the CC 2.1.128 section; generic agent template restored into `complete-agent-examples.md`; two dangling cross-file pointers repointed
+
 ## [0.30.1] - 2026-07-14
 
 ### Fixed
