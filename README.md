@@ -27,6 +27,7 @@ Requires [Claude Code CLI](https://code.claude.com/docs) and `git`. No other con
 
 - **`plugin-dev` skill** — single consolidated reference with a topic index covering plugin structure, commands, skills, agents, hooks, MCP, LSP, marketplaces, and settings. Auto-loads when you mention any of those topics.
 - **3 agents** — `plugin-validator`, `skill-reviewer`, and `agent-creator` for building plugins.
+- **1 hook** — a PreToolUse guard that fires once per session when Claude reads from `~/.claude/plugins`, reminding it to load the plugin-dev skill instead of interpreting plugin files from general knowledge.
 
 The upstream-sync tooling (the `update-from-upstream` orchestration and its `changelog-differ`, `update-manifest-verifier`, `update-reviewer` verification agents) lives in this repo's `.claude/` rather than the shipped plugin — it maintains the plugin's own docs and is not installed for users.
 

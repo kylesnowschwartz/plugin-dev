@@ -1,0 +1,17 @@
+{
+  "description": "Reminds Claude to load the plugin-dev skill when reading from the Claude Code plugins directory (~/.claude/plugins)",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Glob|Grep|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/plugins-dir-guard.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.30.0] - 2026-07-14
+
+### Added
+
+- **hooks**: PreToolUse guard — reads from `~/.claude/plugins` (Read/Glob/Grep/Bash) inject context directing Claude to invoke the plugin-dev skill and consult the claude-code-guide subagent; fires once per session via a `$TMPDIR` marker
+
 ## [0.29.0] - 2026-07-13
 
 ### Changed

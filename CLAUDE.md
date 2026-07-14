@@ -4,9 +4,9 @@ Guidance for Claude Code working in this repository.
 
 ## What This Is
 
-Plugin marketplace containing the **plugin-dev** plugin - a toolkit for developing Claude Code plugins. The shipped plugin provides 1 consolidated skill and 3 agents. Maintainer-only upstream-sync tooling (1 skill + 3 agents) lives in this repo's `.claude/`, not the plugin.
+Plugin marketplace containing the **plugin-dev** plugin - a toolkit for developing Claude Code plugins. The shipped plugin provides 1 consolidated skill, 3 agents, and 1 hook (a PreToolUse guard that reminds Claude to load the plugin-dev skill when reading from `~/.claude/plugins`). Maintainer-only upstream-sync tooling (1 skill + 3 agents) lives in this repo's `.claude/`, not the plugin.
 
-**Version**: v0.29.0 | [CHANGELOG.md](CHANGELOG.md)
+**Version**: v0.30.0 | [CHANGELOG.md](CHANGELOG.md)
 
 ## MCP Tool Requirements (CRITICAL)
 
