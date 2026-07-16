@@ -207,3 +207,27 @@ CLAUDE_CODE_FORK_SUBAGENT=1 claude -p "Run analysis with subagents"
 - Testing agent-based plugins in headless environments
 
 **Note:** Enabling subagent forking increases resource usage and may extend execution time. Use judiciously in cost-conscious CI environments.
+
+## Subagent Text Forwarding (CC 2.1.211)
+
+The `--forward-subagent-text` flag forwards subagent output text to the stream-json output:
+
+```bash
+claude -p "Run analysis with subagents" \
+  --output-format stream-json \
+  --forward-subagent-text
+```
+
+**Behavior:**
+
+- Only applies to `--output-format stream-json` mode
+- Forwards text output from background subagents to the main output stream
+- Enables real-time visibility into subagent progress in CI pipelines
+
+**Use cases:**
+
+- CI pipelines that need to log subagent activity in real time
+- Debugging multi-agent workflows in headless environments
+- Monitoring background agent progress without interactive terminal access
+
+**Plugin design tip:** If your plugin spawns background agents, document that users can use `--forward-subagent-text` to capture subagent output in CI logs.

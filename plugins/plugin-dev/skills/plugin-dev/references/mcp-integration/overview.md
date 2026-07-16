@@ -131,6 +131,28 @@ Claude Code also injects runtime variables: MCP server identity variables for `h
 
 **Best practice:** Document all required environment variables in plugin README.
 
+## MCP Connectors vs MCP Servers (CC 2.1.209)
+
+Claude Code distinguishes between **MCP connectors** (hosted by claude.ai) and **MCP servers** (locally configured):
+
+| Type | Configuration | Examples |
+| ---- | ------------- | -------- |
+| Connectors | claude.ai-hosted, discovered via API | GitHub, Asana, Linear (official connectors) |
+| Servers | Locally configured in `.mcp.json` | Custom stdio/SSE/HTTP/ws servers |
+
+**Key distinctions for plugin developers:**
+
+- **Tool naming:** Upstream connector tool names may differ from normalized tool-list names shown in Claude Code
+- **Discovery:** Connectors are discovered through the claude.ai API; servers are discovered from local config
+- **Availability:** Connectors are unavailable in hermetic/CI sessions or local-only environments
+- **Plugin bundling:** Plugins bundle MCP *servers*, not connectors
+
+When designing plugins that integrate with services also available as connectors (e.g., GitHub), be aware that:
+
+- Users may have both a connector and your plugin's server configured
+- Tool names from connectors vs servers may differ
+- Document which configuration your plugin expects
+
 ## MCP Tool Naming
 
 When MCP servers provide tools, they're automatically prefixed:
@@ -236,7 +258,7 @@ Focus on stdio for custom/local servers, SSE for hosted services with OAuth. For
 | `references/server-types.md` | Configuring a specific transport: full stdio/SSE/HTTP/ws config, process and connection lifecycle, comparison matrix, choosing between types, migration, multiple-server and conditional configs, per-transport security. |
 | `references/authentication.md` | Wiring up auth: OAuth 2.0 + PKCE flow and token storage, bearer/API-key/custom headers, `headersHelper` dynamic headers (identity vars CC 2.1.85, auth retry CC 2.1.193), CLI OAuth setup, env-var auth for stdio, multi-tenancy, mTLS/JWT/HMAC, auth troubleshooting. |
 | `references/tool-usage.md` | Using MCP tools inside commands and agents: tool naming, `allowed-tools`, tool schemas and parameters, response/error handling, batching/caching/parallel calls, CRUD and multi-step patterns, integration patterns by consumer, testing, MCP prompts as slash commands. |
-| `references/operations.md` | Running MCP servers at runtime: lifecycle and `/mcp`, session env vars (CC 2.1.154, CC 2.1.163), resources and `ReadMcpResourceDirTool` (CC 2.1.186), tool search auto-enable, managed `allowedMcpServers`/`deniedMcpServers`, error handling (CC 2.1.121, CC 2.1.169, CC 2.1.205), debugging, testing checklist, performance and `alwaysLoad` (CC 2.1.121), output/description limits and large-result override (CC 2.1.91), `tool_use_meta` (CC 2.1.181), dynamic tool updates, `claude mcp` CLI, login/logout (CC 2.1.186), `claude mcp serve`. |
+| `references/operations.md` | Running MCP servers at runtime: lifecycle and `/mcp`, session env vars (CC 2.1.154, CC 2.1.163), resources and `ReadMcpResourceDirTool` (CC 2.1.186), tool search auto-enable, managed `allowedMcpServers`/`deniedMcpServers`, error handling (CC 2.1.121, CC 2.1.169, CC 2.1.205), debugging, testing checklist, performance and `alwaysLoad` (CC 2.1.121), output/description limits and large-result override (CC 2.1.91), `tool_use_meta` (CC 2.1.181), dynamic tool updates and RefreshMcpTools for on-demand tool resync (CC 2.1.211), `claude mcp` CLI, login/logout (CC 2.1.186), `claude mcp serve`. |
 | `examples/stdio-server.json` | Copying a local stdio server config (child process, env vars). |
 | `examples/sse-server.json` | Copying a hosted SSE server config with OAuth. |
 | `examples/http-server.json` | Copying a REST/HTTP server config with token auth. |
