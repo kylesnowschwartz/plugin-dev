@@ -334,6 +334,30 @@ Claude Code provides a wrapper-level `tool_use_meta` field that carries per-bloc
 
 MCP servers can notify Claude Code of tool changes at runtime via `list_changed`. When implementing a plugin's MCP server, send `list_changed` notifications when available tools change dynamically.
 
+### RefreshMcpTools Tool (CC 2.1.211)
+
+The RefreshMcpTools tool enables on-demand resynchronization of MCP server tool lists without reconnecting servers:
+
+**Capabilities:**
+
+- Refreshes tool lists for all or specific MCP servers
+- Reports added, removed, or disconnected tools
+- Triggers stale-tool recovery when servers update their offerings
+- Per-server refresh for targeted updates
+
+**Use cases:**
+
+- When MCP servers add new tools at runtime and you need to discover them
+- After server deployments that change available tool sets
+- When tool calls fail due to stale tool metadata
+- Recovering from temporary tool availability issues
+
+**Plugin author guidance:**
+
+- Document when users should manually refresh tools (e.g., after server config changes)
+- If your MCP server adds tools dynamically, inform users about RefreshMcpTools as an alternative to session restart
+- Use in conjunction with `list_changed` notifications for hybrid static/dynamic tool sets
+
 ## Claude Code as MCP Server
 
 ```bash

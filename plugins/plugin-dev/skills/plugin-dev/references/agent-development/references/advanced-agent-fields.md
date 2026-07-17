@@ -423,6 +423,32 @@ The Agent tool now defaults to `run_in_background: true`. Claude keeps working w
 
 Subagents now inherit the session's extended thinking configuration. Agent type definitions supply model, reasoning effort, and tool access, while the call-level `model` parameter overrides only the model at launch. This means subagents automatically benefit from extended thinking when enabled in the parent session.
 
+### Background vs Foreground Delegation Patterns (CC 2.1.211)
+
+Claude Code provides explicit delegation examples split by execution mode. Design plugin agents to follow these patterns:
+
+**Background subagent delegation:**
+
+- Provide self-contained prompts with all necessary context (the agent cannot ask clarifying questions)
+- Return status-only replies while background work is pending ("I've launched a background agent to analyze the codebase")
+- Report results later when completion notifications arrive
+- Include sufficient context for independent fresh-agent review
+- Do not race or predict pending background results
+
+**Foreground subagent delegation:**
+
+- Can use conversational context since the agent blocks the main thread
+- Suitable when immediate results are needed
+- Agent can request permissions interactively
+
+**Async agent metadata (CC 2.1.211):**
+
+- Launch IDs and result locations are internal metadata
+- Do not expose or predict results before completion
+- Cloud-launched agents receive only brief user-facing acknowledgement before ending response
+
+**Implications for plugin agents:** Background agents must be self-sufficient. Design prompts that provide complete context rather than relying on follow-up questions. When spawning background agents, acknowledge the launch briefly and move on rather than waiting or speculating about results.
+
 ### Background Job Agent Behavior (CC 2.1.128)
 
 **MCP limitation:** MCP tools are unavailable in background subagents. If your agent relies on MCP tools (from the plugin's `.mcp.json`), it must run in foreground mode. Design agents that may run in background to use only built-in tools.

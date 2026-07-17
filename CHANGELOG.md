@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.32.0] - 2026-07-16
+
+### Added
+
+- **mcp-integration**: Documented RefreshMcpTools tool for on-demand resynchronization of MCP server tool lists without reconnecting servers (CC 2.1.211)
+- **mcp-integration**: Documented MCP connectors vs MCP servers distinction — connectors are claude.ai-hosted, servers are locally configured; tool naming and availability differences (CC 2.1.209)
+- **agent-development**: Documented background vs foreground delegation patterns — self-contained prompts for background, status-only replies while pending, async agent metadata handling (CC 2.1.211)
+- **plugin-structure**: Documented `--forward-subagent-text` flag for stream-json output mode to capture subagent output in CI pipelines (CC 2.1.211)
+
 ## [0.31.0] - 2026-07-14
 
 ### Changed
@@ -706,7 +715,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.29.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.32.0...HEAD
+[0.32.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.31.0...v0.32.0
+[0.31.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.30.1...v0.31.0
+[0.30.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.30.0...v0.30.1
+[0.30.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.29.0...v0.30.0
 [0.29.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.28.0...v0.29.0
 [0.28.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.27.0...v0.28.0
 [0.27.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.26.0...v0.27.0
