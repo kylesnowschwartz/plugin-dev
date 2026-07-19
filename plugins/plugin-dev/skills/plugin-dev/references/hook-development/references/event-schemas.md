@@ -79,13 +79,15 @@ All fields are optional. Omitted fields use defaults.
   "transcript_path": "string",
   "cwd": "string",
   "hook_event_name": "SessionStart",
-  "source": "startup|resume|clear|compact",
+  "source": "startup|resume|clear|compact|fork",
   "model": "string (model ID)",
   "agent_type": "string (optional, present with --agent)"
 }
 ```
 
 Note: `permission_mode` is not present on SessionStart.
+
+> **CC 2.1.214:** SessionStart hooks now report `source: "fork"` when the session begins as a fork of another session. This enables hooks to behave differently in forked contexts (e.g., skip initialization steps that the parent session already performed).
 
 **Output:**
 
@@ -109,7 +111,7 @@ Note: `permission_mode` is not present on SessionStart.
 
 **Special behavior:** The `CLAUDE_ENV_FILE` environment variable points to a file where you can write `export VAR=value` lines. These persist as environment variables for subsequent Bash tool calls in the session.
 
-**Matchers:** `startup`, `resume`, `clear`, `compact`
+**Matchers:** `startup`, `resume`, `clear`, `compact`, `fork` (CC 2.1.214)
 **Hook types:** Command only
 
 ---
@@ -317,6 +319,7 @@ Note: `permission_mode` is not present on SessionStart.
   "hook_event_name": "PermissionRequest",
   "tool_name": "string",
   "tool_input": {},
+  "matched_ask_rule": "string (CC 2.1.213, optional)",
   "permission_suggestions": [
     {
       "type": "addRules|replaceRules|removeRules|setMode|addDirectories|removeDirectories",
@@ -330,6 +333,7 @@ Note: `permission_mode` is not present on SessionStart.
 ```
 
 - `permission_suggestions`: The "always allow" options that would normally be shown to the user in the permission dialog
+- `matched_ask_rule` (CC 2.1.213): When present, identifies the user-configured `permissions.ask` rule that forced this permission prompt. Preserves richer tool-authored reasons while indicating the prompt was rule-forced. Hooks processing this metadata should treat it as rule-forced and render-unsafe.
 
 **Output:**
 

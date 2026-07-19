@@ -11,6 +11,8 @@ Claude Code provides built-in commands for managing project state:
 ## Session Commands
 
 - **`/cd`** (CC 2.1.169) — Relocates the session to a different directory without breaking prompt cache. Use this when you need to change the working directory mid-session while preserving cached context.
+- **`/fork`** (CC 2.1.212, behavior changed) — Copies the conversation to a background session. Previously spawned a subagent; now creates a separate background session with copied conversation history.
+- **`/subtask`** (CC 2.1.212) — Spawns an in-session subagent to handle a specific piece of work. Replaces the old in-session subagent invocation pattern.
 
 ## Configuration Commands
 
@@ -29,3 +31,7 @@ This syntax is an alternative to navigating the `/config` menu interactively. Us
 ## Plugin Management Commands
 
 - **`/plugin list`** (CC 2.1.163) — Lists installed plugins with filtering capabilities. Useful for discovering installed plugins and their status.
+
+## Auto Mode Commands
+
+- **`claude auto-mode reset`** (CC 2.1.212) — Restores default auto-mode settings. Useful for plugin testing workflows or resetting after experimental configuration changes.

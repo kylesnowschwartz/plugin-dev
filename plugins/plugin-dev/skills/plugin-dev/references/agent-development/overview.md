@@ -201,6 +201,16 @@ Agents run in **background** (default as of CC 2.1.198, concurrent, permissions 
 
 Agent teams enable multi-agent coordination where a team lead spawns and manages multiple independent Claude Code sessions as teammates. Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. Teams provide shared task lists, inter-agent messaging, and parallel execution; use `permissionMode: delegate` to restrict a lead to coordination-only tools. Full guidance (team lead/teammate design, display modes, team hooks, plan-approval mode, removed team tools) is in `references/advanced-agent-fields.md`. This is an advanced feature — see the [official agent teams documentation](https://code.claude.com/docs/en/agent-teams).
 
+## EndConversation Tool (CC 2.1.215)
+
+Claude Code includes an `EndConversation` tool for handling abusive users or jailbreak attempts. Plugin developers should be aware of this tool but will likely not use it directly:
+
+- **Restricted use:** Only for sustained abuse after repeated redirection and explicit warning, or user-requested demonstration after confirmation
+- **Forbidden use:** Cannot be used for task failure, frustration, ordinary completion, harmful-content refusals, or self-harm/violence cases
+- **No effect in background forks:** The tool is a no-op in background sessions
+
+**Implications for plugin agents:** Don't design agents that rely on EndConversation. It's a safety mechanism, not a workflow tool. If your agent encounters abusive input, follow standard redirection patterns rather than ending conversations.
+
 ## Best Practices
 
 **DO:**

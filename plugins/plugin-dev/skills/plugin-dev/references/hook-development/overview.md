@@ -102,6 +102,7 @@ Matchers filter which hooks run for an event; each event defines the values it a
 
 - **Hyphenated matchers require exact matches (CC 2.1.195, breaking change).** Matchers with hyphens (e.g. `code-reviewer`, `mcp__brave-search`) no longer substring-match — use a wildcard for partial matches: `"mcp__brave-search__.*"`. Affects custom agent names, MCP server names, and any hyphenated identifier.
 - **Use pipe, not comma, for multiple matchers (CC 2.1.191).** Comma-separated matchers silently never fired before CC 2.1.191. Correct: `"Bash|PowerShell"`. Wrong: `"Bash,PowerShell"`.
+- **Single-segment `dir/**` conditions now match only `<cwd>/dir` (CC 2.1.214, breaking change).** Hook `if:` conditions using patterns like `dir/**` now match only the immediate directory under cwd. Use `**/dir/**` for any-depth matching. This may break existing hooks that relied on the previous broader matching behavior.
 
 Other events match on source/category values, agent type names, MCP server name, or pipe-separated basenames; several events (UserPromptSubmit, Stop, and others) ignore `matcher` entirely. Per-event matcher values are documented in `references/event-schemas.md` and `references/advanced.md` (Event-Specific Matchers).
 

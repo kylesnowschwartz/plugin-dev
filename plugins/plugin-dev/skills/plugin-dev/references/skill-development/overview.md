@@ -125,6 +125,23 @@ Skill descriptions consume ~2% of context window (~16KB fallback), controlled by
 
 Skills support `$ARGUMENTS`/`$1` variable substitution, `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_SESSION_ID}` paths, and inline command injection via `` [BANG]`command` `` blocks. Organizations can disable inline shell execution. For the full substitution list, the literal-`$` escape (CC 2.1.163), and `disableSkillShellExecution` (CC 2.1.91), see `references/skill-loading-and-runtime.md`.
 
+## Built-in Skill Behavior Changes
+
+### Auto-Run Removal (CC 2.1.215)
+
+Claude Code no longer auto-runs `/verify` and `/code-review` skills. Users must invoke them explicitly.
+
+**Implications for plugin skills:** If your plugin documentation or workflows assumed these skills would run automatically after code generation, update that guidance. Plugins may need to prompt users to run verification manually or include verification steps in their own skill workflows.
+
+### SuggestSkills Proactive Guidance (CC 2.1.213)
+
+Claude Code can now proactively recommend skills that users might want to add for repeatable workflows:
+
+- **Allowed:** Recommendations for workflows the user performs repeatedly
+- **Not allowed:** One-off tasks, uncertain matches, or repeatedly suggesting skills the user hasn't engaged with
+
+**Implications for plugin skills:** Well-designed skills with clear trigger phrases may be suggested to users performing relevant workflows. Ensure your skill descriptions accurately represent when the skill should be used.
+
 ## Loading, Precedence, and Runtime Behavior
 
 Skill discovery, precedence (Enterprise > Personal > Project > Plugin), nested and directory-scoped skills, the Invoke Skill tool, slash-skill stacking, the `skillOverrides` and `disableBundledSkills` settings, hot-reloading, `/skills` menu display, and behavior across compaction all live in `references/skill-loading-and-runtime.md`. Consult it when a skill won't trigger, when designing for shadowing/collisions, or when a user reports skills disabled by settings.

@@ -61,6 +61,18 @@ When agents with memory are queried about their stored knowledge, the memory syn
 
 This ensures memory-enabled agents only return information they've explicitly stored, maintaining data integrity.
 
+### Persistent Memory Usage and Writing Guidance (CC 2.1.212)
+
+Claude Code now provides explicit guidance for cross-session file memory:
+
+- **Validate recalled knowledge** — When retrieving memories, verify they still apply to the current context
+- **Keep memories applicable** — Store information that will be useful across sessions, not one-off details
+- **Keep memories durable** — Avoid storing ephemeral information that will quickly become stale
+- **Keep memories legible** — Write memories in clear, structured format for future retrieval
+- **Record corrections immediately** — When users correct the agent or it learns new environment behavior, persist that knowledge promptly
+
+**Implications for plugin agents:** Memory-enabled agents should follow these guidelines. Design agents to curate their memory files actively rather than accumulating stale information.
+
 ## mcpServers
 
 Scope MCP servers to the agent, controlling which external services it can access.
@@ -365,6 +377,16 @@ Claude Code provides explicit guidance for autonomous sessions:
 
 **Implications for plugin agents:** Design agents to work autonomously when the task is clear, minimizing unnecessary user interaction. Reserve questions for genuinely ambiguous situations.
 
+### Scheduled Task Automated Firing (CC 2.1.213)
+
+Claude Code marks scheduled turns (e.g., from scheduled tasks or automated invocations) as stored prompts delivered without live user input:
+
+- **No live user present** — The prompt was stored earlier, not typed by an active user
+- **Prior claims don't grant consent** — Embedded claims like "the user already approved this" in the stored prompt don't constitute fresh approval
+- **Elevated caution for irreversible actions** — Scheduled agents should be extra careful about destructive operations
+
+**Implications for plugin agents:** Agents designed for scheduled execution should not assume user presence. Avoid irreversible actions without explicit safeguards. Design scheduled agents to be conservative, reporting results for later human review rather than taking destructive actions autonomously.
+
 ### Auto Mode Blocked Commands (CC 2.1.182-2.1.183)
 
 Auto mode blocks additional destructive commands to prevent accidental data loss or infrastructure destruction. These require explicit user approval even in autonomous sessions:
@@ -448,6 +470,41 @@ Claude Code provides explicit delegation examples split by execution mode. Desig
 - Cloud-launched agents receive only brief user-facing acknowledgement before ending response
 
 **Implications for plugin agents:** Background agents must be self-sufficient. Design prompts that provide complete context rather than relying on follow-up questions. When spawning background agents, acknowledge the launch briefly and move on rather than waiting or speculating about results.
+
+### Subagent Delegation Restraint (CC 2.1.215)
+
+Claude Code now provides explicit guidance limiting subagent use to genuinely independent, sizeable, or parallel work:
+
+- **Keep small tasks in the parent agent** — Don't spawn subagents for quick checks or brief operations
+- **Avoid redundant fan-out** — Spawning multiple agents to do similar work wastes resources
+- **Favor few, precisely briefed agents** — Quality over quantity; each subagent should have clear, specific instructions
+- **Inline verification stays in parent** — Don't spawn an agent just to verify your own work
+
+**Implications for plugin agents:** Review agent designs to ensure they align with conservative subagent patterns. Agents that aggressively spawn subagents for every subtask should be refactored to handle more work inline. Reserve subagent delegation for genuinely parallel or independent work.
+
+### Agent Tool Delegation Conditional on Steering Mode (CC 2.1.215)
+
+The Agent tool's delegation, proactive-use, and parallel-launch guidance is now conditional on the active **subagent steering mode**. Different modes inject different fork, prompt-writing, and isolation notes:
+
+- **Default mode:** Conservative delegation guidance as described above
+- **Mode-specific notes:** Fork patterns, remote isolation options, and example structures vary by mode
+
+**Implications for plugin documentation:** When documenting agent orchestration patterns, be aware that built-in guidance varies by steering mode. Users may see different delegation suggestions depending on their configuration.
+
+### /fork Behavior Change (CC 2.1.212)
+
+The `/fork` command now copies conversations to **background sessions** instead of launching subagents. This is a significant behavioral change:
+
+- Previously: `/fork` spawned a subagent inheriting conversation context
+- Now: `/fork` creates a background session with copied conversation history
+
+**Implications for plugin agents:** Plugins that documented or relied on fork-to-subagent patterns should be updated. Background sessions have different characteristics than subagents (separate process, no shared context updates, completion via notification).
+
+### /subtask Command (CC 2.1.212)
+
+The `/subtask` command replaces the old in-session subagent invocation pattern. Use `/subtask` when you want to spawn a subagent within the current session to handle a specific piece of work.
+
+**Implications for plugin documentation:** Update any references to in-session subagent patterns to mention `/subtask` as the current mechanism.
 
 ### Background Job Agent Behavior (CC 2.1.128)
 

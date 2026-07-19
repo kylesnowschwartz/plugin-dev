@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.33.0] - 2026-07-19
+
+### Added
+
+- **agent-development**: Documented EndConversation tool — restricted to sustained abuse scenarios after warning; no-op in background forks (CC 2.1.215)
+- **agent-development**: Documented subagent delegation restraint guidance — keep small tasks inline, avoid redundant fan-out, favor few precisely briefed agents (CC 2.1.215)
+- **agent-development**: Documented Agent tool delegation conditional on subagent steering mode — fork patterns and isolation notes vary by mode (CC 2.1.215)
+- **agent-development**: Documented /fork behavior change — now copies to background sessions instead of spawning subagents (CC 2.1.212)
+- **agent-development**: Documented /subtask command — replaces old in-session subagent invocation pattern (CC 2.1.212)
+- **agent-development**: Documented persistent memory usage and writing guidance — validate recalled knowledge, keep memories applicable/durable/legible, record corrections immediately (CC 2.1.212)
+- **agent-development**: Documented scheduled task automated firing — stored prompts without live user input, elevated caution for irreversible actions (CC 2.1.213)
+- **skill-development**: Documented auto-run removal for /verify and /code-review skills (CC 2.1.215)
+- **skill-development**: Documented SuggestSkills proactive guidance — recommendations for repeatable workflows only (CC 2.1.213)
+- **command-development**: Documented `claude auto-mode reset` command for restoring default auto-mode settings (CC 2.1.212)
+- **hook-development**: Documented `matched_ask_rule` PermissionRequest field — identifies rule that forced the prompt (CC 2.1.213)
+- **hook-development**: Documented SessionStart source "fork" — enables hooks to behave differently in forked contexts (CC 2.1.214)
+
+### Changed
+
+- **hook-development**: **Breaking:** Single-segment `dir/**` hook conditions now match only `<cwd>/dir` — use `**/dir/**` for any-depth matching (CC 2.1.214)
+
 ## [0.32.0] - 2026-07-16
 
 ### Added
@@ -715,7 +736,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.32.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.33.0...HEAD
+[0.33.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.32.0...v0.33.0
 [0.32.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.31.0...v0.32.0
 [0.31.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.30.1...v0.31.0
 [0.30.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.30.0...v0.30.1

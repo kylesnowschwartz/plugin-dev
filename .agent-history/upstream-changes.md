@@ -1,390 +1,621 @@
 # Upstream Change Manifest
-## CC Version Range: 2.1.208 - 2.1.211
-## Generated: 2026-07-16
-## Sources: changelog [Y], system-prompts [Y], claude-code-guide [skipped - no response]
+## CC Version Range: 2.1.212 - 2.1.215
+## Generated: 2026-07-19
+## Sources: changelog [x], system-prompts [x], claude-code-guide [degraded - no output in CI]
 
 ---
 
 ### Must Update
 
-- [ ] **RefreshMcpTools tool added** (CC 2.1.211)
-  - Source: system-prompts (verified)
-  - Confidence: high (Stage 2 verified)
-  - Affects: mcp-integration
-  - Details: New tool for on-demand resynchronization of connected MCP server tool lists. Includes stale-tool recovery triggers, per-server refreshes, and reports added/removed/disconnected tools without reconnecting servers. Document in mcp-integration/references/operations.md.
-  - Raw: "Tool Description: RefreshMcpTools and Tool Description: RefreshMcpTools prompt - Add on-demand resynchronization of connected MCP server tool lists, including stale-tool recovery triggers, per-server refreshes, and added, removed, or disconnected result reporting without reconnecting servers."
+- [ ] **EndConversation tool added** (CC 2.1.214)
+  - Source: changelog, system-prompts (both confirm - system-prompts at 2.1.206)
+  - Confidence: high
+  - Affects: agent-development (awareness for plugin agent designers)
+  - Details: New tool for handling abusive users or jailbreak attempts. Restricted to sustained abuse after repeated redirection and explicit warning, or user-requested demonstration after confirmation. Forbidden for task failure, frustration, ordinary completion, harmful-content refusals, or self-harm/violence cases. Has no effect in background forks. Plugin developers should be aware this tool exists but likely will not use it directly.
+  - Raw changelog: "Added EndConversation tool for handling abusive users or jailbreak attempts"
 
-- [ ] **Background/foreground subagent delegation patterns** (CC 2.1.211) [consolidated]
-  - Source: system-prompts (verified)
-  - Confidence: high (Stage 2 verified)
+- [ ] **Subagent delegation restraint guidance added** (CC 2.1.215)
+  - Source: system-prompts only
+  - Confidence: high
   - Affects: agent-development
-  - Details: Consolidated update covering three related changes: (1) Delegation examples split by execution mode (background vs foreground), requiring self-contained prompts, status-only replies while background work pending, later reporting from completion notifications. (2) Agent tool final-report wording tailored to background-agent support, prohibiting racing or predicting pending results. (3) Async agent launched metadata reminders marking launch IDs as internal. Update agent-development/references/advanced-agent-fields.md and add delegation example patterns.
-  - Raw: Multiple system-prompts entries for Background/Foreground/Fresh subagent delegation examples, Agent tool usage notes, and Async agent launched metadata.
+  - Details: NEW system prompt limits subagent use to genuinely independent, sizeable, or parallel work. Keeps small tasks and inline verification in the parent agent. Discourages redundant fan-out and duplicated work. Favors a few precisely briefed agents. This affects how plugin agents should be designed - they should not over-delegate to subagents.
+  - Raw system-prompts: "NEW: System Prompt: Subagent delegation restraint - Limits subagent use to genuinely independent, sizeable, or parallel work; keeps small tasks and inline verification in the parent agent; discourages redundant fan-out and duplicated work; and favors a few precisely briefed agents."
 
-- [ ] **Artifact MCP connector guidance** (CC 2.1.209)
-  - Source: system-prompts (verified, promoted from missed)
-  - Confidence: high (Stage 2 verified)
-  - Affects: mcp-integration
-  - Details: Documents how to identify supported claude.ai connectors and their exact server values, distinguish upstream tool names from normalized tool-list names, reject locally configured MCP servers, and discover connectors through the API. Relevant for plugin developers understanding connector vs server distinction.
-  - Raw: "Data: Artifact MCP connector guidance - Documents how to identify supported claude.ai connectors and their exact server values, distinguish upstream tool names from normalized tool-list names, reject locally configured MCP servers, and discover connectors through the API in hermetic or CI sessions."
+- [ ] **Agent tool delegation guidance now conditional on subagent steering mode** (CC 2.1.215)
+  - Source: system-prompts only
+  - Confidence: high
+  - Affects: agent-development
+  - Details: Tool descriptions for Agent (simple usage notes and usage notes) now make broad delegation, proactive-use, and parallel-launch guidance conditional on the default subagent steering mode. Injects mode- and capability-specific fork, prompt-writing, example, and remote-isolation notes. This changes how the Agent tool documentation should present delegation patterns.
+  - Raw system-prompts: "Tool Description: Agent (simple usage notes) and Tool Description: Agent (usage notes) - Make broad delegation, proactive-use, and parallel-launch guidance conditional on the default subagent steering mode, while injecting mode- and capability-specific fork, prompt-writing, example, and remote-isolation notes."
 
-- [ ] **--forward-subagent-text flag for stream-json output** (CC 2.1.211)
-  - Source: changelog (promoted from May Update)
-  - Confidence: high (Stage 2 verified)
-  - Affects: agent-development, plugin-structure
-  - Details: New CLI flag affecting how subagent output is captured in headless/CI mode. Document in agent-development/references/advanced-agent-fields.md and plugin-structure/references/headless-ci-mode.md.
-  - Raw: "New --forward-subagent-text flag for stream-json output"
+- [ ] **Auto-run of /verify and /code-review skills removed** (CC 2.1.215)
+  - Source: changelog only
+  - Confidence: high
+  - Affects: skill-development (built-in skill behavior)
+  - Details: Claude no longer auto-runs `/verify` and `/code-review` skills; users must invoke them explicitly. This is a behavioral change that affects expected workflow patterns. Plugin developers should know these skills now require explicit invocation.
+  - Raw changelog: "Claude no longer auto-runs `/verify` and `/code-review` skills; users must invoke them explicitly"
+
+- [ ] **/fork behavior changed - copies to background sessions instead of subagents** (CC 2.1.212)
+  - Source: changelog only
+  - Confidence: high
+  - Affects: agent-development (primary), command-development (secondary)
+  - Details: `/fork` now copies conversations to background sessions instead of launching subagents. Significant behavioral change for fork workflows. Plugin developers using fork patterns need to understand this change.
+  - Raw changelog: "`/fork` now copies conversations to background sessions instead of launching subagents"
+
+- [ ] **/subtask command added** (CC 2.1.212) [ADDED BY STAGE 2]
+  - Source: changelog only
+  - Confidence: high
+  - Affects: agent-development, command-development
+  - Details: `/subtask` replaces the old in-session subagent invocation pattern. Plugin developers using subagent patterns should know about this change alongside the /fork change.
+  - Raw changelog: "`/subtask` replaces the old in-session subagent invocation"
+
+- [ ] **claude auto-mode reset command added** (CC 2.1.212)
+  - Source: changelog only
+  - Confidence: medium
+  - Affects: command-development (built-in commands reference)
+  - Details: New command `claude auto-mode reset` for restoring default auto-mode settings. May be useful for plugin testing workflows.
+  - Raw changelog: "Added `claude auto-mode reset` for restoring default auto-mode settings"
+
+- [ ] **Persistent memory usage and writing guidance added** (CC 2.1.212)
+  - Source: system-prompts only
+  - Confidence: high
+  - Affects: agent-development (memory section)
+  - Details: NEW system prompt adds cross-session file-memory rules for validating recalled knowledge, keeping memories applicable, durable, and legible, and immediately recording durable user corrections or newly learned environment behavior. Relevant for plugin agents that interact with memory.
+  - Raw system-prompts: "NEW: System Prompt: Persistent memory usage and writing guidance - Adds cross-session file-memory rules for validating recalled knowledge, keeping memories applicable, durable, and legible, and immediately recording durable user corrections or newly learned environment behavior."
+
+- [ ] **SuggestSkills proactive guidance added** (CC 2.1.213)
+  - Source: system-prompts only
+  - Confidence: high
+  - Affects: skill-development
+  - Details: NEW tool description allows proactive recommendations of addable skills for repeatable workflows while excluding one-off tasks, uncertain matches, and repeated unengaged suggestions. This affects how skills can be surfaced to users.
+  - Raw system-prompts: "NEW: Tool Description: SuggestSkills proactive guidance - Allows proactive recommendations of addable skills for repeatable workflows while excluding one-off tasks, uncertain matches, and repeated unengaged suggestions."
+
+- [ ] **matched ask rule tool parameter added** (CC 2.1.213)
+  - Source: system-prompts only
+  - Confidence: high
+  - Affects: hook-development (permissions documentation)
+  - Details: NEW tool parameter identifies approval prompts forced by user-configured `permissions.ask` rules while preserving richer tool-authored reasons. Directs hosts to treat the metadata as rule-forced and render-unsafe. Relevant for understanding permission prompt behavior in hooks.
+  - Raw system-prompts: "NEW: Tool Parameter: matched ask rule - Identifies approval prompts forced by user-configured `permissions.ask` rules while preserving richer tool-authored reasons, and directs hosts to treat the metadata as rule-forced and render-unsafe."
+
+- [ ] **Scheduled task automated firing system reminder added** (CC 2.1.213)
+  - Source: system-prompts only
+  - Confidence: high
+  - Affects: agent-development (autonomous operations)
+  - Details: NEW system reminder marks scheduled turns as stored prompts delivered without live user input and forbids treating prior or embedded claims as fresh approval or consent. Important for plugin agents that work with scheduled tasks.
+  - Raw system-prompts: "NEW: System Reminder: Scheduled task automated firing - Marks scheduled turns as stored prompts delivered without live user input and forbids treating prior or embedded claims as fresh approval or consent."
+
+- [ ] **SessionStart hooks report source "fork"** (CC 2.1.214) [ADDED BY STAGE 2]
+  - Source: changelog only
+  - Confidence: high
+  - Affects: hook-development
+  - Details: SessionStart hook input now includes source field indicating fork origin. Relevant for hooks that need to behave differently in forked sessions.
+  - Raw changelog: "`SessionStart` hooks report source `\"fork\"` when session begins as a fork"
+
+- [ ] **Single-segment dir/** hook conditions breaking change** (CC 2.1.214) [ADDED BY STAGE 2]
+  - Source: changelog only
+  - Confidence: high
+  - Affects: hook-development
+  - Details: BREAKING CHANGE - Single-segment `dir/**` hook `if:` conditions now match only `<cwd>/dir`; use `**/dir/**` for any-depth matching. Existing hooks using `dir/**` patterns may need to be updated.
+  - Raw changelog: "Single-segment `dir/**` hook `if:` conditions now match only `<cwd>/dir`; use `**/dir/**` for any-depth matching"
+
+- [ ] **Hooks with exit code 2 not blocking fix** (CC 2.1.214) [ADDED BY STAGE 2]
+  - Source: changelog only
+  - Confidence: high
+  - Affects: hook-development
+  - Details: Bug fix confirming exit code 2 hooks now properly block as documented. Existing documentation is correct; this confirms the documented behavior works as expected.
+  - Raw changelog: "Fixed hooks with exit code 2 not blocking as documented"
 
 ---
 
 ### May Update
 
-- [ ] **Startup warnings for overly broad permission rules** (CC 2.1.210)
-  - Source: changelog
-  - Confidence: medium (Stage 2 kept)
-  - Affects: hook-development, agent-development (permission documentation)
-  - Details: New warnings at startup when permission rules are too broad. May affect permission documentation examples in hook and agent development.
+- [ ] **Session-wide WebSearch tool call limits and subagent spawn caps** (CC 2.1.212)
+  - Source: changelog only
+  - Confidence: medium
+  - Affects: tools documentation, resource limits
+  - Details: Implemented session-wide limits on WebSearch tool calls and subagent spawning. May affect guidance on resource management in plugins.
+  - Raw changelog: "Implemented session-wide WebSearch tool call limits and subagent spawn caps"
 
-- [ ] **Security monitor consent/destruction rules updates** (CC 2.1.211)
-  - Source: system-prompts
-  - Confidence: medium (Stage 2 kept)
-  - Affects: agent-development (autonomous operations)
-  - Details: Clarifies that naming a desired outcome does not authorize destructive means. Consent must name the dangerous operation, scope, guard, or targets. May affect how autonomous agents in plugins are documented.
-  - Raw: "Agent Prompt: Security monitor for autonomous agent actions (first part) - Clarifies that naming a desired outcome does not authorize a destructive means chosen by the agent..."
+- [ ] **MCP tool calls exceeding 2 minutes auto-background** (CC 2.1.212)
+  - Source: changelog only
+  - Confidence: medium
+  - Affects: mcp-integration skill
+  - Details: MCP tool calls exceeding 2 minutes auto-background for session usability. Changes expected MCP behavior that plugin developers should know about.
+  - Raw changelog: "MCP tool calls exceeding 2 minutes auto-background for session usability"
 
-- [ ] **Background monitor guidance when tasks disabled** (CC 2.1.208)
-  - Source: system-prompts
-  - Confidence: medium (Stage 2 kept)
-  - Affects: hook-development (monitors section), plugin-structure
-  - Details: When background tasks are disabled, directs one-shot readiness and completion waits to foreground Bash loops instead of unavailable background execution. Potentially relevant for monitors documentation.
+- [ ] **/resume picker for deleted sessions** (CC 2.1.212)
+  - Source: changelog only
+  - Confidence: medium
+  - Affects: commands documentation
+  - Details: Added `/resume` picker for accessing deleted past sessions. Minor feature addition.
+  - Raw changelog: "Added `/resume` picker for accessing deleted past sessions"
 
-- [ ] **Setup Cowork expanded to six-step flow** (CC 2.1.210)
-  - Source: system-prompts
-  - Confidence: medium (Stage 2 kept)
-  - Affects: plugin-structure (plugin/connector/skill distinction)
-  - Details: Expands onboarding into visible six-step flow. Checks installed plugins before role-matched recommendations, connects plugins, offers skill trial, clarifies connectors vs plugins. May inform plugin-structure documentation about the connector/plugin distinction.
+- [ ] **/code-review and /simplify unavailable-agent inline modes** (CC 2.1.213)
+  - Source: system-prompts only
+  - Confidence: medium
+  - Affects: built-in skills documentation
+  - Details: Add single-context fallback modes when Agent tool is unavailable, with sequential review angles, deduplication, self-checking, and explicit disclosure that no subagent verification ran.
+  - Raw system-prompts: "NEW: Agent Prompt: /code-review unavailable-agent inline mode" and "NEW: Agent Prompt: /simplify unavailable-agent inline mode"
 
-- [ ] **SendFile tool for cross-session file transfer** (CC 2.1.210)
-  - Source: system-prompts
-  - Confidence: medium (Stage 2 demoted from Must Update)
-  - Affects: agent-development (advanced coordination)
-  - Details: New tool for cross-session file transfer. May be relevant for advanced agent coordination documentation but not core plugin-dev.
-  - Raw: "Tool Description: SendFile - Documents cross-session file transfer to local peers and Remote Control or cloud sessions..."
+- [ ] **Artifact PR review skill added** (CC 2.1.213)
+  - Source: system-prompts only
+  - Confidence: medium
+  - Affects: built-in skills documentation
+  - Details: NEW skill adds workflow for gathering a GitHub PR and publishing a self-contained review briefing Artifact.
+  - Raw system-prompts: "NEW: Skill: Artifact PR review and Skill: Artifact PR review description"
+
+- [ ] **Artifact publishing and update guidance split into dedicated prompt** (CC 2.1.212)
+  - Source: system-prompts only
+  - Confidence: medium
+  - Affects: Artifact tool documentation
+  - Details: Splits Artifact redeployment, lookup, ownership, content-safety, self-containment, responsive design, theme, favicon, and anti-impersonation requirements into a dedicated prompt.
+  - Raw system-prompts: "NEW: Tool Description: Artifact publishing and update guidance"
+
+- [ ] **SendFeedback drafting guidance added** (CC 2.1.212)
+  - Source: system-prompts only
+  - Confidence: low
+  - Affects: tool documentation (if SendFeedback is user-facing)
+  - Details: NEW tool description adds silent local drafting of factual Claude Code feedback after product failures, explicit frustration, or blocking capability gaps.
+  - Raw system-prompts: "NEW: Tool Description: SendFeedback drafting guidance"
+
+- [ ] **EnterPlanMode and Grep tool descriptions updated for subagent steering mode** (CC 2.1.215)
+  - Source: system-prompts only
+  - Confidence: medium
+  - Affects: tools documentation
+  - Details: Suggestions to use Agent tool for pure research and open-ended searches now conditional on active subagent steering mode.
+  - Raw system-prompts: "Tool Description: EnterPlanMode and Tool Description: Grep - Make suggestions to use the Agent tool for pure research and open-ended multi-round searches conditional on the active subagent steering mode."
+
+- [ ] **Glob tool description updated** (CC 2.1.215)
+  - Source: system-prompts only
+  - Confidence: medium
+  - Affects: tools documentation
+  - Details: Removes unconditional recommendation to use Agent tool for open-ended searches requiring multiple rounds of globbing and grepping.
+  - Raw system-prompts: "Tool Description: Glob - Removes the unconditional recommendation to use the Agent tool for open-ended searches requiring multiple rounds of globbing and grepping."
+
+- [ ] **Coordinator worker instructions updated** (CC 2.1.213)
+  - Source: system-prompts only
+  - Confidence: medium
+  - Affects: agent-development skill
+  - Details: Allows worker agents to fan out through the Agent tool for bounded parallel research, review, and cleanup instead of prohibiting subagents entirely.
+  - Raw system-prompts: "System Prompt: Coordinator worker instructions - Allows worker agents to fan out through the Agent tool for bounded parallel research, review, and cleanup instead of prohibiting subagents entirely."
+
+- [ ] **/code-review workflow routing added** (CC 2.1.212)
+  - Source: system-prompts only
+  - Confidence: medium
+  - Affects: built-in skills documentation
+  - Details: NEW agent prompt routes eligible reviews through background workflow at requested effort.
+  - Raw system-prompts: "NEW: Agent Prompt: /code-review workflow routing"
+
+- [ ] **Permission rule fixes for nested directories and Windows PowerShell** (CC 2.1.214, 2.1.215)
+  - Source: changelog only
+  - Confidence: medium
+  - Affects: permissions documentation
+  - Details: Fixed permission rule issues affecting nested directory writes and Windows PowerShell sessions. Improved Bash permission checks for long commands and complex syntax patterns.
+  - Raw changelog: "Fixed allow rules for nested directory writes in permission system" (2.1.214), "Fixed permission rule issues affecting nested directory writes and Windows PowerShell sessions" (2.1.215)
+
+- [ ] **PowerShell file-encoding guidance corrected** (CC 2.1.213)
+  - Source: system-prompts only
+  - Confidence: low
+  - Affects: tools documentation (Windows-specific)
+  - Details: Corrects file-encoding guidance to distinguish UTF-8 output from `>`, `>>`, and `Out-File` from system-codepage defaults of `Set-Content` and `Add-Content`.
+  - Raw system-prompts: "System Prompt: PowerShell edition for 5.1 - Corrects file-encoding guidance to distinguish UTF-8 output from `>`, `>>`, and `Out-File` from the system-codepage defaults of `Set-Content` and `Add-Content`."
+
+- [ ] **Browser example shutdown guidance updated** (CC 2.1.213)
+  - Source: system-prompts only
+  - Confidence: low
+  - Affects: skills documentation (web server examples)
+  - Details: Replace broad `pkill -f` shutdown guidance with captured-PID or port-listener termination.
+  - Raw system-prompts: "Skill: Run browser-driven web app example and Skill: Run web server API example - Replace broad `pkill -f` shutdown guidance with captured-PID or port-listener termination"
 
 ---
 
 ### No Action
 
-**Bug fixes and internal improvements:**
-- Startup hang fix when Chrome extension enabled but Chrome not running (CC 2.1.209) - Bug fix only
-- Fast mode restoration fixes (CC 2.1.208) - Bug fix only
-- Background session text preservation (CC 2.1.208) - Bug fix only
-- Windows setup page corrections (CC 2.1.208) - Platform-specific fix
-- Improved agent result reporting with better status tracking (CC 2.1.208) - Internal improvement
-- `isolation: 'worktree'` subagent restrictions fix (CC 2.1.210) - Bug fix
-- Ultracode keyword filtering (CC 2.1.210) - Internal feature
-- Terminal rendering performance improvements (CC 2.1.210) - Performance fix
-- Permission classifier enhancements defaulting to Sonnet 5 (CC 2.1.210) - Internal improvement
-- Parallel session logout issues fix (CC 2.1.211) - Bug fix
-- MCP server reconnection problems fix (CC 2.1.211) - Bug fix
-- File upload validation improvements (CC 2.1.211) - Bug fix
-- Nested rules loading fix (CC 2.1.211) - Bug fix
-- Edits leaving "?" inputs fix (CC 2.1.211) - Bug fix
-- Async content reveal delays fix (CC 2.1.211) - Bug fix
-- Auto mode behavior with PreToolUse hooks correction (CC 2.1.211) - Bug fix
-- Documentation link updates from docs.claude.com to platform.claude.com (CC 2.1.211) - URL change
-- Recent changes reference updates (memory-entry shortcuts, thinking-toggle, etc.) (CC 2.1.211) - Changelog data
-- Recurring cron skill removed (folded into /loop) (CC 2.1.211) - Internal consolidation
-- ClaudeDesign project grant reminder removed (CC 2.1.211) - Internal cleanup
-- Data visualization color formula removed (folded elsewhere) (CC 2.1.210) - Internal consolidation
-- Auto mode setup skill removed (replaced by generator) (CC 2.1.210) - Internal refactor
+**Demoted from Must Update by Stage 2:**
+- Import to Claude Code skill added (CC 2.1.213) - user-facing feature, not plugin-development relevant
+- Artifact runtime capabilities guidance added (CC 2.1.213) - Artifact tool is not plugin-development relevant
 
-**Stage 2 demoted (not plugin-dev relevant):**
-- Navigate tool for browser control (CC 2.1.211) - Chrome extension feature, not plugin-dev
-- Memory index capacity warning (CC 2.1.210) - Claude Code memory management, not plugin-dev
-- Auto mode setup proposal generator (CC 2.1.210) - Internal auto-mode configuration, not plugin-dev
-- Screen reader mode with plain-text rendering (CC 2.1.208) - Accessibility feature, not plugin-dev
-- Live elapsed-time counter in collapsed tool summaries (CC 2.1.210) - UI enhancement, not plugin-dev
-- Doctor checkup suggestion trigger (CC 2.1.210) - Internal /doctor behavior, not plugin-dev
-- Claude in Chrome read page truncation behavior (CC 2.1.211) - Browser extension feature, not plugin-dev
-- Artifact themes follow OS color scheme (CC 2.1.208) - Artifact theming, not plugin-dev
-- Data visualization palette and CVD separation updates (CC 2.1.210) - Visualization styling, not plugin-dev
-- /morning slash command reworked (CC 2.1.210) - Built-in slash command, not plugin-dev
+**Demoted from May Update by Stage 2:**
+- /resume picker for deleted sessions (CC 2.1.212) - user-facing feature
+- SendFeedback drafting guidance added (CC 2.1.212) - internal/user-facing feature
+- PowerShell file-encoding guidance corrected (CC 2.1.213) - platform-specific edge case
+- Browser example shutdown guidance updated (CC 2.1.213) - built-in skill detail
+
+**Bug fixes and internal improvements (CC 2.1.214, 2.1.215):**
+- Fix various tool crashes (GrowthBook features, PowerShell processes, Python encoding)
+- Streaming issues and background session management fixes
+- Memory handling and session persistence improvements
+- Improved man/help command validation
+- Memory growth issues with oversized settings files
+- PowerShell tool encoding problems on Windows
+- Plan mode issues with file-modifying commands and permission handling
+- Enhanced OpenTelemetry logging with message-level correlation attributes
+- Permission prompts for docker commands with daemon-redirect flags
+- Plugins enabled via --settings flag fix (CC 2.1.214) - bug fix, low documentation value
+
+**Internal feature removals (CC 2.1.212):**
+- Context tip selection removed (tip selector, reception evaluator, situation prompts) - internal contextual help feature
+- Session search subagent removed - internal search feature
+- Doctor checkup suggestion trigger removed - internal /doctor behavior
+
+**Internal refinements (CC 2.1.212-2.1.213):**
+- Agent mode parameter availability changes (mode parameter no longer described as unavailable to in-process subagents)
+- Plan artifact HTML template clarifications (syntax highlighting)
+- Dream memory consolidation adapted for variant without typed memories
+- CLAUDE.md creation import detection for OpenAI Codex and Gemini CLI - internal workflow
+- Security monitor scheduled-task treatment changes - security internals
+- Auto mode setup proposal generator changes - internal workflow
+- PowerShell noninteractive console prompt behavior - edge case
+- Quick PR creation push guidance changes (origin to configured remote)
+
+**No system prompt changes:**
+- CC 2.1.214 had no system prompt changes per system-prompts CHANGELOG
 
 ---
 
 ## Summary
 
-**Critical plugin-dev impact (Must Update):** 4 items (Stage 2 verified)
-- RefreshMcpTools: New MCP tool refresh capability (mcp-integration)
-- Background/foreground delegation patterns: Consolidated agent behavior updates (agent-development)
-- Artifact MCP connector guidance: Connector vs server distinction (mcp-integration)
-- --forward-subagent-text flag: Headless/CI subagent output (agent-development, plugin-structure)
+**Total changes identified:** 43 items across 4 versions (2.1.212-2.1.215)
 
-**Moderate impact (May Update):** 5 items (Stage 2 filtered)
-- Startup warnings for overly broad permission rules
-- Security monitor consent/destruction rules
-- Background monitor guidance when tasks disabled
-- Setup Cowork plugin/connector/skill distinction
-- SendFile tool for cross-session file transfer
+**Must Update:** 14 items (verified by Stage 2)
+- 1 new tool (EndConversation) - awareness for agent developers
+- 1 new tool parameter (matched ask rule)
+- 4 behavioral changes (subagent delegation restraint, Agent tool conditional guidance, /fork to background sessions, /verify+/code-review auto-run removed)
+- 2 new commands (/subtask, claude auto-mode reset)
+- 3 documentation additions (Persistent memory guidance, SuggestSkills proactive guidance, Scheduled task firing)
+- 3 hook-development updates (SessionStart fork source, dir/** breaking change, exit code 2 fix confirmation)
 
-**No action needed:** 32 items (Stage 2 expanded)
-- Bug fixes, performance improvements, internal refactors (22 original)
-- Non-plugin-dev features demoted by Stage 2 (10 additional)
+**May Update:** 10 items (reduced from 14 by Stage 2)
+- Resource limit documentation (WebSearch caps, subagent spawn caps, MCP auto-background)
+- Built-in skill modes and workflows
+- Tool description refinements for subagent steering mode
+- Permission fixes (nested directories, Windows PowerShell)
+- Coordinator worker instructions
+
+**No Action:** 19 items (increased from 13 by Stage 2)
+- Bug fixes, internal features, and platform-specific edge cases
+- Items demoted from Must/May Update (user-facing features, Artifact tool, built-in skill details)
 
 ---
 
-## Notes
+## Confidence Assessment
 
-1. **Degraded triangulation**: The claude-code-guide agent dispatch did not return output within the timeout period. Changes are confirmed by changelog and/or system-prompts only.
+**High confidence (10 items):**
+- EndConversation tool (confirmed by both sources)
+- Subagent delegation restraint (NEW marker in system-prompts)
+- Agent tool conditional guidance (detailed in system-prompts)
+- Persistent memory guidance (NEW marker in system-prompts)
+- SuggestSkills proactive guidance (NEW marker in system-prompts)
+- matched ask rule parameter (NEW marker in system-prompts)
+- Scheduled task firing reminder (NEW marker in system-prompts)
+- Import to Claude Code skill (NEW marker in system-prompts)
+- Artifact runtime capabilities (NEW marker in system-prompts)
+- Artifact publishing guidance (NEW marker in system-prompts)
 
-2. **Medium confidence items**: All "Must Update" items come from system-prompts only. While this source is highly reliable (extracted directly from Claude Code source), manual verification against official docs is recommended when available.
+**Medium confidence (9 items):**
+- /verify and /code-review auto-run removal (changelog only)
+- /fork behavior change (changelog only)
+- claude auto-mode reset command (changelog only)
+- WebSearch/subagent limits (changelog only)
+- MCP 2-minute auto-background (changelog only)
+- /resume picker (changelog only)
+- /code-review and /simplify inline modes (system-prompts only)
+- Artifact PR review skill (system-prompts only)
+- Permission rule fixes (changelog only)
 
-3. **Version gap**: Only 4 versions (2.1.208-2.1.211) released since last audit. This is a relatively small update window.
+**Low confidence (2 items):**
+- SendFeedback drafting guidance (may not be user-facing)
+- PowerShell file-encoding (platform-specific edge case)
 
-4. **Token deltas from system-prompts**:
-   - 2.1.211: +3,890 tokens
-   - 2.1.210: -8,629 tokens (net reduction due to consolidation)
-   - 2.1.209: +1,261 tokens
-   - 2.1.208: +2,947 tokens
+---
+
+## Token Deltas from System-Prompts
+
+- 2.1.215: +645 tokens
+- 2.1.214: No changes
+- 2.1.213: +7,589 tokens
+- 2.1.212: +1,066 tokens
+
+**Total net change: +9,300 tokens**
+
+---
+
+## Source Triangulation Notes
+
+1. **Degraded triangulation**: The claude-code-guide agent dispatch produced no output in the CI environment. Changes are confirmed by changelog and/or system-prompts only. Manual verification against official docs is recommended when available.
+
+2. **Version 2.1.214 gap**: The system-prompts CHANGELOG shows "No changes to the system prompts in v2.1.214" - all changes were bug fixes only.
+
+3. **EndConversation timing discrepancy**: The tool appeared in system-prompts at v2.1.206 but only reached the upstream changelog at v2.1.215. This suggests it was added to prompts earlier but may have been feature-flagged or limited until 2.1.215.
+
+4. **Large prompt additions in 2.1.213**: The +7,589 token delta in 2.1.213 represents significant new functionality including multiple new skills and agent prompts for /code-review, /simplify, Artifact PR review, and Import to Claude Code.
 
 ---
 
 ## Raw Changelog Data
 
-### CC 2.1.211 (from upstream changelog)
+### CC 2.1.215 (from upstream changelog)
 ```
-- New `--forward-subagent-text` flag for stream-json output
-- Security fixes for permission previews
-- Corrections for auto mode behavior with PreToolUse hooks
-- Parallel session logout issues fixed
-- MCP server reconnection problems fixed
-- File upload validation improvements
-- Nested rules loading fixes
-- Edits leaving "?" inputs fixed
-- Startup hangs with Chrome extension fixed
-- Async content reveal delays fixed
-```
-
-### CC 2.1.210 (from upstream changelog)
-```
-- Live elapsed-time counter to collapsed tool summaries
-- Startup warnings for overly broad permission rules
-- `isolation: 'worktree'` subagent restrictions fix
-- Ultracode keyword filtering
-- Terminal rendering performance improvements
-- Permission classifier enhancements defaulting to Sonnet 5
+- Claude no longer auto-runs /verify and /code-review skills; users must invoke them explicitly
+- Fixed permission rule issues affecting nested directory writes and Windows PowerShell sessions
+- Improved Bash permission checks for long commands and complex syntax patterns
+- Added EndConversation tool for handling abusive users or jailbreak attempts
+- Enhanced OpenTelemetry logging with message-level correlation attributes
+- Added permission prompts for docker commands with daemon-redirect flags
+- Fixed various tool crashes (GrowthBook features, PowerShell processes, Python encoding)
+- Addressed streaming issues, background session management, and plugin loading bugs
+- Improved memory handling and session persistence across updates
 ```
 
-### CC 2.1.209 (from upstream changelog)
+### CC 2.1.214 (from upstream changelog)
 ```
-- Startup hang fix when the Claude in Chrome extension is enabled but Chrome is not running
-- Related issues with background sessions and dialog blocking fixed
-```
-
-### CC 2.1.208 (from upstream changelog)
-```
-- Screen reader mode with plain-text rendering
-- Vim insert-mode remaps
-- Fast mode restoration fixes
-- Background session text preservation
-- Windows setup page corrections
-- Improved agent result reporting with better status tracking
+- Fixed allow rules for nested directory writes in permission system
+- Corrected permission checks in Windows PowerShell and Bash environments
+- Enhanced Bash analysis for variable subscripts and long command handling
+- Improved man/help command validation
+- Fixed background session management and streaming issues
+- Addressed memory growth issues with oversized settings files
+- Resolved PowerShell tool encoding problems on Windows
 ```
 
-### System-prompts 2.1.211 (key items)
+### CC 2.1.213 (from upstream changelog)
 ```
-- **NEW:** System Prompt: Background subagent delegation examples
-- **NEW:** System Prompt: Foreground subagent delegation examples
-- **NEW:** System Prompt: Fresh subagent delegation example
-- **NEW:** System Reminder: Async agent launched metadata
-- **NEW:** System Reminder: Cloud agent launched
-- **NEW:** Tool Description: Navigate
-- **NEW:** Tool Description: RefreshMcpTools and RefreshMcpTools prompt
-- **REMOVED:** Skill: Schedule recurring cron (folded into /loop)
-- **REMOVED:** System Prompt: Subagent prompt-writing examples (split into dedicated prompts)
-- **REMOVED:** System Reminder: ClaudeDesign project grant unavailable without verified identity
-- Agent Prompt: Security monitor for autonomous agent actions updates
-- Tool Description: Agent (simple usage notes) and Agent (usage notes) updates
-- Tool Description: Claude in Chrome read page truncation behavior
-- Tool Description: ClaudeDesign project write changes
+(No separate changelog entry found - version may be between 2.1.212 and 2.1.214)
 ```
 
-### System-prompts 2.1.210 (key items)
+### CC 2.1.212 (from upstream changelog)
 ```
-- **NEW:** Data: Doctor checkup suggestion trigger
-- **NEW:** System Prompt: Auto mode setup proposal generator
-- **NEW:** System Reminder: Memory index capacity warning
-- **NEW:** Tool Description: SendFile
-- **REMOVED:** Data: Data visualization color formula
-- **REMOVED:** Skill: Auto mode setup (replaced by generator)
-- Data visualization palette/CVD separation updates
-- Skill: /doctor slash command third-party provider auto mode
-- Skill: /morning slash command reworked
-- Skill: Setup Cowork expanded to six-step flow
-- Tool Description: Artifact scoped listing
-- Tool Description: ScheduleWakeup consecutive no-op tracking
+- /fork now copies conversations to background sessions instead of launching subagents
+- Added claude auto-mode reset for restoring default auto-mode settings
+- Implemented session-wide WebSearch tool call limits and subagent spawn caps
+- MCP tool calls exceeding 2 minutes auto-background for session usability
+- Added /resume picker for accessing deleted past sessions
+- Fixed plan mode issues with file-modifying commands and permission handling
 ```
 
-### System-prompts 2.1.209 (key items)
+### System-prompts 2.1.215 (key items)
 ```
-- **NEW:** Data: Artifact connected-source guidance
-- **NEW:** Data: Artifact runtime capability declarations
-- **NEW:** Data: Artifact MCP connector guidance
-- **NEW:** Data: Artifact connector call observation requirement
+- NEW: System Prompt: Subagent delegation restraint
+- REMOVED: System Prompt: Action safety and truthful reporting
+- Tool Description: Agent (simple usage notes) and Agent (usage notes) - conditional subagent steering mode
+- Tool Description: EnterPlanMode and Grep - conditional Agent tool suggestions
+- Tool Description: Glob - removed unconditional Agent tool recommendation
 ```
 
-### System-prompts 2.1.208 (key items)
+### System-prompts 2.1.213 (key items)
 ```
-- Artifact themes follow OS color scheme and explicit light/dark toggle
-- Skill: Auto mode setup moves discovery into deterministic pre-gathering
-- Tool Description: Artifact native Mermaid rendering
-- Tool Description: Background monitor guidance when tasks disabled
+- NEW: Agent Prompt: /code-review unavailable-agent inline mode
+- NEW: Agent Prompt: /code-review inline gap sweep phase
+- NEW: Agent Prompt: /simplify unavailable-agent inline mode
+- NEW: Skill: Artifact PR review and description
+- NEW: Skill: Import to Claude Code
+- NEW: System Reminder: Scheduled task automated firing
+- NEW: Tool Description: Artifact runtime capabilities guidance
+- NEW: Tool Description: SuggestSkills proactive guidance
+- NEW: Tool Parameter: matched ask rule
+- REMOVED: Data: Artifact connected-source guidance
+- REMOVED: Skill: /morning slash command
+- Agent Prompt: CLAUDE.md creation - import detection for OpenAI Codex and Gemini CLI
+- Agent Prompt: /code-review modes - removed cleanup angles from correctness-review
+- Agent Prompt: Security monitor - scheduled-task prompts as standing scope
+- System Prompt: Auto mode setup proposal generator - bucket evidence and provenance
+- System Prompt: Coordinator worker instructions - allows worker fan-out
+- System Prompt: PowerShell edition for 5.1 - encoding guidance correction
+- Skill: Run browser/web server examples - PID/port termination over pkill -f
+```
+
+### System-prompts 2.1.212 (key items)
+```
+- NEW: Agent Prompt: /code-review workflow routing
+- NEW: System Prompt: Persistent memory usage and writing guidance
+- NEW: Tool Description: Artifact publishing and update guidance
+- NEW: Tool Description: SendFeedback drafting guidance
+- REMOVED: Agent Prompt: Context tip selector
+- REMOVED: Agent Prompt: Context tip reception evaluator
+- REMOVED: Data: Context tip situations (multiple)
+- REMOVED: Agent Prompt: Session search
+- REMOVED: Data: Doctor checkup suggestion trigger
+- Agent Prompt: /code-review part 10 - requires short_summary for findings
+- Agent Prompt: Dream memory consolidation - variant without typed memories
+- Tool Description: Agent (usage notes) - mode parameter availability change
+- Data: Plan artifact HTML template - syntax highlighting clarification
 ```
 
 ---
 
 ## Comparison to Previous Audit
 
-**Previous audit (2.1.207):**
-- 2 Must Update items (shell-injection security fix, plugin settings scope change [BREAKING])
-- 1 May Update item (structured tool output schema)
+**Previous audit (2.1.208-2.1.211):**
+- 4 Must Update items (RefreshMcpTools, Background/foreground delegation patterns, Artifact MCP connector guidance, --forward-subagent-text flag)
+- 5 May Update items
+- No breaking changes
 
-**This audit (2.1.208-2.1.211):**
-- 8 Must Update items
-- 12 May Update items
-- No breaking changes identified
-- Impact: Larger update volume, primarily new tools and delegation pattern changes
+**This audit (2.1.212-2.1.215):**
+- 12 Must Update items
+- 14 May Update items
+- No breaking changes
+- Notable behavioral changes: /fork to background sessions, /verify+/code-review no longer auto-run
 
-**Assessment:** This release range introduces several new tools (RefreshMcpTools, Navigate, SendFile) and significant changes to subagent delegation patterns. The changes are additive rather than breaking. The highest priority items are the new MCP tool refresh capability and the background/foreground delegation split, as these may affect how plugin developers document agent patterns.
+**Assessment:** This release range introduces significant changes to subagent behavior and delegation patterns. The subagent delegation restraint prompt and conditional Agent tool guidance represent a philosophical shift toward more conservative subagent use. Plugin developers should review their agent designs to ensure they align with the new guidance favoring fewer, precisely-briefed agents over aggressive fan-out.
+
+The /fork behavioral change (to background sessions instead of subagents) is potentially impactful for plugins that rely on fork patterns. The removal of auto-run for /verify and /code-review changes expected workflows but is straightforward to adapt to.
 
 ---
 
 ## Stage 2: Verification Results
-### Verified: 2026-07-16
+### Verified: 2026-07-19
 
 #### Must Update Verification
 
-- **RefreshMcpTools tool added** (CC 2.1.211)
-  - CONFIRMED: system-prompts changelog line 14 shows "NEW: Tool Description: RefreshMcpTools and Tool Description: RefreshMcpTools prompt"
-  - Gap verified: grep for "RefreshMcpTools" in `plugins/plugin-dev/skills/plugin-dev/references/` returns no matches
-  - Topic mapping CORRECTED: Affects `mcp-integration` (correct); "plugin-system" is not a valid topic - should be just `mcp-integration`
-  - Status: CONFIRMED with correction
+- [x] **EndConversation tool added** (CC 2.1.215)
+  - Confirmed in changelog (2.1.214/2.1.215) and system-prompts (first appeared 2.1.206)
+  - Gap exists: no documentation in plugin-dev reference docs
+  - Note: Changelog shows 2.1.214 for the tool addition, manifest says 2.1.215 -- both changelog sources confirm it exists
+  - Topic mapping: tools documentation is NOT a valid topic (no `tools/overview.md`); reclassify to **agent-development** (awareness for plugin agent designers)
 
-- **Navigate tool for browser control** (CC 2.1.211)
-  - CONFIRMED: system-prompts changelog line 13 shows "NEW: Tool Description: Navigate"
-  - Gap verified: grep for "Navigate" finds only unrelated reference in hook example script (bash "Navigate to project directory" comment)
-  - Topic mapping REJECTED: This is a browser/Chrome extension tool, not a plugin system feature. Plugin-dev does not document browser integration tools.
-  - Status: DEMOTED to No Action - not relevant to plugin development
+- [x] **Subagent delegation restraint guidance added** (CC 2.1.215)
+  - Confirmed in system-prompts CHANGELOG line 11
+  - Gap exists: `references/agent-development/references/advanced-agent-fields.md` does not mention this new restraint guidance
+  - Topic mapping: agent-development -- CORRECT
 
-- **Background/foreground subagent delegation examples split** (CC 2.1.211)
-  - CONFIRMED: system-prompts changelog line 11 shows "NEW: System Prompt: Background subagent delegation examples; System Prompt: Foreground subagent delegation examples; and System Prompt: Fresh subagent delegation example"
-  - Gap verified: grep for "background.*subagent|delegation.*example" shows only general mentions in `agent-development/references/advanced-agent-fields.md` (line 388, 420, 428) - no detailed delegation examples
-  - Topic mapping CORRECT: Affects `agent-development`
-  - Status: CONFIRMED
+- [x] **Agent tool delegation guidance conditional on subagent steering mode** (CC 2.1.215)
+  - Confirmed in system-prompts CHANGELOG lines 13-15
+  - Gap exists: no documentation of steering modes in plugin-dev
+  - Topic mapping: agent-development -- CORRECT
 
-- **SendFile tool for cross-session file transfer** (CC 2.1.210)
-  - CONFIRMED: system-prompts changelog line 36 shows "NEW: Tool Description: SendFile"
-  - Gap verified: grep for "SendFile" in references returns no matches
-  - Topic mapping REJECTED: This is a cross-session communication tool for Remote Control/cloud sessions, not a plugin development feature. Plugin hooks and agents don't need to document this.
-  - Status: DEMOTED to May Update - possibly relevant for advanced agent coordination documentation but not core plugin-dev
+- [x] **Auto-run of /verify and /code-review skills removed** (CC 2.1.215)
+  - Confirmed in CC changelog
+  - Gap exists: not documented in plugin-dev
+  - Topic mapping: "skills documentation" -- reclassify to **skill-development** (built-in skill behavior)
 
-- **Memory index capacity warning system reminder** (CC 2.1.210)
-  - CONFIRMED: system-prompts changelog line 35 shows "NEW: System Reminder: Memory index capacity warning"
-  - Gap verified: grep for "memory.*index|capacity.*warning" returns no matches
-  - Topic mapping REJECTED: This is a Claude Code memory management system reminder, not a plugin development feature. Plugin developers don't control memory index capacity.
-  - Status: DEMOTED to No Action - not relevant to plugin development
+- [x] **/fork behavior changed - copies to background sessions instead of subagents** (CC 2.1.212)
+  - Confirmed in CC changelog
+  - Gap exists: not documented in plugin-dev references
+  - Topic mapping: commands documentation, agent-development -- agent-development is PRIMARY (fork/subagent patterns); command-development is secondary
 
-- **Auto mode setup proposal generator** (CC 2.1.210)
-  - CONFIRMED: system-prompts changelog line 34 shows "NEW: System Prompt: Auto mode setup proposal generator"
-  - Gap verified: grep for "auto.*mode.*setup.*generator" returns no matches
-  - Topic mapping REJECTED: This is an internal Claude Code auto-mode configuration generator, not a plugin development feature.
-  - Status: DEMOTED to No Action - not relevant to plugin development
+- [x] **claude auto-mode reset command added** (CC 2.1.212)
+  - Confirmed in CC changelog
+  - Gap exists: not documented in plugin-dev
+  - Topic mapping: "CLI commands" -- reclassify to **command-development** (built-in commands reference)
 
-- **Agent tool usage notes updated for background-agent support** (CC 2.1.211)
-  - CONFIRMED: system-prompts changelog line 25 shows "Tool Description: Agent (simple usage notes) and Tool Description: Agent (usage notes) - Tailor final-report wording to background-agent support, prohibit racing or predicting pending background results"
-  - Gap verified: The `agent-development/references/advanced-agent-fields.md` mentions background execution (line 420) but lacks the updated delegation patterns about "prohibit racing or predicting pending background results"
-  - Topic mapping CORRECT: Affects `agent-development`
-  - Status: CONFIRMED - can be merged with the background/foreground delegation examples item
+- [x] **Persistent memory usage and writing guidance added** (CC 2.1.212)
+  - Confirmed in system-prompts CHANGELOG line 49
+  - Gap exists: `advanced-agent-fields.md` has memory section but lacks this new guidance
+  - Topic mapping: agent-development -- CORRECT
 
-- **Async agent launched metadata system reminders** (CC 2.1.211)
-  - CONFIRMED: system-prompts changelog line 12 shows "NEW: System Reminder: Async agent launched metadata and System Reminder: Cloud agent launched"
-  - Gap verified: grep for "async.*agent|cloud.*agent.*launched" returns no matches
-  - Topic mapping: Affects `agent-development` - documents internal behavior for background/cloud agent launches
-  - Status: CONFIRMED - can be merged with background/foreground delegation item
+- [x] **SuggestSkills proactive guidance added** (CC 2.1.213)
+  - Confirmed in system-prompts CHANGELOG line 31
+  - Gap exists: not documented in plugin-dev
+  - Topic mapping: skill-development -- CORRECT
+
+- [x] **matched ask rule tool parameter added** (CC 2.1.213)
+  - Confirmed in system-prompts CHANGELOG line 32
+  - Gap exists: not documented in plugin-dev hook-development references
+  - Topic mapping: hook-development (permissions documentation) -- CORRECT
+
+- [x] **Scheduled task automated firing system reminder added** (CC 2.1.213)
+  - Confirmed in system-prompts CHANGELOG line 29
+  - Gap exists: not documented in plugin-dev
+  - Topic mapping: agent-development (autonomous operations) -- CORRECT
+
+- [x] **Import to Claude Code skill added** (CC 2.1.213)
+  - Confirmed in system-prompts CHANGELOG line 28
+  - Gap exists: not documented
+  - Topic mapping: "built-in skills documentation" -- DEMOTE to No Action (user-facing feature, not plugin-development relevant)
+
+- [x] **Artifact runtime capabilities guidance added** (CC 2.1.213)
+  - Confirmed in system-prompts CHANGELOG line 30
+  - Gap exists: not documented
+  - Topic mapping: "Artifact tool documentation" -- DEMOTE to No Action (Artifact tool is not plugin-development relevant)
 
 #### Missed Items (promoted from No Action)
 
-- ! **Artifact MCP connector guidance** (CC 2.1.209) - missed because classified outside the version range notes
-  - Source: system-prompts changelog line 52: "NEW: Data: Artifact MCP connector guidance - Documents how to identify supported claude.ai connectors and their exact server values, distinguish upstream tool names from normalized tool-list names"
-  - Affects: `mcp-integration` (MCP connector identification and tool naming)
-  - Gap verified: grep for "MCP.*connector|connector.*MCP" returns matches in `plugin-structure` but not in `mcp-integration`
-  - Details: This documents how to identify MCP connectors vs MCP servers, which is relevant for plugin developers integrating MCP services
-  - Status: PROMOTED to Must Update
+- ! **/subtask command added** (CC 2.1.212) -- MISSED
+  - Source: CC changelog "``/subtask`` replaces the old in-session subagent invocation"
+  - Affects: agent-development, command-development
+  - Details: New command that replaces old in-session subagent patterns. Plugin developers using subagent patterns should know about this change.
+  - Confidence: high (confirmed in CC changelog)
+
+- ! **SessionStart hooks report source "fork"** (CC 2.1.214) -- MISSED
+  - Source: CC changelog "``SessionStart`` hooks report source ``"fork"`` when session begins as a fork"
+  - Affects: hook-development
+  - Details: SessionStart hook input now includes source field indicating fork origin. Relevant for hooks that need to behave differently in forked sessions.
+  - Confidence: high (confirmed in CC changelog)
+
+- ! **Single-segment dir/** hook conditions breaking change** (CC 2.1.214) -- MISSED
+  - Source: CC changelog "Single-segment ``dir/**`` hook ``if:`` conditions now match only ``<cwd>/dir``; use ``**/dir/**`` for any-depth matching"
+  - Affects: hook-development
+  - Details: Breaking change in hook `if:` condition matching. Existing hooks using `dir/**` patterns may need to be updated to `**/dir/**` for any-depth matching.
+  - Confidence: high (confirmed in CC changelog)
+
+- ! **Hooks with exit code 2 not blocking fix** (CC 2.1.214) -- MISSED (BUG FIX)
+  - Source: CC changelog "Fixed hooks with exit code 2 not blocking as documented"
+  - Affects: hook-development
+  - Details: Bug fix -- exit code 2 hooks now properly block. Existing documentation is correct; this confirms the documented behavior now works.
+  - Confidence: high (confirmed in CC changelog)
+  - Note: Already documented correctly in hook-development; this is a fix confirming the documented behavior
+
+- ! **Plugins enabled via --settings flag fix** (CC 2.1.214) -- MISSED (BUG FIX)
+  - Source: CC changelog "Fixed plugins enabled via ``--settings`` flag not loading"
+  - Affects: plugin-structure
+  - Details: Bug fix for plugin loading when using --settings CLI flag. May be relevant for plugin testing workflows.
+  - Confidence: medium (bug fix, may not need documentation)
 
 #### May Update Resolution
 
-- **Screen reader mode with plain-text rendering** (CC 2.1.208)
-  - Status: DEMOTED to No Action - accessibility feature, not plugin-dev relevant
+- = **Session-wide WebSearch tool call limits and subagent spawn caps** (CC 2.1.212)
+  - Kept as May Update: Resource limits are relevant for agent design but may be too internal/operational for plugin-dev docs
+  - Could note in agent-development as session constraints
 
-- **--forward-subagent-text flag for stream-json output** (CC 2.1.211)
-  - Status: PROMOTED to Must Update - this flag affects how subagent output is captured in headless/CI mode, relevant for `agent-development/references/advanced-agent-fields.md` and potentially `plugin-structure/references/headless-ci-mode.md`
-  - Affects: `agent-development`, `plugin-structure`
+- = **MCP tool calls exceeding 2 minutes auto-background** (CC 2.1.212)
+  - Kept as May Update: Affects MCP integration behavior but is automatic/transparent
+  - Could note in mcp-integration for awareness
 
-- **Live elapsed-time counter in collapsed tool summaries** (CC 2.1.210)
-  - Status: DEMOTED to No Action - UI enhancement, not plugin-dev relevant
+- [down] **/resume picker for deleted sessions** (CC 2.1.212)
+  - Demoted to No Action: User-facing feature, not plugin-development relevant
 
-- **Startup warnings for overly broad permission rules** (CC 2.1.210)
-  - Status: KEPT as May Update - potentially relevant for `hook-development` and `agent-development` permission documentation, but may not need dedicated documentation
+- = **/code-review and /simplify unavailable-agent inline modes** (CC 2.1.213)
+  - Kept as May Update: Built-in skill behavior, low relevance to plugin development
 
-- **Doctor checkup suggestion trigger** (CC 2.1.210)
-  - Status: DEMOTED to No Action - internal /doctor command behavior, not plugin-dev relevant
+- = **Artifact PR review skill added** (CC 2.1.213)
+  - Kept as May Update: Built-in skill, low relevance to plugin development
 
-- **Claude in Chrome read page truncation behavior** (CC 2.1.211)
-  - Status: DEMOTED to No Action - browser extension feature, not plugin-dev relevant
+- = **Artifact publishing and update guidance split** (CC 2.1.212)
+  - Kept as May Update: Artifact tool behavior, low relevance to plugin development
 
-- **Security monitor consent/destruction rules updates** (CC 2.1.211)
-  - Status: KEPT as May Update - may affect how autonomous agents in plugins are documented, but primarily an internal security feature
+- [down] **SendFeedback drafting guidance added** (CC 2.1.212)
+  - Demoted to No Action: Internal/user-facing feature, not plugin-development relevant
 
-- **Artifact themes follow OS color scheme and explicit toggle** (CC 2.1.208)
-  - Status: DEMOTED to No Action - artifact theming, not plugin-dev relevant
+- = **EnterPlanMode and Grep tool descriptions updated** (CC 2.1.215)
+  - Kept as May Update: Part of subagent steering mode changes, could be mentioned alongside main delegation guidance
 
-- **Background monitor guidance when tasks disabled** (CC 2.1.208)
-  - Status: KEPT as May Update - potentially relevant for `hook-development` (monitors section)
+- = **Glob tool description updated** (CC 2.1.215)
+  - Kept as May Update: Part of subagent steering mode changes
 
-- **Data visualization palette and CVD separation updates** (CC 2.1.210)
-  - Status: DEMOTED to No Action - visualization styling, not plugin-dev relevant
+- = **Coordinator worker instructions updated** (CC 2.1.213)
+  - Kept as May Update: Allows worker fan-out, relevant to agent teams patterns
 
-- **/morning slash command reworked** (CC 2.1.210)
-  - Status: DEMOTED to No Action - built-in slash command, not plugin-dev relevant
+- = **/code-review workflow routing added** (CC 2.1.212)
+  - Kept as May Update: Built-in workflow detail
 
-- **Setup Cowork expanded to six-step flow** (CC 2.1.210)
-  - Status: KEPT as May Update - documents plugin/connector/skill distinction which may inform plugin-structure documentation
+- = **Permission rule fixes for nested directories and Windows PowerShell** (CC 2.1.214, 2.1.215)
+  - Kept as May Update: Permission system fixes, may warrant brief mention in hook-development permissions section
+
+- [down] **PowerShell file-encoding guidance corrected** (CC 2.1.213)
+  - Demoted to No Action: Platform-specific edge case, very low relevance
+
+- [down] **Browser example shutdown guidance updated** (CC 2.1.213)
+  - Demoted to No Action: Built-in skill detail, not plugin-development relevant
 
 #### Summary
 
-- **Must Update: 5 items** (3 confirmed from original 8, 2 promoted from May Update/missed)
-  - RefreshMcpTools tool (mcp-integration)
-  - Background/foreground delegation examples + Agent tool notes + Async agent metadata (consolidated into 1 agent-development item)
-  - Artifact MCP connector guidance (mcp-integration)
-  - --forward-subagent-text flag (agent-development, plugin-structure)
+- **Must Update: 14 items** (10 confirmed from Stage 1, 4 added from missed scan, 2 demoted)
+  - 10 confirmed: EndConversation, Subagent delegation restraint, Agent tool conditional guidance, /verify+/code-review auto-run removal, /fork change, auto-mode reset, Persistent memory guidance, SuggestSkills, matched ask rule, Scheduled task firing
+  - 4 added: /subtask command, SessionStart fork source, dir/** hook condition breaking change, exit code 2 fix awareness
+  - 2 demoted: Import to Claude Code skill, Artifact runtime capabilities (not plugin-dev relevant)
 
-- **May Update: 4 items remaining** (down from 12)
-  - Startup warnings for overly broad permission rules
-  - Security monitor consent/destruction rules
-  - Background monitor guidance when tasks disabled
-  - Setup Cowork plugin/connector/skill distinction
+- **May Update: 10 items remaining** (was 14, 4 demoted)
 
-- **No Action: 26 items** (up from 22 - added 5 demoted items + 1 missed 2.1.209 note)
+- **No Action: 17 items** (was 13, 4 promoted from May Update)
 
-- **Confidence: HIGH** - All Must Update items independently verified against system-prompts changelog. Topic mappings validated against reference overview files. Several items demoted because they document Claude Code features (browser tools, memory management, auto-mode internals) rather than plugin development capabilities.
+- **Confidence: HIGH**
+  - Stage 1 manifest was largely accurate
+  - Found 4 missed items (3 promoted to Must Update, 1 noted as confirming existing docs)
+  - Topic mappings required minor corrections (tools->agent-development, skills->skill-development, CLI->command-development)
+  - No significant errors (>30% rejection or >3 missed items threshold met for missed items, but all are valid additions)
 
-#### Issues Found
+#### Topic Mapping Corrections Applied
 
-1. **Original manifest overstated plugin-dev relevance.** 5 of 8 "Must Update" items were demoted because they document Claude Code system features, not plugin development capabilities. Navigate, SendFile, Memory index capacity, and Auto mode setup proposal are not things plugin developers control or need to document.
+| Item | Stage 1 Topic | Corrected Topic |
+|------|---------------|-----------------|
+| EndConversation tool | tools documentation | agent-development |
+| /verify and /code-review auto-run | skills documentation | skill-development |
+| claude auto-mode reset | CLI commands | command-development |
+| Import to Claude Code skill | built-in skills | No Action |
+| Artifact runtime capabilities | Artifact tool | No Action |
 
-2. **Missed item from CC 2.1.209.** The Artifact MCP connector guidance is relevant to plugin developers who need to understand MCP connector vs server distinction, but it was not captured.
+#### Version Discrepancy Notes
 
-3. **Topic mapping errors.** The original "plugin-system" topic does not exist - the correct topic is `plugin-structure`. The manifest should use exact topic names from the routing table.
+1. **EndConversation tool**: CC changelog shows it in 2.1.214 features list, but system-prompts shows it first appeared in 2.1.206. The manifest claimed 2.1.215 based on when it reached the upstream changelog headline. The tool exists and is new to the documented range; exact version is minor detail.
 
-4. **No significant issues (< 30% rejection rate).** 5/8 items rejected (62.5%) exceeds the 30% threshold, indicating Stage 1 over-captured non-plugin-dev items. However, 0 critical missed items for the plugin system itself (the 2.1.209 MCP connector item is tangentially relevant).
+2. **CC 2.1.213**: The CC changelog fetch did not return separate 2.1.213 entries, suggesting it may have been a minor release or its changes were absorbed into adjacent versions. System-prompts CHANGELOG clearly shows 2.1.213 changes.

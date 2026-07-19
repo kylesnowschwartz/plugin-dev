@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.211 (2026-07-16)
-Plugin-dev version: 0.32.0
+Last audited: Claude Code 2.1.215 (2026-07-19)
+Plugin-dev version: 0.33.0
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.33.0 | 2.1.212-2.1.215 | 2026-07-19 | EndConversation tool (CC 2.1.215), subagent delegation restraint (CC 2.1.215), Agent tool delegation conditional on steering mode (CC 2.1.215), auto-run of /verify and /code-review removed (CC 2.1.215), /fork to background sessions (CC 2.1.212), /subtask command (CC 2.1.212), `claude auto-mode reset` command (CC 2.1.212), persistent memory guidance (CC 2.1.212), SuggestSkills proactive guidance (CC 2.1.213), `matched_ask_rule` PermissionRequest field (CC 2.1.213), scheduled task automated firing guidance (CC 2.1.213), SessionStart source "fork" (CC 2.1.214), **Breaking:** single-segment `dir/**` hook conditions (CC 2.1.214) |
 | v0.32.0 | 2.1.208-2.1.211 | 2026-07-16 | RefreshMcpTools for on-demand MCP tool resync (CC 2.1.211), background/foreground delegation pattern split with async agent metadata (CC 2.1.211), MCP connectors vs servers distinction (CC 2.1.209), `--forward-subagent-text` flag for stream-json output (CC 2.1.211) |
 | v0.29.0 | 2.1.207 | 2026-07-13 | **Breaking:** pluginConfigs no longer read from project settings (CC 2.1.207), shell-injection fix rejects `${user_config.*}` in shell-form hook commands (CC 2.1.207) |
 | v0.28.0 | 2.1.202-2.1.206 | 2026-07-10 | BackgroundTasksChanged hook event schema (CC 2.1.203), MCP servers failed to connect system reminder (CC 2.1.205), /doctor CLAUDE.md trimming check (CC 2.1.206) |
