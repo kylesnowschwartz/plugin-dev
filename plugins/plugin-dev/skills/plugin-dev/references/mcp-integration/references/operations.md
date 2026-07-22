@@ -173,6 +173,30 @@ Handle failed MCP operations:
 - Provide clear error messages
 - Check rate limiting and quotas
 
+### REPL Tool MCP Error Handling (CC 2.1.217)
+
+**Breaking change:** MCP tool calls from the REPL tool now **throw errors on failure** instead of returning error results in the normal return value.
+
+**Previous behavior:** MCP tool failures returned an error object that could be inspected programmatically.
+
+**New behavior:** MCP tool failures throw exceptions that must be caught.
+
+**Impact for plugin authors:**
+
+- REPL workflows calling MCP tools need error handling updates
+- Use try/catch patterns for MCP tool invocations
+- Built-in tools continue to return error results (not throw)
+
+### MCP Auto-Backgrounding (CC 2.1.212)
+
+MCP tool calls that exceed **2 minutes** are automatically backgrounded. The call continues running, but the main conversation can proceed.
+
+**Implications:**
+
+- Long-running MCP operations don't block the conversation
+- Results are delivered asynchronously when ready
+- Design MCP tools to handle this auto-backgrounding gracefully
+
 ### Configuration Errors
 
 Validate MCP configuration:

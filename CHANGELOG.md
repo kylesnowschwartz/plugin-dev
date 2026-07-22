@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.33.0] - 2026-07-22
+
+### Changed
+
+- **Breaking: Nested subagent spawning disabled by default** — Subagents no longer spawn nested subagents by default (CC 2.1.217). Set `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` to re-enable. Existing agents relying on nested spawning must update.
+- **Breaking: Skill tool removed from main conversation** — The main-conversation Skill tool instructions removed (CC 2.1.216). Skills still work via `/skill-name` invocation and agent frontmatter `skills` field.
+- **Breaking: `/verify` and `/code-review` no longer auto-execute** — These built-in skills now require explicit invocation (CC 2.1.215). Workflows relying on auto-verification must update.
+- **Breaking: REPL MCP tool calls throw on failure** — MCP tool calls from REPL tool now throw errors instead of returning error results (CC 2.1.217). Update REPL workflows with try/catch patterns.
+
+### Added
+
+- **agent-development**: Documented concurrent subagent cap default 20, controllable via `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS` (CC 2.1.217)
+- **agent-development**: Documented per-session subagent spawn limit of 200 and WebSearch limit of 200/session (CC 2.1.212)
+- **agent-development**: Documented coordinator worker fan-out — workers can now use Agent tool for bounded parallel work (CC 2.1.217)
+- **agent-development**: Documented `/fork` command for copying conversations to background sessions (CC 2.1.212)
+- **agent-development**: Documented `/subtask` command replacing in-session subagent functionality (CC 2.1.212)
+- **agent-development**: Documented subagent delegation restraint guidance — when to use vs avoid subagents (CC 2.1.215)
+- **agent-development**: Documented Agent tool conditional steering based on subagent steering mode (CC 2.1.215)
+- **skill-development**: Documented SuggestSkills proactive guidance for repeatable workflows (CC 2.1.213)
+- **skill-development**: Documented frontmatter brace expansion budget to prevent OOM errors (CC 2.1.217)
+- **hook-development**: Documented SessionStart `source: "fork"` for forked sessions (CC 2.1.212)
+- **hook-development**: Documented single-segment `dir/` patterns in `if:` conditions now match `dir/**` (CC 2.1.212) — breaking change if relying on narrow interpretation
+- **mcp-integration**: Documented MCP auto-backgrounding for calls exceeding 2 minutes (CC 2.1.212)
+- **plugin-structure**: Documented `sandbox.filesystem` setting for filesystem isolation control (CC 2.1.216)
+
 ## [0.32.0] - 2026-07-16
 
 ### Added
@@ -715,7 +740,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.32.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.33.0...HEAD
+[0.33.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.32.0...v0.33.0
 [0.32.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.31.0...v0.32.0
 [0.31.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.30.1...v0.31.0
 [0.30.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.30.0...v0.30.1

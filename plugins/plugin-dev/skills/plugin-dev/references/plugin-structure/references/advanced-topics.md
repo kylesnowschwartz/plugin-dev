@@ -557,6 +557,37 @@ The `sandbox.credentials` setting controls Claude Code's access to credentials w
 - Managed settings can enforce credential restrictions across an organization
 - Stricter settings may break plugins that require credential access
 
+### Sandbox Filesystem Setting (CC 2.1.216)
+
+The `sandbox.filesystem` setting controls filesystem isolation in sandboxed contexts:
+
+```json
+{
+  "sandbox": {
+    "filesystem": "isolated"
+  }
+}
+```
+
+**Values:**
+
+- `"isolated"` — Full filesystem isolation (strictest)
+- `"project"` — Access limited to project directory
+- `"home"` — Access to user's home directory
+- `"full"` — No filesystem restrictions
+
+**Use cases:**
+
+- Enterprise environments requiring strict file access controls
+- Plugins that need to operate with minimal filesystem permissions
+- Testing plugin behavior under restricted conditions
+
+**Plugin author guidance:**
+
+- Document any filesystem access requirements in your plugin README
+- Test plugins with `"isolated"` and `"project"` to ensure graceful degradation
+- Avoid hardcoded paths outside the project directory when possible
+
 ## Cowork Plugin Format (CC 2.1.163)
 
 Claude Code includes comprehensive Cowork plugin component format references for authoring plugins that integrate with the Cowork collaboration system.

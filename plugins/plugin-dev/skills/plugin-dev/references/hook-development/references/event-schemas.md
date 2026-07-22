@@ -69,7 +69,7 @@ All fields are optional. Omitted fields use defaults.
 
 ### SessionStart
 
-**When:** New session, resume (`--resume`/`--continue`/`/resume`), `/clear`, or after compaction.
+**When:** New session, resume (`--resume`/`--continue`/`/resume`), `/clear`, `/fork`, or after compaction.
 
 **Input:**
 
@@ -79,13 +79,15 @@ All fields are optional. Omitted fields use defaults.
   "transcript_path": "string",
   "cwd": "string",
   "hook_event_name": "SessionStart",
-  "source": "startup|resume|clear|compact",
+  "source": "startup|resume|clear|compact|fork",
   "model": "string (model ID)",
   "agent_type": "string (optional, present with --agent)"
 }
 ```
 
 Note: `permission_mode` is not present on SessionStart.
+
+> **CC 2.1.212:** SessionStart hooks now report `source: "fork"` for sessions created via the `/fork` command, distinguishing forked sessions from resumed sessions. Previously, forked sessions reported `source: "resume"`.
 
 **Output:**
 
@@ -109,7 +111,7 @@ Note: `permission_mode` is not present on SessionStart.
 
 **Special behavior:** The `CLAUDE_ENV_FILE` environment variable points to a file where you can write `export VAR=value` lines. These persist as environment variables for subsequent Bash tool calls in the session.
 
-**Matchers:** `startup`, `resume`, `clear`, `compact`
+**Matchers:** `startup`, `resume`, `clear`, `compact`, `fork` (CC 2.1.212)
 **Hook types:** Command only
 
 ---

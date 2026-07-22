@@ -12,6 +12,73 @@ Claude Code includes a built-in "Invoke skill" tool that loads packaged skills b
 
 This tool is how Claude programmatically loads skills — plugin developers don't need to call it directly, but understanding its behavior helps when designing skills that may be invoked automatically vs. manually.
 
+## Skill Tool Removal from Main Conversation (CC 2.1.216)
+
+**Important change:** As of CC 2.1.216, the main-conversation Skill tool instructions have been removed. This includes:
+
+- Mandatory matching-skill invocation
+- Slash-command mapping
+- Scoped skill selection
+- Available-skill validation
+
+**What this means for plugin developers:**
+
+- Skills are still invoked via `/skill-name` slash commands
+- The "Invoke skill" tool (CC 2.1.196) remains available for programmatic loading
+- Subagents can still use skills via the skills field in their frontmatter
+- Auto-discovery and matching based on descriptions still works
+
+**Design implications:**
+
+- Don't rely on the old Skill tool's mandatory invocation behavior
+- Use explicit `/skill-name` invocation or configure skills in agent frontmatter
+- The SuggestSkills tool (CC 2.1.213) proactively recommends skills as an alternative discovery mechanism
+
+## SuggestSkills Proactive Guidance (CC 2.1.213)
+
+A new SuggestSkills tool allows Claude to proactively recommend addable skills for repeatable workflows:
+
+**When suggestions occur:**
+
+- Repeatable workflows that would benefit from skill automation
+- Tasks matching known skill patterns
+
+**When suggestions are excluded:**
+
+- One-off tasks unlikely to recur
+- Uncertain matches (low confidence)
+- After repeated unengaged suggestions (user hasn't acted on prior suggestions)
+
+**Implications for plugin developers:**
+
+- Well-described skills with clear triggers are more likely to be suggested
+- Skills for common, repeatable workflows get better discovery
+- Design skills that address recurring patterns, not one-off tasks
+
+## /verify and /code-review Auto-Execution Removed (CC 2.1.215)
+
+**Breaking change:** The `/verify` and `/code-review` built-in skills no longer auto-execute. They now require explicit user invocation.
+
+**Impact:**
+
+- Plugins or workflows that expected automatic verification must update
+- Users must explicitly run `/verify` or `/code-review` when wanted
+- Hooks checking for these skills' execution may need adjustment
+
+**Workaround:** If you need automatic verification, implement a Stop hook that triggers verification logic.
+
+## Frontmatter Brace Expansion Budget (CC 2.1.217)
+
+Frontmatter brace expansion in SKILL.md and CLAUDE.md files is now **budget-bounded** to prevent out-of-memory conditions.
+
+**Background:** Complex brace patterns (e.g., `{a,b}{c,d}{e,f}...`) can expand exponentially. Previously, this could cause OOM errors.
+
+**Implication for plugin developers:**
+
+- Avoid deeply nested or numerous brace expansions in frontmatter
+- If you need complex pattern matching, use multiple simpler patterns
+- Test skills with complex frontmatter patterns to ensure they load
+
 ## Slash-Skill Stacking (CC 2.1.199)
 
 Users can load multiple skills simultaneously using stacked slash-skill invocations:
