@@ -143,11 +143,11 @@ For detailed templates and patterns (Analysis, Generation, Validation, Orchestra
 
 ## Validation Rules
 
-**Identifier:** 3-50 characters; lowercase letters, numbers, hyphens only; must start and end with alphanumeric; no underscores, spaces, or special characters.
+**Identifier:** 3-50 characters; lowercase letters, numbers, hyphens only; must start and end with alphanumeric; no underscores, spaces, or special characters. **CC 2.1.219:** Agent names cannot contain colons (`:`) — reserved for plugin namespacing (`plugin:subdir:agent-name`).
 
 ```text
 ✅ Valid: code-reviewer, test-gen, api-analyzer-v2
-❌ Invalid: ag (too short), -start (starts with hyphen), my_agent (underscore)
+❌ Invalid: ag (too short), -start (starts with hyphen), my_agent (underscore), my:agent (colon reserved)
 ```
 
 **Description:** 10-5,000 characters; must include triggering conditions and examples. Best: 200-1,000 characters with 2-4 examples.

@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.33.0] - 2026-07-25
+
+### Added
+
+- **hook-development**: DirectoryAdded event (29th hook event) — fires after `/add-dir` command or SDK `register_repo_root` call (CC 2.1.219)
+- **agent-development**: Subagent per-session spawn cap (200 default) with `CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION` env var override, `/clear` resets budget (CC 2.1.213)
+- **agent-development**: `Tool(param:value)` permission specifier syntax with wildcard support for fine-grained permission rules (CC 2.1.212)
+- **skill-development**: Background skill invocation behavior — returns agent name only, results delivered via task notifications (CC 2.1.218)
+- **plugin-settings**: `sandbox.filesystem.disabled` setting for skipping filesystem isolation while maintaining network control (CC 2.1.216)
+- **mcp-integration**: MCP auto-background at 2 minutes with `CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS` configuration (CC 2.1.213)
+
+### Changed
+
+- **agent-development**: Subagent nesting depth reduced from 5 to 3, configurable via `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` (CC 2.1.219)
+- **agent-development**: Task tool `mode` parameter deprecated — subagents now inherit parent session's permission mode (CC 2.1.212)
+- **skill-development**: Skills with `context: fork` now run in background by default; opt out with `background: false` (CC 2.1.219)
+- **skill-development**: Automatic skill invocation removed for `/verify` and `/code-review` — now user-invoked only (CC 2.1.215)
+- **skill-development**: Boolean frontmatter fields accept alternate values (`yes`/`no`, `on`/`off`, `1`/`0`) in addition to `true`/`false` (CC 2.1.219)
+- **agent-development**: Agent names cannot contain colons (`:`) — reserved for plugin namespacing (CC 2.1.219)
+- **agent-development**: Agent frontmatter hooks require workspace trust for the agent file's folder (CC 2.1.219)
+
 ## [0.32.0] - 2026-07-16
 
 ### Added
@@ -715,7 +736,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.32.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.33.0...HEAD
+[0.33.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.32.0...v0.33.0
 [0.32.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.31.0...v0.32.0
 [0.31.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.30.1...v0.31.0
 [0.30.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.30.0...v0.30.1

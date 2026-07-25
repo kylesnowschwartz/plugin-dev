@@ -134,6 +134,17 @@ All hook events are supported in agent frontmatter. Key behavior difference:
 
 **Main-thread agent hook firing (CC 2.1.116):** Agent frontmatter `hooks:` now fire when running as the main session agent via `--agent`. Previously, agent frontmatter hooks only fired when the agent ran as a subagent. This extends hook functionality to standalone agent sessions.
 
+**Workspace trust requirement (CC 2.1.219):** Agent frontmatter hooks now require the agent file's own folder to have accepted workspace trust. Hooks defined in agent files from untrusted folders will not execute. This affects agents loaded from:
+
+- Untrusted project directories (user must accept workspace trust first)
+- Plugin agents when the plugin's directory hasn't been trusted
+
+**Implications for plugin developers:**
+
+- Plugin-provided agents with hooks will work after users accept the plugin (which grants trust)
+- Document if your agents require hooks to function correctly
+- Consider fallback behavior if hooks may not execute due to trust restrictions
+
 ### Comparison with hooks.json
 
 | Aspect   | `hooks.json`                               | Agent frontmatter `hooks`                       |

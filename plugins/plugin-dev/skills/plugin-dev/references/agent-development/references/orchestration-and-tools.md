@@ -14,14 +14,17 @@ The Agent tool (Task tool in SDK parlance) includes simplified usage guidance th
 - **Background execution**: Use `run_in_background` parameter for concurrent agent work
 - **Parallel launches**: Send multiple Agent calls in one message for concurrent execution
 - **Context restrictions**: Background agents cannot prompt for permissions
+- **Permission inheritance (CC 2.1.212)**: Subagents inherit the parent session's permission mode. The Task tool's `mode` parameter is now deprecated; omit it and let permission flow from the parent session.
 
-## Sub-Agent Nesting (CC 2.1.172)
+## Sub-Agent Nesting (CC 2.1.172, updated CC 2.1.219)
 
 Sub-agents can now spawn their own sub-agents, enabling complex orchestration patterns. Previously, sub-agents could not spawn further sub-agents.
 
-**Nesting limit:** Sub-agents can nest up to **5 levels deep**. Attempts to spawn beyond 5 levels will fail.
+**Nesting limit:** Sub-agents can nest up to **3 levels deep** by default (changed from 5 in CC 2.1.219). Attempts to spawn beyond 3 levels will fail. Configure with `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` environment variable.
 
-**Reconciliation with worker fork guidance:** The CC 2.1.169 guidance that forked workers should not spawn subagents still applies — forked workers should execute their directive directly. The 5-level nesting capability is for orchestrator patterns where a top-level agent spawns sub-agents that themselves need to coordinate further sub-tasks.
+**Per-session spawn cap (CC 2.1.213):** Each session has a default limit of **200 subagent spawns** to prevent runaway delegation loops. Override with `CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION`. The `/clear` command resets this budget.
+
+**Reconciliation with worker fork guidance:** The CC 2.1.169 guidance that forked workers should not spawn subagents still applies — forked workers should execute their directive directly. The 3-level nesting capability is for orchestrator patterns where a top-level agent spawns sub-agents that themselves need to coordinate further sub-tasks.
 
 **Use cases:**
 
@@ -33,7 +36,7 @@ Sub-agents can now spawn their own sub-agents, enabling complex orchestration pa
 
 - Keep nesting shallow when possible (2-3 levels is typical)
 - Top-level orchestrators handle coordination; leaf agents do the work
-- Avoid recursive patterns that could hit the 5-level limit
+- Avoid recursive patterns that could hit the 3-level limit
 
 ## SendUserFile Tool (CC 2.1.142)
 

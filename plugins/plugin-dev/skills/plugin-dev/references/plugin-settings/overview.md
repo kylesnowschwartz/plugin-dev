@@ -527,6 +527,33 @@ fi
 
 Settings follow precedence: Managed > CLI flags > Local (`.claude/settings.local.json`) > Project (`.claude/settings.json`) > User (`~/.claude/settings.json`). Plugin hooks and MCP servers are merged across scopes, not replaced. A plugin-settings `.local.md` file is separate from this system -- it's a custom per-project state file your plugin reads directly.
 
+### Sandbox Filesystem Isolation (CC 2.1.216)
+
+The `sandbox.filesystem.disabled` setting skips filesystem isolation while maintaining network control:
+
+```json
+{
+  "sandbox": {
+    "filesystem": {
+      "disabled": true
+    }
+  }
+}
+```
+
+**Behavior when enabled:**
+
+- Sandboxed commands have unrestricted host-filesystem access
+- Network confinement still applies
+- Independent Bash prompting still applies
+- Environment-credential protection still applies
+
+**Plugin author implications:**
+
+- Plugins whose MCP tools or hooks need to access files outside the project directory may recommend this setting
+- Document if your plugin requires filesystem access beyond the sandbox boundaries
+- Be aware that users may have this setting enabled or disabled; design tools to work in both scenarios when possible
+
 ### Plugin Option Values Scope Restriction (CC 2.1.207)
 
 **Breaking change:** `pluginConfigs` are no longer read from project-level `.claude/settings.json`. Only these sources are honored:

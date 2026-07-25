@@ -1,6 +1,6 @@
 # Hook Event Schemas Reference
 
-Complete input and output JSON schemas for all 28 Claude Code hook events.
+Complete input and output JSON schemas for all 29 Claude Code hook events.
 
 **Last verified:** 2026-05-28 against official docs, Python SDK (`claude-agent-sdk`), and TypeScript SDK.
 
@@ -1173,14 +1173,51 @@ Observability only. No decision control.
 
 ---
 
+### DirectoryAdded (CC 2.1.219)
+
+**When:** A new directory is registered as a repository root. Fires after the `/add-dir` command or SDK `register_repo_root` call.
+
+**Input:**
+
+```json
+{
+  "session_id": "string",
+  "transcript_path": "string",
+  "cwd": "string",
+  "hook_event_name": "DirectoryAdded",
+  "directory": "string (absolute path to the added directory)"
+}
+```
+
+**Key behaviors:**
+
+- **Single directory per event:** Each DirectoryAdded event corresponds to one directory being registered.
+- **Absolute paths:** The `directory` field contains the absolute filesystem path.
+- **Post-registration:** The event fires after the directory has been successfully registered, not before.
+- **No decision control:** This is an observability event; hooks cannot prevent the directory from being added.
+
+**Output:** Observability only. No decision control. Hooks can use `env` to inject environment variables.
+
+**Use cases:**
+
+- Initialize project-specific configuration when a new directory is added
+- Trigger dependency installation or environment setup for the new directory
+- Log directory additions for audit purposes
+- Update caches or indexes when the workspace expands
+
+**Matchers:** Not supported
+**Hook types:** Command, HTTP, Prompt, Agent
+
+---
+
 ## SDK Parity Notes
 
 Not all events are typed in both SDKs. As of May 2026:
 
-**Python SDK** (`claude-agent-sdk`) types 10 of 28 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
+**Python SDK** (`claude-agent-sdk`) types 10 of 29 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
 
 **TypeScript SDK** (`@anthropic-ai/claude-agent-sdk`) is closer to parity with the CLI. Events added over time: TeammateIdle and TaskCompleted (v2.1.34), ConfigChange (v0.2.49), Elicitation and ElicitationResult (v0.2.76).
 
-**CLI** supports all 28 events.
+**CLI** supports all 29 events.
 
-Events only available in CLI (not yet in either SDK): WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88), MessageDisplay (CC 2.1.152), PostSession (CC 2.1.169), BackgroundTasksChanged (CC 2.1.203).
+Events only available in CLI (not yet in either SDK): WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88), MessageDisplay (CC 2.1.152), PostSession (CC 2.1.169), BackgroundTasksChanged (CC 2.1.203), DirectoryAdded (CC 2.1.219).

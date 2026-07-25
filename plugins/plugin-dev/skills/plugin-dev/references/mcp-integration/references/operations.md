@@ -21,6 +21,14 @@ Operating MCP servers at runtime: lifecycle, resources, tool search, limits, err
 **Viewing servers:**
 Use `/mcp` command to see all servers including plugin-provided ones.
 
+**Auto-background for long MCP calls (CC 2.1.213):** MCP tool calls running longer than 2 minutes automatically move to the background, keeping the session usable during extended operations. Configure the threshold with `CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS` or disable by setting to `0`.
+
+**Implications for plugin authors:**
+
+- Long-running MCP tools (database migrations, large exports, remote API calls) will auto-background
+- Design MCP tools to handle background execution gracefully
+- Document expected execution times for tools that may auto-background
+
 ## MCP Server Session Variables
 
 **MCP server session variables (CC 2.1.154):** MCP servers automatically receive two environment variables:

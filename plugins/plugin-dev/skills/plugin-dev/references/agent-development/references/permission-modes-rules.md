@@ -126,6 +126,33 @@ WebFetch(domain:example.com)
 | `Skill(name)`   | Exact skill name match      |
 | `Skill(name *)` | Prefix match with arguments |
 
+### Generic Tool Parameter Patterns (CC 2.1.212)
+
+For any tool, use `Tool(param:value)` syntax to match by parameter value:
+
+| Pattern                     | Matches                             |
+| --------------------------- | ----------------------------------- |
+| `Read(file_path:/etc/*)`    | Read calls with `/etc/` path prefix |
+| `Bash(command:docker *)`    | Bash calls where command starts with `docker` |
+| `Edit(file_path:*.md)`      | Edit calls on markdown files        |
+
+**Wildcard support:**
+
+- `*` matches any characters within the value
+- Works with any tool that takes string parameters
+- Combine with deny rules for fine-grained restrictions
+
+**Example:**
+
+```json
+{
+  "permissions": {
+    "allow": ["Read(file_path:src/**)"],
+    "deny": ["Edit(file_path:*.lock)"]
+  }
+}
+```
+
 ### Evaluation Order
 
 Rules are evaluated in a strict order — first match wins within each tier:

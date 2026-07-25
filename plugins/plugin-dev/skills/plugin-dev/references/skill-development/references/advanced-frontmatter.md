@@ -23,6 +23,25 @@ userInvocable: false         # camelCase
 
 **Recommendation:** Use kebab-case for consistency with official documentation, but all variants work.
 
+## Boolean Field Flexibility (CC 2.1.219)
+
+Boolean fields in skill and plugin frontmatter now accept alternate values beyond `true`/`false`:
+
+```yaml
+# All valid boolean values (case-insensitive):
+user-invocable: true      # Standard
+user-invocable: yes       # Alternate
+user-invocable: on        # Alternate
+user-invocable: 1         # Alternate
+
+user-invocable: false     # Standard
+user-invocable: no        # Alternate
+user-invocable: off       # Alternate
+user-invocable: 0         # Alternate
+```
+
+**Recommendation:** Use `true`/`false` for consistency with official documentation, but all variants work.
+
 ## allowed-tools
 
 Optionally restrict which tools Claude can use when the skill is active:
@@ -67,6 +86,17 @@ Use `context: fork` for:
 - Expensive operations you want isolated
 
 **Deferred tools (CC 2.1.126):** Skills with `context: fork` now correctly receive access to deferred tools (WebSearch, WebFetch, etc.) on their first turn. Previously, these tools were unavailable until the second turn in forked contexts.
+
+**Background by default (CC 2.1.219):** Skills with `context: fork` now run in the background by default. The forked subagent executes concurrently without blocking the main conversation. To opt out and run in foreground (blocking) mode, add `background: false` to the frontmatter:
+
+```yaml
+---
+name: analysis-skill
+description: Perform deep code analysis...
+context: fork
+background: false    # Run in foreground instead of background
+---
+```
 
 ## agent
 

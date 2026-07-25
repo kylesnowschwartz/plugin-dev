@@ -12,6 +12,31 @@ Claude Code includes a built-in "Invoke skill" tool that loads packaged skills b
 
 This tool is how Claude programmatically loads skills — plugin developers don't need to call it directly, but understanding its behavior helps when designing skills that may be invoked automatically vs. manually.
 
+### Background Skill Invocation (CC 2.1.218)
+
+When a skill runs in background mode (e.g., with `context: fork` and `background: true` or the CC 2.1.219 default):
+
+- **Initial return** — Only the agent name is returned immediately
+- **Results arrive later** — The skill's actual output is delivered through task notifications
+- **No waiting** — Do not wait for or poll background skills; they'll notify when complete
+- **No re-invocation** — Do not invoke the same skill again while it's still pending
+
+**Implications for plugin developers:**
+
+- Design background skills to complete independently without follow-up prompts
+- Ensure skill outputs are self-contained (the user won't have immediate access to results)
+- Document expected completion times for long-running background skills
+
+### Automatic Skill Invocation Removed (CC 2.1.215)
+
+**Important change:** Claude no longer automatically invokes the `/verify` and `/code-review` skills on its own. Users must explicitly invoke these commands when they want them.
+
+**Implications for plugin developers:**
+
+- Skills that previously relied on being invoked after `/verify` or `/code-review` may need adjustment
+- Consider using explicit skill chaining or documentation if your skill depends on prior verification
+- Users should be informed that these commands are now opt-in
+
 ## Slash-Skill Stacking (CC 2.1.199)
 
 Users can load multiple skills simultaneously using stacked slash-skill invocations:

@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.211 (2026-07-16)
-Plugin-dev version: 0.32.0
+Last audited: Claude Code 2.1.220 (2026-07-24)
+Plugin-dev version: 0.33.0
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.33.0 | 2.1.212-2.1.220 | 2026-07-25 | DirectoryAdded hook event (29th, CC 2.1.219), subagent nesting depth reduced to 3 with `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` env var (CC 2.1.219), 200 subagent spawn cap with `CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION` (CC 2.1.213), `context:fork` skills run in background by default (CC 2.1.219), skill/plugin frontmatter boolean value flexibility (CC 2.1.219), agent names cannot contain colons (CC 2.1.219), agent frontmatter hooks require workspace trust (CC 2.1.219), Task tool `mode` deprecated - subagents inherit parent permission (CC 2.1.212), `Tool(param:value)` permission syntax with wildcards (CC 2.1.212), MCP auto-background at 2 minutes with `CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS` (CC 2.1.213), automatic skill invocation removed for /verify and /code-review (CC 2.1.215), `sandbox.filesystem.disabled` setting (CC 2.1.216), background skill invocation returns agent name only (CC 2.1.218), 200 WebSearch call limit (CC 2.1.213) |
 | v0.32.0 | 2.1.208-2.1.211 | 2026-07-16 | RefreshMcpTools for on-demand MCP tool resync (CC 2.1.211), background/foreground delegation pattern split with async agent metadata (CC 2.1.211), MCP connectors vs servers distinction (CC 2.1.209), `--forward-subagent-text` flag for stream-json output (CC 2.1.211) |
 | v0.29.0 | 2.1.207 | 2026-07-13 | **Breaking:** pluginConfigs no longer read from project settings (CC 2.1.207), shell-injection fix rejects `${user_config.*}` in shell-form hook commands (CC 2.1.207) |
 | v0.28.0 | 2.1.202-2.1.206 | 2026-07-10 | BackgroundTasksChanged hook event schema (CC 2.1.203), MCP servers failed to connect system reminder (CC 2.1.205), /doctor CLAUDE.md trimming check (CC 2.1.206) |
