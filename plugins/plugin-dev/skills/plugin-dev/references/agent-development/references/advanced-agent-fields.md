@@ -395,6 +395,41 @@ subagent_type: "fork"  # Required to inherit context
 
 **Implications for plugin agents:** Agents spawned as subagents should focus on completing their specific task. Don't design agents that recursively spawn more agents for the same work. If an agent needs to delegate, it should be the top-level orchestrator, not a forked worker. Update any existing agent orchestration code to explicitly pass `subagent_type: "fork"` when context inheritance is needed.
 
+### /fork Redesigned (CC 2.1.212)
+
+**Breaking change:** The `/fork` command now copies conversations to **background sessions** instead of creating foreground forks. This is a significant behavioral change:
+
+- `/fork` creates a new background session with the current conversation context
+- The background session runs independently, allowing the main session to continue
+- Results are delivered asynchronously via notification
+
+**Implications for plugin agents:** If your agent documentation or workflows reference `/fork`, update them to reflect the background-session behavior. Design agents to handle forked work asynchronously rather than expecting foreground blocking behavior.
+
+### Subagent Delegation Restraint (CC 2.1.215)
+
+Claude Code now includes explicit guidance to limit subagent delegation:
+
+- **Simple tasks: do them directly** — Don't spawn subagents for tasks that can be completed in the current context
+- **Delegation costs context** — Each subagent has a separate context window and cannot share state
+- **Reserved for genuinely parallel or specialized work** — Only delegate when the work benefits from isolation or parallelism
+
+**Implications for plugin agents:** Design agents to complete work directly when possible. Reserve subagent spawning for cases where parallelism or isolation genuinely improves outcomes. Avoid patterns that spawn subagents reflexively.
+
+### Session Resource Limits (CC 2.1.212)
+
+Claude Code enforces per-session limits to prevent runaway usage:
+
+| Resource | Limit | Behavior when exceeded |
+|----------|-------|----------------------|
+| WebSearch calls | 200 per session | Additional calls blocked |
+| Subagent spawns | 200 per session | Additional spawns blocked |
+| Concurrent subagents | 20 (default) | New spawns wait (CC 2.1.217) |
+| Nested subagent depth | 3 levels (CC 2.1.219) | Deeper nesting blocked |
+
+**MCP auto-background (CC 2.1.212):** MCP tool calls that exceed 2 minutes automatically trigger background execution rather than blocking the main session.
+
+**Implications for plugin agents:** Design agents to work within these limits. Agents that spawn many subagents should track spawn counts and degrade gracefully when approaching limits. Consider batching work to reduce spawn counts.
+
 ### Cross-Session Peer Message Security (CC 2.1.166, 2.1.169)
 
 Claude Code enforces security boundaries for messages from peer sessions:

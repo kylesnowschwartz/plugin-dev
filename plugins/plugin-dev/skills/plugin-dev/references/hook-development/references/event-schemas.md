@@ -1,6 +1,6 @@
 # Hook Event Schemas Reference
 
-Complete input and output JSON schemas for all 28 Claude Code hook events.
+Complete input and output JSON schemas for all 29 Claude Code hook events.
 
 **Last verified:** 2026-05-28 against official docs, Python SDK (`claude-agent-sdk`), and TypeScript SDK.
 
@@ -69,7 +69,7 @@ All fields are optional. Omitted fields use defaults.
 
 ### SessionStart
 
-**When:** New session, resume (`--resume`/`--continue`/`/resume`), `/clear`, or after compaction.
+**When:** New session, resume (`--resume`/`--continue`/`/resume`), `/clear`, fork, or after compaction.
 
 **Input:**
 
@@ -79,13 +79,15 @@ All fields are optional. Omitted fields use defaults.
   "transcript_path": "string",
   "cwd": "string",
   "hook_event_name": "SessionStart",
-  "source": "startup|resume|clear|compact",
+  "source": "startup|resume|clear|compact|fork",
   "model": "string (model ID)",
   "agent_type": "string (optional, present with --agent)"
 }
 ```
 
 Note: `permission_mode` is not present on SessionStart.
+
+> **CC 2.1.214/2.1.218:** SessionStart hooks now report `source: "fork"` when the session begins as a fork (via `/fork` command or programmatic fork). Previously, forked sessions were reported as `"resume"`. This allows hooks to distinguish genuine session resumption from fork-initiated sessions.
 
 **Output:**
 
@@ -105,11 +107,11 @@ Note: `permission_mode` is not present on SessionStart.
 ```
 
 - `reloadSkills` (CC 2.1.152): When `true`, triggers skill directory re-scanning. Useful when a hook installs or updates skills at session start.
-- `sessionTitle` (CC 2.1.152): Sets the session title. Only applies when `source` is `"startup"` or `"resume"` — ignored on `"clear"` and `"compact"`.
+- `sessionTitle` (CC 2.1.152): Sets the session title. Only applies when `source` is `"startup"` or `"resume"` — ignored on `"clear"`, `"compact"`, and `"fork"`.
 
 **Special behavior:** The `CLAUDE_ENV_FILE` environment variable points to a file where you can write `export VAR=value` lines. These persist as environment variables for subsequent Bash tool calls in the session.
 
-**Matchers:** `startup`, `resume`, `clear`, `compact`
+**Matchers:** `startup`, `resume`, `clear`, `compact`, `fork`
 **Hook types:** Command only
 
 ---
@@ -1173,14 +1175,53 @@ Observability only. No decision control.
 
 ---
 
+## Directory Lifecycle
+
+### DirectoryAdded (CC 2.1.219)
+
+**When:** After a new directory is registered mid-session via `/add-dir` command or SDK `register_repo_root` requests.
+
+**Input:**
+
+```json
+{
+  "session_id": "string",
+  "transcript_path": "string",
+  "cwd": "string",
+  "hook_event_name": "DirectoryAdded",
+  "directory_path": "string (absolute path to newly added directory)",
+  "source": "user_command|sdk_request"
+}
+```
+
+**Output:** Observability only. No decision control.
+
+**Key behaviors:**
+
+- Fires **after** the directory is successfully registered and sandbox is refreshed
+- `source` indicates whether the directory was added via user `/add-dir` command or programmatic SDK `register_repo_root` request
+- Useful for loading project-specific context, triggering workspace indexing, or notifying external systems of new project scope
+
+**Use cases:**
+
+- Automatically load CLAUDE.md or project configuration from newly added directories
+- Trigger LSP server initialization for new workspaces
+- Update monitoring or logging systems with new project scope
+- Run initialization scripts for newly added project directories
+
+**Matchers:** `user_command`, `sdk_request`
+**Hook types:** Command, HTTP, Prompt, Agent
+
+---
+
 ## SDK Parity Notes
 
-Not all events are typed in both SDKs. As of May 2026:
+Not all events are typed in both SDKs. As of July 2026:
 
-**Python SDK** (`claude-agent-sdk`) types 10 of 28 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
+**Python SDK** (`claude-agent-sdk`) types 10 of 29 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
 
 **TypeScript SDK** (`@anthropic-ai/claude-agent-sdk`) is closer to parity with the CLI. Events added over time: TeammateIdle and TaskCompleted (v2.1.34), ConfigChange (v0.2.49), Elicitation and ElicitationResult (v0.2.76).
 
-**CLI** supports all 28 events.
+**CLI** supports all 29 events.
 
-Events only available in CLI (not yet in either SDK): WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88), MessageDisplay (CC 2.1.152), PostSession (CC 2.1.169), BackgroundTasksChanged (CC 2.1.203).
+Events only available in CLI (not yet in either SDK): WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88), MessageDisplay (CC 2.1.152), PostSession (CC 2.1.169), BackgroundTasksChanged (CC 2.1.203), DirectoryAdded (CC 2.1.219).

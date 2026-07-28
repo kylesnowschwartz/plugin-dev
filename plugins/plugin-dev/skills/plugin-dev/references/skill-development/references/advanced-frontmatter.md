@@ -23,6 +23,26 @@ userInvocable: false         # camelCase
 
 **Recommendation:** Use kebab-case for consistency with official documentation, but all variants work.
 
+## Boolean Value Expansion (CC 2.1.216)
+
+Frontmatter boolean fields now accept expanded value formats beyond just `true`/`false`:
+
+```yaml
+# All equivalent to true:
+user-invocable: true
+user-invocable: yes
+user-invocable: on
+user-invocable: 1
+
+# All equivalent to false:
+user-invocable: false
+user-invocable: no
+user-invocable: off
+user-invocable: 0
+```
+
+**Recommendation:** Use `true`/`false` for clarity and consistency, but the expanded values are accepted for compatibility with YAML conventions.
+
 ## allowed-tools
 
 Optionally restrict which tools Claude can use when the skill is active:

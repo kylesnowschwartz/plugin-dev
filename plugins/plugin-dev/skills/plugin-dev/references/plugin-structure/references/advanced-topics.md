@@ -557,6 +557,65 @@ The `sandbox.credentials` setting controls Claude Code's access to credentials w
 - Managed settings can enforce credential restrictions across an organization
 - Stricter settings may break plugins that require credential access
 
+### Sandbox Filesystem Setting (CC 2.1.216)
+
+The `sandbox.filesystem.disabled` setting controls filesystem sandboxing:
+
+```json
+{
+  "sandbox": {
+    "filesystem": {
+      "disabled": true
+    }
+  }
+}
+```
+
+**Behavior:**
+
+- `false` (default) — Filesystem sandboxing is enabled
+- `true` — Filesystem sandboxing is disabled, allowing unrestricted file access
+
+**Use cases:**
+
+- Development environments requiring full filesystem access
+- Enterprise settings where sandboxing interferes with workflows
+- Troubleshooting sandboxing-related issues
+
+**Security implications:** Disabling filesystem sandboxing reduces security isolation. Use cautiously and only when necessary.
+
+### Sandbox Network Strict Allowlist (CC 2.1.219)
+
+The `sandbox.network.strictAllowlist` setting enforces a strict network allowlist:
+
+```json
+{
+  "sandbox": {
+    "network": {
+      "strictAllowlist": ["api.example.com", "cdn.example.com"]
+    }
+  }
+}
+```
+
+**Behavior:**
+
+- When set, only network connections to domains in the allowlist are permitted
+- All other network connections are blocked
+- Empty array blocks all network access
+
+**Use cases:**
+
+- Enterprise environments requiring strict network control
+- Compliance requirements restricting external network access
+- Security-sensitive deployments
+
+**Implications for plugin developers:**
+
+- Plugins that require network access may fail in strict allowlist environments
+- Document any external network dependencies in your plugin's README
+- Consider providing offline fallbacks for network-dependent features
+
 ## Cowork Plugin Format (CC 2.1.163)
 
 Claude Code includes comprehensive Cowork plugin component format references for authoring plugins that integrate with the Cowork collaboration system.
