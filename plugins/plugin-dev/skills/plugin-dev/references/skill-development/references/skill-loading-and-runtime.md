@@ -12,6 +12,36 @@ Claude Code includes a built-in "Invoke skill" tool that loads packaged skills b
 
 This tool is how Claude programmatically loads skills — plugin developers don't need to call it directly, but understanding its behavior helps when designing skills that may be invoked automatically vs. manually.
 
+## Skills Require Explicit Invocation (CC 2.1.215)
+
+As of CC 2.1.215, Claude Code requires explicit user invocation for most skills. Key changes:
+
+- **No automatic skill execution** — Skills like `/verify` and `/code-review` no longer auto-execute when Claude detects they might be useful
+- **User must invoke with `/skillname`** — All skill activation requires the user to type the slash-command explicitly
+- **Skill guidance remains available** — Claude can suggest using a skill, but cannot invoke it autonomously
+
+**Implications for plugin developers:**
+
+- Design skills with clear invocation triggers documented in the description
+- Don't rely on Claude automatically invoking your skill — users must do it explicitly
+- Consider adding guidance in your plugin's README about when to invoke each skill
+- Skills that previously benefited from auto-invocation should be redesigned for explicit invocation patterns
+
+## Invoke Skill Background Guidance (CC 2.1.218)
+
+When skills are invoked for background execution, Claude Code provides specific guidance for handling asynchronous skill results:
+
+- **Initial return is agent name only** — Background skill invocation initially returns just the agent name, not results
+- **Results delivered later** — Full results arrive through task notifications when background execution completes
+- **Don't wait or re-invoke** — Do not block waiting for background skill results or invoke the same skill again while pending
+- **Acknowledge and continue** — Briefly acknowledge the skill launch and continue with other work
+
+**Implications for plugin developers:**
+
+- Skills that may run in background should be designed for asynchronous result delivery
+- Document expected latency for skills that perform long-running operations
+- Consider providing progress notifications via SendMessageTool "main" for long-running background skills
+
 ## Slash-Skill Stacking (CC 2.1.199)
 
 Users can load multiple skills simultaneously using stacked slash-skill invocations:

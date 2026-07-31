@@ -121,6 +121,28 @@ workflow.agent({
 - Use `'low'` for stages that don't require deep reasoning
 - Reserve `'high'`/`'xhigh'`/`'max'` for critical validation steps
 
+## EndConversation Tool (CC 2.1.214)
+
+The EndConversation tool allows agents to terminate conversations, primarily for handling sustained abusive behavior:
+
+**Purpose:**
+
+- Handles situations where users engage in sustained abusive or harassing behavior
+- Terminates the conversation gracefully
+- Should only be used after persistent abuse, not for single incidents
+
+**Usage restrictions:**
+
+- Reserved for egregious, sustained abuse (not occasional rudeness)
+- Agent should attempt de-escalation first
+- Should not be used for technical disagreements or user frustration with results
+
+**Implications for plugin agents:**
+
+- Plugin agents inherit access to this tool
+- Design agents to use it sparingly and only when genuinely necessary
+- Document any use of EndConversation in agent system prompts if explicitly needed
+
 ## Browser File Upload Tool (CC 2.1.163)
 
 A new browser file upload tool uploads shared session files directly to page file inputs by element reference:

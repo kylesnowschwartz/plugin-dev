@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.33.0] - 2026-07-28
+
+### Changed
+
+- **Breaking: Claude Opus 5 is now default model** — `opus` resolves to Opus 5 (native 1M-token context, $10/$50 per Mtok); adaptive thinking on by default; new `xhigh` effort value added (CC 2.1.219)
+- **Breaking: `/fork` redesigned** — Now copies conversations to background sessions instead of foreground forks; work delivered asynchronously (CC 2.1.212)
+- **Breaking: Skills require explicit invocation** — `/verify` and `/code-review` no longer auto-execute; users must invoke with `/skillname` (CC 2.1.215)
+- **Breaking: Agent names cannot contain colons** — Colons reserved for scoped naming; existing agents with colons will fail validation (CC 2.1.216)
+- **Breaking: Single-segment `dir/**` hook conditions** — Now match only `<cwd>/dir`; use `**/dir/**` for any-depth matching (CC 2.1.218)
+
+### Added
+
+- **hook-development**: Documented DirectoryAdded hook event (29th event) for mid-session directory registration via `/add-dir` or SDK requests (CC 2.1.219)
+- **hook-development**: Documented SessionStart `source: "fork"` for distinguishing forked sessions from genuine resumption (CC 2.1.214/2.1.218)
+- **plugin-structure**: Documented `sandbox.filesystem.disabled` setting for disabling filesystem sandboxing (CC 2.1.216)
+- **plugin-structure**: Documented `sandbox.network.strictAllowlist` setting for enforcing network domain allowlists (CC 2.1.219)
+- **agent-development**: Documented session resource limits — 200 WebSearch calls/session, 200 subagent spawns/session, 20 concurrent subagents, 3-level nesting depth (CC 2.1.212/2.1.217/2.1.219)
+- **agent-development**: Documented MCP auto-background at 2-minute timeout (CC 2.1.212)
+- **agent-development**: Documented subagent delegation restraint guidance — simple tasks should be done directly (CC 2.1.215)
+- **skill-development**: Documented skills require explicit invocation change (CC 2.1.215)
+- **skill-development**: Documented boolean frontmatter expansion — yes/no/on/off/1/0 now accepted (CC 2.1.216)
+
 ## [0.32.0] - 2026-07-16
 
 ### Added
@@ -715,7 +737,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.32.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.33.0...HEAD
+[0.33.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.32.0...v0.33.0
 [0.32.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.31.0...v0.32.0
 [0.31.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.30.1...v0.31.0
 [0.30.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.30.0...v0.30.1

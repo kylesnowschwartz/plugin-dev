@@ -76,6 +76,8 @@ This hook fires only for Bash commands starting with `git`. The `if` field uses 
 > **CC 2.1.88:** Fixed `if` field filtering to properly match compound commands (e.g., `ls && git push`) and commands with environment variable prefixes (e.g., `FOO=bar git push`). Previously, such commands could bypass `if` patterns.
 >
 > **CC 2.1.178:** Added tool parameter matching syntax (e.g., `Agent(model:opus)`) for granular permission control based on tool input parameters using wildcards.
+>
+> **CC 2.1.218 (breaking change):** Single-segment `dir/**` hook `if:` conditions now match only `<cwd>/dir`; write `**/dir/**` for any-depth matching. Previously, `dir/**` would match at any depth, which could lead to unintended matches. Update existing hooks that rely on the old behavior.
 
 ### Script-Level Conditionals
 

@@ -8,6 +8,10 @@ Claude Code provides built-in commands for managing project state:
 
 - **`claude project purge [path]`** (CC 2.1.126) — Deletes all Claude Code state for a project. Supports `--dry-run`, `-y/--yes`, `-i/--interactive`, and `--all` flags. Different from `claude plugin prune` (which removes orphaned plugin dependencies) — this removes ALL project state including conversation history and settings.
 
+## Auto Mode Commands
+
+- **`claude auto-mode reset`** (CC 2.1.212) — Resets auto-mode configuration with confirmation. Use this when auto-mode has been configured incorrectly or you want to return to default auto-mode behavior. Prompts for confirmation before clearing settings.
+
 ## Session Commands
 
 - **`/cd`** (CC 2.1.169) — Relocates the session to a different directory without breaking prompt cache. Use this when you need to change the working directory mid-session while preserving cached context.
