@@ -228,6 +228,31 @@ Tags for plugin discovery and categorization.
 
 ### Component Path Fields
 
+#### skills
+
+**Type**: String or Array of strings
+**Default**: `["./skills"]`
+**Example**: `"./custom-skills"`
+
+Paths to directories containing skill definitions.
+
+**Root-Level Skills (CC 2.1.221):** Plugins can now use `"skills": "."` to load a root-level `SKILL.md` directly from the plugin root. This enables simpler single-skill plugin structures:
+
+```json
+{
+  "name": "my-single-skill",
+  "skills": "."
+}
+```
+
+With this configuration, place `SKILL.md` at the plugin root instead of in a `skills/` subdirectory. Validation now suggests using the plugin root when a root-level `SKILL.md` is detected but the skills path doesn't include `"."`.
+
+**Use cases:**
+
+- Single-skill plugins where subdirectory structure is unnecessary
+- Simpler plugin organization for focused plugins
+- Reduced nesting for minimal plugins
+
 #### commands
 
 **Type**: String or Array of strings

@@ -691,6 +691,20 @@ claude plugin prune
 - **Dependency handling**: `plugin install` now automatically handles missing dependencies, installing required plugins from configured marketplaces
 - **Marketplace blocking enforced**: Plugins from blocked marketplaces (configured via `blockedMarketplaces` in managed settings) cannot be installed
 
+### Plugin Immediate Activation (CC 2.1.221)
+
+Plugins now **activate immediately when safe**, removing the previous requirement for `/reload-plugins` after installation:
+
+- **Automatic activation**: When a plugin is installed and no conflicts or safety concerns exist, it becomes active immediately
+- **No reload required**: Users no longer need to run `/reload-plugins` or restart Claude Code for newly installed plugins to take effect
+- **Safe activation criteria**: Plugins activate immediately when they don't conflict with existing plugins, don't require user configuration, and pass validation
+
+**Implications for plugin developers:**
+
+- Plugin functionality is available faster after install
+- Update any documentation that previously mentioned needing `/reload-plugins` after installation
+- Plugins with `defaultEnabled: false` still require explicit user enablement via `/plugin`
+
 ### Additional Source Types
 
 ```bash
