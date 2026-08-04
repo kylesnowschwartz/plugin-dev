@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.34.0] - 2026-08-04
+
+### Added
+
+- **plugin-structure**: Documented plugin validation warnings for marketplace/plugin names rejected by Claude Desktop sync (CC 2.1.221)
+- **plugin-structure**: Documented root-level skill support — plugins can now use `"skills": "."` to load a root-level SKILL.md (CC 2.1.221)
+- **plugin-structure**: Documented plugin immediate activation — plugins now auto-activate when safe, removing `/reload-plugins` requirement (CC 2.1.221)
+- **marketplace-structure**: Documented `/plugin install` automatic catalog refresh before reporting not-found (CC 2.1.221)
+- **agent-development**: Documented forked conversation worktree isolation — forked background conversations cannot enter the original session's worktree and must create separate worktrees (CC 2.1.221)
+
 ## [0.33.0] - 2026-07-28
 
 ### Changed
@@ -737,7 +747,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.33.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.34.0...HEAD
+[0.34.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.33.0...v0.34.0
 [0.33.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.32.0...v0.33.0
 [0.32.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.31.0...v0.32.0
 [0.31.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.30.1...v0.31.0

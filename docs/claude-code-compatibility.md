@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.220 (2026-07-28)
-Plugin-dev version: 0.33.0
+Last audited: Claude Code 2.1.221 (2026-08-04)
+Plugin-dev version: 0.34.0
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.34.0 | 2.1.221 | 2026-08-04 | Plugin validation warnings for Claude Desktop sync (CC 2.1.221), plugins accept `"."` as skills path for root-level SKILL.md (CC 2.1.221), plugins auto-activate immediately when safe (CC 2.1.221), `/plugin install` refreshes stale marketplace catalog (CC 2.1.221), forked conversation worktree isolation (CC 2.1.221) |
 | v0.33.0 | 2.1.212-2.1.220 | 2026-07-28 | **Breaking:** Claude Opus 5 default model (CC 2.1.219), `/fork` redesigned to background sessions (CC 2.1.212), skills require explicit invocation (CC 2.1.215), agent names cannot contain colons (CC 2.1.216), single-segment `dir/**` hook condition change (CC 2.1.218). DirectoryAdded hook (29th event, CC 2.1.219), SessionStart `source: "fork"` (CC 2.1.214/2.1.218), sandbox.filesystem.disabled setting (CC 2.1.216), sandbox.network.strictAllowlist setting (CC 2.1.219), EndConversation tool for abusive user handling (CC 2.1.214), `xhigh` effort value (CC 2.1.219), session resource limits (200 WebSearch/subagent spawns, 20 concurrent, 3-level nesting) (CC 2.1.212/2.1.217/2.1.219), MCP auto-background at 2min (CC 2.1.212), subagent delegation restraint guidance (CC 2.1.215), boolean frontmatter expansion (CC 2.1.216), auto-mode reset command (CC 2.1.212), persistent memory guidance (CC 2.1.212), invoke skill background guidance (CC 2.1.218) |
 | v0.32.0 | 2.1.208-2.1.211 | 2026-07-16 | RefreshMcpTools for on-demand MCP tool resync (CC 2.1.211), background/foreground delegation pattern split with async agent metadata (CC 2.1.211), MCP connectors vs servers distinction (CC 2.1.209), `--forward-subagent-text` flag for stream-json output (CC 2.1.211) |
 | v0.29.0 | 2.1.207 | 2026-07-13 | **Breaking:** pluginConfigs no longer read from project settings (CC 2.1.207), shell-injection fix rejects `${user_config.*}` in shell-form hook commands (CC 2.1.207) |

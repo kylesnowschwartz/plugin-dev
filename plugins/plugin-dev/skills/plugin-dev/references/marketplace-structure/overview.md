@@ -283,6 +283,8 @@ The Discover tab considers the current working directory when suggesting plugins
 - **Team settings** - Configure `extraKnownMarketplaces` in `.claude/settings.json`
 - **Local testing** - Add with `/plugin marketplace add ./path` during development
 
+**Catalog Refresh on Install (CC 2.1.221):** `/plugin install` now automatically refreshes a stale marketplace catalog before reporting "not found." This improves the installation experience when users try to install recently-added plugins that aren't yet in their local cache.
+
 For detailed distribution patterns, see `references/distribution-patterns.md`.
 
 ### Validation

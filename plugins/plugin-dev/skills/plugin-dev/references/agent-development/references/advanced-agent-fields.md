@@ -405,6 +405,16 @@ subagent_type: "fork"  # Required to inherit context
 
 **Implications for plugin agents:** If your agent documentation or workflows reference `/fork`, update them to reflect the background-session behavior. Design agents to handle forked work asynchronously rather than expecting foreground blocking behavior.
 
+### Forked Conversation Worktree Isolation (CC 2.1.221)
+
+Forked background conversations are **prevented from entering the original session's linked worktree**. When a forked conversation needs to make code changes:
+
+- It must create a separate worktree based on the original branch
+- It cannot directly modify the parent session's worktree
+- This prevents race conditions and conflicting edits between the original session and its forks
+
+**Implications for plugin agents:** Agents spawned via `/fork` that need to make code edits must create their own worktree. Design fork-based workflows to expect independent worktree creation rather than sharing the parent's worktree. This ensures clean separation between the original session's work and forked work.
+
 ### Subagent Delegation Restraint (CC 2.1.215)
 
 Claude Code now includes explicit guidance to limit subagent delegation:

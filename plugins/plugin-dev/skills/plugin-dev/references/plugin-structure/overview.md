@@ -199,6 +199,8 @@ claude --debug            # Detailed logging
 claude --verbose          # Additional debugging
 ```
 
+**Validation Warnings (CC 2.1.221):** `claude plugin validate` now shows warnings for marketplace/plugin names that would be rejected by Claude Desktop's sync. This helps ensure plugins are compatible with Claude Desktop before publishing. If you see naming warnings, adjust your plugin or marketplace name to meet Claude Desktop's requirements.
+
 Use `/plugins` in the TUI to view installed plugins and their status. Discovery tools (`SearchPlugins`, `SearchSkills`, CC 2.1.199), scaffolding (`claude plugin init`, CC 2.1.157), pruning (`claude plugin prune`, CC 2.1.121), install improvements (CC 2.1.117), and additional source types are documented in `references/advanced-topics.md`.
 
 ## Troubleshooting
