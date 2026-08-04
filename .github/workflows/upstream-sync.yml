@@ -78,7 +78,7 @@ jobs:
             - Do NOT skip the verification agents (Stages 2 and 4)
             - If any stage fails, report the failure clearly and stop
           claude_args: |
-            --model claude-opus-4-5-20251101
+            --model opus
             --max-turns 150
             --allowedTools "Read,Write,Edit,Bash,Grep,Glob,WebFetch,Agent"
 
