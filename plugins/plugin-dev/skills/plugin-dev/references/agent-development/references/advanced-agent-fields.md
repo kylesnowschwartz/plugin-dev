@@ -405,7 +405,7 @@ subagent_type: "fork"  # Required to inherit context
 
 **Implications for plugin agents:** If your agent documentation or workflows reference `/fork`, update them to reflect the background-session behavior. Design agents to handle forked work asynchronously rather than expecting foreground blocking behavior.
 
-### Forked Conversation Worktree Isolation (CC 2.1.221)
+### Forked Conversation Worktree Isolation (CC 2.1.221, updated 2.1.222)
 
 Forked background conversations are **prevented from entering the original session's linked worktree**. When a forked conversation needs to make code changes:
 
@@ -413,7 +413,9 @@ Forked background conversations are **prevented from entering the original sessi
 - It cannot directly modify the parent session's worktree
 - This prevents race conditions and conflicting edits between the original session and its forks
 
-**Implications for plugin agents:** Agents spawned via `/fork` that need to make code edits must create their own worktree. Design fork-based workflows to expect independent worktree creation rather than sharing the parent's worktree. This ensures clean separation between the original session's work and forked work.
+**Destructive git command restriction (CC 2.1.222):** Worktree-isolated sessions and subagents can no longer run destructive git commands against the main checkout. This security enhancement prevents accidental or malicious destruction of the main working copy from isolated contexts.
+
+**Implications for plugin agents:** Agents spawned via `/fork` that need to make code edits must create their own worktree. Design fork-based workflows to expect independent worktree creation rather than sharing the parent's worktree. This ensures clean separation between the original session's work and forked work. Agents in isolated worktrees cannot run commands like `git reset --hard`, `git clean`, or `git checkout .` against the main checkout.
 
 ### Subagent Delegation Restraint (CC 2.1.215)
 
@@ -425,20 +427,21 @@ Claude Code now includes explicit guidance to limit subagent delegation:
 
 **Implications for plugin agents:** Design agents to complete work directly when possible. Reserve subagent spawning for cases where parallelism or isolation genuinely improves outcomes. Avoid patterns that spawn subagents reflexively.
 
-### Session Resource Limits (CC 2.1.212)
+### Session Resource Limits (CC 2.1.212, updated 2.1.224)
 
 Claude Code enforces per-session limits to prevent runaway usage:
 
 | Resource | Limit | Behavior when exceeded |
 |----------|-------|----------------------|
 | WebSearch calls | 200 per session | Additional calls blocked |
-| Subagent spawns | 200 per session | Additional spawns blocked |
 | Concurrent subagents | 20 (default) | New spawns wait (CC 2.1.217) |
 | Nested subagent depth | 3 levels (CC 2.1.219) | Deeper nesting blocked |
 
+**Subagent spawn cap removed (CC 2.1.224):** The previous 200-subagent-per-session spawn cap has been removed. Sessions can now spawn unlimited subagents, though concurrency and depth limits still apply. This reverses the limit added in CC 2.1.213.
+
 **MCP auto-background (CC 2.1.212):** MCP tool calls that exceed 2 minutes automatically trigger background execution rather than blocking the main session.
 
-**Implications for plugin agents:** Design agents to work within these limits. Agents that spawn many subagents should track spawn counts and degrade gracefully when approaching limits. Consider batching work to reduce spawn counts.
+**Implications for plugin agents:** Design agents to work within the remaining limits (concurrency, depth). While there's no longer a spawn cap, spawning many subagents still consumes resources. Consider batching work to reduce concurrent spawns.
 
 ### Cross-Session Peer Message Security (CC 2.1.166, 2.1.169)
 
@@ -625,7 +628,7 @@ Dispatched sessions inherit the `agent` setting from the dispatching context, al
 
 The `claude agents` dispatch input now suggests native slash commands and bundled skills in addition to project agents. When testing agent invocation, autocomplete helps discover available agent types and skills that can be dispatched to agents.
 
-### ListAgents Tool (CC 2.1.200)
+### ListAgents Tool (CC 2.1.200, updated 2.1.224)
 
 The ListAgents tool enables programmatic discovery of available agents:
 
@@ -633,4 +636,29 @@ The ListAgents tool enables programmatic discovery of available agents:
 - Agents should address a row by its exact name and append its `[ref]` only when the bare name is ambiguous
 - Useful for multi-agent coordination scenarios where agents need to discover and message other agents
 
-**Use cases:** multi-agent orchestration discovering available teammates, coordination patterns where agents need to find and communicate with specific agent types, dynamic workflows that adapt based on available agents.
+**Cross-machine support (CC 2.1.224):** ListAgents now supports cross-machine discovery, allowing agents to discover Claude Code sessions running on other machines (not just local sessions).
+
+**Use cases:** multi-agent orchestration discovering available teammates, coordination patterns where agents need to find and communicate with specific agent types, dynamic workflows that adapt based on available agents, cross-machine agent coordination in distributed environments.
+
+### Cross-Session Messaging (CC 2.1.224)
+
+SendMessage and ListAgents now support cross-machine communication, enabling Claude Code sessions to communicate across different machines:
+
+**New settings:**
+
+| Setting | Purpose |
+|---------|---------|
+| `crossSessionInbound` | Controls whether the session accepts incoming cross-session messages |
+| `dialogExpiry` | Sets expiration time for approval dialogs in inter-session communication |
+
+**Behavior:**
+
+- Sessions can send messages to agents on remote machines (not just local sessions)
+- Approval workflows control which cross-session messages are accepted
+- This extends the existing SendMessage `"main"` recipient capability to work across machines
+
+**Implications for plugin agents:**
+
+- Agents in distributed environments can now coordinate work across multiple machines
+- Design multi-machine workflows with awareness that cross-session messaging requires appropriate settings
+- Consider security implications when designing agents that communicate cross-machine

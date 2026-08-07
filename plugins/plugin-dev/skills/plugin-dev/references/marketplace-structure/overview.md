@@ -225,6 +225,33 @@ Organizations can block specific plugins via `managed-settings.json`. Blocked pl
 
 Plugin developers distributing to enterprise users should document the plugin name clearly so admins can add it to their allow list if needed.
 
+### Owner Wildcard Entries (CC 2.1.223)
+
+The `strictKnownMarketplaces` and `blockedMarketplaces` managed settings now support owner wildcard syntax for bulk marketplace management:
+
+**Syntax:** `"owner/*"` matches all plugins from a specific owner.
+
+**Example managed settings:**
+
+```json
+{
+  "strictKnownMarketplaces": ["company-internal/*", "approved-vendor/*"],
+  "blockedMarketplaces": ["untrusted-org/*"]
+}
+```
+
+**Use cases:**
+
+- **Allow all plugins from a trusted owner:** Add `"trusted-company/*"` to `strictKnownMarketplaces`
+- **Block all plugins from an untrusted source:** Add `"blocked-org/*"` to `blockedMarketplaces`
+- **Enterprise policy enforcement:** Restrict users to only approved plugin sources at the owner level
+
+**Implications for plugin developers:**
+
+- Organizations can now allow or block entire plugin catalogs by owner name
+- Consistent owner naming helps with enterprise policy management
+- Document your marketplace owner name so enterprise admins can whitelist it
+
 ### Private Repository Authentication
 
 For private marketplace repositories, set authentication tokens:
