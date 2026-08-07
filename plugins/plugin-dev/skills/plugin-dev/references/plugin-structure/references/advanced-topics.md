@@ -484,6 +484,55 @@ claude --plugin-url https://example.com/plugin-archive.tar.gz
 
 Fetches and loads plugins directly from URLs. Supports tar.gz and zip formats. Enables remote plugin distribution without requiring local installation or marketplace publishing.
 
+### Archive Plugin Sources (CC 2.1.224)
+
+Plugins can now be installed from HTTPS-hosted zip archives without requiring git or npm. This provides an alternative distribution mechanism for permanent installation (unlike `--plugin-url` which loads plugins temporarily at runtime).
+
+**Features:**
+
+- Install from any HTTPS-hosted zip archive
+- Optional SHA-256 pinning for integrity verification
+- No git or npm required on the target machine
+- Archives are unpacked and cached locally
+
+**Installation:**
+
+```bash
+claude plugin install https://example.com/my-plugin.zip
+claude plugin install https://example.com/my-plugin.zip --sha256=abc123...
+```
+
+**Marketplace entry format:**
+
+```json
+{
+  "name": "my-plugin",
+  "source": {
+    "source": "archive",
+    "url": "https://releases.example.com/my-plugin-1.0.0.zip",
+    "sha256": "abc123def456..."
+  },
+  "version": "1.0.0"
+}
+```
+
+**Use cases:**
+
+- Distributing plugins to environments without git access
+- Air-gapped or restricted network installations
+- Pinning exact plugin versions with cryptographic verification
+- Simplified CI/CD plugin distribution
+
+**Comparison with --plugin-url:**
+
+| Feature | `--plugin-url` | Archive source |
+|---------|----------------|----------------|
+| Persistence | Session only | Permanent install |
+| Cache | No | Yes |
+| SHA-256 verification | No | Yes |
+| Marketplace support | No | Yes |
+| Use case | Testing/development | Production distribution |
+
 ## Safe Mode (CC 2.1.169)
 
 The `--safe-mode` flag disables all customizations for troubleshooting:

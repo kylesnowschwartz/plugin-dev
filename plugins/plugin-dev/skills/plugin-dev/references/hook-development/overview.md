@@ -182,6 +182,7 @@ Debug with `claude --debug` (shows registration, execution logs, input/output JS
 9. **HTTP hooks need 2xx for decisions.** Non-2xx status codes are treated as non-blocking errors.
 10. **`disableAllHooks` cannot disable managed hooks.** Policy-managed hooks always run.
 11. **`${CLAUDE_PLUGIN_ROOT}` is loader-bound in frontmatter hooks.** Resolves only under plugin discovery; agents loaded via `--agent` see it unbound — use `${CLAUDE_PROJECT_DIR}`. Full caveat: `references/advanced.md` (Scoped Hooks section).
+12. **PreToolUse auto-allow hooks cannot bypass tool restrictions in background agents (CC 2.1.222).** PreToolUse hooks that return auto-allow decisions no longer bypass tool restrictions when running in background agent tasks. This security fix ensures that tool restrictions remain enforced even when hooks attempt to approve tool usage in unsupervised contexts.
 
 ## References and Examples
 

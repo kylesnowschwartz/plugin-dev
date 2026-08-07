@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.35.0] - 2026-08-07
+
+### Added
+
+- **hook-development**: Documented PreToolUse auto-allow hooks no longer bypass tool restrictions in background agent tasks — security fix ensuring tool restrictions remain enforced in unsupervised contexts (CC 2.1.222)
+- **agent-development**: Documented 200-subagent spawn cap removed — sessions can now spawn unlimited subagents, though concurrency and depth limits remain (CC 2.1.224)
+- **agent-development**: Documented worktree isolation now prevents destructive git commands against main checkout — forked/isolated sessions cannot run `git reset --hard`, `git clean`, etc. against the main working copy (CC 2.1.222)
+- **agent-development**: Documented cross-session messaging — `SendMessage` and `ListAgents` now support cross-machine communication with new `crossSessionInbound` and `dialogExpiry` settings (CC 2.1.224)
+- **plugin-structure**: Documented HTTPS archive plugin sources with optional SHA-256 pinning for installing plugins from zip archives without git/npm (CC 2.1.224)
+- **marketplace-structure**: Documented owner wildcard entries (`"owner/*"`) for `strictKnownMarketplaces` and `blockedMarketplaces` managed settings (CC 2.1.223)
+
 ## [0.34.0] - 2026-08-04
 
 ### Added
@@ -747,7 +758,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.34.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.35.0...HEAD
+[0.35.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.34.0...v0.35.0
 [0.34.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.33.0...v0.34.0
 [0.33.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.32.0...v0.33.0
 [0.32.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.31.0...v0.32.0
