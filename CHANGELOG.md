@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.35.1] - 2026-08-10
+
+### Changed
+
+- **claude-code-compatibility**: Audited CC 2.1.225-2.1.226 — no plugin-system changes requiring documentation updates. Changes were: bug fixes, Remote Control features (ListAgents reframing, RemoteTrigger webhooks), Claude.ai Artifact features (publishing completeness, comment reply composer, workshop HTML template), /code-review ultra built-in command, and pre-commit skill verification guidance
+
 ## [0.35.0] - 2026-08-07
 
 ### Added
@@ -758,7 +764,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.35.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.35.1...HEAD
+[0.35.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.35.0...v0.35.1
 [0.35.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.34.0...v0.35.0
 [0.34.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.33.0...v0.34.0
 [0.33.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.32.0...v0.33.0
