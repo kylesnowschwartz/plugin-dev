@@ -15,6 +15,29 @@ The Agent tool (Task tool in SDK parlance) includes simplified usage guidance th
 - **Parallel launches**: Send multiple Agent calls in one message for concurrent execution
 - **Context restrictions**: Background agents cannot prompt for permissions
 
+### Foreground vs Background Agents (CC 2.1.227)
+
+Foreground agents should only be used when the very next action depends on their result and no other useful work can proceed in the meantime:
+
+**Use foreground agents when:**
+
+- The immediate next step requires the agent's output
+- No parallel work is possible while waiting
+- Synchronous coordination is essential
+
+**Use background agents for:**
+
+- Independent, fire-and-forget tasks
+- Interruptible work that doesn't block progress
+- Parallel execution of multiple tasks
+- Long-running operations
+
+**Design guidance:**
+
+- Default to background agents for most delegated work
+- Reserve foreground for critical-path dependencies
+- Prefer launching multiple background agents in parallel over sequential foreground calls
+
 ## Sub-Agent Nesting (CC 2.1.172)
 
 Sub-agents can now spawn their own sub-agents, enabling complex orchestration patterns. Previously, sub-agents could not spawn further sub-agents.
@@ -54,13 +77,59 @@ The SendUserFile tool surfaces generated deliverable files to users with enhance
 - `status`: `"normal"` (default) or `"proactive"` (for unsolicited deliverables)
 - `display` (CC 2.1.196): Controls rendering mode — `"inline"` for charts, HTML pages, diagrams, and images that should render directly in chat; `"attachment"` for files meant to be saved and opened elsewhere
 
+### Expanded File Delivery Guidance (CC 2.1.227)
+
+SendUserFile usage extends beyond just final deliverables:
+
+**What to send:**
+
+- Complete drafts as they are produced
+- Meaningful updates during iterative work
+- Materially changed files when re-sending
+
+**What NOT to send:**
+
+- Scratch files and temporary work
+- Incremental-save noise (minor auto-saves)
+- Unchanged files when re-sending updates
+
+**Re-send behavior:**
+
+- Only re-send files that have materially changed
+- Avoid flooding the user with redundant file notifications
+- Use discretion for work-in-progress vs final deliverables
+
 **Use cases for plugin agents:**
 
 - Report generators: Surface the final PDF/HTML report
 - Export tools: Highlight generated export files
 - Build artifacts: Call out compiled outputs or packages
+- Iterative work: Share meaningful drafts as milestones are reached
+- Background tasks: Send completed outputs to the main conversation
 
 Hooks can match `SendUserFile` via PreToolUse/PostToolUse for validation or logging of deliverable generation.
+
+## ListAgents Session Labels (CC 2.1.228-2.1.229)
+
+The ListAgents tool now provides session kind labels for Remote Control-connected accounts:
+
+**Session kinds:**
+
+- **`offline`** — Disconnected Remote Control sessions on other machines
+- **`cloud`** — Cloud-based sessions (e.g., Claude.ai web sessions)
+- *(unlabeled)* — Active local sessions
+
+**Behavior:**
+
+- Remote Control-connected account listings cover both sessions on other machines and cloud sessions
+- Each row is labeled by kind to help distinguish session types
+- Useful for cross-session coordination and monitoring
+
+**Use cases for plugin agents:**
+
+- Identifying available sessions for cross-session messaging
+- Monitoring session status across multiple machines
+- Coordinating work between local and cloud sessions
 
 ## SendMessageTool "main" Recipient (CC 2.1.178)
 

@@ -175,6 +175,54 @@ Match plugins by URL pattern for internal registries:
 | ------------- | ------ | -------- | ------------------------------ |
 | `hostPattern` | string | Yes      | URL pattern with `*` wildcards |
 
+### Command Source (Object) (CC 2.1.229)
+
+Execute a local command that outputs a plugin directory path:
+
+```json
+{
+  "source": {
+    "command": "/path/to/plugin-fetcher --version latest"
+  }
+}
+```
+
+| Field     | Type   | Required | Description                                           |
+| --------- | ------ | -------- | ----------------------------------------------------- |
+| `command` | string | Yes      | Platform-shell command that emits a plugin directory path |
+
+**Behavior:**
+
+- The command must emit exactly one absolute plugin-directory path to stdout
+- The command must finish populating the directory before exiting
+- Commands are re-resolved for installs, updates, and once-per-session background checks
+- After resolution, the plugin is copied into the local cache
+
+**Use cases:**
+
+- Dynamic plugin provisioning from internal package managers
+- Just-in-time plugin builds or transformations
+- Integration with corporate artifact repositories
+- Custom authentication flows for private plugin sources
+
+**Example with arguments:**
+
+```json
+{
+  "name": "internal-tools",
+  "source": {
+    "command": "corporate-plugin-fetch --plugin internal-tools --env production"
+  },
+  "description": "Tools fetched from internal registry"
+}
+```
+
+**Security considerations:**
+
+- Commands run with the user's shell permissions
+- Ensure command sources come from trusted marketplace definitions
+- Commands should validate their output paths before emitting
+
 ## Complete Plugin Entry Example
 
 **Note:** The `${CLAUDE_PLUGIN_ROOT}` variable in the example below resolves to the plugin's absolute installation path. Use this variable for portable paths in hooks and MCP server configurations, ensuring paths work regardless of where the plugin is installed.

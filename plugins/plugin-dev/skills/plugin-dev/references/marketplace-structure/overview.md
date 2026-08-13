@@ -180,6 +180,21 @@ Match any repository from a specific host:
 }
 ```
 
+### Command Sources (CC 2.1.229)
+
+Execute a local command that outputs a plugin directory path:
+
+```json
+{
+  "name": "dynamic-plugin",
+  "source": {
+    "command": "/usr/local/bin/fetch-plugin --name dynamic-plugin"
+  }
+}
+```
+
+The command must emit exactly one absolute plugin-directory path to stdout and finish populating the directory before exiting. Commands are re-resolved for installs, updates, and once-per-session background checks. See `references/schema-reference.md` for full documentation.
+
 ## Strict vs. Non-Strict Mode
 
 The `strict` field controls whether plugins must have their own `plugin.json`:

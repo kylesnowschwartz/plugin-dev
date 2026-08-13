@@ -462,6 +462,41 @@ skill-name/
 
 Good for: Complex domains with validation utilities
 
+## Pre-Commit Skill Checks (CC 2.1.225)
+
+Skills designed for verification, simplification, or code review should support the pre-commit skill check pattern:
+
+**Pattern requirements:**
+
+- Display a visible `RAN` or `NOT RUN` status for each applicable skill immediately before nontrivial commits
+- Run checks that are not still valid for the current diff (re-run if code changed since last check)
+- Only skip checks when the user explicitly instructs to skip, or when changes are enumerated as trivial-only
+
+**Example status display:**
+
+```text
+Pre-commit checks:
+  security-scanner: RAN ✓
+  code-style: RAN ✓
+  test-coverage: NOT RUN (no test files changed)
+```
+
+**Implementing the pattern:**
+
+- Track last-run state relative to current diff
+- Surface clear skip reasons when not running
+- Support explicit user opt-out for specific checks
+- Consider caching check results for unchanged files
+
+**Use cases:**
+
+- Security scanning skills
+- Code style/lint verification skills
+- Test coverage validation skills
+- Documentation completeness checks
+
+This pattern ensures users have visibility into what verification ran before commits, improving code quality workflows.
+
 ## Best Practices Summary
 
 **DO:**

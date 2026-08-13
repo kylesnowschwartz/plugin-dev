@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.36.0] - 2026-08-13
+
+### Added
+
+- **marketplace-structure**: Documented command-backed plugin sources — new `command` source type that executes local commands to emit plugin directory paths, supporting dynamic plugin provisioning from internal package managers (CC 2.1.229)
+- **agent-development**: Documented ListAgents session kind labels (`offline`, `cloud`) for Remote Control-connected account listings (CC 2.1.228-2.1.229)
+- **agent-development**: Documented foreground agent restriction guidance — foreground agents should only be used when the very next action depends on their result and no other useful work can proceed (CC 2.1.227)
+- **agent-development**: Documented SendUserFile expanded guidance — send complete drafts and meaningful updates as produced, exclude scratch files and incremental-save noise, re-send only materially changed files (CC 2.1.227)
+- **skill-development**: Documented pre-commit skill checks pattern — skills designed for verification should display visible RAN/NOT RUN status before nontrivial commits (CC 2.1.225)
+
 ## [0.35.0] - 2026-08-07
 
 ### Added
@@ -758,7 +768,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.35.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.36.0...HEAD
+[0.36.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.35.0...v0.36.0
 [0.35.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.34.0...v0.35.0
 [0.34.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.33.0...v0.34.0
 [0.33.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.32.0...v0.33.0
