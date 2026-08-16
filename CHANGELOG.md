@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.37.0] - 2026-08-16
+
+### Added
+
+- **skill-development**: Documented plugin eval and skill-doctor early-access commands — `claude plugin eval`, `eval init`, and `/skill-doctor` for testing plugins/skills with suite authoring, graders, sandboxing, and CI integration; requires `CLAUDE_CODE_WALNUT_SPIRE=1` env var for enablement (CC 2.1.233)
+- **agent-development**: Documented subagent forking enabled by default with conversation inheritance — worker fork agent prompt changed from "fork experiment" to "fork gate", subagents now automatically inherit context (CC 2.1.232)
+- **agent-development**: Documented @ mention syntax for cross-session messaging — `SendMessage` now delivers to bare names matching exactly one session, interactive sessions keep unique names with variant generation, cloud sessions can receive but not yet reply (CC 2.1.232)
+- **marketplace-structure**: Documented marketplace settings aliases — `additionalMarketplaces`, `allowedMarketplaces`, and `blockedMarketplaces` with support for bare repo URLs (CC 2.1.232)
+
 ## [0.36.0] - 2026-08-13
 
 ### Added
@@ -768,7 +777,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.36.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.37.0...HEAD
+[0.37.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.36.0...v0.37.0
 [0.36.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.35.0...v0.36.0
 [0.35.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.34.0...v0.35.0
 [0.34.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.33.0...v0.34.0

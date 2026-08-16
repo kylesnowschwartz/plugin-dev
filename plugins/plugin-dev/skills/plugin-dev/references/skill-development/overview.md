@@ -149,6 +149,61 @@ my-plugin/
 
 Test locally with `claude --plugin-dir /path/to/plugin` and ask questions that should trigger the skill. Study plugin-dev's own skills (`../hook-development/`, `../agent-development/`, `../mcp-integration/`, `../plugin-settings/`, `../command-development/`, `../plugin-structure/`) as best-practice examples; details in `references/skill-creation-workflow.md`.
 
+## Plugin Eval and Skill Doctor (CC 2.1.233)
+
+Claude Code provides early-access testing infrastructure for plugins and skills:
+
+### Plugin Eval
+
+Test plugin skills with automated evaluation suites:
+
+```bash
+# Initialize an eval suite for a skill
+claude plugin eval init my-skill
+
+# Run the evaluation suite
+claude plugin eval my-skill
+```
+
+**Key features:**
+
+- **Suite authoring** — Define test cases with expected behaviors
+- **Graders** — Built-in and custom graders for validating skill responses
+- **Run options** — Configure evaluation parameters and sandboxing
+- **Result/report formats** — Structured output for CI integration
+- **Sandboxing** — Isolated execution environment for safety
+
+### Skill Doctor
+
+Diagnose and troubleshoot skill issues:
+
+```bash
+# Run skill diagnostics
+/skill-doctor my-skill
+```
+
+**Diagnoses:**
+
+- Malformed YAML frontmatter parse failures
+- Fields dropped due to parse errors
+- Fallback naming and description issues
+- Silently disabled tool, model, and invocation settings
+
+**Note:** Parse failures in YAML frontmatter drop every field and trigger fallback naming and descriptions while silently disabling tool, model, and invocation settings.
+
+### Enablement
+
+This feature requires the early-access flag. For clients or CI that cannot receive the organization rollout:
+
+```bash
+# Shell environment variable
+export CLAUDE_CODE_WALNUT_SPIRE=1
+
+# Or in user/managed settings (NOT project settings)
+```
+
+**Warning:** Do not rely on project settings for this flag — use shell, user-settings, or managed-settings locations only.
+
 ## Reference and Example Files
 
 | Reference | When to read |

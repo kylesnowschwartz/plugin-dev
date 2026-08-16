@@ -131,6 +131,39 @@ The ListAgents tool now provides session kind labels for Remote Control-connecte
 - Monitoring session status across multiple machines
 - Coordinating work between local and cloud sessions
 
+## Cross-Session @ Mention Syntax (CC 2.1.232)
+
+The `@` mention syntax enables cross-session messaging by name:
+
+**SendMessage with @ mentions:**
+
+```json
+{
+  "recipient": "@code-reviewer",
+  "message": "Please review the changes in PR #123"
+}
+```
+
+**Behavior:**
+
+- `SendMessage` now delivers to bare names matching exactly one session
+- Exact live names deliver across local, remote, and cloud sessions
+- Use `[ref]` references only when the bare name is ambiguous or lookup fails
+- Interactive sessions keep unique names with variant generation to avoid conflicts
+- Cloud sessions can receive messages but cannot yet reply to another session
+
+**Use cases for plugin agents:**
+
+- Direct addressing of named sessions without needing session IDs
+- Simplified multi-agent coordination with human-readable names
+- Cross-session workflows with clear addressing semantics
+
+**Design guidance:**
+
+- Address sessions by their exact name when possible
+- Fall back to `[ref]` identifiers only for ambiguous or failed lookups
+- Expect cloud sessions to be receive-only for now
+
 ## SendMessageTool "main" Recipient (CC 2.1.178)
 
 Background subagents can now message the main conversation using `"main"` as the recipient in SendMessageTool:

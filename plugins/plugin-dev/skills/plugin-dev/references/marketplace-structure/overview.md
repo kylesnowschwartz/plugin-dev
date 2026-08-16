@@ -240,6 +240,32 @@ Organizations can block specific plugins via `managed-settings.json`. Blocked pl
 
 Plugin developers distributing to enterprise users should document the plugin name clearly so admins can add it to their allow list if needed.
 
+### Marketplace Settings Aliases (CC 2.1.232)
+
+Claude Code now provides friendlier settings aliases for marketplace configuration:
+
+| Alias | Purpose |
+|-------|---------|
+| `additionalMarketplaces` | Add custom marketplace URLs (alias for `extraKnownMarketplaces`) |
+| `allowedMarketplaces` | Restrict to specific marketplaces (alias for `strictKnownMarketplaces`) |
+| `blockedMarketplaces` | Block specific marketplaces (now supports bare repo URLs) |
+
+**Example managed settings:**
+
+```json
+{
+  "additionalMarketplaces": ["https://github.com/company/internal-plugins"],
+  "allowedMarketplaces": ["company-internal/*", "approved-vendor/*"],
+  "blockedMarketplaces": ["untrusted-org/*", "https://github.com/blocked/repo"]
+}
+```
+
+**Key features:**
+
+- `blockedMarketplaces` now accepts bare repository URLs in addition to owner patterns
+- These aliases are clearer than the original setting names
+- All aliases work in user settings and managed settings
+
 ### Owner Wildcard Entries (CC 2.1.223)
 
 The `strictKnownMarketplaces` and `blockedMarketplaces` managed settings now support owner wildcard syntax for bulk marketplace management:

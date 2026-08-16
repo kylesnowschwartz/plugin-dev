@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.229 (2026-08-13)
-Plugin-dev version: 0.36.0
+Last audited: Claude Code 2.1.233 (2026-08-16)
+Plugin-dev version: 0.37.0
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.37.0 | 2.1.230-2.1.233 | 2026-08-16 | Plugin eval and skill-doctor early-access commands for testing plugins/skills (CC 2.1.233), subagent forking enabled by default with conversation inheritance (CC 2.1.232), @ mention syntax for cross-session messaging via SendMessage/ListAgents (CC 2.1.232), marketplace settings aliases (additionalMarketplaces, allowedMarketplaces, blockedMarketplaces with bare repo URL support) (CC 2.1.232) |
 | v0.36.0 | 2.1.225-2.1.229 | 2026-08-13 | Command-backed plugin sources for dynamic plugin provisioning (CC 2.1.229), ListAgents session kind labels (offline/cloud) for Remote Control sessions (CC 2.1.228-2.1.229), foreground agent restriction guidance (CC 2.1.227), pre-commit skill checks with RAN/NOT RUN status (CC 2.1.225), SendUserFile expanded guidance for drafts and incremental updates (CC 2.1.227) |
 | v0.35.0 | 2.1.222-2.1.224 | 2026-08-07 | PreToolUse auto-allow hooks no longer bypass tool restrictions in background agents (CC 2.1.222), 200-subagent spawn cap removed (CC 2.1.224), HTTPS archive plugin sources with SHA-256 pinning (CC 2.1.224), marketplace owner wildcard entries (CC 2.1.223), worktree isolation prevents destructive git commands against main checkout (CC 2.1.222), cross-session messaging for SendMessage/ListAgents (CC 2.1.224) |
 | v0.34.0 | 2.1.221 | 2026-08-04 | Plugin validation warnings for Claude Desktop sync (CC 2.1.221), plugins accept `"."` as skills path for root-level SKILL.md (CC 2.1.221), plugins auto-activate immediately when safe (CC 2.1.221), `/plugin install` refreshes stale marketplace catalog (CC 2.1.221), forked conversation worktree isolation (CC 2.1.221) |

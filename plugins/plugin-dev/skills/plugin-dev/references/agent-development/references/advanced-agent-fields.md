@@ -395,6 +395,20 @@ subagent_type: "fork"  # Required to inherit context
 
 **Implications for plugin agents:** Agents spawned as subagents should focus on completing their specific task. Don't design agents that recursively spawn more agents for the same work. If an agent needs to delegate, it should be the top-level orchestrator, not a forked worker. Update any existing agent orchestration code to explicitly pass `subagent_type: "fork"` when context inheritance is needed.
 
+### Subagent Forking Default Enabled (CC 2.1.232)
+
+Subagent forking is now enabled by default with conversation inheritance. This changes agent spawning behavior:
+
+- **Subagents inherit conversation context** by default when forked
+- Worker fork agent prompt updated from "fork experiment" to "fork gate" language
+- Background forks now seamlessly inherit the parent context without explicit configuration
+
+**Implications for plugin agents:**
+
+- Agents spawned as subagents now automatically benefit from context inheritance
+- Design agents expecting this context to be available
+- Use explicit fresh-context spawning if isolation is needed (use a non-fork `subagent_type`)
+
 ### /fork Redesigned (CC 2.1.212)
 
 **Breaking change:** The `/fork` command now copies conversations to **background sessions** instead of creating foreground forks. This is a significant behavioral change:
