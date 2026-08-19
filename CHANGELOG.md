@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.37.0] - 2026-08-19
+
+### Added
+
+- **agent-development**: Documented non-fork subagent delegation consolidation — unified, capability-aware guidance that adapts based on general-purpose agent availability, superseding separate foreground/background delegation examples (CC 2.1.235)
+- **agent-development**: Documented subagent forking enabled by default — fork is now the standard behavior, "fork experiment" renamed to "fork gate" (CC 2.1.232)
+- **agent-development**: Documented session-to-session messaging via @-mentions — peer discovery with `name [ref]` addressing syntax, `<cross-session-message>` wrappers, remote-bridge reply-only constraints (CC 2.1.232)
+- **agent-development**: Documented capability-aware `subagent_type` behavior — omitting `subagent_type` now triggers fallback behavior when general-purpose agents unavailable, plan-specific subagent restrictions apply (CC 2.1.235)
+- **agent-development**: Documented ListAgents cloud session limitations — cloud sessions can receive messages but cannot yet reply to another session (CC 2.1.232)
+- **agent-development**: Documented Web reading specialist agent type — dedicated WebFetch delegation agent for focused, source-grounded reports from untrusted pages (CC 2.1.232)
+- **skill-development**: Documented plugin eval (`claude plugin eval`) and /skill-doctor early access features for plugin evaluation and skill diagnostics, enabled via `CLAUDE_CODE_WALNUT_SPIRE=1` (CC 2.1.233-2.1.235)
+- **hook-development**: Documented Notification hooks Desktop/VS Code fix — `permission_prompt` matcher now works correctly in Desktop and VS Code environments (CC 2.1.233)
+- **plugin-structure**: Updated headless mode subagent forking documentation — forking now enabled by default, `CLAUDE_CODE_FORK_SUBAGENT` may no longer be required (CC 2.1.232)
+
 ## [0.36.0] - 2026-08-13
 
 ### Added
@@ -768,7 +782,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.36.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.37.0...HEAD
+[0.37.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.36.0...v0.37.0
 [0.36.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.35.0...v0.36.0
 [0.35.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.34.0...v0.35.0
 [0.34.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.33.0...v0.34.0
