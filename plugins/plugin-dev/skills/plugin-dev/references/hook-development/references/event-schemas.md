@@ -1082,6 +1082,8 @@ Observability only. No decision control.
 
 **Background Agent Notifications (CC 2.1.198):** Added matchers for background agent lifecycle events — `agent_needs_input` (background agent is blocked waiting for user input) and `agent_completed` (background agent has finished its work). These enable hooks to respond when background agents reach completion or need attention, facilitating automated workflows and external alerting for background agent status.
 
+**Desktop/VS Code fix (CC 2.1.233):** Fixed Notification hooks not firing for permission prompts under Desktop and VS Code environments. Plugin developers using the `permission_prompt` matcher should now see consistent behavior across all Claude Code interfaces (CLI, Desktop, VS Code).
+
 **Matchers:** `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog`, `agent_needs_input` (CC 2.1.198), `agent_completed` (CC 2.1.198)
 **Hook types:** Command, HTTP, Prompt, Agent
 

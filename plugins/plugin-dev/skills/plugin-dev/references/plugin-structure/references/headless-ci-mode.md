@@ -192,9 +192,9 @@ CI runs can accumulate significant API costs. Help users control spending:
 - Use `haiku` model for simple analysis skills
 - Document expected token usage for key workflows
 
-## Subagent Forking in Headless Mode (CC 2.1.121)
+## Subagent Forking in Headless Mode (CC 2.1.121, updated 2.1.232)
 
-By default, subagent forking is disabled in non-interactive sessions. To enable subagent spawning in headless/CI contexts:
+**Note (CC 2.1.232):** Subagent forking is now enabled by default in all sessions. The `CLAUDE_CODE_FORK_SUBAGENT` environment variable may no longer be required for most use cases. However, for explicit control in headless/CI contexts:
 
 ```bash
 CLAUDE_CODE_FORK_SUBAGENT=1 claude -p "Run analysis with subagents"

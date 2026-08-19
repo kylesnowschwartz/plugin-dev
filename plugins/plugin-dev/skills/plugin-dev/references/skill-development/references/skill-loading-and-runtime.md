@@ -309,3 +309,38 @@ After conversation compaction, skills invoked before compaction are restored as 
 - Skills should be idempotent where possible
 - Setup actions (file creation, initialization) should check if already done
 - Skills should not assume prior context survives compaction unchanged
+
+## Plugin Eval and Skill Doctor (CC 2.1.233-2.1.235, Early Access)
+
+Claude Code includes early-access features for evaluating plugin quality and diagnosing skill issues:
+
+### Plugin Eval (`claude plugin eval`)
+
+The `claude plugin eval` command runs evaluation suites against plugins to measure skill triggering accuracy, hook correctness, and agent behavior:
+
+**Key features:**
+
+- Configurable `--eval-dir` for custom evaluation suites
+- Containment-checked plugin discovery
+- Image judging support for visual output skills
+- Binary-grading remedies for pass/fail evaluations
+- Sandbox isolation during evaluation runs
+- CI integration for automated testing
+- SIGTERM handling for graceful shutdown
+
+**Enablement:** Plugin eval requires the `CLAUDE_CODE_WALNUT_SPIRE=1` environment variable:
+
+```bash
+CLAUDE_CODE_WALNUT_SPIRE=1 claude plugin eval
+```
+
+### Skill Doctor (`/skill-doctor`)
+
+The `/skill-doctor` command diagnoses skill issues and suggests improvements:
+
+- Identifies triggering problems (why a skill isn't being invoked)
+- Analyzes description effectiveness
+- Suggests trigger phrase improvements
+- Validates frontmatter configuration
+
+**Note:** These features are in early access and may change. Use for development and testing, but don't rely on specific behaviors for production workflows until they're generally available.

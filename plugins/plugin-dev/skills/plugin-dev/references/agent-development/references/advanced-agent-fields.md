@@ -192,14 +192,17 @@ Use `Task(agent_type1, agent_type2)` syntax in settings.json allow rules to cont
 
 Claude Code includes several built-in agent types that can be referenced in the `agent` field of skills or used as targets for `Task()` restrictions:
 
-| Agent Type          | Model   | Tools     | Purpose                             |
-| ------------------- | ------- | --------- | ----------------------------------- |
-| `Explore`           | Haiku   | Read-only | Fast codebase exploration/search    |
-| `Plan`              | Inherit | Read-only | Codebase research during planning   |
-| `general-purpose`   | Inherit | All       | Complex multi-step tasks            |
-| `Bash`              | Inherit | Bash      | Terminal commands in isolation      |
-| `statusline-setup`  | Haiku   | Read/Edit | Status line configuration           |
-| `Claude Code Guide` | Haiku   | Read-only | Documentation and feature questions |
+| Agent Type             | Model   | Tools     | Purpose                               |
+| ---------------------- | ------- | --------- | ------------------------------------- |
+| `Explore`              | Haiku   | Read-only | Fast codebase exploration/search      |
+| `Plan`                 | Inherit | Read-only | Codebase research during planning     |
+| `general-purpose`      | Inherit | All       | Complex multi-step tasks              |
+| `Bash`                 | Inherit | Bash      | Terminal commands in isolation        |
+| `statusline-setup`     | Haiku   | Read/Edit | Status line configuration             |
+| `Claude Code Guide`    | Haiku   | Read-only | Documentation and feature questions   |
+| `Web reading specialist` (CC 2.1.232) | Inherit | WebFetch | Focused web content retrieval and analysis |
+
+**Web reading specialist (CC 2.1.232):** A dedicated WebFetch delegation agent that returns focused, source-grounded reports from untrusted pages. Supports follow-up questions about already-read content and confines binary-file handling to harness-reported tool-results paths. Use this agent type when delegating web content retrieval tasks.
 
 ## Agent Teams (Experimental)
 
@@ -381,11 +384,15 @@ Once a user authorizes read-only access to a particular target, further read-onl
 
 **Implications for plugin agents:** Agents performing read-heavy analysis get a smoother permission flow after initial approval. Design agents to batch reads of related resources when possible.
 
-### Worker Fork Guidance (CC 2.1.169, updated 2.1.176)
+### Worker Fork Guidance (CC 2.1.169, updated 2.1.232)
 
 Forked worker agents receive explicit guidance that they should **not spawn further subagents**. Instead, they should execute their assigned directive directly. This prevents infinite delegation chains and ensures work gets done.
 
+**Subagent forking enabled by default (CC 2.1.232):** Subagent forking is now enabled by default. The fork agent's availability description changed from "fork experiment" to "fork gate". This affects how agents should be designed — forking is now the standard rather than experimental behavior.
+
 **Fork syntax change (CC 2.1.176):** Creating a background fork now requires passing `subagent_type: "fork"` explicitly. Previously, omitting `subagent_type` would create a fork inheriting the current context. Now, omitting the type or using any other type starts a **fresh agent with no context**.
+
+**Capability-aware `subagent_type` behavior (CC 2.1.235):** When `general-purpose` agents are unavailable, omitting `subagent_type` now triggers fallback behavior rather than defaulting to a fresh agent. Plan-specific subagent restrictions also apply — agents in plan mode may have additional delegation constraints.
 
 ```yaml
 # Before CC 2.1.176: omitting subagent_type created a fork
@@ -393,7 +400,7 @@ Forked worker agents receive explicit guidance that they should **not spawn furt
 subagent_type: "fork"  # Required to inherit context
 ```
 
-**Implications for plugin agents:** Agents spawned as subagents should focus on completing their specific task. Don't design agents that recursively spawn more agents for the same work. If an agent needs to delegate, it should be the top-level orchestrator, not a forked worker. Update any existing agent orchestration code to explicitly pass `subagent_type: "fork"` when context inheritance is needed.
+**Implications for plugin agents:** Agents spawned as subagents should focus on completing their specific task. Don't design agents that recursively spawn more agents for the same work. If an agent needs to delegate, it should be the top-level orchestrator, not a forked worker. Update any existing agent orchestration code to explicitly pass `subagent_type: "fork"` when context inheritance is needed. With forking now default-enabled, consider whether your agent workflows should leverage forks for context preservation.
 
 ### /fork Redesigned (CC 2.1.212)
 
@@ -471,9 +478,9 @@ The Agent tool now defaults to `run_in_background: true`. Claude keeps working w
 
 Subagents now inherit the session's extended thinking configuration. Agent type definitions supply model, reasoning effort, and tool access, while the call-level `model` parameter overrides only the model at launch. This means subagents automatically benefit from extended thinking when enabled in the parent session.
 
-### Background vs Foreground Delegation Patterns (CC 2.1.211)
+### Non-Fork Subagent Delegation (CC 2.1.235)
 
-Claude Code provides explicit delegation examples split by execution mode. Design plugin agents to follow these patterns:
+Claude Code provides unified, capability-aware delegation guidance that adapts based on whether general-purpose agents are available. This supersedes the previous separate foreground/background delegation examples (CC 2.1.211).
 
 **Background subagent delegation:**
 
@@ -488,6 +495,10 @@ Claude Code provides explicit delegation examples split by execution mode. Desig
 - Can use conversational context since the agent blocks the main thread
 - Suitable when immediate results are needed
 - Agent can request permissions interactively
+
+**Capability-aware behavior (CC 2.1.235):**
+
+When `general-purpose` agents are unavailable (restricted environments, certain managed configurations), the guidance automatically suppresses examples that reference the default agent type. Design plugin agents to work gracefully when general-purpose delegation isn't available — prefer explicit agent types or handle delegation fallback.
 
 **Async agent metadata (CC 2.1.211):**
 
@@ -640,7 +651,7 @@ The ListAgents tool enables programmatic discovery of available agents:
 
 **Use cases:** multi-agent orchestration discovering available teammates, coordination patterns where agents need to find and communicate with specific agent types, dynamic workflows that adapt based on available agents, cross-machine agent coordination in distributed environments.
 
-### Cross-Session Messaging (CC 2.1.224)
+### Cross-Session Messaging (CC 2.1.224, updated 2.1.232)
 
 SendMessage and ListAgents now support cross-machine communication, enabling Claude Code sessions to communicate across different machines:
 
@@ -657,8 +668,13 @@ SendMessage and ListAgents now support cross-machine communication, enabling Cla
 - Approval workflows control which cross-session messages are accepted
 - This extends the existing SendMessage `"main"` recipient capability to work across machines
 
+**Session-to-session messaging via @-mentions (CC 2.1.232):** Added peer discovery with `name [ref]` addressing syntax. Messages route via `<cross-session-message>` wrappers. Remote-bridge sessions have reply-only constraints. Security protections prevent treating peers as workers, authority sources, or ways to bypass permission decisions.
+
+**Cloud session limitations (CC 2.1.232):** Exact live names deliver across local, remote, and cloud sessions. References (`[ref]`) are only needed for ambiguity or lookup failures. Cloud sessions can receive messages but cannot yet reply to another session.
+
 **Implications for plugin agents:**
 
 - Agents in distributed environments can now coordinate work across multiple machines
 - Design multi-machine workflows with awareness that cross-session messaging requires appropriate settings
 - Consider security implications when designing agents that communicate cross-machine
+- Use `name [ref]` syntax when addressing specific sessions by their ListAgents output

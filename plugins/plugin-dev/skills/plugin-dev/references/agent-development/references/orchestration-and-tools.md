@@ -109,7 +109,7 @@ SendUserFile usage extends beyond just final deliverables:
 
 Hooks can match `SendUserFile` via PreToolUse/PostToolUse for validation or logging of deliverable generation.
 
-## ListAgents Session Labels (CC 2.1.228-2.1.229)
+## ListAgents Session Labels (CC 2.1.228-2.1.232)
 
 The ListAgents tool now provides session kind labels for Remote Control-connected accounts:
 
@@ -124,12 +124,16 @@ The ListAgents tool now provides session kind labels for Remote Control-connecte
 - Remote Control-connected account listings cover both sessions on other machines and cloud sessions
 - Each row is labeled by kind to help distinguish session types
 - Useful for cross-session coordination and monitoring
+- Exact live names deliver across local, remote, and cloud sessions; references (`[ref]`) are only needed for ambiguity or lookup failures
+
+**Cloud session reply limitations (CC 2.1.232):** Cloud sessions can receive messages but cannot yet reply to another session. Design workflows that involve cloud sessions accordingly — they can be notified but cannot participate in bidirectional messaging.
 
 **Use cases for plugin agents:**
 
 - Identifying available sessions for cross-session messaging
 - Monitoring session status across multiple machines
 - Coordinating work between local and cloud sessions
+- One-way notifications to cloud sessions
 
 ## SendMessageTool "main" Recipient (CC 2.1.178)
 
