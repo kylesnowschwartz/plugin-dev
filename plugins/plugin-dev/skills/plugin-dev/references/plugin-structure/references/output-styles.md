@@ -68,6 +68,33 @@ Style files in the referenced path are discovered and registered when the plugin
 
 Claude Code includes built-in output styles that users can select. Plugin-provided styles appear alongside built-in styles in the style selection interface.
 
+### Concise Style (CC 2.1.237)
+
+The built-in "Concise" output style optimizes Claude's responses for brevity and directness:
+
+**Core principles:**
+
+- **Lead with results** — Start responses with the answer, not preamble
+- **Skip narration** — Omit "I'll do X" and "Let me explain" phrases
+- **No repeated recaps** — Don't re-summarize what was just done
+- **Short plain answers by default** — Use minimal formatting unless clarity requires more
+- **Preserve detail when requested** — Honor user requests for thorough explanations
+- **Maintain correctness** — Brevity doesn't compromise accuracy
+
+**When users might choose Concise:**
+
+- Quick Q&A sessions
+- Experienced users who don't need hand-holding
+- Rapid iteration on code changes
+- When context window preservation is important
+
+**Implications for plugin developers:**
+
+- Plugin-provided styles can complement or override Concise
+- Consider whether your style should coexist with Concise behavior
+- Test your skills with Concise active to ensure compatibility
+- Users may expect similar brevity from plugin-generated content
+
 ## When to Use Output Styles vs Other Components
 
 | Component         | Best For                                | Persistence                    |

@@ -208,6 +208,39 @@ Claude Code includes several built-in agent types that can be referenced in the 
 
 Agent teams enable multi-agent coordination where a team lead spawns and manages multiple independent Claude Code sessions as teammates. This is an experimental feature requiring `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
 
+### Coordinator Mode Capability-Aware Routing (CC 2.1.239)
+
+When an agent operates in coordinator mode (managing multiple workers or teammates), Claude Code provides capability-aware message routing:
+
+**Capability-aware user-message routing:**
+
+- User messages are routed to workers based on their declared capabilities
+- The coordinator considers what each worker can do when forwarding tasks
+- Enables intelligent work distribution without explicit routing instructions
+
+**Worker outcomes:**
+
+- **`blocked`** — New worker outcome when a worker cannot proceed (in addition to success/failure)
+- Blocked workers can be reassigned or unblocked by the coordinator
+
+**Concise launch updates:**
+
+- When no communications role exists, worker launch updates are brief
+- Reduces noise in coordinator output when managing many workers
+
+**Teammates as addressable agents:**
+
+- Teammates are exposed as addressable agents in ListAgents output
+- Enables peer-to-peer messaging between team members
+- Coordinators can reference teammates by name for targeted communication
+
+**Implications for plugin agents:**
+
+- Design coordinator agents to leverage capability-aware routing
+- Declare worker capabilities clearly in agent definitions
+- Handle `blocked` outcomes in coordination workflows
+- Consider whether teammates need direct communication capabilities
+
 ### Key Concepts
 
 - **Team lead**: Main session that creates the team, spawns teammates, and coordinates work

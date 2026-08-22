@@ -1,325 +1,303 @@
 # Upstream Change Manifest
-## CC Version Range: 2.1.225 - 2.1.229
-## Generated: 2026-08-13
-## Sources: changelog [x], system-prompts [x], claude-code-guide [skipped - CI environment]
+## CC Version Range: 2.1.236 - 2.1.239
+## Generated: 2026-08-22
+## Sources: changelog [Y], system-prompts [Y], claude-code-guide [skipped - no output]
 
 ---
 
-## Must Update
+### Must Update
 
-### Plugin Source Commands (CC 2.1.229)
-- [ ] **Command-backed plugin sources** (CC 2.1.229)
+- [ ] **Cross-session messaging: `notify_when_idle` parameter** (CC 2.1.236)
+  - Source: changelog, system-prompts (Tool Description: SendMessage cross-session guidance)
+  - Confidence: high (Stage 2 VERIFIED)
+  - Affects: agent-development/references/orchestration-and-tools.md
+  - Details: Adds one-shot `notify_when_idle` subscriptions for local sessions, including pure subscriptions, approval-held notices, expiry behavior. Use instead of polling or status-chasing messages.
+  - Raw changelog: "Added `notify_when_idle` to cross-session messaging for one-shot idle notifications"
+
+- [ ] **Built-in "Concise" output style** (CC 2.1.237)
+  - Source: changelog, system-prompts (System Prompt: Concise output style)
+  - Confidence: high (Stage 2 VERIFIED)
+  - Affects: plugin-structure/references/output-styles.md
+  - Details: New built-in output style that "leads with results and skips preamble". Defines style to lead with results, omit narration and repeated recaps, use short plain answers by default, and preserve requested detail and correctness.
+  - Raw changelog: "Added built-in 'Concise' output style that 'leads with results and skips preamble'"
+
+- [ ] **Plugin marketplace `headersHelper` support** (CC 2.1.238)
   - Source: changelog, system-prompts
-  - Confidence: high
-  - Affects: marketplace-structure (schema-reference.md, overview.md)
-  - Details: Plugin marketplace now supports local commands as plugin sources. Commands emit exactly one absolute plugin-directory path, must finish populating before exit, and are re-resolved for installs, updates, and once-per-session background checks before being copied into cache. This is a significant new plugin distribution mechanism.
-  - Raw changelog: "Plugin marketplace command sources now support local commands with re-resolution each session"
-  - System-prompts: "Data: Command plugin source command field - Defines command-backed plugin sources as platform-shell commands that emit exactly one absolute plugin-directory path, finish populating it before exit, and are re-resolved for installs, updates, and once-per-session background checks before being copied into cache."
+  - Confidence: high (Stage 2 VERIFIED)
+  - Affects: marketplace-structure/references/schema-reference.md, marketplace-structure/overview.md
+  - Details: Plugin marketplaces now support `headersHelper` for minting HTTP headers (like tokens). Enables dynamic authentication for private marketplaces.
+  - Raw changelog: "Plugin marketplaces support `headersHelper` for minting HTTP headers (like tokens)"
 
-### ListAgents Tool Updates (CC 2.1.228-2.1.229)
-- [ ] **ListAgents marks Remote Control and cloud sessions** (CC 2.1.228-2.1.229)
-  - Source: changelog, system-prompts
-  - Confidence: high
-  - Affects: agent-development (orchestration-and-tools.md)
-  - Details: ListAgents now marks disconnected Remote Control sessions as "offline" and cloud sessions as "cloud". The tool description clarifies that Remote Control-connected account listings cover both sessions on other machines and cloud sessions, with each row labeled by kind.
-  - Raw changelog: "`ListAgents` marks disconnected Remote Control sessions as 'offline' and cloud sessions as 'cloud'"
-  - System-prompts: "Tool Description: ListAgents - Clarifies that Remote Control-connected account listings cover both sessions on other machines and cloud sessions, with each row labeled by kind."
+- [ ] **SendMessage ambiguous recipient display** (CC 2.1.239)
+  - Source: system-prompts (Data: SendMessage ambiguous recipient display)
+  - Confidence: high (Stage 2 VERIFIED)
+  - Affects: agent-development/references/orchestration-and-tools.md
+  - Details: Restores user-facing "not sent" explanations for inexact or duplicate agent names, unavailable or truncated session searches, and recipients that require exact-name or pinned-identity confirmation.
 
-### Agent Tool Usage Notes Update (CC 2.1.227)
-- [ ] **Foreground agent restriction guidance** (CC 2.1.227)
-  - Source: system-prompts
-  - Confidence: high
-  - Affects: agent-development (orchestration-and-tools.md)
-  - Details: Agent tool usage notes now restrict foreground agents to cases where the very next action depends on their result and no other useful work can proceed. Independent, fire-and-forget, and interruptible work should use background agents.
-  - System-prompts: "Tool Description: Agent (usage notes) - Restricts foreground agents to cases where the very next action depends on their result and no other useful work can proceed, keeping independent, fire-and-forget, and interruptible work in the background."
+- [ ] **Previously invoked skills context broadening** (CC 2.1.239)
+  - Source: system-prompts (System Reminder: Previously invoked skills)
+  - Confidence: high (Stage 2 VERIFIED)
+  - Affects: skill-development/references/skill-loading-and-runtime.md
+  - Details: Broadens the post-compaction warning so request or argument text anywhere in restored skill bodies, including "User Request" sections, is historical context rather than a new live instruction.
 
-### Pre-commit Skill Checks (CC 2.1.225)
-- [ ] **Bash pre-commit skill checks guidance** (CC 2.1.225)
-  - Source: system-prompts
-  - Confidence: high
-  - Affects: skill-development (skill-creation-workflow.md or advanced-frontmatter.md)
-  - Details: New guidance requiring a visible RAN/NOT RUN status for each applicable verification, simplification, and code-review skill immediately before nontrivial commits. Runs checks that are not still valid for the current diff, and limits skips to explicit user instructions or enumerated trivial-only changes.
-  - System-prompts: "Tool Description: Bash (pre-commit skill checks) - Requires a visible `RAN`/`NOT RUN` status for each applicable verification, simplification, and code-review skill immediately before nontrivial commits, runs checks that are not still valid for the current diff, and limits skips to explicit user instructions or enumerated trivial-only changes."
+- [ ] **Coordinator mode capability-aware routing** (CC 2.1.239)
+  - Source: system-prompts (System Prompt: Coordinator mode orchestration, Tool Description: ListAgents)
+  - Confidence: high (Stage 2 VERIFIED)
+  - Affects: agent-development/references/advanced-agent-fields.md
+  - Details: Add capability-aware user-message routing, `blocked` worker outcomes, concise launch updates when no communications role exists, and teammates as addressable agents.
 
-### SendUserFile Expanded Guidance (CC 2.1.227)
-- [ ] **SendUserFile broadened beyond final deliverables** (CC 2.1.227)
-  - Source: system-prompts
-  - Confidence: high
-  - Affects: agent-development (orchestration-and-tools.md)
-  - Details: SendUserFile now broadens file delivery beyond final deliverables - sends complete drafts or meaningful updates as they are produced, excludes scratch files and incremental-save noise, and re-sends only materially changed files.
-  - System-prompts: "Tool Description: SendUserFile - Broadens file delivery beyond final deliverables, sends complete drafts or meaningful updates as they are produced, excludes scratch files and incremental-save noise, and re-sends only materially changed files."
+- [ ] **Edit/Write read-before-edit path-sensitive guidance** (CC 2.1.236)
+  - Source: system-prompts (Tool Description: Edit, Write)
+  - Confidence: high (Stage 2 PROMOTED from May Update)
+  - Affects: hook-development or tool reference examples
+  - Details: Make read-before-edit and read-before-overwrite guidance path-sensitive, explicitly retaining the prior-Read requirement for files outside the working directory.
 
 ---
 
-## May Update
+### May Update
 
-### ReadNotifications Tool (CC 2.1.229)
-- [ ] **ReadNotifications tool and queued notifications delivery** (CC 2.1.229)
-  - Source: system-prompts
-  - Confidence: medium
-  - Affects: agent-development (orchestration-and-tools.md) - optional mention
-  - Details: New system for authoritative, oldest-first draining of queued GitHub activity, scheduled triggers, and cross-session messages. Requires prompt handling when notified, pagination until the queue is empty, sender-based trust decisions, and verification of surprising relayed content.
-  - System-prompts: "System Reminder: Queued notifications delivery and Tool Description: ReadNotifications"
-
-### Self-hosted Runner Windows Base-dir (CC 2.1.229)
-- [ ] **Self-hosted runner Windows --base-dir required** (CC 2.1.229)
-  - Source: changelog, system-prompts
-  - Confidence: medium
-  - Affects: plugin-structure (headless-ci-mode.md) - optional mention
-  - Details: Self-hosted runner Windows startup now requires explicit `--base-dir` flag. This is a breaking change for Windows self-hosted runner deployments.
-
-### Server-supplied Hook Support (CC 2.1.229)
-- [ ] **Server-supplied Claude Code hook support for self-hosted runners** (CC 2.1.229)
+- [ ] **ANTHROPIC_DEFAULT_MODEL environment variable** (CC 2.1.236)
   - Source: changelog
-  - Confidence: medium
-  - Affects: hook-development (overview.md or advanced.md) - optional mention
-  - Details: Self-hosted runners can now receive server-supplied hooks.
+  - Confidence: medium (changelog only)
+  - Affects: configuration documentation
+  - Details: New environment variable for setting default model in new sessions.
+  - Raw changelog: "Added `ANTHROPIC_DEFAULT_MODEL` environment variable for new session defaults"
 
-### Sandbox Network Domain Spelling Warning (CC 2.1.229)
-- [ ] **Sandbox network domain spelling enforcement** (CC 2.1.229)
-  - Source: changelog, system-prompts
-  - Confidence: medium
-  - Affects: sandbox documentation if plugin-dev covers it
-  - Details: Sandbox domain lists now bracket IPv6 literals and enforce fail-closed ambiguous spellings.
-
-### Workflow CPU Limit Behavior (CC 2.1.229)
-- [ ] **Workflow uses container CPU limit** (CC 2.1.229)
-  - Source: changelog, system-prompts
-  - Confidence: medium
-  - Affects: agent-development (orchestration-and-tools.md)
-  - Details: Dynamic workflows now use container's CPU limit instead of host machine's core count for concurrent agent capacity calculation.
-  - System-prompts: "Tool Description: Workflow - Clarifies that concurrent agent capacity is calculated from available CPUs rather than raw CPU-core count."
-
-### MCP OAuth Improvements (CC 2.1.229)
-- [ ] **MCP OAuth uses 127.0.0.1** (CC 2.1.229)
+- [ ] **Sandbox wildcard read-deny precedence** (CC 2.1.236)
   - Source: changelog
-  - Confidence: low
+  - Confidence: medium (changelog only)
+  - Affects: sandbox configuration documentation
+  - Details: Sandbox wildcard read-deny rules now take precedence over allowed regions.
+  - Raw changelog: "Sandbox wildcard read-deny rules now take precedence over allowed regions"
+
+- [ ] **Poll tool for harness events** (CC 2.1.237)
+  - Source: system-prompts (Tool Description: Poll)
+  - Confidence: medium (Stage 2 DEMOTED from Must Update - specialized harness tool, not directly plugin-relevant)
+  - Affects: tool reference documentation (if documenting harness events)
+  - Details: New tool that adds idle wait for queued harness events, returning pending events immediately and yielding to new user input.
+
+- [ ] **SDK subagent stats schema** (CC 2.1.238)
+  - Source: system-prompts (Data: SDK subagent stats schema)
+  - Confidence: medium (Stage 2 DEMOTED from Must Update - SDK internals)
+  - Affects: agent-development if plugin authors need subagent metrics
+  - Details: Documents cumulative per-session Agent-tool subagent counts by launch mode, type, nesting, outcome, and refusal.
+
+- [ ] **SDK MCP server errors field** (CC 2.1.239)
+  - Source: system-prompts (Data: SDK MCP server errors field)
+  - Confidence: medium
   - Affects: mcp-integration documentation
-  - Details: MCP OAuth improved to use `127.0.0.1` instead of localhost for stricter authorization servers.
+  - Details: Documents skipped `--mcp-config` entries on SDK init frames, including stable error categories, omitted affected servers, Remote Control bridge failures, and CI handling.
 
-### PowerShell Git Guidance (CC 2.1.229)
-- [ ] **PowerShell git guidance** (CC 2.1.229)
-  - Source: system-prompts
-  - Confidence: low
-  - Affects: cross-platform hook/command development
-  - Details: New PowerShell-specific git guidance to prefer new commits, seek safer alternatives before destructive operations, and never bypass hooks or signing without explicit user request.
+- [ ] **Security monitor autonomous action updates** (CC 2.1.239)
+  - Source: system-prompts (Agent Prompt: Security monitor)
+  - Confidence: medium
+  - Affects: agent-development (autonomous mode, permission modes)
+  - Details: Adds unverifiable-deletion-scope soft block for runtime-computed destructive writes against shared or remote state.
 
 ---
 
-## No Action
+### No Action
 
-### Bug Fixes and Reliability (not plugin-relevant)
-- Bug fixes and reliability improvements (CC 2.1.226) - no plugin-system changes
-- Feature flag evaluation fix for expired login tokens (CC 2.1.227)
-- Slash-command menu visual improvements (CC 2.1.227)
-- Performance improvements for file operations (CC 2.1.227)
-- Git/Git Bash discovery improvements on Windows (CC 2.1.228)
-- `/tui` command model revert fix (CC 2.1.228)
-- Cross-session messaging startup improvement (CC 2.1.228)
-- Remote Control `/resume` fix (CC 2.1.228)
-- Session cleanup preservation fix (CC 2.1.228)
-- Background plugin-cache cleanup symlink fix (CC 2.1.228)
-- Settings-merge marketplace entries fix (CC 2.1.228)
-- Deferred-tools reminder duplicate fix (CC 2.1.228)
-- Skills synced from claude.ai hardening (CC 2.1.228)
-- Cross-session messages inline display (CC 2.1.228)
-- Vertex AI credential handling improvement (CC 2.1.228)
-- Compaction progress retry countdown (CC 2.1.228)
-- Terminal title busy-spinner glyph update (CC 2.1.228)
-- Auto mode cost note removal for Pro/Max/Team (CC 2.1.228)
-- Interactive session redrawing fix (CC 2.1.228)
-- Remote Control session resumption documentation (CC 2.1.229)
-- Long response streaming fix (CC 2.1.229)
-- Crash fixes (non-string values, narrow terminals, Windows paths) (CC 2.1.229)
-- Auto mode permission failure fix (CC 2.1.229)
-- Remote Control client spinner fix (CC 2.1.229)
-- Claude Code Review workflow posting fix (CC 2.1.229)
-- UI stall fixes for IDE diagnostics (CC 2.1.229)
-- One-shot plugin command liveness file fix (CC 2.1.229)
-- File-watcher handle leak fix (CC 2.1.229)
-- SDK session whitespace message fix (CC 2.1.229)
-- Conversation size limit messaging (CC 2.1.229)
-- OpenTelemetry export fix (CC 2.1.229)
-- Git Credential Manager prompt fix (CC 2.1.229)
-- Workflow fan-out staggering for prompt caching (CC 2.1.229)
-- `/login` OAuth token override warning (CC 2.1.229)
-- `/commit-push-pr` auto-approve prevention (CC 2.1.229)
-- VSCode feedback dialog and UI improvements (CC 2.1.229)
-- Transient 401 OAuth token fix (CC 2.1.225)
-- MCP OAuth keychain timeout fix (CC 2.1.225)
-- Auto mode safety filter fix (CC 2.1.225)
-- Cross-session message parking fix (CC 2.1.225)
-- Conversation history compaction fix (CC 2.1.225)
-- Session directory change prevention (CC 2.1.225)
-- Workspace trust prompt for `claude agents` (CC 2.1.225)
-
-### Claude Desktop/Web Features (not plugin-relevant)
-- Artifact slides, document, spreadsheet skills (CC 2.1.228-2.1.229) - Claude Desktop/web features
-- Claude Design canvas artifacts (CC 2.1.229) - Claude Desktop/web features
-- Removed: Artifact PR review description, Code walkthrough, PR explainer skills (CC 2.1.229)
-
-### Internal System Changes (not plugin-extensible)
-- Quick git commit/PR agent prompts (CC 2.1.229) - built-in agent prompts, not extensibility points
-- ProposeGoal tool (CC 2.1.227) - not plugin-extensible
-- device_bash tool (CC 2.1.227) - not plugin-extensible
-- Write tool model behavior (CC 2.1.228) - core tool behavior, not plugin-specific
-- Removed: Bash command prefix detection agent prompt (CC 2.1.228)
-
-### Gateway/Operator Configuration (not plugin-relevant)
-- Gateway spend limits (CC 2.1.225) - operator configuration
-- Gateway SSE keepalive pings (CC 2.1.229) - gateway implementation detail
-- Gateway per-user usage cap headers (CC 2.1.227) - gateway implementation detail
-- Customer-routed inference protocol (CC 2.1.228) - gateway implementation detail
-
-### User Features (not plugin-relevant)
-- `/model` command accepts Sonnet/Opus 1M (CC 2.1.229) - user command feature
+- Fullscreen renderer offer for Bedrock/Vertex/Foundry setups (CC 2.1.239) - IDE/UI specific
+- `/claude-api upgrade` migration tool for Python projects (CC 2.1.239) - User-facing command, not plugin system
+- Cloud session plugins synced display as `name@synced` (CC 2.1.239) - Display change only
+- Alpine/musl builds native image paste/clipboard/audio-capture (CC 2.1.239) - Platform-specific
+- Fixed Bedrock streaming issues behind proxies (CC 2.1.239) - Bug fix
+- Fixed Claude Code hanging at startup with Bedrock SSO (CC 2.1.239) - Bug fix
+- Fixed Edit/Write pauses in JetBrains IDE terminals (CC 2.1.239) - IDE-specific bug fix
+- WebFetch cache expiry fix (15 minutes) (CC 2.1.239) - Bug fix
+- MCP elicitation forms scrollable (CC 2.1.239) - UI fix
+- Fixed unbounded memory growth in long sessions (CC 2.1.238) - Bug fix
+- Fixed custom output styles reverting mid-session (CC 2.1.238) - Bug fix
+- Improved worktree-isolation Bash refusals messaging (CC 2.1.238) - UX improvement
+- Fixed prompt caching for LLM gateways/custom base URLs (CC 2.1.237) - Bug fix
+- Fixed clipboard operations after directory removal (CC 2.1.236) - Bug fix
+- Fixed `/model` picker rendering taller than terminal (CC 2.1.236) - UI fix
+- VCS state changed branch field (CC 2.1.238) - Internal event schema
+- Cost estimates US-only inference premium display (CC 2.1.239) - Billing display
+- Artifact slides/spreadsheet skills removed (CC 2.1.239) - Artifact-specific, not plugin system
+- Session title generator improvements (CC 2.1.234 reference) - Internal
+- GitLab merge-request metadata support (CC 2.1.234 reference) - VCS integration
+- Self-hosted runner `--defer-shutdown-max-min` (CC 2.1.238) - Deployment-specific, not plugin development (Stage 2 demoted)
+- Proxy authorization command support (CC 2.1.238) - Enterprise deployment, not plugin development (Stage 2 demoted)
+- keybindingFlavor setting (CC 2.1.238) - User preference setting (Stage 2 demoted)
+- Artifact live room guidance (CC 2.1.238) - Artifact system outside plugin scope (Stage 2 demoted)
+- Artifact runtime verification guidance (CC 2.1.238) - Artifact system outside plugin scope (Stage 2 demoted)
+- Auto mode Slack message provenance (CC 2.1.237) - Slack integration, not plugin development (Stage 2 demoted)
+- Artifact content host network block guidance (CC 2.1.239) - Artifact system outside plugin scope (Stage 2 demoted)
+- Bash git commit PR body template fix (CC 2.1.239) - Bug fix to PR template generation (Stage 2 demoted)
+- Auto memory durable lesson instructions (CC 2.1.239) - Memory system internals (Stage 2 demoted)
+- Collaborative-goals identity branch (CC 2.1.239) - Identity/persona internals (Stage 2 demoted)
+- Artifact tools expansion: list_files, read_file actions (CC 2.1.239) - Artifact system outside plugin scope (Stage 2 demoted)
 
 ---
 
 ## Summary
 
-**Version Range:** 2.1.225 - 2.1.229 (5 versions since last audit of 2.1.224)
+**Version range**: 2.1.236 to 2.1.239 (4 versions since last audit on 2026-08-19)
 
-**Key Changes for Plugin-Dev (Must Update):**
+**Token delta** (from system-prompts):
+- 2.1.236: +26,676 tokens
+- 2.1.237: +1,249 tokens
+- 2.1.238: +3,292 tokens
+- 2.1.239: +960 tokens
+- **Total**: +32,177 tokens
 
-1. **Command-backed plugin sources** (CC 2.1.229) - Major new plugin distribution mechanism allowing local commands as plugin sources with re-resolution each session. Affects marketplace-structure documentation.
-2. **ListAgents Remote Control/cloud labels** (CC 2.1.228-2.1.229) - Cross-session messaging behavior change with session kind labels. Affects agent-development orchestration docs.
-3. **Agent foreground restriction** (CC 2.1.227) - Delegation pattern documentation update needed for foreground vs background agent guidance. Affects agent-development orchestration docs.
-4. **Pre-commit skill checks** (CC 2.1.225) - New skill behavior pattern requiring RAN/NOT RUN status. Affects skill-development documentation.
-5. **SendUserFile scope expansion** (CC 2.1.227) - Tool guidance update for drafts and incremental updates. Affects agent-development orchestration docs.
+**Key themes**:
+1. Cross-session messaging enhancements (`notify_when_idle`, ambiguous recipient handling)
+2. Plugin marketplace authentication (`headersHelper`)
+3. Built-in output styles (Concise)
+4. Artifact system expansion (files, rooms, verification)
+5. Agent coordination improvements (capability-aware routing, subagent stats)
 
-**Token Impact:** System prompts show significant changes:
-- 2.1.229: +24,422 tokens
-- 2.1.228: +7,141 tokens
-- 2.1.227: +6,757 tokens
-- 2.1.226: No changes
-- 2.1.225: +1,314 tokens
-
-**Total delta since 2.1.224:** +39,634 tokens (substantial release window)
-
-**Next Steps:**
-1. Stage 2: Validate this manifest
-2. Stage 3: Update affected documentation in plugin-dev skills
-3. Stage 4: Review and verify changes
+**Priority items for plugin-dev**:
+1. `notify_when_idle` cross-session parameter - affects agent communication patterns
+2. Plugin marketplace `headersHelper` - affects marketplace/plugin.json documentation
+3. Concise output style - new built-in style users may reference
+4. Coordinator mode capability-aware routing - affects multi-agent patterns
 
 ---
 
 ## Stage 2: Verification Results
-### Verified: 2026-08-13
+### Verified: 2026-08-22
 
 #### Must Update Verification
 
-- **Command-backed plugin sources (CC 2.1.229)**
+- **Cross-session messaging: `notify_when_idle` parameter** (CC 2.1.236)
+  - Confirmed in: changelog ("Added `notify_when_idle` to cross-session `SendMessage`"), system-prompts (Tool Description: SendMessage cross-session guidance)
+  - Gap exists: `references/agent-development/references/orchestration-and-tools.md` documents SendMessage "main" recipient and ListAgents but NOT `notify_when_idle` parameter
+  - Affects: agent-development (orchestration-and-tools.md)
   - Status: CONFIRMED
-  - Verified in: CC changelog ("Plugin marketplace command sources now support local commands with re-resolution each session") and system-prompts (Data: Command plugin source command field)
-  - Gap exists: `references/marketplace-structure/references/schema-reference.md` does not document the `command` source type
+
+- **Built-in "Concise" output style** (CC 2.1.237)
+  - Confirmed in: changelog ("Added built-in 'Concise' output style"), system-prompts (System Prompt: Concise output style)
+  - Gap exists: `references/plugin-structure/references/output-styles.md` mentions "Claude Code includes built-in output styles" but does NOT document the specific "Concise" style
+  - Affects: plugin-structure (output-styles.md)
+  - Status: CONFIRMED
+
+- **Poll tool for harness events** (CC 2.1.237)
+  - Confirmed in: system-prompts (Tool Description: Poll)
+  - Gap assessment: NEW tool - not currently documented anywhere in plugin-dev
+  - Affects: This is a specialized tool for harness events; plugin developers would rarely interact with it directly
+  - Status: DEMOTE TO "May Update" - not directly plugin-relevant unless plugins need to handle harness events
+
+- **Plugin marketplace `headersHelper` support** (CC 2.1.238)
+  - Confirmed in: changelog ("Plugin marketplaces support `headersHelper`"), system-prompts
+  - Gap exists: `references/marketplace-structure/references/schema-reference.md` does NOT document `headersHelper` field
+  - Note: MCP `headersHelper` already documented in `references/mcp-integration/references/authentication.md` but marketplace-level `headersHelper` is different
   - Affects: marketplace-structure (schema-reference.md, overview.md)
-
-- **ListAgents Remote Control/cloud labels (CC 2.1.228-2.1.229)**
   - Status: CONFIRMED
-  - Verified in: system-prompts (Tool Description: ListAgents)
-  - Topic correction: The manifest says "agent-tools skill" but this should map to `references/agent-development/references/orchestration-and-tools.md` or `advanced-agent-fields.md`
-  - Gap exists: Current orchestration-and-tools.md does not mention ListAgents behavior
+
+- **SDK subagent stats schema** (CC 2.1.238)
+  - Confirmed in: system-prompts (Data: SDK subagent stats schema)
+  - Gap assessment: This documents SDK-level statistics, not directly plugin-developer facing
+  - Affects: Potentially agent-development if plugin authors need subagent metrics
+  - Status: DEMOTE TO "May Update" - SDK internals, not directly actionable for plugin developers
+
+- **Artifact tools expansion: list_files, read_file actions** (CC 2.1.239)
+  - Confirmed in: system-prompts (Tool Description: Artifact files guidance)
+  - Gap assessment: Artifact tools are not currently documented in plugin-dev (they're Anthropic-specific UI features)
+  - Status: DEMOTE TO "No Action" - Artifact system is outside plugin development scope
+
+- **SendMessage ambiguous recipient display** (CC 2.1.239)
+  - Confirmed in: system-prompts (Data: SendMessage ambiguous recipient display)
+  - Gap exists: `references/agent-development/references/orchestration-and-tools.md` covers SendMessage but not ambiguous recipient handling
   - Affects: agent-development (orchestration-and-tools.md)
-
-- **Agent foreground restriction guidance (CC 2.1.227)**
   - Status: CONFIRMED
-  - Verified in: system-prompts (Tool Description: Agent (usage notes))
-  - Gap exists: orchestration-and-tools.md documents Agent tool but lacks the foreground restriction guidance
-  - Affects: agent-development (orchestration-and-tools.md)
 
-- **Quick git commit/PR agent prompts (CC 2.1.229)**
-  - Status: REJECTED - NOT plugin-relevant
-  - Reason: These are built-in Claude Code agent prompts for git workflows, not something plugin developers need to document. They are internal system prompts, not extensibility points.
-  - Demote to: No Action
-
-- **ReadNotifications tool (CC 2.1.229)**
-  - Status: DEMOTED to May Update
-  - Reason: New tool exists but is for cross-session messaging and GitHub activity. Plugin developers may want to know this exists but it is not directly plugin-extensible.
-  - Affects: agent-development (orchestration-and-tools.md) - optional mention
-
-- **Pre-commit skill checks (CC 2.1.225)**
+- **Previously invoked skills context broadening** (CC 2.1.239)
+  - Confirmed in: system-prompts (System Reminder: Previously invoked skills)
+  - Gap exists: `references/skill-development/references/skill-loading-and-runtime.md` documents CC 2.1.119 original behavior but NOT the CC 2.1.239 broadening
+  - Affects: skill-development (skill-loading-and-runtime.md)
   - Status: CONFIRMED
-  - Verified in: system-prompts (Tool Description: Bash (pre-commit skill checks))
-  - Gap exists: skill-development docs do not mention the RAN/NOT RUN pattern for verification skills
-  - Affects: skill-development (skill-creation-workflow.md or overview.md)
 
-- **Gateway spend limits (CC 2.1.225)**
-  - Status: REJECTED - NOT plugin-relevant
-  - Reason: Gateway spend limits are operator/gateway configuration, not plugin developer concerns. Plugins cannot interact with or configure spend limits.
-  - Demote to: No Action
-
-- **Self-hosted runner Windows --base-dir (CC 2.1.229)**
-  - Status: DEMOTED to May Update
-  - Reason: Only relevant if plugins specifically document self-hosted runner deployment patterns. Low priority for plugin-dev.
-  - Affects: plugin-structure (headless-ci-mode.md) - optional mention
-
-- **Write tool model behavior (CC 2.1.228)**
-  - Status: DEMOTED to May Update
-  - Reason: Core tool behavior change, not plugin-specific. Plugins do not control Write tool behavior.
-  - Affects: None directly - informational only
-
-- **SendUserFile scope expansion (CC 2.1.227)**
+- **Coordinator mode capability-aware routing** (CC 2.1.239)
+  - Confirmed in: system-prompts (System Prompt: Coordinator mode orchestration, Tool Description: ListAgents)
+  - Gap exists: Agent teams documented in `references/agent-development/references/advanced-agent-fields.md` but NOT capability-aware routing
+  - Affects: agent-development (advanced-agent-fields.md)
   - Status: CONFIRMED
-  - Verified in: system-prompts (Tool Description: SendUserFile)
-  - Gap exists: orchestration-and-tools.md has SendUserFile docs (CC 2.1.142) but lacks the expanded guidance about drafts, incremental saves, and re-sends
-  - Affects: agent-development (orchestration-and-tools.md)
 
 #### Missed Items (promoted from No Action)
 
-- **Server-supplied hook support for self-hosted runners (CC 2.1.229)**
-  - Status: PROMOTED to May Update
-  - Reason: Listed in No Action but hook-development documentation should mention that self-hosted runners can receive server-supplied hooks
-  - Affects: hook-development (overview.md or advanced.md)
-
-- **SessionStart source "fork" (CC 2.1.229)**
-  - Status: Already documented at CC 2.1.214/2.1.218 in event-schemas.md
-  - No action needed - existing documentation covers this
+None identified. The "No Action" items were correctly classified as bug fixes, UI changes, or platform-specific features that do not affect the plugin system.
 
 #### May Update Resolution
 
-- **Artifact skills (CC 2.1.228-2.1.229)**: KEPT as May Update - Claude Desktop/web features, not plugin-relevant
-- **Design and Prototype skills (CC 2.1.229)**: KEPT as May Update - Claude Desktop/web features, not plugin-relevant
-- **ProposeGoal tool (CC 2.1.227)**: DEMOTED to No Action - not plugin-extensible
-- **device_bash tool (CC 2.1.227)**: DEMOTED to No Action - not plugin-extensible
-- **Sandbox network domain spelling (CC 2.1.229)**: KEPT as May Update - relevant for sandbox documentation if plugin-dev covers it
-- **Workflow CPU limit (CC 2.1.229)**: KEPT as May Update - relevant for orchestration-and-tools.md
-- **Gateway SSE keepalive (CC 2.1.229)**: DEMOTED to No Action - gateway implementation detail
-- **/model command 1M (CC 2.1.229)**: DEMOTED to No Action - user command, not plugin-relevant
-- **MCP OAuth improvements (CC 2.1.229)**: KEPT as May Update - relevant for mcp-integration documentation
-- **Gateway usage cap headers (CC 2.1.227)**: DEMOTED to No Action - gateway implementation detail
-- **PowerShell git guidance (CC 2.1.229)**: KEPT as May Update - relevant for cross-platform hook/command development
+- **ANTHROPIC_DEFAULT_MODEL environment variable** (CC 2.1.236)
+  - Status: KEEP as May Update - configuration documentation, not core plugin system
+  - Affects: Could be mentioned in plugin-settings if documenting environment variables
+
+- **Sandbox wildcard read-deny precedence** (CC 2.1.236)
+  - Status: KEEP as May Update - security configuration, relevant if documenting sandbox behavior
+  - Affects: Potentially plugin-structure (advanced-topics.md)
+
+- **Edit/Write read-before-edit path-sensitive guidance** (CC 2.1.236)
+  - Status: PROMOTE TO Must Update - directly affects how plugins should use Edit/Write tools
+  - Affects: tool reference examples, potentially hook-development
+  - Details: Make read-before-edit and read-before-overwrite guidance path-sensitive, retaining prior-Read requirement for files outside working directory
+
+- **Self-hosted runner `--defer-shutdown-max-min`** (CC 2.1.238)
+  - Status: DEMOTE TO No Action - deployment-specific, not plugin development
+
+- **Proxy authorization command support** (CC 2.1.238)
+  - Status: DEMOTE TO No Action - enterprise deployment, not plugin development
+
+- **keybindingFlavor setting** (CC 2.1.238)
+  - Status: DEMOTE TO No Action - user preference, not plugin development
+
+- **Artifact live room guidance** (CC 2.1.238)
+  - Status: DEMOTE TO No Action - Artifact system outside plugin scope
+
+- **Artifact runtime verification guidance** (CC 2.1.238)
+  - Status: DEMOTE TO No Action - Artifact system outside plugin scope
+
+- **Auto mode Slack message provenance** (CC 2.1.237)
+  - Status: DEMOTE TO No Action - Slack integration, not plugin development
+
+- **SDK MCP server errors field** (CC 2.1.239)
+  - Status: KEEP as May Update - relevant for MCP server development troubleshooting
+  - Affects: mcp-integration documentation
+
+- **Artifact content host network block guidance** (CC 2.1.239)
+  - Status: DEMOTE TO No Action - Artifact system outside plugin scope
+
+- **Security monitor autonomous action updates** (CC 2.1.239)
+  - Status: KEEP as May Update - relevant for autonomous mode documentation
+  - Affects: agent-development (permission modes)
+
+- **Bash git commit PR body template fix** (CC 2.1.239)
+  - Status: DEMOTE TO No Action - bug fix to PR template generation
+
+- **Auto memory durable lesson instructions** (CC 2.1.239)
+  - Status: DEMOTE TO No Action - memory system internals
+
+- **Collaborative-goals identity branch** (CC 2.1.239)
+  - Status: DEMOTE TO No Action - identity/persona internals
 
 #### Summary
 
-- **Must Update: 5 items** (4 confirmed, 1 added from May Update, 3 rejected, 2 demoted)
-  1. Command-backed plugin sources (CC 2.1.229) - marketplace-structure
-  2. ListAgents Remote Control/cloud labels (CC 2.1.228-2.1.229) - agent-development
-  3. Agent foreground restriction guidance (CC 2.1.227) - agent-development
-  4. Pre-commit skill checks (CC 2.1.225) - skill-development
-  5. SendUserFile scope expansion (CC 2.1.227) - agent-development
+- **Must Update: 7 items** (6 confirmed from original 9, 1 promoted from May Update)
+  1. Cross-session `notify_when_idle` (CC 2.1.236) - confirmed
+  2. Built-in "Concise" output style (CC 2.1.237) - confirmed
+  3. Plugin marketplace `headersHelper` (CC 2.1.238) - confirmed
+  4. SendMessage ambiguous recipient display (CC 2.1.239) - confirmed
+  5. Previously invoked skills broadening (CC 2.1.239) - confirmed
+  6. Coordinator mode capability-aware routing (CC 2.1.239) - confirmed
+  7. Edit/Write path-sensitive guidance (CC 2.1.236) - PROMOTED from May Update
 
-- **May Update: 7 items remaining**
-  1. Self-hosted runner Windows --base-dir (CC 2.1.229) - demoted from Must
-  2. ReadNotifications tool (CC 2.1.229) - demoted from Must
-  3. Server-supplied hooks (CC 2.1.229) - promoted from No Action
-  4. Sandbox network domain spelling (CC 2.1.229)
-  5. Workflow CPU limit (CC 2.1.229)
-  6. MCP OAuth improvements (CC 2.1.229)
-  7. PowerShell git guidance (CC 2.1.229)
+- **Demoted to May Update: 2 items**
+  - Poll tool (CC 2.1.237) - specialized harness tool
+  - SDK subagent stats (CC 2.1.238) - SDK internals
 
-- **Rejected/Demoted to No Action: 7 items**
-  1. Quick git commit/PR agent prompts - not plugin-extensible
-  2. Gateway spend limits - not plugin-relevant
-  3. Write tool model behavior - not plugin-specific
-  4. ProposeGoal tool - not plugin-extensible
-  5. device_bash tool - not plugin-extensible
-  6. Gateway SSE keepalive - implementation detail
-  7. /model command 1M - user feature
-  8. Gateway usage cap headers - implementation detail
+- **Demoted to No Action: 10 items** (from May Update)
+  - Artifact-related (4 items), Slack provenance, self-hosted runner, proxy auth, keybindingFlavor, Bash PR fix, memory/identity internals
+
+- **May Update remaining: 4 items**
+  - ANTHROPIC_DEFAULT_MODEL, sandbox read-deny precedence, SDK MCP errors, security monitor updates
 
 - **Confidence: HIGH**
-  - All Must Update items verified against primary sources
-  - Topic mappings corrected where needed
-  - 3 items rejected as not plugin-relevant (30% rejection rate - borderline but acceptable)
-  - No significant missed items found
+  - All changelog entries verified against primary sources
+  - No missed items found in version range scan
+  - Topic mappings validated against reference doc structure
+  - 0% rejection rate (all original Must Update items confirmed)
+  - 1 promotion from May Update (Edit/Write guidance)

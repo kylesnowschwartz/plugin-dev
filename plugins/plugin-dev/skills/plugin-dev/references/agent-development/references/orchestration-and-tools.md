@@ -135,6 +135,55 @@ The ListAgents tool now provides session kind labels for Remote Control-connecte
 - Coordinating work between local and cloud sessions
 - One-way notifications to cloud sessions
 
+## Cross-Session `notify_when_idle` Parameter (CC 2.1.236)
+
+The SendMessage tool now supports a `notify_when_idle` parameter for one-shot idle notifications when messaging local sessions:
+
+```json
+{
+  "recipient": "session-name",
+  "message": "Let me know when you're available",
+  "notify_when_idle": true
+}
+```
+
+**Behavior:**
+
+- **One-shot subscription** — Registers for a single notification when the target session becomes idle
+- **Pure subscriptions** — Can be sent without a message body to just subscribe to idle state
+- **Approval-held notices** — Includes notifications when the session is held on an approval dialog
+- **Expiry behavior** — Subscriptions expire after the session responds or after a timeout
+
+**Use cases for plugin agents:**
+
+- Polling-free coordination — Use instead of repeatedly checking session status
+- Avoid status-chasing messages — Subscribe once instead of sending "are you done yet?" queries
+- Async handoffs — Be notified when a background session completes its work
+- User interruption awareness — Know when an autonomous session is paused for approval
+
+**Implications for plugin agents:**
+
+- Design multi-session workflows to use `notify_when_idle` instead of polling patterns
+- Reduces message noise and improves coordination efficiency
+- Works only with local sessions, not cloud or remote sessions
+
+## SendMessage Ambiguous Recipient Display (CC 2.1.239)
+
+SendMessage provides user-facing explanations when messages cannot be sent due to recipient ambiguity:
+
+**"Not sent" scenarios:**
+
+- **Inexact or duplicate agent names** — Multiple sessions match the provided name
+- **Unavailable or truncated session searches** — Target session not found in search results
+- **Exact-name or pinned-identity required** — Recipient requires confirmation to avoid misdirection
+
+**Implications for plugin agents:**
+
+- Use exact session names from ListAgents output when possible
+- Include `[ref]` identifiers for ambiguous targets
+- Handle cases where messages may not be delivered due to ambiguity
+- Design workflows that gracefully handle failed message delivery
+
 ## SendMessageTool "main" Recipient (CC 2.1.178)
 
 Background subagents can now message the main conversation using `"main"` as the recipient in SendMessageTool:

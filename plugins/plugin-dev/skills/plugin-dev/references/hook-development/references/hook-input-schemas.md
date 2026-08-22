@@ -103,6 +103,8 @@ The `tool_input` object varies by tool. Common tool schemas:
 
 > **CC 2.1.88:** The `file_path` field in PreToolUse/PostToolUse hooks for Write, Edit, and Read tools now provides **absolute paths**. Previously, paths could be relative. Hook scripts that process file paths should expect absolute paths.
 
+> **CC 2.1.236 (Path-Sensitive Read-Before-Edit):** Claude Code's read-before-edit guidance is now path-sensitive. Files inside the current working directory no longer require a prior Read call before Edit or Write operations. However, files **outside** the working directory still require reading first to ensure the model has current content context. Hook developers should note this distinction when validating file modification patterns — blocking edits to files without prior reads is now only necessary for out-of-working-directory paths.
+
 | Tool         | `tool_input` Fields                                                                                                                                                   |
 | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Bash         | `command` (string), `description` (string, optional), `timeout` (number, optional), `run_in_background` (boolean, optional)                                           |

@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.235 (2026-08-19)
-Plugin-dev version: 0.37.0
+Last audited: Claude Code 2.1.239 (2026-08-22)
+Plugin-dev version: 0.38.0
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.38.0 | 2.1.236-2.1.239 | 2026-08-22 | Cross-session `notify_when_idle` parameter for one-shot idle notifications (CC 2.1.236), built-in "Concise" output style (CC 2.1.237), plugin marketplace `headersHelper` support for private marketplace authentication (CC 2.1.238), SendMessage ambiguous recipient display (CC 2.1.239), previously invoked skills context broadening (CC 2.1.239), coordinator mode capability-aware routing with `blocked` worker outcomes (CC 2.1.239), Edit/Write path-sensitive read-before-edit guidance (CC 2.1.236) |
 | v0.37.0 | 2.1.230-2.1.235 | 2026-08-19 | Non-fork subagent delegation consolidated into capability-aware guidance (CC 2.1.235), subagent forking enabled by default (CC 2.1.232), session-to-session messaging via @-mentions with `name [ref]` addressing (CC 2.1.232), plugin eval and /skill-doctor early access (CC 2.1.233-2.1.235), forked agent guidance now capability-aware (CC 2.1.235), ListAgents cloud session clarifications (CC 2.1.232), Web reading specialist agent type (CC 2.1.232), Notification hooks Desktop/VS Code fix (CC 2.1.233) |
 | v0.36.0 | 2.1.225-2.1.229 | 2026-08-13 | Command-backed plugin sources for dynamic plugin provisioning (CC 2.1.229), ListAgents session kind labels (offline/cloud) for Remote Control sessions (CC 2.1.228-2.1.229), foreground agent restriction guidance (CC 2.1.227), pre-commit skill checks with RAN/NOT RUN status (CC 2.1.225), SendUserFile expanded guidance for drafts and incremental updates (CC 2.1.227) |
 | v0.35.0 | 2.1.222-2.1.224 | 2026-08-07 | PreToolUse auto-allow hooks no longer bypass tool restrictions in background agents (CC 2.1.222), 200-subagent spawn cap removed (CC 2.1.224), HTTPS archive plugin sources with SHA-256 pinning (CC 2.1.224), marketplace owner wildcard entries (CC 2.1.223), worktree isolation prevents destructive git commands against main checkout (CC 2.1.222), cross-session messaging for SendMessage/ListAgents (CC 2.1.224) |
