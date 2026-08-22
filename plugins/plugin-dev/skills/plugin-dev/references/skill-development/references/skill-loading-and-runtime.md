@@ -300,15 +300,19 @@ When multiple plugins are installed, their skill descriptions share the same bud
 
 **Resolved:** Subagents now correctly discover project, user, and plugin skills via the Skill tool. Prior to CC 2.1.133, subagents could not invoke skills, which limited their ability to leverage plugin-provided knowledge. Skills used by agents should work correctly on CC 2.1.133 or later.
 
-## Previously Invoked Skills (CC 2.1.119)
+## Previously Invoked Skills (CC 2.1.119, updated 2.1.239)
 
 After conversation compaction, skills invoked before compaction are restored as context only via a "Previously invoked skills" reminder. This reminder warns not to re-execute setup actions or treat prior inputs as current instructions. The old "Invoked skills" reminder was replaced by this more explicit context-only framing.
+
+**Context broadening (CC 2.1.239):** The post-compaction warning now applies more broadly — request or argument text appearing anywhere in restored skill bodies, including "User Request" sections, is treated as historical context rather than a new live instruction. This prevents Claude from re-executing tasks described in restored skill bodies.
 
 **Implications for skill design:**
 
 - Skills should be idempotent where possible
 - Setup actions (file creation, initialization) should check if already done
 - Skills should not assume prior context survives compaction unchanged
+- Do not embed executable instructions in skill body sections labeled as "User Request" or similar — these are treated as historical after compaction
+- Design skills to clearly separate instructional content from contextual examples
 
 ## Plugin Eval and Skill Doctor (CC 2.1.233-2.1.235, Early Access)
 

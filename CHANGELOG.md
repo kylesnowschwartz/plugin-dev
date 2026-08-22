@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.38.0] - 2026-08-22
+
+### Added
+
+- **agent-development**: Documented cross-session `notify_when_idle` parameter for one-shot idle notifications — use instead of polling or status-chasing messages (CC 2.1.236)
+- **agent-development**: Documented SendMessage ambiguous recipient display — user-facing explanations for inexact names, unavailable sessions, and exact-name confirmation requirements (CC 2.1.239)
+- **agent-development**: Documented coordinator mode capability-aware routing — user-message routing based on worker capabilities, `blocked` worker outcomes, concise launch updates, teammates as addressable agents (CC 2.1.239)
+- **plugin-structure**: Documented built-in "Concise" output style — leads with results, skips preamble, preserves detail when requested (CC 2.1.237)
+- **marketplace-structure**: Documented plugin marketplace `headersHelper` support for minting HTTP headers for private marketplace authentication (CC 2.1.238)
+- **skill-development**: Documented previously invoked skills context broadening — request/argument text anywhere in restored skill bodies is now historical context after compaction (CC 2.1.239)
+- **hook-development**: Documented Edit/Write path-sensitive read-before-edit guidance — files inside working directory no longer require prior Read call (CC 2.1.236)
+
 ## [0.37.0] - 2026-08-19
 
 ### Added
@@ -782,7 +794,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.37.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.38.0...HEAD
+[0.38.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.37.0...v0.38.0
 [0.37.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.36.0...v0.37.0
 [0.36.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.35.0...v0.36.0
 [0.35.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.34.0...v0.35.0

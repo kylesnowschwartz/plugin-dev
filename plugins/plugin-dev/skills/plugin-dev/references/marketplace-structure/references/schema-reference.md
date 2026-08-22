@@ -19,16 +19,55 @@ Complete field reference for `marketplace.json` and plugin entries.
   "metadata": {
     "description": "string",
     "version": "string",
-    "pluginRoot": "string"
+    "pluginRoot": "string",
+    "headersHelper": "string or object"
   }
 }
 ```
 
-| Field         | Type   | Description                                    |
-| ------------- | ------ | ---------------------------------------------- |
-| `description` | string | Brief marketplace description (1-200 chars)    |
-| `version`     | string | Marketplace version (semver X.Y.Z recommended) |
-| `pluginRoot`  | string | Base path for relative plugin sources          |
+| Field           | Type             | Description                                    |
+| --------------- | ---------------- | ---------------------------------------------- |
+| `description`   | string           | Brief marketplace description (1-200 chars)    |
+| `version`       | string           | Marketplace version (semver X.Y.Z recommended) |
+| `pluginRoot`    | string           | Base path for relative plugin sources          |
+| `headersHelper` | string or object | Authentication helper for HTTP requests (CC 2.1.238) |
+
+### Marketplace headersHelper (CC 2.1.238)
+
+Plugin marketplaces now support `headersHelper` for minting HTTP headers when accessing private marketplace resources:
+
+```json
+{
+  "metadata": {
+    "headersHelper": {
+      "command": "/path/to/auth-helper",
+      "env": {
+        "TOKEN_SERVICE": "https://auth.company.com"
+      }
+    }
+  }
+}
+```
+
+**Behavior:**
+
+- Executes the helper command to generate authorization headers
+- Headers are included in HTTP requests to the marketplace
+- Enables dynamic authentication for private or enterprise marketplaces
+- Similar to MCP `headersHelper` but applied at the marketplace level
+
+**Use cases:**
+
+- Private marketplaces requiring OAuth or API key authentication
+- Enterprise marketplaces with rotating credentials
+- SSO-integrated plugin distribution
+- Token refresh without manual intervention
+
+**Security considerations:**
+
+- Helper commands run with user permissions
+- Ensure helper sources are from trusted marketplace definitions
+- Credentials are minted fresh per-request for security
 
 ## Owner Object
 
