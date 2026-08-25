@@ -78,6 +78,8 @@ This hook fires only for Bash commands starting with `git`. The `if` field uses 
 > **CC 2.1.178:** Added tool parameter matching syntax (e.g., `Agent(model:opus)`) for granular permission control based on tool input parameters using wildcards.
 >
 > **CC 2.1.218 (breaking change):** Single-segment `dir/**` hook `if:` conditions now match only `<cwd>/dir`; write `**/dir/**` for any-depth matching. Previously, `dir/**` would match at any depth, which could lead to unintended matches. Update existing hooks that rely on the old behavior.
+>
+> **CC 2.1.243:** Fixed `if` conditions like `Bash(cat *)` firing on unrelated Bash commands when the command contained `$()` or backtick command substitution. Previously, command substitution syntax in tool inputs could cause false-positive matches against unrelated `if` patterns.
 
 ### Script-Level Conditionals
 

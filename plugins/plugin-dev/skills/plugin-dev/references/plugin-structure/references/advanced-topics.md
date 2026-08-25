@@ -410,6 +410,10 @@ Cached content refreshes when:
 
 `/reload-plugins` and background plugin auto-update now auto-install missing plugin dependencies from marketplaces you've already added. If a plugin declares dependencies on other plugins, they will be fetched automatically during refresh or auto-update cycles.
 
+### Dependency Marketplace Field Resolution (CC 2.1.243)
+
+Plugin dependencies declared with a `marketplace` field now properly resolve when plugins load together via `--plugin-dir`. Previously, marketplace-sourced dependencies could fail to resolve in local testing scenarios where the dependency and dependent plugin were loaded together from local directories.
+
 ### Version Constraint Auto-Update (CC 2.1.119)
 
 When a plugin depends on another plugin with a version constraint (e.g., `>=1.0.0`), the dependent plugin now auto-updates to the highest satisfying git tag rather than being locked to the original installation version. This ensures plugins stay up-to-date within compatible version ranges.

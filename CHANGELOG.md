@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.39.0] - 2026-08-25
+
+### Added
+
+- **hook-development**: Documented hook `if` condition command substitution fix — `if` conditions like `Bash(cat *)` no longer fire on unrelated Bash commands containing `$()` or backtick command substitution (CC 2.1.243)
+- **plugin-structure**: Documented plugin dependency marketplace field resolution — dependencies with `marketplace` field now properly resolve when plugins load together via `--plugin-dir` (CC 2.1.243)
+- **lsp-integration**: Documented LSP plugin reload behavior — `/reload-plugins` now properly removes LSP tool after last LSP plugin disabled and warns before LSP plugin changes (CC 2.1.243)
+- **agent-development**: Documented `--agents` validation — flag now exits with clear error on invalid JSON or invalid agent definitions, similar to `--mcp-config` behavior (CC 2.1.243)
+
 ## [0.38.0] - 2026-08-22
 
 ### Added
@@ -794,7 +803,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.38.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.39.0...HEAD
+[0.39.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.38.0...v0.39.0
 [0.38.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.37.0...v0.38.0
 [0.37.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.36.0...v0.37.0
 [0.36.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.35.0...v0.36.0

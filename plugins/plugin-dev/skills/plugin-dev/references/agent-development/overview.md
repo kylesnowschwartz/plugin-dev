@@ -189,6 +189,8 @@ claude --agents code-reviewer
 claude --agents "code-reviewer,test-generator"
 ```
 
+> **CC 2.1.243:** The `--agents` flag now exits with a clear error when given invalid JSON or invalid agent definitions, similar to `--mcp-config` behavior. Previously, invalid definitions were silently ignored, making debugging difficult. This validation applies to both inline JSON and file-based agent definitions.
+
 **Test the system prompt:** give the agent a typical task, confirm it follows the process steps, verify the output format, test edge cases, and confirm quality standards are met.
 
 CLI/testing behaviors with version notes (print-mode tool enforcement, `permissionMode` via `--agent`, the `settings.json` `agent` field, agent autocomplete, the ListAgents tool) are documented in `references/advanced-agent-fields.md`.

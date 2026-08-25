@@ -310,6 +310,14 @@ Servers terminate when:
 - Plugin is disabled
 - Server crashes (auto-restart may occur)
 
+### Plugin Reload Behavior (CC 2.1.243)
+
+When using `/reload-plugins`:
+
+- The LSP tool is now properly removed after the last LSP plugin is disabled (previously, the tool could persist incorrectly)
+- Claude Code warns before applying LSP plugin changes that require server restart
+- This ensures clean state transitions when enabling/disabling LSP plugins during a session
+
 ## Best Practices
 
 ### Performance
