@@ -212,6 +212,7 @@ Use `/plugins` in the TUI to view installed plugins and their status. Discovery 
 | Auto-discovery not working | Directories at plugin root (not in `.claude-plugin/`); kebab-case names and correct extensions; custom paths correct; restart Claude Code |
 | Plugin blocked by org policy | Organizations can block plugins via `managed-settings.json` (CC 2.1.85); blocked plugins are hidden and cannot be installed or enabled; work with the org admin — developers cannot override policy |
 | Scripts fail "Permission denied" | Fixed in CC 2.1.86 (official marketplace scripts failed on macOS/Linux since CC 2.1.83); ensure `chmod +x scripts/*.sh` and a proper shebang |
+| Plugin install fails with BOM | UTF-8 byte-order mark (BOM) in `plugin.json` causes installation failure (fixed in CC 2.1.246); ensure your editor saves JSON files without BOM — most modern editors default to UTF-8 without BOM; check with `file plugin.json` or `hexdump -C plugin.json \| head -1` (BOM starts with `EF BB BF`) |
 | Conflicts between plugins | Use unique, descriptive component names; namespace commands with the plugin name; document potential conflicts in the README |
 
 ## Reference and Example Files

@@ -280,3 +280,25 @@ A new browser file upload tool uploads shared session files directly to page fil
 - Automating file uploads in web testing scenarios
 - Browser automation workflows that require file inputs
 - Form-filling agents that handle attachments
+
+## SendFeedback Tool (CC 2.1.247)
+
+The SendFeedback tool enables drafting feedback reports directly within Claude Code sessions:
+
+**Purpose:**
+
+- Draft and send feedback reports about Claude Code behavior
+- Supports structured feedback with context and reproduction steps
+- Integrates with Anthropic's feedback collection system
+
+**Use cases for plugin agents:**
+
+- Error reporting workflows that collect diagnostic information
+- User feedback collection in custom support workflows
+- Automated issue reporting from validation agents
+
+**Implications for plugin agents:**
+
+- Plugin agents inherit access to this tool
+- Can be used in conjunction with other diagnostic tools
+- Useful for agents designed to help users report issues

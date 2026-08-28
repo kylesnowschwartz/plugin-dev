@@ -348,3 +348,84 @@ The `/skill-doctor` command diagnoses skill issues and suggests improvements:
 - Validates frontmatter configuration
 
 **Note:** These features are in early access and may change. Use for development and testing, but don't rely on specific behaviors for production workflows until they're generally available.
+
+## Built-in Skill Patterns (CC 2.1.247-2.1.248)
+
+Claude Code includes several built-in skills that demonstrate advanced patterns useful for plugin developers:
+
+### Workflow Authoring Reference (CC 2.1.248)
+
+The **Workflow authoring reference** skill demonstrates a pattern of moving detailed technical content from tool descriptions into dedicated reference skills:
+
+**What it covers:**
+
+- Detailed Workflow APIs and syntax
+- Concurrency and budgeting rules
+- Orchestration patterns for multi-step automation
+- Ultracode guidance and resume behavior
+
+**Pattern value for plugin developers:**
+
+- Reduces tool description size by extracting details into a skill
+- Makes technical reference content available on-demand rather than always in context
+- Demonstrates progressive disclosure at the tool level — basic guidance in the tool, full reference in the skill
+- Consider this pattern for plugins that add complex MCP tools
+
+### Cost Optimization Skill (CC 2.1.247)
+
+The **Cost optimization** skill demonstrates advanced integration patterns:
+
+**What it covers:**
+
+- Cost-per-completed-task workflow design
+- Traffic class profiling from Admin API data
+- Application usage log analysis
+- Multi-model tradeoff evaluation
+
+**Pattern value for plugin developers:**
+
+- Shows how to build skills that integrate with external APIs (Admin API)
+- Demonstrates data-driven workflow design
+- Illustrates evaluation patterns where the skill helps analyze and optimize
+- Useful as a template for skills that perform business analysis or optimization tasks
+
+### Admin API Reference (CC 2.1.247)
+
+The **Admin API reference** provides documentation for enterprise integrations:
+
+**What it covers:**
+
+- Organization-admin authentication
+- Workspace and API-key management
+- Rate limits and usage tracking
+- Service accounts and workload identity federation
+- Customer-managed keys (CMK)
+
+**Pattern value for plugin developers:**
+
+- Enterprise plugin integrations can reference this for authentication patterns
+- Shows how to document complex API integrations in skill format
+- Useful context for plugins targeting enterprise environments
+
+## Removed Skill Variants (CC 2.1.248)
+
+### /loop Fixed-Interval Variant
+
+The older fixed/default-interval prompt variant of the `/loop` command has been removed. The dynamic-mode prompt remains. If your plugin documentation references `/loop` behavior, update it to reflect that only the dynamic-mode variant exists.
+
+### Writing for the User (CC 2.1.247)
+
+Claude Code now includes strict formatting requirements for user-facing output in the "Writing for the user" system prompt:
+
+**Requirements:**
+
+- Standalone, answer-first final messages
+- Concise complete sentences
+- Prohibits em dashes, parentheticals, arrows, reasoning commentary, and session-invented labels
+
+**Implications for skill authors:**
+
+- Skills that produce user-facing output should follow these formatting guidelines
+- Avoid meta-commentary about the skill's own process
+- Lead with answers, not explanations
+- Keep output clean and direct
