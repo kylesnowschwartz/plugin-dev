@@ -541,6 +541,34 @@ Settings follow precedence: Managed > CLI flags > Local (`.claude/settings.local
 
 **Unaffected:** Plugin `.local.md` state files (the pattern documented above) are not affected by this change — they are read directly by plugin hooks and are not part of the `pluginConfigs` system.
 
+### syncClaudeAiPlugins Setting (CC 2.1.246)
+
+The `syncClaudeAiPlugins` setting controls whether plugins are synchronized from Claude.ai:
+
+```json
+{
+  "syncClaudeAiPlugins": false
+}
+```
+
+**Behavior when set to `false`:**
+
+- Stops downloading plugins from Claude.ai
+- Hides or trashes previously synced plugins according to the settings scope
+- Affects plugins installed via the Claude.ai web interface
+
+**Scope behavior:**
+
+- **User settings** — affects all projects for the user
+- **Project settings** — affects only that project
+- **Managed settings** — enforced across the organization
+
+**Implications for plugin developers:**
+
+- Users may disable Claude.ai plugin sync for security or compliance reasons
+- Plugins distributed via other channels (marketplace, direct URL) are not affected
+- Document alternative installation methods if targeting environments where sync may be disabled
+
 Plugin settings files (`.local.md`) exist alongside Claude Code's broader memory and rules system. Understanding how CLAUDE.md imports, `.claude/rules/` path-specific rules, and the memory priority hierarchy interact with plugin content helps design plugins that complement rather than conflict with user configurations.
 
 See `references/memory-rules-system.md` for the full priority hierarchy, import syntax, and design implications.

@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.39.0] - 2026-08-28
+
+### Added
+
+- **agent-development**: Documented SendFeedback tool for drafting feedback reports directly within Claude Code sessions (CC 2.1.247)
+- **agent-development**: Documented experimental.cacheTtl agent frontmatter field for per-agent prompt cache TTL configuration (CC 2.1.248)
+- **agent-development**: Documented Coordinator mode forced-inheritance variant — worker model parameter ignored, downshifting guidance explicit (CC 2.1.248)
+- **skill-development**: Documented Workflow authoring reference skill — demonstrates pattern of extracting detailed technical content from tool descriptions into dedicated reference skills (CC 2.1.248)
+- **skill-development**: Documented Cost optimization skill — demonstrates advanced Admin API integration patterns for data-driven workflow design (CC 2.1.247)
+- **skill-development**: Documented Admin API reference for enterprise integrations (CC 2.1.247)
+- **skill-development**: Documented Writing for the user strict formatting requirements — standalone, answer-first messages without em dashes, parentheticals, or reasoning commentary (CC 2.1.247)
+- **skill-development**: Documented /loop fixed-interval variant removal — only dynamic-mode variant remains (CC 2.1.248)
+- **hook-development**: Documented invalid JSON from hooks now reported as error — hooks returning invalid JSON are no longer silently treated as plain text (CC 2.1.248)
+- **plugin-settings**: Documented syncClaudeAiPlugins setting for controlling whether plugins are synchronized from Claude.ai (CC 2.1.246)
+- **plugin-structure**: Documented plugin.json UTF-8 BOM fix — installation failure caused by byte-order mark now fixed (CC 2.1.246)
+
 ## [0.38.0] - 2026-08-22
 
 ### Added
@@ -794,7 +810,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.38.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.39.0...HEAD
+[0.39.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.38.0...v0.39.0
 [0.38.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.37.0...v0.38.0
 [0.37.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.36.0...v0.37.0
 [0.36.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.35.0...v0.36.0

@@ -183,6 +183,7 @@ Debug with `claude --debug` (shows registration, execution logs, input/output JS
 10. **`disableAllHooks` cannot disable managed hooks.** Policy-managed hooks always run.
 11. **`${CLAUDE_PLUGIN_ROOT}` is loader-bound in frontmatter hooks.** Resolves only under plugin discovery; agents loaded via `--agent` see it unbound — use `${CLAUDE_PROJECT_DIR}`. Full caveat: `references/advanced.md` (Scoped Hooks section).
 12. **PreToolUse auto-allow hooks cannot bypass tool restrictions in background agents (CC 2.1.222).** PreToolUse hooks that return auto-allow decisions no longer bypass tool restrictions when running in background agent tasks. This security fix ensures that tool restrictions remain enforced even when hooks attempt to approve tool usage in unsupervised contexts.
+13. **Invalid JSON from hooks is now reported as an error (CC 2.1.248).** Hooks that return invalid JSON were previously treated silently as plain text. Now they are reported as hook errors with parse messages. Ensure your hook scripts output valid JSON or exit without output.
 
 ## References and Examples
 

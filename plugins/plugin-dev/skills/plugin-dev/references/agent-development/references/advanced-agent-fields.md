@@ -241,6 +241,22 @@ When an agent operates in coordinator mode (managing multiple workers or teammat
 - Handle `blocked` outcomes in coordination workflows
 - Consider whether teammates need direct communication capabilities
 
+### Coordinator Mode Forced-Inheritance Variant (CC 2.1.248)
+
+Coordinator mode now supports a **forced-inheritance variant** where the worker model parameter is ignored:
+
+**Behavior:**
+
+- In the forced-inheritance variant, the `model` parameter passed to workers is ignored
+- Workers must not attempt to set or override the model parameter
+- The normal variant more explicitly forbids downshifting work because it appears "small, simple, or cheap"
+
+**Implications for plugin agents:**
+
+- When designing coordinator agents, be aware that some configurations enforce model inheritance
+- Avoid patterns that assume workers can use different models than the coordinator
+- The guidance against downshifting applies even when model switching might seem appropriate
+
 ### Key Concepts
 
 - **Team lead**: Main session that creates the team, spawns teammates, and coordinates work
@@ -379,6 +395,30 @@ initialPrompt: "Scan the codebase for lint errors, test failures, and report a s
 - Agents that should immediately start working without user input
 - Daily standup or health-check agents
 - Automated validation that runs on session start
+
+## experimental.cacheTtl (CC 2.1.248)
+
+Configure per-agent prompt cache TTL in agent frontmatter:
+
+```yaml
+experimental:
+  cacheTtl: 300
+```
+
+**Behavior:**
+
+- Sets the prompt cache time-to-live for this specific agent
+- Value is in seconds
+- Allows fine-tuning cache behavior for different agent types
+- Experimental feature — behavior may change
+
+**Use cases:**
+
+- Agents with frequently changing context that need shorter cache TTL
+- Long-running agents that benefit from extended cache lifetime
+- Performance optimization for specific agent patterns
+
+**Note:** This is an experimental field under the `experimental` key. As with other experimental features, the API may change in future releases.
 
 ## Autonomous Operation
 
