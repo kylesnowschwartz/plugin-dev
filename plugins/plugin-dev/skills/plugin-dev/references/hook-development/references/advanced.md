@@ -429,6 +429,49 @@ fi
 
 See `examples/validate-write.sh` and `examples/validate-bash.sh` for complete examples.
 
+### Symlink Vulnerability Fix in File Tools (CC 2.1.251)
+
+Claude Code's Read, Write, and Edit tools now enforce stricter symlink handling to prevent unauthorized file access:
+
+**Behavior:**
+
+- Symlinks that resolve outside the permitted sandbox paths are rejected
+- Applies to both explicit symlink targets and symlinks within path components
+- Tool calls with symlink-based path escapes fail with a permission error
+
+**Implications for hooks:**
+
+- PostToolUse hooks for file tools may see fewer successful calls that previously succeeded via symlink traversal
+- PreToolUse hooks validating file paths should be aware that symlink validation happens after the hook
+- Hooks cannot override the symlink security policy
+
+**Hook pattern for detecting symlink issues:**
+
+```bash
+#!/bin/bash
+input=$(cat)
+file_path=$(echo "$input" | jq -r '.tool_input.file_path')
+
+# Resolve symlinks and check if path escapes project
+resolved=$(realpath -m "$file_path" 2>/dev/null || echo "$file_path")
+if [[ ! "$resolved" =~ ^"$CLAUDE_PROJECT_DIR" ]]; then
+  echo '{"decision": "deny", "reason": "Path resolves outside project"}' >&2
+  exit 2
+fi
+```
+
+### Grep/Glob Symlink Deny Rule Fix (CC 2.1.251)
+
+Permission rules for Grep and Glob tools now correctly apply symlink deny rules:
+
+- Previously, symlink deny rules could be bypassed in certain Grep/Glob operations
+- Now, deny rules for symlinked paths are enforced consistently across all file tools
+
+**Implications for plugin developers:**
+
+- If your hooks assume certain paths are blocked via deny rules, this fix ensures those rules apply to Grep/Glob as well
+- No hook changes needed; the fix is in the tool permission system itself
+
 ### Quote All Variables
 
 ```bash

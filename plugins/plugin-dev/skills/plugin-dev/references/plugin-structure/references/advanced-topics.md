@@ -760,3 +760,26 @@ Plugins now **activate immediately when safe**, removing the previous requiremen
 claude plugin install npm-package-name
 claude plugin install pip-package-name
 ```
+
+## Path Traversal Security (CC 2.1.251)
+
+Plugin installation now rejects plugin directories containing path traversal patterns:
+
+**Rejected patterns:**
+
+- Paths containing `..` segments (e.g., `skills/../../../etc/passwd`)
+- Relative paths that escape the plugin directory
+- Symlinks that resolve outside the plugin root
+
+**Behavior:**
+
+- Plugin installation fails with a clear error if path traversal is detected
+- Existing plugins with path traversal patterns may fail validation on reload
+- Affects all plugin sources: local directories, git, npm, and archive URLs
+
+**Implications for plugin developers:**
+
+- Audit plugin directory structure for any `..` path segments
+- Ensure all skill, hook, and MCP server references use relative paths within the plugin
+- Avoid symlinks that point outside the plugin directory
+- Test plugin installation after any directory restructuring

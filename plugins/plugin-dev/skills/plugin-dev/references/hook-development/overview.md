@@ -3,7 +3,7 @@
 
 ## Overview
 
-Hooks are event-driven automation that execute in response to Claude Code events — use them to validate operations, enforce policies, add context, and integrate external tools. Claude Code has **29 hook events** (categorized in the [reference table](#hook-events-reference) below).
+Hooks are event-driven automation that execute in response to Claude Code events — use them to validate operations, enforce policies, add context, and integrate external tools. Claude Code has **31 hook events** (categorized in the [reference table](#hook-events-reference) below).
 
 This overview is the concept map and quick reference; complete per-event input/output schemas live in **`references/event-schemas.md`**, per-event matcher values in `references/advanced.md` (Event-Specific Matchers).
 
@@ -107,7 +107,7 @@ Other events match on source/category values, agent type names, MCP server name,
 
 ## Hook Events Reference
 
-Category, decision control, and hook types for all 29 events. "All" = Command, HTTP, Prompt, Agent. Full schemas: `references/event-schemas.md`; per-event matcher values: `references/advanced.md` (Event-Specific Matchers).
+Category, decision control, and hook types for all 31 events. "All" = Command, HTTP, Prompt, Agent. Full schemas: `references/event-schemas.md`; per-event matcher values: `references/advanced.md` (Event-Specific Matchers).
 
 | Event                  | Category    | Decision control                   | Types         |
 | ---------------------- | ----------- | ---------------------------------- | ------------- |
@@ -140,6 +140,8 @@ Category, decision control, and hook types for all 29 events. "All" = Command, H
 | Notification           | Notification| None (observability)               | All           |
 | BackgroundTasksChanged | Background  | None (observability)               | All           |
 | DirectoryAdded         | Lifecycle   | None (observability)               | All           |
+| PreModelSwitch         | Model       | Block, confirm, annotate           | All           |
+| PostModelSwitch        | Model       | None (observability)               | All           |
 
 ## Configuration Locations
 

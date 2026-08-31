@@ -147,6 +147,20 @@ Claude Code distinguishes between **MCP connectors** (hosted by claude.ai) and *
 - **Availability:** Connectors are unavailable in hermetic/CI sessions or local-only environments
 - **Plugin bundling:** Plugins bundle MCP *servers*, not connectors
 
+### Cloud Routine Limitations (CC 2.1.251)
+
+MCP servers configured directly in Claude Code **cannot** be attached to cloud routines (scheduled tasks). Cloud routines are limited to Claude.ai connectors only:
+
+- **Local MCP servers** — Work in interactive sessions and local `--schedule` jobs, but cannot be used in cloud routines
+- **Claude.ai connectors** — Can be attached to cloud routines for scheduled automation
+- **Plugin-bundled servers** — Same limitation as local servers; work locally but not in cloud routines
+
+**Implications for plugin developers:**
+
+- If your plugin provides MCP servers for use in scheduled automation, document that cloud routines cannot use them
+- Consider providing alternative approaches for cloud-scheduled workflows (e.g., webhooks, external schedulers)
+- Local `--schedule` commands can still use plugin MCP servers; only cloud routines have this restriction
+
 When designing plugins that integrate with services also available as connectors (e.g., GitHub), be aware that:
 
 - Users may have both a connector and your plugin's server configured
