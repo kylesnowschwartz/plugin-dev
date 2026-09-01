@@ -231,3 +231,21 @@ claude -p "Run analysis with subagents" \
 - Monitoring background agent progress without interactive terminal access
 
 **Plugin design tip:** If your plugin spawns background agents, document that users can use `--forward-subagent-text` to capture subagent output in CI logs.
+
+## Remote Control Subagent Tool Call Streaming (CC 2.1.251)
+
+Remote Control-connected clients now receive live streaming of subagent tool calls, extending the `--forward-subagent-text` capability to the Remote Control API:
+
+**Behavior:**
+
+- Subagent tool calls stream in real-time to connected Remote Control clients
+- Extends visibility beyond text output to include tool invocations
+- Enables remote monitoring dashboards to show subagent activity as it happens
+
+**Use cases:**
+
+- Remote monitoring of multi-agent workflows
+- CI/CD dashboards that display live subagent tool calls
+- Debugging distributed agent operations from a central location
+
+**Plugin design tip:** If your plugin is designed for Remote Control environments, document that subagent activity is now fully visible to connected clients for improved observability.

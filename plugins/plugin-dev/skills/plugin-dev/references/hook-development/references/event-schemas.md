@@ -1,8 +1,8 @@
 # Hook Event Schemas Reference
 
-Complete input and output JSON schemas for all 29 Claude Code hook events.
+Complete input and output JSON schemas for all 31 Claude Code hook events.
 
-**Last verified:** 2026-05-28 against official docs, Python SDK (`claude-agent-sdk`), and TypeScript SDK.
+**Last verified:** 2026-08-31 against official docs, Python SDK (`claude-agent-sdk`), and TypeScript SDK.
 
 ## Common Fields
 
@@ -1216,14 +1216,101 @@ Observability only. No decision control.
 
 ---
 
+## Model Switching
+
+### PreModelSwitch (CC 2.1.251)
+
+**When:** Before a model switch is executed (via `/model` command, settings change, or programmatic switch).
+
+**Input:**
+
+```json
+{
+  "session_id": "string",
+  "transcript_path": "string",
+  "cwd": "string",
+  "permission_mode": "string",
+  "hook_event_name": "PreModelSwitch",
+  "current_model": "string (current model ID)",
+  "target_model": "string (model being switched to)"
+}
+```
+
+**Output:**
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PreModelSwitch",
+    "decision": "allow|block|confirm",
+    "reason": "string (optional, shown when blocking or confirming)",
+    "additionalContext": "string (optional, injected into context)"
+  }
+}
+```
+
+- `decision`: `"allow"` proceeds with switch, `"block"` prevents the switch, `"confirm"` prompts user for confirmation
+- `reason`: Explanation shown to user when blocking or requesting confirmation
+- `additionalContext`: Context injected into the session after model switch
+
+**Use cases:**
+
+- Enforce model policies (e.g., require Opus for certain projects)
+- Log model switching for compliance tracking
+- Require confirmation before switching to expensive models
+- Inject model-specific context or instructions after switch
+
+**Matchers:** Model names (current or target)
+**Hook types:** Command, HTTP, Prompt, Agent
+
+---
+
+### PostModelSwitch (CC 2.1.251)
+
+**When:** After a model switch completes successfully.
+
+**Input:**
+
+```json
+{
+  "session_id": "string",
+  "transcript_path": "string",
+  "cwd": "string",
+  "permission_mode": "string",
+  "hook_event_name": "PostModelSwitch",
+  "previous_model": "string (model before switch)",
+  "current_model": "string (new model after switch)"
+}
+```
+
+**Output:** Observability only. No decision control.
+
+**Key behaviors:**
+
+- Fires only after successful model switches (not when PreModelSwitch blocks)
+- Useful for logging, metrics, and post-switch context injection
+- Can inject `additionalContext` to provide model-specific instructions
+
+**Use cases:**
+
+- Log model usage for cost tracking
+- Send notifications when switching to specific models
+- Update metrics or dashboards
+- Inject model-specific context after switch
+
+**Matchers:** Model names (previous or current)
+**Hook types:** Command, HTTP, Prompt, Agent
+
+---
+
 ## SDK Parity Notes
 
-Not all events are typed in both SDKs. As of July 2026:
+Not all events are typed in both SDKs. As of August 2026:
 
-**Python SDK** (`claude-agent-sdk`) types 10 of 29 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
+**Python SDK** (`claude-agent-sdk`) types 10 of 31 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
 
 **TypeScript SDK** (`@anthropic-ai/claude-agent-sdk`) is closer to parity with the CLI. Events added over time: TeammateIdle and TaskCompleted (v2.1.34), ConfigChange (v0.2.49), Elicitation and ElicitationResult (v0.2.76).
 
-**CLI** supports all 29 events.
+**CLI** supports all 31 events.
 
-Events only available in CLI (not yet in either SDK): WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88), MessageDisplay (CC 2.1.152), PostSession (CC 2.1.169), BackgroundTasksChanged (CC 2.1.203), DirectoryAdded (CC 2.1.219).
+Events only available in CLI (not yet in either SDK): WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88), MessageDisplay (CC 2.1.152), PostSession (CC 2.1.169), BackgroundTasksChanged (CC 2.1.203), DirectoryAdded (CC 2.1.219), PreModelSwitch (CC 2.1.251), PostModelSwitch (CC 2.1.251).

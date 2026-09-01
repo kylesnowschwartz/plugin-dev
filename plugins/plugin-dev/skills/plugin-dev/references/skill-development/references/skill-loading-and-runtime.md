@@ -314,15 +314,17 @@ After conversation compaction, skills invoked before compaction are restored as 
 - Do not embed executable instructions in skill body sections labeled as "User Request" or similar — these are treated as historical after compaction
 - Design skills to clearly separate instructional content from contextual examples
 
-## Plugin Eval and Skill Doctor (CC 2.1.233-2.1.235, Early Access)
+## Plugin Eval and Skill Doctor (CC 2.1.233-2.1.235, Early Access — Removed in CC 2.1.251)
 
-Claude Code includes early-access features for evaluating plugin quality and diagnosing skill issues:
+> **Note (CC 2.1.251):** Plugin Eval (`claude plugin eval`) and Skill Doctor (`/skill-doctor`) have been removed from Claude Code's bundled prompts. These features were in early access and may still be available via external documentation or tools, but they are no longer part of the core Claude Code system prompts. The documentation below is retained for historical reference.
 
-### Plugin Eval (`claude plugin eval`)
+Claude Code previously included early-access features for evaluating plugin quality and diagnosing skill issues:
 
-The `claude plugin eval` command runs evaluation suites against plugins to measure skill triggering accuracy, hook correctness, and agent behavior:
+### Plugin Eval (`claude plugin eval`) — Removed
 
-**Key features:**
+The `claude plugin eval` command ran evaluation suites against plugins to measure skill triggering accuracy, hook correctness, and agent behavior:
+
+**Key features (historical):**
 
 - Configurable `--eval-dir` for custom evaluation suites
 - Containment-checked plugin discovery
@@ -332,32 +334,43 @@ The `claude plugin eval` command runs evaluation suites against plugins to measu
 - CI integration for automated testing
 - SIGTERM handling for graceful shutdown
 
-**Enablement:** Plugin eval requires the `CLAUDE_CODE_WALNUT_SPIRE=1` environment variable:
+**Previous enablement:** Plugin eval required the `CLAUDE_CODE_WALNUT_SPIRE=1` environment variable:
 
 ```bash
 CLAUDE_CODE_WALNUT_SPIRE=1 claude plugin eval
 ```
 
-### Skill Doctor (`/skill-doctor`)
+### Skill Doctor (`/skill-doctor`) — Removed
 
-The `/skill-doctor` command diagnoses skill issues and suggests improvements:
+The `/skill-doctor` command diagnosed skill issues and suggested improvements:
 
-- Identifies triggering problems (why a skill isn't being invoked)
-- Analyzes description effectiveness
-- Suggests trigger phrase improvements
-- Validates frontmatter configuration
+- Identified triggering problems (why a skill wasn't being invoked)
+- Analyzed description effectiveness
+- Suggested trigger phrase improvements
+- Validated frontmatter configuration
 
-**Note:** These features are in early access and may change. Use for development and testing, but don't rely on specific behaviors for production workflows until they're generally available.
+**Note:** These features have been removed from bundled Claude Code prompts as of CC 2.1.251. Plugin developers should rely on manual testing and the validation agents in the plugin-dev toolkit for plugin quality assurance.
 
-## Built-in Skill Patterns (CC 2.1.247-2.1.248)
+## Built-in Skill Patterns (CC 2.1.247-2.1.248 — Removed in CC 2.1.251)
 
-Claude Code includes several built-in skills that demonstrate advanced patterns useful for plugin developers:
+> **Note (CC 2.1.251):** The following built-in skills and references have been **removed** from Claude Code's bundled prompts:
+>
+> - **Workflow authoring reference**
+> - **Cost optimization skill**
+> - **Admin API reference**
+> - **Claude API references and model catalog**
+> - **Artifact and visual-authoring bundle**
+> - **Design sync and variants**
+>
+> This was part of a major documentation removal (-743,949 tokens). Plugin developers should no longer reference these as "built-in Claude Code resources." The patterns they demonstrated remain valuable — the documentation below is retained for historical reference and to illustrate the patterns themselves.
 
-### Workflow Authoring Reference (CC 2.1.248)
+Claude Code previously included several built-in skills that demonstrated advanced patterns useful for plugin developers:
 
-The **Workflow authoring reference** skill demonstrates a pattern of moving detailed technical content from tool descriptions into dedicated reference skills:
+### Workflow Authoring Reference (CC 2.1.248) — Removed
 
-**What it covers:**
+The **Workflow authoring reference** skill demonstrated a pattern of moving detailed technical content from tool descriptions into dedicated reference skills:
+
+**What it covered:**
 
 - Detailed Workflow APIs and syntax
 - Concurrency and budgeting rules
@@ -371,11 +384,11 @@ The **Workflow authoring reference** skill demonstrates a pattern of moving deta
 - Demonstrates progressive disclosure at the tool level — basic guidance in the tool, full reference in the skill
 - Consider this pattern for plugins that add complex MCP tools
 
-### Cost Optimization Skill (CC 2.1.247)
+### Cost Optimization Skill (CC 2.1.247) — Removed
 
-The **Cost optimization** skill demonstrates advanced integration patterns:
+The **Cost optimization** skill demonstrated advanced integration patterns:
 
-**What it covers:**
+**What it covered:**
 
 - Cost-per-completed-task workflow design
 - Traffic class profiling from Admin API data
@@ -384,16 +397,16 @@ The **Cost optimization** skill demonstrates advanced integration patterns:
 
 **Pattern value for plugin developers:**
 
-- Shows how to build skills that integrate with external APIs (Admin API)
+- Shows how to build skills that integrate with external APIs
 - Demonstrates data-driven workflow design
 - Illustrates evaluation patterns where the skill helps analyze and optimize
 - Useful as a template for skills that perform business analysis or optimization tasks
 
-### Admin API Reference (CC 2.1.247)
+### Admin API Reference (CC 2.1.247) — Removed
 
-The **Admin API reference** provides documentation for enterprise integrations:
+The **Admin API reference** provided documentation for enterprise integrations:
 
-**What it covers:**
+**What it covered:**
 
 - Organization-admin authentication
 - Workspace and API-key management
@@ -403,7 +416,7 @@ The **Admin API reference** provides documentation for enterprise integrations:
 
 **Pattern value for plugin developers:**
 
-- Enterprise plugin integrations can reference this for authentication patterns
+- Enterprise plugin integrations can reference external Admin API documentation
 - Shows how to document complex API integrations in skill format
 - Useful context for plugins targeting enterprise environments
 
