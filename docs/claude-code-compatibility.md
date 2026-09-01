@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.251 (2026-08-31)
-Plugin-dev version: 0.40.0
+Last audited: Claude Code 2.1.252 (2026-09-01)
+Plugin-dev version: 0.40.1
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.40.1 | 2.1.252 | 2026-09-01 | Bug fixes only — Bash macOS fix, "always allow" persistence fix, Remote Control stalling fix, background task notification API limit fix |
 | v0.40.0 | 2.1.251 | 2026-08-31 | PreModelSwitch/PostModelSwitch hook events (30th/31st events), Remote Control subagent tool call streaming extends `--forward-subagent-text`, plugin path traversal security fix, symlink vulnerability fix in Read/Write/Edit tools, Grep/Glob symlink deny rule fix, schedule local MCP server limitation (cloud routines only accept connectors), major documentation removal (Plugin Eval, Skill Doctor, Cost Optimization skill, Admin API reference, Workflow authoring reference, Claude API references — 743,949 tokens removed) |
 | v0.39.0 | 2.1.240-2.1.250 | 2026-08-28 | SendFeedback tool for drafting feedback reports (CC 2.1.247), experimental.cacheTtl agent frontmatter field (CC 2.1.248), Coordinator mode forced-inheritance variant (CC 2.1.248), Workflow authoring reference skill extracting detailed Workflow API docs (CC 2.1.248), Cost optimization skill demonstrating Admin API integration (CC 2.1.247), Admin API reference documentation (CC 2.1.247), Writing for the user strict formatting requirements (CC 2.1.247), /loop fixed-interval variant removed (CC 2.1.248), invalid JSON from hooks now reported as error (CC 2.1.248), syncClaudeAiPlugins setting for controlling Claude.ai plugin sync (CC 2.1.246), plugin.json UTF-8 BOM fix (CC 2.1.246) |
 | v0.38.0 | 2.1.236-2.1.239 | 2026-08-22 | Cross-session `notify_when_idle` parameter for one-shot idle notifications (CC 2.1.236), built-in "Concise" output style (CC 2.1.237), plugin marketplace `headersHelper` support for private marketplace authentication (CC 2.1.238), SendMessage ambiguous recipient display (CC 2.1.239), previously invoked skills context broadening (CC 2.1.239), coordinator mode capability-aware routing with `blocked` worker outcomes (CC 2.1.239), Edit/Write path-sensitive read-before-edit guidance (CC 2.1.236) |

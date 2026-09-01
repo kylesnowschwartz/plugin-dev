@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.40.1] - 2026-09-01
+
+### Changed
+
+- **claude-code-compatibility**: Audited CC 2.1.252 — bug fixes only (Bash macOS, "always allow" persistence, Remote Control stalling, background task notification API limits), no plugin-system changes requiring documentation updates
+
 ## [0.40.0] - 2026-08-31
 
 ### Added
@@ -826,7 +832,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.40.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.40.1...HEAD
+[0.40.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.40.0...v0.40.1
 [0.40.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.39.0...v0.40.0
 [0.39.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.38.0...v0.39.0
 [0.38.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.37.0...v0.38.0
