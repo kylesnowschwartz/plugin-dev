@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.41.0] - 2026-09-04
+
+### Added
+
+- **plugin-structure**: Documented Plugin UI / Render Hooks (CC 2.1.257, 2.1.259) — JSX runtime shim enabling validated UI primitives (fragments, buttons, flattened children, press handlers) and leaf-only Svg elements with source/alt/width/height/interactive properties
+- **plugin-structure**: Documented `/reload-plugins` availability in headless sessions, CLI desktop mode, and SDK modes (CC 2.1.260)
+- **marketplace-structure**: Documented `userPluginMarketplacesEnabled` and `userPluginUploadsEnabled` Desktop policy keys for enterprise plugin control (CC 2.1.260)
+- **skill-development**: Documented `Skill(name)` deny rules fix for nested skills — deny rules now correctly apply to nested skills (CC 2.1.260)
+
+### Fixed
+
+- **skill-development**: Documented managed `skillOverrides` fix for bundled skill aliases — entries using aliases instead of canonical names now apply correctly (CC 2.1.260)
+- **marketplace-structure**: Documented URL marketplace path-containment installation error fix (CC 2.1.260)
+
 ## [0.40.0] - 2026-08-31
 
 ### Added
@@ -826,7 +840,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.40.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.41.0...HEAD
+[0.41.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.40.0...v0.41.0
 [0.40.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.39.0...v0.40.0
 [0.39.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.38.0...v0.39.0
 [0.38.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.37.0...v0.38.0

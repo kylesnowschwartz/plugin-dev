@@ -410,6 +410,20 @@ Allow a skill with any arguments:
 
 This enables fine-grained control over which skills can be auto-invoked by Claude vs requiring explicit user invocation. Combine with `disable-model-invocation` frontmatter for maximum control.
 
+### Deny Rules for Nested Skills
+
+Deny rules using `Skill(name)` syntax apply to nested skills:
+
+```json
+{
+  "permissions": {
+    "deny": ["Skill(dangerous-skill)"]
+  }
+}
+```
+
+**Nested skill fix (CC 2.1.260):** `Skill(name)` deny rules previously did not apply to nested skills (skills in subdirectories like `apps/web:deploy`). This is now fixed — deny rules correctly cover both top-level and nested skills matching the pattern.
+
 ## disallowed-tools
 
 Remove specific tools from Claude's available pool while the skill is active. This is the denylist counterpart to `allowed-tools`.

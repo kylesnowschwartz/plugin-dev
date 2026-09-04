@@ -240,6 +240,25 @@ Organizations can block specific plugins via `managed-settings.json`. Blocked pl
 
 Plugin developers distributing to enterprise users should document the plugin name clearly so admins can add it to their allow list if needed.
 
+### Desktop Plugin Policy Keys (CC 2.1.260)
+
+The Claude apps gateway supports Desktop policy keys for plugin control:
+
+- **`userPluginMarketplacesEnabled`** — Controls whether users can add custom plugin marketplaces
+- **`userPluginUploadsEnabled`** — Controls whether users can upload/install local plugins
+
+**Use cases:**
+
+- Enterprise environments restricting plugin sources to approved marketplaces only
+- Controlled deployments where plugins must come from IT-managed sources
+- Security policies preventing arbitrary plugin installation
+
+**Implications for plugin developers:**
+
+- Enterprise users may not be able to install plugins from unapproved sources
+- Document your marketplace's URL clearly for enterprise allowlisting
+- Consider publishing to approved enterprise marketplaces for broader reach
+
 ### Owner Wildcard Entries (CC 2.1.223)
 
 The `strictKnownMarketplaces` and `blockedMarketplaces` managed settings now support owner wildcard syntax for bulk marketplace management:

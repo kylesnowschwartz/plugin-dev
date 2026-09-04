@@ -341,6 +341,8 @@ Before adding external plugins to your marketplace:
 3. For GitHub sources, ensure repository is public or access is available
 4. Test plugin sources manually by cloning
 
+**URL marketplace path-containment error (fixed in CC 2.1.260):** Plugins from URL marketplaces previously failed to install with a path-containment error when the host stored plugins as directories. This is now fixed. If you encounter this error on older Claude Code versions, upgrade to CC 2.1.260 or later.
+
 ### Validation Commands
 
 ```bash

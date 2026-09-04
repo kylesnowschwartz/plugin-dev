@@ -38,6 +38,24 @@ claude -p "Review the codebase for code quality issues"
 
 If the skill has `user-invocable: false` and is loaded via plugin, Claude can still use its knowledge automatically.
 
+### /reload-plugins in Headless Sessions (CC 2.1.260)
+
+The `/reload-plugins` command is now available in headless sessions, CLI desktop mode, and SDK modes. This enables plugin development and testing workflows in non-interactive contexts:
+
+```bash
+# Reload plugins during a headless session
+claude -p "Reload plugins and verify my-plugin loaded correctly" --allowedTools "Read"
+```
+
+**Use cases:**
+
+- CI pipelines that need to refresh plugin state mid-execution
+- Automated testing of plugin installation and activation
+- SDK integrations that dynamically load or update plugins
+- Development workflows in non-interactive terminals
+
+**Note:** Plugin reload behavior in headless mode is identical to interactive sessions — all enabled plugins are re-scanned and their components refreshed.
+
 ## Permission Control
 
 ### --allowedTools
