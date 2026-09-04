@@ -167,6 +167,8 @@ Users can control skill behavior globally via the `skillOverrides` setting in th
 - Keep skill names descriptive since they may be the only visible identifier
 - Test skills with `skillOverrides: "user-invocable-only"` to ensure they work when explicitly invoked
 
+**Bundled skill alias fix (CC 2.1.260):** Managed `skillOverrides` entries that referenced bundled skill aliases (rather than canonical names) were not applying correctly. This is now fixed — both canonical names and aliases work in managed `skillOverrides` settings.
+
 ## disableBundledSkills Setting (CC 2.1.169)
 
 The `disableBundledSkills` managed setting hides bundled skills, workflows, and slash commands from the model:

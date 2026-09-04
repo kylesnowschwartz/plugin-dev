@@ -137,6 +137,50 @@ Each component type has a default location and auto-discovers on plugin enable. 
 - **Monitors** (CC 2.1.129, nested under `experimental`) — background scripts streaming events via the Monitor tool. Silence is NOT success: monitors must actively emit output. See `references/manifest-reference.md` for the monitors-vs-hooks guidance.
 - **Executables (`bin/`, CC 2.1.91)** — files in `bin/` (compiled binaries or scripts with a shebang) can be invoked as bare commands from the Bash tool. Requires execute permissions (`chmod +x`) and platform-compatible binaries. Use to ship formatters, linters, converters, or standalone utilities.
 
+## Plugin UI / Render Hooks (CC 2.1.257, 2.1.259)
+
+Claude Code includes a JSX runtime shim that enables plugins to render UI elements via render hooks. This provides validated JSX primitives for building interactive plugin interfaces.
+
+### Core Primitives (CC 2.1.257)
+
+The plugin JSX runtime provides:
+
+- **Fragments** — Group multiple elements without a wrapper
+- **Flattened children** — Arrays and nested children are automatically flattened
+- **Button elements** — Interactive buttons with labels, keys, hotkeys, and press handlers
+- **Plain rendering** — Text and basic formatting
+
+### Svg Elements (CC 2.1.259)
+
+Render hooks support leaf-only `<Svg>` elements for displaying vector graphics:
+
+```jsx
+<Svg
+  source="<svg>...</svg>"  // Required: SVG markup string
+  alt="Description"        // Required: Accessibility text
+  width={24}               // Optional: width in pixels
+  height={24}              // Optional: height in pixels
+  interactive={false}      // Optional: enable interaction
+/>
+```
+
+**Requirements:**
+
+- `source` (string, required) — Raw SVG markup
+- `alt` (string, required) — Accessibility description
+- `width`, `height` (number, optional) — Dimensions in pixels
+- `interactive` (boolean, optional) — Enable user interaction
+
+**Validation:** SVG elements receive dedicated validation during dispatch. Malformed SVG or missing required properties will fail validation.
+
+**Use cases:**
+
+- Icons in plugin UI elements
+- Status indicators and badges
+- Simple visualizations and diagrams
+
+**Note:** Plugin render hooks are an advanced feature. Most plugins do not need custom UI — skills, hooks, and MCP servers cover the majority of extension use cases.
+
 ## Portable Path References
 
 Use the `${CLAUDE_PLUGIN_ROOT}` environment variable for all intra-plugin path references:
