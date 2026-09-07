@@ -139,6 +139,52 @@ Three matcher types: `serverName`, `serverCommand`, `serverUrl`.
 
 These settings are configured by administrators and cannot be overridden by users or plugins.
 
+### Expanded allowedMcpServers Behavior (CC 2.1.259)
+
+The `allowedMcpServers` setting now provides more flexible matching:
+
+- **Glob patterns** in `serverUrl` for matching multiple endpoints
+- **Prefix matching** in `serverCommand` for command families
+- More granular control over which servers plugins can configure
+
+**Plugin author guidance:** When documenting enterprise deployment, specify exact server configurations that should be added to `allowedMcpServers` for your plugin's MCP servers.
+
+### managedMcpServers Setting (CC 2.1.259)
+
+Organizations can provision HTTP/SSE MCP servers directly via managed settings:
+
+```json
+{
+  "managedMcpServers": {
+    "company-api": {
+      "url": "https://mcp.company.com/api",
+      "headers": {
+        "Authorization": "Bearer ${COMPANY_TOKEN}"
+      }
+    }
+  }
+}
+```
+
+**Behavior:**
+
+- Servers defined in `managedMcpServers` are automatically available to all sessions
+- Cannot be disabled or modified by users
+- Supports environment variable interpolation in headers
+- Restricted to HTTP/SSE transport (local stdio servers use standard config)
+
+**Use cases:**
+
+- Organization-wide MCP services provisioned by IT
+- Centralized API access without per-user configuration
+- Enterprise integrations that should be available everywhere
+
+**Plugin author implications:**
+
+- Enterprise customers may already have MCP servers provisioned via this mechanism
+- Design plugins to detect and use existing enterprise servers when available
+- Document any overlap between plugin-bundled servers and common enterprise provisions
+
 ## Error Handling
 
 ### Connection Failures

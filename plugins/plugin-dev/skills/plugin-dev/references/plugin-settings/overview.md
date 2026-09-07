@@ -573,6 +573,65 @@ Plugin settings files (`.local.md`) exist alongside Claude Code's broader memory
 
 See `references/memory-rules-system.md` for the full priority hierarchy, import syntax, and design implications.
 
+### Bash and Task Output Character Limits (CC 2.1.261)
+
+Two new settings control the maximum output size for Bash commands and Task tool results:
+
+```json
+{
+  "bashOutputMaxChars": 65536,
+  "taskOutputMaxChars": 65536
+}
+```
+
+**Settings:**
+
+- **`bashOutputMaxChars`** — Maximum characters returned from Bash tool output (up to 128K)
+- **`taskOutputMaxChars`** — Maximum characters returned from Task tool/subagent output (up to 128K)
+
+**Default behavior:** Without these settings, output is truncated at 30K characters.
+
+**Use cases:**
+
+- Plugins that need verbose tool output for analysis (large log files, extensive test output)
+- Workflows that aggregate output from multiple sources
+- Debugging plugins that process large data sets
+
+**Plugin author guidance:**
+
+- Document if your plugin requires increased output limits
+- Consider whether users need to configure these settings for your plugin to work effectively
+- For hooks processing Bash output, be aware that larger outputs may increase processing time
+
+### Time Display Settings (CC 2.1.257)
+
+Two new settings control how time is displayed in Claude Code:
+
+```json
+{
+  "timeFormat": "24h",
+  "timeZone": "America/New_York"
+}
+```
+
+**`timeFormat` values:**
+
+- `"auto"` — Automatic detection based on locale
+- `"12h"` — 12-hour format with AM/PM
+- `"24h"` — 24-hour format
+- `"24h-utc"` — 24-hour format in UTC
+- Custom `strftime` format string — e.g., `"%Y-%m-%d %H:%M:%S"`
+
+**`timeZone` values:**
+
+- Any valid IANA timezone identifier (e.g., `"America/New_York"`, `"Europe/London"`, `"Asia/Tokyo"`)
+
+**Implications for plugin developers:**
+
+- Plugins that display timestamps should respect these user preferences when possible
+- Hooks that log timestamps can reference `$TZ` or read from settings
+- Document any timezone-sensitive behavior in your plugin
+
 ### CLAUDE.md Best Practices and /doctor Trimming (CC 2.1.206)
 
 The `/doctor` command includes a check that suggests trimming verbose CLAUDE.md files. When creating CLAUDE.md files for plugins or documenting plugin usage, understand what content survives /doctor recommendations:

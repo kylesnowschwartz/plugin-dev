@@ -2,6 +2,76 @@
 
 This reference covers specialized topics that plugin developers may encounter in advanced use cases. Each section is self-contained.
 
+## Function-Hook Plugins (CC 2.1.260-2.1.261)
+
+Function-hook plugins are a new pattern for plugins that need direct control over hook execution, UI rendering, or require the JSX runtime. This is an advanced plugin tier that goes beyond declarative hooks.json configuration.
+
+### Overview
+
+Function-hook plugins provide:
+
+- **Direct hook function execution** — hooks defined as JavaScript/TypeScript functions rather than external commands
+- **JSX runtime access** — primitives for rendering custom UI elements
+- **Hot reload support** — plugins can be reloaded without session restart
+- **Simplified authoring guidance** (CC 2.1.261) — streamlined patterns for common use cases
+
+### JSX Runtime Primitives (CC 2.1.257, expanded 2.1.259)
+
+The JSX runtime provides primitives for UI rendering in render hooks:
+
+**Core primitives:**
+
+- `Box` — container element with flexbox-like layout
+- `Text` — text rendering with formatting options
+- `Svg` — SVG element rendering (CC 2.1.259)
+
+**Usage context:**
+
+- Only available within function-hook render contexts
+- Plugins must declare JSX runtime dependency in manifest
+- Hot reload preserves state when possible
+
+### When to Use Function-Hook Plugins
+
+**Consider function-hooks when:**
+
+- Your plugin needs custom UI rendering beyond text output
+- Hook logic is complex enough that shell commands become unwieldy
+- You need direct access to session state beyond what env vars provide
+- Hot reload during development is valuable
+
+**Stick with declarative hooks.json when:**
+
+- Simple validation or logging is sufficient
+- Shell commands meet your needs
+- You prefer not to write JavaScript/TypeScript
+- Maximum portability across environments
+
+### Development Workflow
+
+1. **Declare function-hook support** in plugin.json experimental field
+2. **Define hook functions** in TypeScript/JavaScript modules
+3. **Use hot reload** during development: `/reload-plugins` refreshes without restart
+4. **Test render output** — function hooks have different output constraints than command hooks
+
+### Plugin Authoring Simplification (CC 2.1.261)
+
+The CC 2.1.261 release simplified function-hook plugin authoring:
+
+- Reduced boilerplate for common patterns
+- Clearer separation between render and logic hooks
+- Better error messages for JSX runtime issues
+- Documentation consolidation in official guides
+
+### Limitations
+
+- Function-hook plugins require Node.js runtime
+- JSX rendering only works in environments that support it (not all TUI modes)
+- More complex to debug than command hooks
+- Official documentation still evolving
+
+**Note:** This is an advanced feature. Most plugins work well with declarative `hooks.json` configuration. Consider function-hooks only when the simpler approach doesn't meet your requirements.
+
 ## Keybindings Plugin Context
 
 Claude Code's keybindings system (`~/.claude/keybindings.json`) includes a `plugin:` context with actions for plugin management:

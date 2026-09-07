@@ -314,17 +314,34 @@ After conversation compaction, skills invoked before compaction are restored as 
 - Do not embed executable instructions in skill body sections labeled as "User Request" or similar — these are treated as historical after compaction
 - Design skills to clearly separate instructional content from contextual examples
 
-## Plugin Eval and Skill Doctor (CC 2.1.233-2.1.235, Early Access — Removed in CC 2.1.251)
+## Skill Doctor (`/skill-doctor`) — Generally Available (CC 2.1.261)
 
-> **Note (CC 2.1.251):** Plugin Eval (`claude plugin eval`) and Skill Doctor (`/skill-doctor`) have been removed from Claude Code's bundled prompts. These features were in early access and may still be available via external documentation or tools, but they are no longer part of the core Claude Code system prompts. The documentation below is retained for historical reference.
+The `/skill-doctor` command diagnoses skill issues and identifies unused skills consuming context budget:
 
-Claude Code previously included early-access features for evaluating plugin quality and diagnosing skill issues:
+**Capabilities:**
 
-### Plugin Eval (`claude plugin eval`) — Removed
+- Identifies unused skills and calculates their context cost in tokens
+- Diagnoses triggering problems (why a skill wasn't being invoked)
+- Analyzes description effectiveness
+- Suggests trigger phrase improvements
+- Validates frontmatter configuration
 
-The `claude plugin eval` command ran evaluation suites against plugins to measure skill triggering accuracy, hook correctness, and agent behavior:
+**Use cases:**
 
-**Key features (historical):**
+- Optimizing skill descriptions for better trigger matching
+- Reducing context window consumption by identifying bloated or unused skills
+- Debugging why a skill isn't triggering as expected
+- Auditing plugin skills for efficiency
+
+**History:** `/skill-doctor` was in early access (CC 2.1.233-2.1.235), briefly removed from bundled prompts (CC 2.1.251), and restored as generally available in CC 2.1.261.
+
+## Plugin Eval (`claude plugin eval`) — Early Access
+
+> **Note:** Plugin Eval remains in early access and requires explicit enablement. Unlike `/skill-doctor`, it has not been restored to GA status.
+
+The `claude plugin eval` command runs evaluation suites against plugins to measure skill triggering accuracy, hook correctness, and agent behavior:
+
+**Key features:**
 
 - Configurable `--eval-dir` for custom evaluation suites
 - Containment-checked plugin discovery
@@ -334,22 +351,11 @@ The `claude plugin eval` command ran evaluation suites against plugins to measur
 - CI integration for automated testing
 - SIGTERM handling for graceful shutdown
 
-**Previous enablement:** Plugin eval required the `CLAUDE_CODE_WALNUT_SPIRE=1` environment variable:
+**Enablement:** Plugin eval requires the `CLAUDE_CODE_WALNUT_SPIRE=1` environment variable:
 
 ```bash
 CLAUDE_CODE_WALNUT_SPIRE=1 claude plugin eval
 ```
-
-### Skill Doctor (`/skill-doctor`) — Removed
-
-The `/skill-doctor` command diagnosed skill issues and suggested improvements:
-
-- Identified triggering problems (why a skill wasn't being invoked)
-- Analyzed description effectiveness
-- Suggested trigger phrase improvements
-- Validated frontmatter configuration
-
-**Note:** These features have been removed from bundled Claude Code prompts as of CC 2.1.251. Plugin developers should rely on manual testing and the validation agents in the plugin-dev toolkit for plugin quality assurance.
 
 ## Built-in Skill Patterns (CC 2.1.247-2.1.248 — Removed in CC 2.1.251)
 

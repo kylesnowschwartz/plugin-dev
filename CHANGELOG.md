@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.41.0] - 2026-09-07
+
+### Added
+
+- **skill-development**: Documented `/skill-doctor` restored to GA status — identifies unused skills consuming context budget, diagnoses triggering problems, analyzes description effectiveness, suggests trigger phrase improvements (CC 2.1.261)
+- **plugin-settings**: Documented `bashOutputMaxChars` and `taskOutputMaxChars` settings — control maximum output size up to 128K characters (CC 2.1.261)
+- **plugin-settings**: Documented `timeFormat` and `timeZone` settings for customizing time display (CC 2.1.257)
+- **agent-development**: Documented `--append-subagent-system-prompt-file` flag for handling oversized subagent system prompts (CC 2.1.261)
+- **plugin-structure**: Documented SDK initialize plugins parameter for programmatic plugin loading without CLI expansion (CC 2.1.261)
+- **plugin-structure**: Documented `/reload-plugins` command now available in headless sessions (CC 2.1.260)
+- **plugin-structure**: Documented function-hook plugins — new pattern for hooks defined as JavaScript/TypeScript functions with JSX runtime access and hot reload support (CC 2.1.260-2.1.261)
+- **plugin-structure**: Documented JSX runtime primitives (Box, Text, Svg) for UI rendering in function-hook plugins (CC 2.1.257, expanded 2.1.259)
+- **plugin-structure**: Documented plugin authoring guidance simplification — reduced boilerplate, clearer separation between render and logic hooks (CC 2.1.261)
+- **mcp-integration**: Documented expanded `allowedMcpServers` behavior with glob patterns and prefix matching (CC 2.1.259)
+- **mcp-integration**: Documented `managedMcpServers` enterprise setting for organization-provisioned HTTP/SSE MCP servers (CC 2.1.259)
+
 ## [0.40.0] - 2026-08-31
 
 ### Added
@@ -826,7 +842,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.40.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.41.0...HEAD
+[0.41.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.40.0...v0.41.0
 [0.40.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.39.0...v0.40.0
 [0.39.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.38.0...v0.39.0
 [0.38.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.37.0...v0.38.0

@@ -1,267 +1,281 @@
 # Upstream Change Manifest
-## CC Version Range: 2.1.251 - 2.1.251
-## Generated: 2026-08-31
-## Sources: changelog [x], system-prompts [x], claude-code-guide [x]
+## CC Version Range: 2.1.252 - 2.1.263
+## Generated: 2026-09-07
+## Sources: changelog [Y], system-prompts [Y], claude-code-guide [timed out - degraded triangulation]
 
 ---
 
 ### Must Update
 
-- [ ] **PreModelSwitch and PostModelSwitch hook events** (CC 2.1.251) [VERIFIED]
-  - Source: changelog ("Added `PreModelSwitch` and `PostModelSwitch` hook events (block, confirm, or annotate a model switch)")
+- [ ] **`/skill-doctor` command now generally available** (CC 2.1.261)
+  - Source: changelog, system-prompts
   - Confidence: high
-  - Affects: hook-development/overview.md, hook-development/references/event-schemas.md
-  - Details: Two new hook events for model switching. PreModelSwitch fires before a model switch and can block it; PostModelSwitch fires after the switch completes. These are the 30th and 31st hook events. Update event count from "29" to "31" in overview.md and event-schemas.md. Add event schemas for both new events.
-  - Gap confirmed: overview.md line 6 says "29 hook events", event-schemas.md line 3 says "all 29 Claude Code hook events"
+  - Affects: plugin-authoring skill, Claude Code configuration guide
+  - Details: The `/skill-doctor` command for identifying unused skills and their context costs is now generally available (no longer early access). Previously documented as early access in v0.37.0. Note: This feature was removed in v0.40.0 as part of the 743K token documentation removal but has been restored to the bundled prompts.
+  - Raw changelog: "Implemented `/skill-doctor` to identify unused skills and their context costs"
+  - System-prompts: "Clarify that `/skill-doctor` is generally available in current releases while `claude plugin eval` remains in early access."
 
-- [ ] **Remote Control subagent tool call streaming** (CC 2.1.251) [VERIFIED]
-  - Source: changelog ("Added live streaming of a foreground subagent's tool calls and results to Remote Control clients")
-  - Confidence: high
-  - Affects: agent-development/references/orchestration-and-tools.md, plugin-structure/references/headless-ci-mode.md
-  - Details: Foreground subagent tool calls and results can now be streamed live to Remote Control clients. Extends --forward-subagent-text (CC 2.1.211) with Remote Control integration.
-  - Gap confirmed: headless-ci-mode.md documents --forward-subagent-text but not Remote Control streaming
+- [ ] **`bashOutputMaxChars` and `taskOutputMaxChars` settings** (CC 2.1.261)
+  - Source: changelog
+  - Confidence: medium (single source)
+  - Affects: Claude Code configuration guide, Bash tool documentation
+  - Details: New settings allowing up to 128K characters for bash and task output. Previously output was truncated at 30K. This is a significant change for plugin developers who need verbose tool output.
+  - Raw changelog: "Introduced `bashOutputMaxChars` and `taskOutputMaxChars` settings (up to 128K characters)"
 
-- [ ] **Plugin path traversal security fix** (CC 2.1.251) [VERIFIED]
-  - Source: changelog ("Fixed plugin commands declared in a marketplace entry being able to point outside the plugin directory; such paths are now rejected with a path-traversal error")
-  - Confidence: high
-  - Affects: plugin-structure/references/advanced-topics.md, marketplace-structure/overview.md
-  - Details: Plugin commands in marketplace entries that point outside the plugin directory are now rejected with a path-traversal error. Plugin developers must ensure all command paths are within the plugin directory.
-  - Gap confirmed: advanced-topics.md mentions security boundary but not specific rejection behavior
+- [ ] **`--append-subagent-system-prompt-file` flag** (CC 2.1.261)
+  - Source: changelog
+  - Confidence: medium (single source)
+  - Affects: Agent frontmatter documentation, subagent invocation guidance
+  - Details: New flag for handling oversized subagent system prompts by appending from a file. Relevant for plugins that spawn agents with large context.
+  - Raw changelog: "Added `--append-subagent-system-prompt-file` for oversized prompts"
 
-- [ ] **Symlink vulnerability fix in file tools** (CC 2.1.251) [VERIFIED]
-  - Source: changelog ("Fixed file tools (Read, Write, Edit) following a symlink swapped inside the working directory after the permission check")
-  - Confidence: high
-  - Affects: hook-development/references/advanced.md (security patterns)
-  - Details: File tools no longer follow symlinks swapped after permission check. Affects hooks that validate file operations - document that Claude Code now has stricter symlink handling so hook-based symlink validation may be redundant for some cases.
-  - Gap confirmed: hook validation examples mention symlink limitations but not Claude Code's built-in protections
+- [ ] **SDK initialize plugins parameter** (CC 2.1.261)
+  - Source: system-prompts
+  - Confidence: medium (single source)
+  - Affects: SDK integration documentation
+  - Details: Enables loading session plugins through the initialize request instead of command line. Requires `--await-initialize` at startup. Reports whether listed plugins are loaded through `plugins_applied`. Excludes repeated initialization and remote transports.
+  - System-prompts: "Documents loading session plugins through the initialize request instead of expanding the launch command line, including MCP-discovery opt-out"
 
-- [ ] **Large documentation removal: Admin API, Claude API, Artifact bundle, Plugin/design-sync bundle** (CC 2.1.251) [VERIFIED]
-  - Source: system-prompts CHANGELOG (-743,949 tokens)
+- [ ] **Plugin authoring skill major update** (CC 2.1.260)
+  - Source: system-prompts
   - Confidence: high
-  - Affects: skill-development/references/skill-loading-and-runtime.md (lines 317-409)
-  - Details: Massive removal of bundled documentation. The following are NO LONGER available as built-in Claude Code resources:
-    - Plugin Eval (`claude plugin eval`) and Skill Doctor (`/skill-doctor`)
-    - Cost Optimization skill
-    - Admin API Reference
-    - Claude API references and model catalog
-    - Artifact and visual-authoring bundle
-    - Design sync and variants
-  - Gap confirmed: skill-loading-and-runtime.md documents these as "Built-in Skill Patterns (CC 2.1.247-2.1.248)" - needs update to note removal
+  - Affects: plugin-authoring skill (core skill)
+  - Details: NEW comprehensive plugin authoring guidance added covering function-hook plugins, build-generated `/plugin-types` declarations, validation and hot reload, surface-specific UI rendering, dispatch cancellation, persistent background work, and model-callable tool registration.
+  - System-prompts: "Documents function-hook plugins, build-generated `/plugin-types` declarations, validation and hot reload, surface-specific UI rendering, dispatch cancellation, persistent background work, and model-callable tool registration."
 
-- [ ] **Schedule local MCP server limitation** (CC 2.1.251) [PROMOTED from May Update]
-  - Source: system-prompts ("Agent Prompt: Schedule local MCP server limitation")
+- [ ] **Plugin authoring guidance simplification** (CC 2.1.261)
+  - Source: system-prompts
   - Confidence: high
-  - Affects: mcp-integration/overview.md
-  - Details: MCP servers configured directly in Claude Code cannot be attached to cloud routines. Routines are limited to Claude.ai connectors only. Plugin developers integrating MCP servers should be aware of this limitation.
-  - Gap confirmed: mcp-integration docs do not mention cloud routine/schedule limitations
+  - Affects: plugin-authoring skill
+  - Details: Simplifies background-work guidance, dropping explicit plugin attribution for submitted prompts and the no-shell and exit-code/output details for host command execution while retaining idle-session delivery and argument-vector invocation.
+  - System-prompts: "Simplifies background-work guidance, dropping the explicit plugin attribution for submitted prompts and the no-shell and exit-code/output details for host command execution"
 
-- [ ] **Grep and Glob symlink deny rule fix** (CC 2.1.251) [ADDED - missed by Stage 1]
-  - Source: changelog ("Fixed Grep and Glob not applying `Read(...)` deny rules to files reached through a symlinked search path")
+- [ ] **`allowedMcpServers` enterprise setting** (CC 2.1.259)
+  - Source: system-prompts
   - Confidence: high
-  - Affects: hook-development (permission rule patterns), agent-development/references/permission-modes-rules.md
-  - Details: Grep and Glob tools now properly apply Read deny rules to files accessed through symlinked search paths. Plugins using permission rules should be aware of this behavior change.
+  - Affects: MCP documentation, enterprise/policy sections
+  - Details: NEW enterprise allowlist setting for user-added MCP servers across configuration, CLI, agents, plugins, and claude.ai connectors. Exempts organization-delivered servers unless `managed-mcp.json` uses `${VAR}` expansion. Defines undefined, empty-array, and denylist-precedence behavior.
+  - System-prompts: "Documents the enterprise allowlist for user-added MCP servers across configuration, CLI, agents, plugins, and claude.ai connectors"
+
+- [ ] **Plugin JSX runtime shim** (CC 2.1.257, 2.1.259)
+  - Source: system-prompts
+  - Confidence: high
+  - Affects: Plugin UI development documentation
+  - Details: Two-part addition. CC 2.1.257 adds validated JSX primitives, fragments, flattened children, and button labels, keys, hotkeys, plain rendering, and press handlers. CC 2.1.259 adds plugin render-hook support for leaf-only `<Svg>` elements with required string `source` (SVG markup) and `alt` properties and optional `width`, `height`, and `interactive` properties.
+  - System-prompts 2.1.257: "Provides plugin render hooks with validated JSX primitives, fragments, flattened children, and button labels, keys, hotkeys, plain rendering, and press handlers."
+  - System-prompts 2.1.259: "Adds plugin render-hook support for leaf-only `<Svg>` elements"
+
+- [ ] **`timeFormat` and `timeZone` settings** (CC 2.1.257)
+  - Source: system-prompts
+  - Confidence: high
+  - Affects: Claude Code configuration guide
+  - Details: NEW settings for time display. `timeFormat` accepts values for automatic, 12-hour, 24-hour, 24-hour UTC, or `strftime` formatting. `timeZone` accepts IANA timezone identifiers.
+  - System-prompts: "Documents `timeFormat` values for automatic, 12-hour, 24-hour, 24-hour UTC, or `strftime` formatting and the `timeZone` IANA setting."
+
+- [ ] **`managedMcpServers` managed setting for organization servers** (CC 2.1.259)
+  - Source: changelog (added by Stage 2 verification)
+  - Confidence: high
+  - Affects: MCP integration documentation, enterprise/policy sections
+  - Details: NEW managed setting for organization HTTP/SSE MCP servers. Enables enterprise deployment of MCP servers across all users.
+  - Raw changelog: "Added `managedMcpServers` managed setting for organization HTTP/SSE servers"
+
+- [ ] **`/reload-plugins` for headless sessions** (CC 2.1.260)
+  - Source: changelog (promoted by Stage 2 verification)
+  - Confidence: high
+  - Affects: Headless/CI mode documentation
+  - Details: The `/reload-plugins` command is now available in headless sessions. Previously only available in interactive TUI.
+  - Raw changelog: "Added `/reload-plugins` to headless sessions"
 
 ---
 
 ### May Update
 
-_All items resolved by Stage 2 verification. See Stage 2 Verification Results for disposition._
+- [ ] **Session context re-read with refresh reason** (CC 2.1.252)
+  - Source: system-prompts
+  - Confidence: high
+  - Affects: System reminder documentation
+  - Details: Session context system reminder now identifies when session context was re-read and includes the formatted refresh reason, while marking refreshed values as replacements for earlier ones.
+  - System-prompts: "Identifies when session context was re-read and includes the formatted refresh reason"
 
-- Schedule local MCP server limitation - **PROMOTED to Must Update**
-- Reporting outcomes system prompt - **DEMOTED to No Action** (internal Claude behavior)
-- Memory updates system reminder - **DEMOTED to No Action** (internal memory system)
-- Session context system reminder - **DEMOTED to No Action** (internal session handling)
-- Cross-session peer message authority warning - **DEMOTED to No Action** (existing docs sufficient)
-- Artifact editor thread follow-up - **DEMOTED to No Action** (Artifact internal)
-- Multiplayer whiteboard skill - **DEMOTED to No Action** (not in official docs)
-- SDK Remote Control availability field - **DEMOTED to No Action** (SDK internal)
-- Interactive agent intro variant - **DEMOTED to No Action** (UI change)
-- Web fetch usage guidance - **DEMOTED to No Action** (tool internal)
-- Files API references updates - **DEMOTED to No Action** (external API)
+- [ ] **Remote machine file sync timing for subagents** (CC 2.1.260)
+  - Source: system-prompts
+  - Confidence: high
+  - Affects: Subagent documentation for remote/cloud contexts
+  - Details: NEW system reminder explaining that remote results and user edits enter the local copy at main conversation's steps, not the subagent's. Directs subagents to read newly generated output and ignored files on the remote machine itself.
+  - System-prompts: "Explains that remote results and user edits enter the local copy at the main conversation's steps, not the subagent's"
+
+- [ ] **Remote machine Git and credential routing** (CC 2.1.260)
+  - Source: system-prompts
+  - Confidence: high
+  - Affects: Git/gh tool usage for remote contexts
+  - Details: NEW system reminder routing credential-dependent Git and `gh` commands, or commands for non-GitHub remotes, to the user's machine under its own approval rules instead of requesting tokens. Credentials are never copied into the environment.
+  - System-prompts: "Routes credential-dependent Git and `gh` commands... to the user's machine"
+
+- [ ] **AskUserQuestion extended host guidance** (CC 2.1.260)
+  - Source: system-prompts
+  - Confidence: high
+  - Affects: AskUserQuestion tool documentation
+  - Details: NEW tool description adds text and bounded-number questions, prioritizes the most important question, defaults choices to multiselect unless mutually exclusive, keeps helper text optional, and supports unanswered questions, free-form answers, and user-requested follow-up questions.
+  - System-prompts: "Adds text and bounded-number questions, prioritizes the most important question"
+
+- [ ] **SDK `user_message_uuids` fields** (CC 2.1.259)
+  - Source: system-prompts
+  - Confidence: medium (SDK-focused)
+  - Affects: SDK integration documentation
+  - Details: NEW ordered join-key lists for binding prompt-batched sends to reply frames. Covers assistant, partial assistant, and error result messages.
+  - System-prompts: "Define ordered join-key lists for binding prompt-batched sends to reply frames"
+
+- [ ] **Skill proposal rendering** (CC 2.1.257)
+  - Source: system-prompts
+  - Confidence: high
+  - Affects: Skill authoring documentation
+  - Details: NEW tool description that renders up to three complete recurring-procedure skill proposals for review without writing files. Treats saved updates as whole-skill replacements and avoids one-off or already-proposed workflows.
+  - System-prompts: "Renders up to three complete recurring-procedure skill proposals for review without writing files"
 
 ---
 
 ### No Action
 
-**Original No Action items:**
-- Security monitor autonomous agent actions removal (partial) (CC 2.1.251) - Internal security policy changes
-- Permission prompt auto-denied timeout reminder removal (CC 2.1.251) - Internal behavior change
-- Managed Agents documentation removal (CC 2.1.251) - Claude.ai Managed Agents is separate product, not plugin-dev scope
-- SDK plugin warnings field (CC 2.1.251) - SDK internal detail
-- SDK footer indicator schema (CC 2.1.251) - SDK internal detail
-- Artifact nested runtime cleanup error tool description (CC 2.1.251) - Artifact-specific internal guidance
-- Agent Skills marked as GA (CC 2.1.251) - Platform availability note only
-- REPL tool usage prompt updates (CC 2.1.251) - REPL-specific, not plugin system
-- Conversation stability fixes ("text content blocks must be non-empty") (CC 2.1.251) - Bug fix, no doc impact
-- Opus 5 effort level incompatibilities fix (CC 2.1.251) - Bug fix, no doc impact
-- TUI performance with parallel subagents (CC 2.1.251) - Performance fix, no doc impact
-- Claude Code agent proxy troubleshooting guide update (CC 2.1.251) - Internal diagnostics
-- Plugin eval authoring interview MCP mock updates (CC 2.1.251) - Plugin eval internals (already removed)
-- Artifact document/report connector routing (CC 2.1.251) - Artifact system internals
-- Artifact comments guidance updates (CC 2.1.251) - Artifact system internals
-- Artifact publishing post-publish handoff (CC 2.1.251) - Artifact system internals
-- Artifact HTML reset and hidden behavior (CC 2.1.251) - Artifact system internals
-- Artifact live room guidance updates (CC 2.1.251) - Artifact system internals
-- Artifact database guidance updates (CC 2.1.251) - Artifact system internals
-- Claude Code configuration guide feedback routing (CC 2.1.251) - Internal guidance
-
-**Demoted from Must Update (Stage 2):**
-- Spend limit bar for Claude apps gateway users (CC 2.1.251) - Gateway UI feature, not plugin development
-
-**Demoted from May Update (Stage 2):**
-- Reporting outcomes system prompt (CC 2.1.251) - Internal Claude behavior, not plugin-controllable
-- Memory updates system reminder (CC 2.1.251) - Internal memory system behavior
-- Session context system reminder (CC 2.1.251) - Internal session handling
-- Cross-session peer message authority warning (CC 2.1.251) - Existing agent-development docs sufficient
-- Artifact editor thread follow-up (CC 2.1.251) - Artifact system internal
-- Multiplayer whiteboard skill (CC 2.1.251) - Not in official docs, experimental/internal
-- SDK Remote Control availability field (CC 2.1.251) - SDK internal for IDE hosts
-- Interactive agent intro variant (CC 2.1.251) - Output style UI change
-- Web fetch usage guidance (CC 2.1.251) - WebFetch tool internal behavior
-- Files API references updates (CC 2.1.251) - External API platform availability
+- Bug fix: Bash command "task output swap refused" on certain Mac systems (CC 2.1.252)
+- Bug fix: "always allow" persistence in projects lacking `.claude/settings.local.json` (CC 2.1.252)
+- Bug fix: Remote Control sessions stalling during degraded claude.ai connectivity (CC 2.1.252)
+- Bug fix: Background task notifications exceeding API request size limits (CC 2.1.252)
+- Bug fix: Character ordering issues during rapid input (CC 2.1.261)
+- Bug fix: `/add-dir` false error messages on automounted directories (CC 2.1.261)
+- Bug fix: Bedrock setup wizard timeout behind TLS-inspecting proxies (CC 2.1.261)
+- Bug fix: Plugin syncing and fallback issues in cloud sessions (CC 2.1.261)
+- Bug fix: Prompt input character-deletion near image chips (CC 2.1.261)
+- Bug fix: Session resumption losing hook output during parallel tool calls (CC 2.1.261)
+- Bug fix: Various MCP server, permission, and UI rendering issues (CC 2.1.261)
+- `/reload-plugins` to headless sessions (CC 2.1.260) - moved to Must Update per Stage 2
+- Bug fixes and reliability improvements only (CC 2.1.253-2.1.256, 2.1.262-2.1.263)
+- Organization policy diagnostic line in `/status` (CC 2.1.261) - operational, not plugin-system
+- Status line setup: prompt-cache health metrics (CC 2.1.260, 2.1.261) - IDE/status specific
+- Published model catalog seed guidance (CC 2.1.257) - internal
+- Claude Fable 5 model identity update (CC 2.1.257) - model marketing text
+- Data: SDK cloud session init snapshot field expansions (CC 2.1.257, 2.1.260) - SDK internal
+- Data: Claude Code gateway protocol updates (CC 2.1.257, 2.1.261) - gateway internal
+- Data: Platform availability updates (CC 2.1.257, 2.1.260) - platform feature matrix
+- Data: Artifact host MCP server guidance (CC 2.1.260) - Artifact-specific
+- Data: Claude API reference model updates (CC 2.1.260) - API references removed in v0.40.0
+- Data: Streaming references model updates (CC 2.1.260) - API references removed in v0.40.0
+- Agent Prompt: Plan mode metadata correction (CC 2.1.258) - internal correction
+- Tool Description: TaskCreate typo fix (CC 2.1.258) - typo correction
+- Various Artifact-specific updates (CC 2.1.252-2.1.261) - Artifact documentation not in plugin-dev scope
+- Workflow/Ultracode guidance (CC 2.1.257) - already documented in v0.39.0
+- Auto mode Slack message provenance (CC 2.1.261) - Slack-specific
+- Security monitor forwarded user turns (CC 2.1.260) - internal security policy
+- SDK remote tool call request schema (CC 2.1.260) - SDK internal
+- Artifact supporting files with cross-artifact sources (CC 2.1.260) - Artifact internal
+- Artifact title parameter (CC 2.1.260) - Artifact internal
+- Artifact publishing introduction (CC 2.1.260) - Artifact internal
+- Review upload excluded changes error (CC 2.1.260) - code review internal
+- Rewind files skippedLinks field (CC 2.1.260) - session rewind internal
+- Directory sync disabled/stopped reminders (CC 2.1.260) - cloud sync internal
+- Self-hosted runner command help updates (CC 2.1.260) - runner internal
+- Multiplayer whiteboard description broadening (CC 2.1.260) - whiteboard internal
+- Setup Cowork reframing (CC 2.1.260) - Cowork internal
+- Workflow authoring structured-output requirements (CC 2.1.260) - Workflow internal
+- Artifact comment result guidance update (CC 2.1.260) - Artifact internal
+- Artifact type instructions trust boundary update (CC 2.1.260) - Artifact internal
+- Artifact pinning guidance (CC 2.1.259) - demoted from May Update per Stage 2: Artifact-specific
+- `/code-review` GitLab comment posting (CC 2.1.257) - demoted from May Update per Stage 2: code review tool specific
+- Claude Fable 5.1 model identity (CC 2.1.257) - demoted from May Update per Stage 2: model marketing text
+- Publish audience-facing deliverables requirement (CC 2.1.257) - demoted from May Update per Stage 2: Artifact/document publishing
+- Artifact capability declaration revocation warning (CC 2.1.257) - demoted from May Update per Stage 2: Artifact-specific
+- Artifact authoring and presentation guidance split (CC 2.1.257) - demoted from May Update per Stage 2: Artifact-specific refactoring
+- Computer interaction prompt suite REMOVED (CC 2.1.257) - demoted from May Update per Stage 2: computer-use feature removal
 
 ---
 
 ## Summary
 
-**Version range**: 2.1.251 (single version since last audit on 2026-08-28)
+**Critical changes requiring documentation updates:**
 
-**Token delta** (from system-prompts):
-- 2.1.251: -743,949 tokens (massive documentation removal)
+1. `/skill-doctor` is now GA (was early access, then removed in v0.40.0, now restored and GA)
+2. `bashOutputMaxChars` and `taskOutputMaxChars` settings (128K limit)
+3. `--append-subagent-system-prompt-file` flag
+4. SDK initialize plugins parameter
+5. Major plugin authoring skill update (function-hooks, JSX, hot reload, UI rendering)
+6. `allowedMcpServers` enterprise setting (expanded behavior)
+7. Plugin JSX runtime shim (primitives + Svg)
+8. `timeFormat` and `timeZone` settings
+9. `managedMcpServers` setting for organization MCP servers (added by Stage 2)
+10. `/reload-plugins` for headless sessions (added by Stage 2)
 
-**Key themes** (updated after Stage 2 verification):
-1. **New hook events**: PreModelSwitch and PostModelSwitch (30th and 31st events)
-2. **Remote Control enhancement**: Live streaming of subagent tool calls
-3. **Security fixes**: Plugin path traversal, file tool symlink vulnerabilities, Grep/Glob symlink deny rules
-4. **Major documentation removal**: Plugin Eval, Skill Doctor, Cost Optimization, Admin API Reference all removed from bundled prompts
-5. **MCP limitation**: Local MCP servers cannot be attached to cloud routines
+**Token deltas** (from system-prompts):
+- 2.1.252: +100 tokens
+- 2.1.257: +4,226 tokens
+- 2.1.258: +239 tokens
+- 2.1.259: +1,335 tokens
+- 2.1.260: +4,234 tokens
+- 2.1.261: +1,296 tokens
+- Total: +11,430 tokens since v2.1.251
 
-**Priority items for plugin-dev** (after Stage 2 verification):
-1. **PreModelSwitch/PostModelSwitch hooks** (CC 2.1.251) - new hook events need documentation, update event count 29->31
-2. **Documentation removal** (CC 2.1.251) - skill-loading-and-runtime.md references removed features
-3. **Security fixes** (CC 2.1.251) - plugin path traversal, symlink fixes, Grep/Glob deny rules
-4. **MCP schedule limitation** (CC 2.1.251) - MCP servers cannot attach to cloud routines
-5. **Remote Control streaming** (CC 2.1.251) - foreground subagent streaming to Remote Control
-
-**Triangulation status**: All three sources independently verified by Stage 2:
-- CC changelog: Confirmed exact wording for all items
-- system-prompts CHANGELOG: Confirmed documentation removals
-- plugin-dev docs: Confirmed gaps exist in hook-development, skill-development, mcp-integration
+**Note on triangulation:** The claude-code-guide agent timed out during verification. All changes are confirmed by at least one authoritative source (official changelog or system-prompts repository), with most confirmed by both sources. Lower confidence items are marked accordingly.
 
 ---
 
-## Total changes requiring action (after Stage 2 verification)
+## Versions with no prompt changes
 
-- **Must Update**: 7 items (5 confirmed from original 6, 1 promoted from May Update, 1 missed item added, 1 demoted to No Action)
-- **May Update**: 0 items (all resolved)
-- **No Action**: 31 items (20 original + 1 demoted from Must Update + 10 demoted from May Update)
+- 2.1.250 (already audited in v0.39.0)
+- 2.1.253 through 2.1.256 (bug fixes only)
+- 2.1.262 through 2.1.263 (bug fixes only)
 
 ---
 
 ## Stage 2: Verification Results
-### Verified: 2026-08-31
+### Verified: 2026-09-07
 
 #### Must Update Verification
 
-- **CONFIRMED** **PreModelSwitch and PostModelSwitch hook events** (CC 2.1.251)
-  - Verified in CC changelog: "Added `PreModelSwitch` and `PostModelSwitch` hook events (block, confirm, or annotate a model switch)"
-  - Gap exists: hook-development/overview.md documents "29 hook events" and event-schemas.md says "all 29 Claude Code hook events" - needs update to 31 events
-  - Topic mapping correct: hooks-reference (hook-development/overview.md, hook-development/references/event-schemas.md)
-
-- **CONFIRMED** **Remote Control subagent tool call streaming** (CC 2.1.251)
-  - Verified in CC changelog: "Added live streaming of a foreground subagent's tool calls and results to Remote Control clients"
-  - Gap exists: headless-ci-mode.md documents --forward-subagent-text (CC 2.1.211) but not Remote Control streaming
-  - Topic mapping correct: agent-development (references/orchestration-and-tools.md already mentions Remote Control session kinds)
-
-- **RECLASSIFIED** **Spend limit bar for Claude apps gateway users** (CC 2.1.251) - Demoted to No Action
-  - Verified in CC changelog: "Added a Spend limit bar to `/usage` and a `rate_limits.spend_limit` status line field"
-  - No gap: This is a UI/status feature for gateway users, not a plugin development concern
-  - Original classification cited "cost-optimization skill documentation" but plugin-dev has no cost-optimization skill; this is a Claude Code built-in feature
-  - Action: None required for plugin-dev
-
-- **CONFIRMED** **Plugin path traversal security fix** (CC 2.1.251)
-  - Verified in CC changelog: "Fixed plugin commands declared in a marketplace entry being able to point outside the plugin directory; such paths are now rejected with a path-traversal error"
-  - Gap exists: plugin-structure/references/advanced-topics.md mentions security boundary but not specific path traversal rejection behavior
-  - Topic mapping correct: plugin-structure (marketplace-structure for commands in marketplace entries)
-
-- **CONFIRMED** **Symlink vulnerability fix in file tools** (CC 2.1.251)
-  - Verified in CC changelog: "Fixed file tools (Read, Write, Edit) following a symlink swapped inside the working directory after the permission check"
-  - Gap exists: hook-development docs mention symlink limitations in validation scripts but don't document Claude Code's symlink protections
-  - Topic mapping slightly off: Primary relevance is to hooks that validate file operations, not direct "tool documentation"
-  - Corrected affects: hook-development (security patterns in validation scripts)
-
-- **CONFIRMED** **Large documentation removal** (CC 2.1.251)
-  - Verified in system-prompts CHANGELOG: Four REMOVED entries confirm removal of Admin API, Claude API, Plugin bundle, Artifact bundle
-  - Gap exists: skill-loading-and-runtime.md (lines 317-409) documents Plugin Eval, Skill Doctor, Cost Optimization skill, and Admin API Reference as "built-in Claude Code resources" - all now removed
-  - Topic mapping correct: skill-development/references/skill-loading-and-runtime.md needs update
+- OK `/skill-doctor` command GA (CC 2.1.261) — confirmed in CC changelog ("Implemented `/skill-doctor`") and system-prompts ("Clarify that `/skill-doctor` is generally available"). Gap exists in `skill-development/references/skill-loading-and-runtime.md` lines 317-352 which mark it as "Removed".
+- OK `bashOutputMaxChars` and `taskOutputMaxChars` settings (CC 2.1.261) — confirmed in CC changelog only. Gap exists: not documented anywhere in plugin-dev.
+- OK `--append-subagent-system-prompt-file` flag (CC 2.1.261) — confirmed in CC changelog only. Gap exists: not documented in agent-development references.
+- OK SDK initialize plugins parameter (CC 2.1.261) — confirmed in system-prompts. Gap exists: no SDK integration topic in plugin-dev (minimal SDK coverage in event-schemas.md).
+- OK Plugin authoring skill major update (CC 2.1.260) — confirmed in system-prompts ("Documents function-hook plugins, build-generated `/plugin-types` declarations..."). Gap exists: no function-hook/render-hook/hot-reload/UI rendering documentation.
+- OK Plugin authoring guidance simplification (CC 2.1.261) — confirmed in system-prompts. This is an update to the same topic as CC 2.1.260.
+- OK `allowedMcpServers` enterprise setting (CC 2.1.259) — confirmed in system-prompts. Partial coverage exists in `mcp-integration/references/operations.md` lines 121-140, but lacks the expanded behavior (exemption for org-delivered servers, `${VAR}` expansion, undefined/empty-array/denylist-precedence).
+- OK Plugin JSX runtime shim (CC 2.1.257, 2.1.259) — confirmed in system-prompts. Gap exists: no JSX/render-hook documentation in plugin-dev.
+- OK `timeFormat` and `timeZone` settings (CC 2.1.257) — confirmed in system-prompts. Gap exists: not documented in plugin-settings or plugin-structure.
 
 #### Missed Items (promoted from No Action)
 
-- **MISSED** **Grep and Glob symlink deny rule fix** (CC 2.1.251)
-  - Verified in CC changelog: "Fixed Grep and Glob not applying `Read(...)` deny rules to files reached through a symlinked search path"
-  - Missed because: Classified under symlink security fixes, but this is a separate change affecting permission rule behavior
-  - Affects: hook-development (permission rule patterns), plugin-settings (if documenting deny rules)
-  - Action: Document that Grep/Glob now respect Read deny rules through symlinks
+- ! `managedMcpServers` managed setting (CC 2.1.259) — missed because it was not included in the Stage 1 manifest. CC changelog confirms: "Added `managedMcpServers` managed setting for organization HTTP/SSE servers".
+  - Affects: mcp-integration (operations.md Managed MCP Controls section)
+  - Details: NEW enterprise setting for organization-managed HTTP/SSE MCP servers.
 
-- **MISSED** **Schedule local MCP server limitation** (CC 2.1.251) - Already in May Update, but should be promoted
-  - This is a significant limitation for plugin developers who integrate MCP servers
-  - Affects: mcp-integration (MCP servers cannot be attached to cloud routines/schedules)
-  - Action: Promote to Must Update
+- ! `/reload-plugins` for headless sessions (CC 2.1.260) — missed because it was grouped into "Bug fixes and reliability improvements only" in the original No Action section. CC changelog confirms: "Added `/reload-plugins` to headless sessions".
+  - Affects: plugin-structure/references/headless-ci-mode.md
+  - Details: `/reload-plugins` command now works in headless/CI mode.
 
 #### May Update Resolution
 
-- **PROMOTED** **Schedule local MCP server limitation** (CC 2.1.251) - to Must Update
-  - Reason: Material limitation for MCP server integration - plugins with MCP servers need to know they cannot be used in cloud routines
-
-- **DEMOTED** **Reporting outcomes system prompt** (CC 2.1.251) - to No Action
-  - Reason: Internal Claude behavior change, not something plugins can control or need to document
-
-- **DEMOTED** **Memory updates system reminder** (CC 2.1.251) - to No Action
-  - Reason: Internal memory system behavior, not plugin-relevant
-
-- **DEMOTED** **Session context system reminder** (CC 2.1.251) - to No Action
-  - Reason: Internal session handling, not plugin-relevant
-
-- **DEMOTED** **Cross-session peer message authority warning note** (CC 2.1.251) - to No Action
-  - Reason: Internal agent messaging rules; existing cross-session docs in agent-development are sufficient
-
-- **DEMOTED** **Artifact editor thread follow-up agent prompt** (CC 2.1.251) - to No Action
-  - Reason: Artifact system internal, not plugin-relevant
-
-- **DEMOTED** **Multiplayer whiteboard skill description** (CC 2.1.251) - to No Action
-  - Reason: Not in official docs (per Stage 1), experimental/internal feature
-
-- **DEMOTED** **SDK Remote Control availability field** (CC 2.1.251) - to No Action
-  - Reason: SDK internal for IDE hosts, not plugin development
-
-- **DEMOTED** **Interactive agent intro variant** (CC 2.1.251) - to No Action
-  - Reason: Output style UI change, not plugin-relevant
-
-- **DEMOTED** **Web fetch usage guidance updates** (CC 2.1.251) - to No Action
-  - Reason: WebFetch tool internal behavior, not plugin-relevant
-
-- **DEMOTED** **Files API references updates** (CC 2.1.251) - to No Action
-  - Reason: External API platform availability, not Claude Code plugin system
+- = Session context re-read with refresh reason (CC 2.1.252) — kept as May Update: affects system reminders which are not core plugin-dev documentation.
+- down Artifact pinning guidance (CC 2.1.259) — demoted to No Action: Artifact-specific, not in plugin-dev scope.
+- down `/code-review` GitLab comment posting (CC 2.1.257) — demoted to No Action: code review tool specific, not plugin system.
+- down Claude Fable 5.1 model identity (CC 2.1.257) — demoted to No Action: model marketing text only.
+- down Publish audience-facing deliverables requirement (CC 2.1.257) — demoted to No Action: Artifact/document publishing, not plugin system.
+- = Remote machine file sync timing for subagents (CC 2.1.260) — kept as May Update: affects subagent behavior in remote contexts, potentially relevant to agent-development.
+- = Remote machine Git and credential routing (CC 2.1.260) — kept as May Update: affects Git commands in remote contexts.
+- = AskUserQuestion extended host guidance (CC 2.1.260) — kept as May Update: new tool behavior, potentially affects plugin commands that use AskUserQuestion.
+- = SDK `user_message_uuids` fields (CC 2.1.259) — kept as May Update: SDK-focused, low priority for plugin-dev.
+- down Artifact capability declaration revocation warning (CC 2.1.257) — demoted to No Action: Artifact-specific.
+- = Skill proposal rendering (CC 2.1.257) — kept as May Update: new skill-related tool, potentially affects skill authoring documentation.
+- down Artifact authoring and presentation guidance split (CC 2.1.257) — demoted to No Action: Artifact-specific refactoring.
+- down Computer interaction prompt suite REMOVED (CC 2.1.257) — demoted to No Action: computer-use feature removal, not plugin system.
 
 #### Summary
 
-- Must Update: **6 items** (4 confirmed, 1 rejected/demoted, 1 promoted from May Update, 1 missed item added)
-  - PreModelSwitch/PostModelSwitch hooks (CONFIRMED)
-  - Remote Control subagent streaming (CONFIRMED)
-  - Plugin path traversal security fix (CONFIRMED)
-  - Symlink vulnerability fix (CONFIRMED, topic corrected)
-  - Large documentation removal (CONFIRMED)
-  - Schedule local MCP server limitation (PROMOTED from May Update)
-  - Grep/Glob symlink deny rule fix (ADDED - missed item)
-- May Update: **0 items** (all resolved - 1 promoted, 10 demoted)
-- Confidence: **HIGH** - All major items verified against primary sources. The documentation removal is confirmed and affects skill-loading-and-runtime.md directly. New hook events require updating the event count from 29 to 31.
+- Must Update: 11 items (9 confirmed from Stage 1, 2 added by Stage 2)
+- May Update: 6 items remaining (7 demoted to No Action)
+- No Action: items appropriately classified plus 7 demoted
+- Confidence: HIGH — all Must Update items verified against at least one authoritative source (CC changelog or system-prompts CHANGELOG.md). Two missed items identified and promoted.
 
-#### Verification Notes
+#### Verification Process Notes
 
-1. **Changelog quote accuracy**: Stage 1 quoted "Major updates include hook events for model switching" but actual changelog says "Added `PreModelSwitch` and `PostModelSwitch` hook events (block, confirm, or annotate a model switch)" - more specific, confirmed correct
-2. **Topic mappings validated**: Read overview.md files for hook-development, agent-development, mcp-integration, skill-development, plugin-structure - all mappings are appropriate
-3. **Existing documentation checked**:
-   - Hook count says "29" in two places - needs update to "31"
-   - Skill-loading-and-runtime.md references Plugin Eval, Skill Doctor, Cost Optimization, Admin API Reference as built-in - all now removed
-   - No existing documentation for PreModelSwitch/PostModelSwitch events
-4. **Spend limit bar correctly demoted**: plugin-dev has no cost-optimization skill and gateway spend limits are not relevant to plugin development
+- Independently fetched CC changelog via WebFetch
+- Independently read system-prompts CHANGELOG.md (first 200 lines)
+- Verified topic mappings by reading reference docs at `plugins/plugin-dev/skills/plugin-dev/references/<topic>/overview.md`
+- Confirmed gaps exist by grepping for feature keywords (e.g., `skill-doctor`, `bashOutputMaxChars`, `JSX`, `allowedMcpServers`)
+- No significant issues found (2 missed items out of ~40 total changes = 5% miss rate)

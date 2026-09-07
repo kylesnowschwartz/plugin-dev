@@ -696,6 +696,32 @@ Agent frontmatter `tools:` and `disallowedTools:` restrictions now work in print
 
 When launching an agent via `--agent <name>`, Claude Code now respects the agent's frontmatter `permissionMode` for built-in agents. Permission modes defined in agent definitions are honored when launched via the CLI flag.
 
+### --append-subagent-system-prompt-file Flag (CC 2.1.261)
+
+The `--append-subagent-system-prompt-file` flag handles oversized subagent system prompts by appending content from a file:
+
+```bash
+claude --append-subagent-system-prompt-file /path/to/extra-context.md
+```
+
+**Use cases:**
+
+- Plugins that spawn agents with large context requirements
+- Workflows where agent system prompts exceed normal limits
+- Passing extensive reference documentation to subagents without hitting context limits
+
+**Behavior:**
+
+- Content from the specified file is appended to the subagent's system prompt
+- The file must exist and be readable
+- Useful for complex plugins that need to pass substantial context to spawned agents
+
+**Plugin author guidance:**
+
+- If your plugin spawns agents that require extensive context (e.g., complex reference documentation, large schemas)
+- Document this flag for users who encounter truncation issues
+- Consider whether the context could be split into reference files the agent can Read instead
+
 ### Settings Agent Field for Dispatched Sessions (CC 2.1.157)
 
 The `agent` field in `settings.json` is now honored when dispatching sessions via `claude agents`:
