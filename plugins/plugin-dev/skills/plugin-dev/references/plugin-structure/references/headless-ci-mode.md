@@ -249,3 +249,53 @@ Remote Control-connected clients now receive live streaming of subagent tool cal
 - Debugging distributed agent operations from a central location
 
 **Plugin design tip:** If your plugin is designed for Remote Control environments, document that subagent activity is now fully visible to connected clients for improved observability.
+
+## SDK Initialize Plugins Parameter (CC 2.1.261)
+
+The SDK initialize request now supports loading session plugins directly, enabling programmatic plugin configuration without command-line expansion:
+
+**Requirements:**
+
+- Start Claude Code with `--await-initialize` flag
+- Send plugins in the initialize request payload
+
+**Behavior:**
+
+- `plugins_applied` in the response reports which plugins were successfully loaded
+- Does not work with repeated initialization calls or remote transports
+- Supports MCP-discovery opt-out for controlled environments
+
+**Use cases:**
+
+- Programmatic control over which plugins load in SDK-driven sessions
+- CI/CD pipelines that need to load specific plugin sets dynamically
+- Custom integrations that manage plugin configuration at runtime
+
+**Plugin author guidance:**
+
+- If your plugin is primarily used via SDK integrations, document the initialize parameter approach
+- Test plugin loading via both CLI (`--plugin-dir`) and SDK initialize paths
+- Be aware that initialize-loaded plugins have the same capabilities as CLI-loaded ones
+
+## /reload-plugins in Headless Sessions (CC 2.1.260)
+
+The `/reload-plugins` command is now available in headless sessions:
+
+```bash
+# In a headless context, the command can be invoked programmatically
+claude -p "/reload-plugins"
+```
+
+**Use cases:**
+
+- Hot-reloading plugins during long-running CI jobs
+- Updating plugin configurations without restarting the session
+- Testing plugin changes in automated environments
+
+**Behavior:**
+
+- Reloads all plugin configurations from disk
+- Re-initializes MCP servers defined by plugins
+- Preserves session state while refreshing plugin capabilities
+
+**Note:** This was previously only available in interactive TUI mode.
