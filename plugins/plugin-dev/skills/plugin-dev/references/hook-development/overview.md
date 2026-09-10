@@ -171,6 +171,16 @@ Other essentials: validate inputs, block path traversal (`..`) and sensitive fil
 
 Debug with `claude --debug` (shows registration, execution logs, input/output JSON, timing). Test command hooks by piping sample JSON on stdin (`echo '{...}' | bash script.sh`) and validating output with `jq`.
 
+### Hook-Failure Handling (CC 2.1.267)
+
+Function-hook plugins (JavaScript/TypeScript hooks) now have improved error handling:
+
+- **`.catch` handlers:** Hook functions can use `.catch()` handlers to gracefully handle failures without crashing the plugin or blocking Claude Code
+- **One-time transcript notices:** When a hook fails or a module fails to load, a one-time notice appears in the transcript. This prevents log spam while ensuring failures are visible to users
+- **Debug logging:** Every hook failure occurrence is logged when running in debug mode (`claude --debug`). This helps track intermittent failures during development
+
+This applies to function-hook plugins (those using the JSX runtime or direct JavaScript hook functions), not command hooks which already had exit-code-based error handling.
+
 ## Critical Gotchas
 
 1. **No "Setup" event.** Use `SessionStart` with matcher `startup` for initialization.

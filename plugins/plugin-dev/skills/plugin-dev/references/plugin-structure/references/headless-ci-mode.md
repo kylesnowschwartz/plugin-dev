@@ -124,6 +124,33 @@ claude -p "Analyze" --system-prompt "You are a security auditor..."
 
 **Caution:** This replaces the default prompt but plugin content still loads. The interaction between `--system-prompt` and plugin skills may produce unexpected behavior.
 
+### --system-prompt-snapshot off (CC 2.1.267)
+
+Disable system prompt snapshotting to force fresh prompt rendering:
+
+```bash
+claude -p "Debug prompt behavior" --system-prompt-snapshot off
+```
+
+**Behavior:**
+
+- By default, Claude Code caches/snapshots the system prompt for efficiency
+- Setting `--system-prompt-snapshot off` forces the prompt to be re-rendered on each turn
+- Useful for debugging when you suspect cached prompts are causing issues
+
+**Use cases:**
+
+- Debugging prompt-related issues where caching may mask changes
+- Testing plugin or skill modifications without restarting Claude Code
+- Verifying that prompt changes take effect immediately
+- Troubleshooting when cached prompts may contain stale content
+
+**Plugin author guidance:**
+
+- Use this flag when debugging plugin skill content that doesn't seem to update
+- Helpful during development when iterating on skill or agent system prompts
+- Not recommended for production use due to performance overhead
+
 ## Session Management
 
 ### Continue Last Session

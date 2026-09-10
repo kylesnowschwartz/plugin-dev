@@ -603,6 +603,36 @@ Two new settings control the maximum output size for Bash commands and Task tool
 - Consider whether users need to configure these settings for your plugin to work effectively
 - For hooks processing Bash output, be aware that larger outputs may increase processing time
 
+### Maximum Effort Level Setting (CC 2.1.267)
+
+The `maxEffortLevel` setting caps the effort level (thinking budget) across all providers:
+
+```json
+{
+  "maxEffortLevel": "medium"
+}
+```
+
+**Values:** Standard effort levels (`low`, `medium`, `high`, `xhigh`).
+
+**Behavior:**
+
+- Prevents Claude from using higher effort levels than specified, regardless of task complexity
+- Applies across all providers (Anthropic, third-party integrations)
+- Useful for cost control in environments where high effort levels are expensive
+
+**Use cases:**
+
+- Cost-conscious deployments that want to cap thinking budget
+- Enterprise environments with budget constraints
+- Testing and development where maximum thinking isn't needed
+
+**Plugin author guidance:**
+
+- If your plugin performs tasks that benefit from extended thinking, document that users may need to adjust `maxEffortLevel`
+- Hooks that read `$CLAUDE_EFFORT` may see capped values when this setting is active
+- Consider providing guidance on recommended effort levels for your plugin's workflows
+
 ### Time Display Settings (CC 2.1.257)
 
 Two new settings control how time is displayed in Claude Code:

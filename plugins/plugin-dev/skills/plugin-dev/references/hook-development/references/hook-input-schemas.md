@@ -105,9 +105,11 @@ The `tool_input` object varies by tool. Common tool schemas:
 
 > **CC 2.1.236 (Path-Sensitive Read-Before-Edit):** Claude Code's read-before-edit guidance is now path-sensitive. Files inside the current working directory no longer require a prior Read call before Edit or Write operations. However, files **outside** the working directory still require reading first to ensure the model has current content context. Hook developers should note this distinction when validating file modification patterns — blocking edits to files without prior reads is now only necessary for out-of-working-directory paths.
 
+> **CC 2.1.267 (Bash Description Requirement):** The Bash tool's `description` parameter now requires **plain-language command summaries** rather than repeating command text, flags, or file paths. This is because users may not see the command itself in some display modes. Hook developers processing Bash tool input should note that descriptions are now expected to be human-readable explanations of what the command does, not technical command strings. Example: "List files in the project directory" rather than "ls -la /path/to/project".
+
 | Tool         | `tool_input` Fields                                                                                                                                                   |
 | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Bash         | `command` (string), `description` (string, optional), `timeout` (number, optional), `run_in_background` (boolean, optional)                                           |
+| Bash         | `command` (string), `description` (string, required for clarity), `timeout` (number, optional), `run_in_background` (boolean, optional)                               |
 | Write        | `file_path` (string), `content` (string)                                                                                                                              |
 | Edit         | `file_path` (string), `old_string` (string), `new_string` (string), `replace_all` (boolean, optional)                                                                 |
 | Read         | `file_path` (string), `offset` (number, optional), `limit` (number, optional)                                                                                         |

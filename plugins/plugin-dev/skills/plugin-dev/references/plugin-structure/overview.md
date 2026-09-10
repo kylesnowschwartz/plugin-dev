@@ -181,8 +181,14 @@ For organization and best-practice guidance (logical grouping, minimal manifest,
 During development, reload plugins by restarting Claude Code, or test without installing:
 
 ```bash
+# Load a single plugin
 claude --plugin-dir /path/to/plugin
+
+# Load all plugins in a directory (CC 2.1.265)
+claude --plugin-dir /path/to/plugins-folder/
 ```
+
+The `--plugin-dir` flag supports both individual plugin directories and folders containing multiple plugins (CC 2.1.265). When pointing to a folder, all valid plugins within are auto-loaded.
 
 Additional loading options (ZIP archives, remote URLs), safe mode, caching internals, auto-update, install scopes, and CLI management commands are covered in `references/advanced-topics.md`.
 

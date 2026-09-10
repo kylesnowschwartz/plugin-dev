@@ -2,7 +2,7 @@
 
 This reference covers specialized topics that plugin developers may encounter in advanced use cases. Each section is self-contained.
 
-## Function-Hook Plugins (CC 2.1.260-2.1.261)
+## Function-Hook Plugins (CC 2.1.260-2.1.261, expanded 2.1.267)
 
 Function-hook plugins are a new pattern for plugins that need direct control over hook execution, UI rendering, or require the JSX runtime. This is an advanced plugin tier that goes beyond declarative hooks.json configuration.
 
@@ -14,8 +14,10 @@ Function-hook plugins provide:
 - **JSX runtime access** — primitives for rendering custom UI elements
 - **Hot reload support** — plugins can be reloaded without session restart
 - **Simplified authoring guidance** (CC 2.1.261) — streamlined patterns for common use cases
+- **Settings and environment access** (CC 2.1.267) — engine interface provides access to settings and environment variables
+- **Inbound session deliveries** (CC 2.1.267) — hook events now include inbound session delivery notifications
 
-### JSX Runtime Primitives (CC 2.1.257, expanded 2.1.259)
+### JSX Runtime Primitives (CC 2.1.257, expanded 2.1.259, clarified 2.1.267)
 
 The JSX runtime provides primitives for UI rendering in render hooks:
 
@@ -24,6 +26,18 @@ The JSX runtime provides primitives for UI rendering in render hooks:
 - `Box` — container element with flexbox-like layout
 - `Text` — text rendering with formatting options
 - `Svg` — SVG element rendering (CC 2.1.259)
+
+**Constructor destructuring requirement (CC 2.1.267):** Surface element constructors (`Box`, `Text`, `Svg`) must be destructured into JSX tags rather than assumed global. Import them explicitly from the JSX runtime module:
+
+```typescript
+// Correct: destructure constructors
+import { Box, Text, Svg } from '@anthropic/claude-code-jsx';
+
+// Incorrect: assuming global availability
+// Box, Text, Svg are NOT global
+```
+
+**Keyed box hover styles (CC 2.1.267):** Keyed boxes (`<Box key="...">`) scope hover styles to their subtree. This enables isolated hover effects within complex layouts.
 
 **Usage context:**
 
@@ -62,6 +76,16 @@ The CC 2.1.261 release simplified function-hook plugin authoring:
 - Clearer separation between render and logic hooks
 - Better error messages for JSX runtime issues
 - Documentation consolidation in official guides
+
+### Hook-Failure Handlers (CC 2.1.267)
+
+Function-hook plugins now have improved error handling and debugging capabilities:
+
+**`.catch` handlers:** Hook functions can use `.catch()` handlers to gracefully handle failures without crashing the plugin.
+
+**One-time transcript notices:** When a hook fails or a module fails to load, a one-time notice appears in the transcript. This prevents log spam while ensuring failures are visible.
+
+**Debug logging:** Every hook failure occurrence is logged when running in debug mode (`claude --debug`). This helps track intermittent failures and diagnose issues during development.
 
 ### Limitations
 
@@ -528,7 +552,7 @@ Paths outside the plugin directory may not work reliably because:
 - Bundled resources instead of external file references
 - Environment variables for user-specific paths
 
-## Plugin Loading Options (CC 2.1.128-2.1.129)
+## Plugin Loading Options (CC 2.1.128-2.1.129, expanded 2.1.265)
 
 Claude Code supports multiple ways to load plugins for development and distribution.
 
@@ -537,6 +561,22 @@ Claude Code supports multiple ways to load plugins for development and distribut
 ```bash
 claude --plugin-dir /path/to/plugin
 ```
+
+**Plugin folder (CC 2.1.265):** The `--plugin-dir` flag now supports plugin folders — directories containing multiple plugins that are auto-loaded:
+
+```bash
+# Load all plugins in a directory
+claude --plugin-dir /path/to/plugins-folder/
+
+# Structure:
+# plugins-folder/
+# ├── plugin-a/
+# │   └── .claude-plugin/plugin.json
+# └── plugin-b/
+#     └── .claude-plugin/plugin.json
+```
+
+This simplifies loading multiple plugins during development without specifying each one individually.
 
 **ZIP archive (CC 2.1.128):**
 
