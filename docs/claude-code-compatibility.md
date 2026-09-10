@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.263 (2026-09-07)
-Plugin-dev version: 0.41.0
+Last audited: Claude Code 2.1.267 (2026-09-10)
+Plugin-dev version: 0.42.0
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.42.0 | 2.1.264-2.1.267 | 2026-09-10 | `maxEffortLevel` setting to cap effort across providers (CC 2.1.267), `--system-prompt-snapshot off` flag for fresh prompt rendering (CC 2.1.267), function-hook plugin engine interface expansion (settings/environment access, inbound session deliveries) (CC 2.1.267), hook-failure handlers (.catch, transcript notices, debug logging) (CC 2.1.267), JSX surface element constructor clarification (destructuring requirement, keyed box hover styles) (CC 2.1.267), Bash description parameter plain-language requirement (CC 2.1.267), `--plugin-dir` folder support (CC 2.1.265) |
 | v0.41.0 | 2.1.252-2.1.263 | 2026-09-07 | `/skill-doctor` now GA (CC 2.1.261), `bashOutputMaxChars`/`taskOutputMaxChars` settings up to 128K (CC 2.1.261), `--append-subagent-system-prompt-file` flag (CC 2.1.261), SDK initialize plugins parameter (CC 2.1.261), plugin authoring major updates (function-hooks, JSX runtime, hot reload) (CC 2.1.260-2.1.261), plugin authoring guidance simplification (CC 2.1.261), `managedMcpServers` enterprise setting (CC 2.1.259), expanded `allowedMcpServers` behavior (CC 2.1.259), plugin JSX runtime Svg elements (CC 2.1.259), `timeFormat`/`timeZone` settings (CC 2.1.257), JSX runtime primitives (CC 2.1.257), `/reload-plugins` in headless sessions (CC 2.1.260) |
 | v0.40.0 | 2.1.251 | 2026-08-31 | PreModelSwitch/PostModelSwitch hook events (30th/31st events), Remote Control subagent tool call streaming extends `--forward-subagent-text`, plugin path traversal security fix, symlink vulnerability fix in Read/Write/Edit tools, Grep/Glob symlink deny rule fix, schedule local MCP server limitation (cloud routines only accept connectors), major documentation removal (Plugin Eval, Skill Doctor, Cost Optimization skill, Admin API reference, Workflow authoring reference, Claude API references — 743,949 tokens removed) |
 | v0.39.0 | 2.1.240-2.1.250 | 2026-08-28 | SendFeedback tool for drafting feedback reports (CC 2.1.247), experimental.cacheTtl agent frontmatter field (CC 2.1.248), Coordinator mode forced-inheritance variant (CC 2.1.248), Workflow authoring reference skill extracting detailed Workflow API docs (CC 2.1.248), Cost optimization skill demonstrating Admin API integration (CC 2.1.247), Admin API reference documentation (CC 2.1.247), Writing for the user strict formatting requirements (CC 2.1.247), /loop fixed-interval variant removed (CC 2.1.248), invalid JSON from hooks now reported as error (CC 2.1.248), syncClaudeAiPlugins setting for controlling Claude.ai plugin sync (CC 2.1.246), plugin.json UTF-8 BOM fix (CC 2.1.246) |

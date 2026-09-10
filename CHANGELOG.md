@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.42.0] - 2026-09-10
+
+### Added
+
+- **plugin-settings**: Documented `maxEffortLevel` setting to cap effort level (thinking budget) across all providers for cost control (CC 2.1.267)
+- **plugin-structure**: Documented `--system-prompt-snapshot off` flag for forcing fresh prompt rendering, useful for debugging cached prompt issues (CC 2.1.267)
+- **plugin-structure**: Documented function-hook plugin engine interface expansion — settings and environment access, inbound session deliveries among hook events (CC 2.1.267)
+- **plugin-structure**: Documented hook-failure handlers — `.catch` handlers, one-time transcript notices for failures and unloaded modules, debug logging of every occurrence (CC 2.1.267)
+- **plugin-structure**: Documented JSX surface element constructor clarification — destructuring requirement for Box/Text/Svg, keyed box hover style scoping (CC 2.1.267)
+- **hook-development**: Documented Bash `description` parameter now requires plain-language command summaries rather than repeating command text (CC 2.1.267)
+- **plugin-structure**: Documented `--plugin-dir` flag extended to support plugin folders — directories containing multiple plugins are now auto-loaded (CC 2.1.265)
+
 ## [0.41.0] - 2026-09-07
 
 ### Added
@@ -842,7 +854,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.41.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.42.0...HEAD
+[0.42.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.41.0...v0.42.0
 [0.41.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.40.0...v0.41.0
 [0.40.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.39.0...v0.40.0
 [0.39.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.38.0...v0.39.0
