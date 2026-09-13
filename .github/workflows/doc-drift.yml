@@ -14,8 +14,6 @@ on:
       # Check J sweeps the whole .github tree for denylisted names, and check E
       # reads .github/workflows/component-validation.yml.
       - ".github/**"
-      - "CLAUDE.md"
-      - ".claude-plugin/marketplace.json"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}

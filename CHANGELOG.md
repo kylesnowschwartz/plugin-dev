@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **drift guard**: check D reads the hook validator's type-switch arms with a linear regex, so it finishes on any script shape instead of hanging; the version-sync check is removed because `version-check.yml` already enforces it
+
 ## [0.43.1] - 2026-09-13
 
 ### Fixed

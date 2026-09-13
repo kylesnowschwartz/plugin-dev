@@ -104,9 +104,8 @@ Both feed the upstream sync pipeline in
   the binary they were read from.
 
 `doc-drift.yml` runs the deterministic half on every pull request that touches the
-plugin docs, the facts file, the scripts, the `.github` tree that check J sweeps
-for denylisted names, or the files checks E and L read (`CLAUDE.md`,
-`.claude-plugin/marketplace.json`). It installs the latest Claude Code CLI the same
+plugin docs, the facts file, the scripts, or the `.github` tree that check E reads
+and check J sweeps for denylisted names. It installs the latest Claude Code CLI the same
 way `upstream-sync.yml` does, extracts facts into `/tmp/facts.json`, and runs
 `scripts/check-doc-drift.sh --facts /tmp/facts.json`, so the docs are judged
 against the binary users are on and checks G and H run. Both workflows open with a

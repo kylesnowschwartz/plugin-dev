@@ -25,7 +25,7 @@ Usage: scripts/check-doc-drift.sh [options]
 
 Checks: A event-table, B event-sections, C event-counts, D script-allowlist,
 E ci-allowlist, F enums, G userconfig-validate, H manifest-examples-validate,
-I paths, J denylist, L version-sync, M userconfig-fields, N env-vars.
+I paths, J denylist, M userconfig-fields, N env-vars.
 
 Selecting only G and/or H together with --skip-validate leaves nothing to run
 and is rejected.
@@ -121,7 +121,7 @@ from pathlib import Path
 REPO = Path(os.environ["DRIFT_REPO_ROOT"])
 SKIP_VALIDATE = os.environ["DRIFT_SKIP_VALIDATE"] == "1"
 ONLY = {c.strip().upper() for c in os.environ["DRIFT_ONLY"].split(",") if c.strip()}
-ALL_CHECKS = list("ABCDEFGHIJLMN")
+ALL_CHECKS = list("ABCDEFGHIJMN")
 
 FACTS_PATH = os.environ["DRIFT_FACTS"]
 
@@ -500,8 +500,10 @@ def check_script_allowlist():
 
     # The hook-type support switch: each arm lists events, then restricts the
     # hook types they accept. Derive the expected event set from the arm's types.
+    # Each repetition must consume a `|` and an event name, so the match is
+    # linear in the file size whatever shape the script takes.
     arm_re = re.compile(
-        r"^\s{6}((?:[A-Za-z]+(?:\s*\|\s*)?|\\\s*\n\s*)+?)\)\s*\n"
+        r"^\s{6}([A-Za-z]+(?:\s*\|\s*(?:\\\n\s*)?[A-Za-z]+)*)\)\s*\n"
         r"\s+case \"\$hook_type\" in\s*\n"
         r"\s+([a-z_ |]+)\)\s*;;",
         re.M,
@@ -1042,50 +1044,6 @@ def check_denylist():
                     report("J", path, idx, f"removed or non-existent name '{name}' appears here")
 
 
-# --------------------------------------------------------------- L. version-sync
-
-def check_version_sync():
-    # .github/workflows/version-check.yml enforces the same agreement in CI.
-    # This check is three file reads, so it stays here as well: a local run
-    # reports the mismatch without waiting for a push.
-    plugin_json = REPO / "plugins/plugin-dev/.claude-plugin/plugin.json"
-    marketplace_json = REPO / ".claude-plugin/marketplace.json"
-    claude_md = REPO / "CLAUDE.md"
-
-    versions = {}
-    with open(plugin_json) as fh:
-        versions[str(plugin_json)] = (json.load(fh).get("version"), 1)
-
-    with open(marketplace_json) as fh:
-        marketplace = json.load(fh)
-    metadata_version = marketplace.get("metadata", {}).get("version")
-    if metadata_version is not None:
-        versions[f"{marketplace_json}#metadata"] = (metadata_version, 1)
-    for entry in marketplace.get("plugins", []):
-        if entry.get("name") == "plugin-dev":
-            versions[f"{marketplace_json}#plugins"] = (entry.get("version"), 1)
-
-    claude_version, claude_line = None, 1
-    for idx, line in enumerate(read_lines(claude_md), start=1):
-        m = re.search(r"\*\*Version\*\*:\s*v?([0-9][0-9A-Za-z.+-]*)", line)
-        if m:
-            claude_version, claude_line = m.group(1), idx
-            break
-    versions[str(claude_md)] = (claude_version, claude_line)
-
-    distinct = {v for v, _ in versions.values()}
-    if len(distinct) > 1:
-        reference = versions[str(plugin_json)][0]
-        for where, (value, line) in sorted(versions.items()):
-            if value != reference:
-                path, _, anchor = where.partition("#")
-                suffix = f" ({anchor})" if anchor else ""
-                report(
-                    "L", path, line,
-                    f"version{suffix} is '{value}' but plugin.json declares '{reference}'",
-                )
-
-
 # ------------------------------------------------------------ M. userconfig-fields
 
 OPTION_FIELDS_MARKER = "**Option fields:**"
@@ -1279,7 +1237,6 @@ CHECKS = {
     "H": ("manifest-examples-validate", check_manifest_examples_validate),
     "I": ("paths", check_paths),
     "J": ("denylist", check_denylist),
-    "L": ("version-sync", check_version_sync),
     "M": ("userconfig-fields", check_userconfig_fields),
     "N": ("env-vars", check_env_vars),
 }
