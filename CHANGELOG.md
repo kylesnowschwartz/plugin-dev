@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **drift guard**: check D reads the hook validator's type-switch arms with a linear regex, so it finishes on any script shape instead of hanging; the version-sync check is removed because `version-check.yml` already enforces it
+- **upstream sync**: CI installs the exact Claude Code release named by the newest upstream changelog heading, and the audited changelog range never extends past the version recorded in `docs/claude-code-facts.json`, so `Last audited:` names only releases whose binary the run inspected
 
 ## [0.43.1] - 2026-09-13
 

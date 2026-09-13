@@ -43,22 +43,41 @@ jobs:
             command -v "$t" >/dev/null || { echo "missing: $t"; exit 1; }
           done
 
-      - name: Install latest Claude Code CLI
+      - name: Install the Claude Code CLI the changelog names
         run: |
           set -euo pipefail
           # The action ships a pinned older CLI. Stage 0 reads facts out of the
-          # binary, so the sync must run against the release users are on.
-          for attempt in 1 2 3; do
-            if curl -fsSL https://claude.ai/install.sh | bash -s -- latest; then
-              break
-            fi
-            if [ "$attempt" -eq 3 ]; then
+          # binary, so the sync runs against the release whose changelog entry
+          # it is about to audit, not whichever build the installer calls latest.
+          target=$(curl -fsSL https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md \
+            | grep -m1 -oE '^## [0-9]+\.[0-9]+\.[0-9]+' | cut -c4-)
+          if [ -z "$target" ]; then
+            echo "Could not read the newest version from the upstream changelog; installing latest"
+            target=latest
+          fi
+
+          install_cli() {
+            for attempt in 1 2 3; do
+              if curl -fsSL https://claude.ai/install.sh | bash -s -- "$1"; then
+                return 0
+              fi
+              echo "Install of $1, attempt $attempt failed; retrying in $((attempt * 5))s"
+              sleep $((attempt * 5))
+            done
+            return 1
+          }
+
+          if ! install_cli "$target"; then
+            if [ "$target" = latest ]; then
               echo "Claude Code install failed after 3 attempts"
               exit 1
             fi
-            echo "Install attempt $attempt failed; retrying in $((attempt * 5))s"
-            sleep $((attempt * 5))
-          done
+            # A changelog entry can land before the installer serves that build.
+            # The audit range is capped at the installed version, so the newer
+            # entry waits for the next run.
+            echo "Version $target is not downloadable yet; installing latest instead"
+            install_cli latest || { echo "Claude Code install failed after 3 attempts"; exit 1; }
+          fi
 
           executable="$HOME/.local/bin/claude"
           [ -x "$executable" ] || {
@@ -69,8 +88,11 @@ jobs:
           echo "CLAUDE_CODE_EXECUTABLE=$executable" >> "$GITHUB_ENV"
 
           version=$("$executable" --version)
-          echo "## Claude Code CLI" >> "$GITHUB_STEP_SUMMARY"
-          echo "$version" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## Claude Code CLI"
+            echo "Newest changelog entry: $target"
+            echo "Installed: $version"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Extract ground truth and check doc drift
         env:
@@ -219,7 +241,9 @@ jobs:
             in the manifest and report it in the step summary.
 
             **Compatibility header**: advance `Last audited:` only when the changelog
-            range is non-empty, and then only to the newest version in that range. On
+            range is non-empty, and then only to the newest version in that range. The
+            range ends at `claude_code_version` in `docs/claude-code-facts.json`, so the
+            header never passes the binary this run inspected. On
             a drift-only run leave the header unchanged and write `none (drift)` in
             the new audit log row's CC version range column. Never write the installed
             binary's version into the header.

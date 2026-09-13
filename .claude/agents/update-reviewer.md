@@ -63,7 +63,7 @@ Verify:
 - All version numbers match across plugin.json, marketplace.json, CLAUDE.md
 - CHANGELOG.md has an entry for the new version
 - The compatibility file's `Last audited:` header is correct for the run:
-  - Changelog range non-empty → the header names the newest version in that range.
+  - Changelog range non-empty → the header names the newest version in that range, which is never newer than `claude_code_version` in `docs/claude-code-facts.json`. A header past the facts file's version is a FAIL: it claims an audit against a binary nobody inspected.
   - Changelog range empty (a drift-only run) → the header is unchanged from `git show HEAD:docs/claude-code-compatibility.md`, and the new audit log row's CC version range column reads `none (drift)`.
   - The installed binary's version never appears in the header. It belongs in the row's Notes column when it matters. A header advanced to the binary version is a FAIL: it marks changelog entries as audited that nobody read.
 
