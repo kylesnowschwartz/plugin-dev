@@ -51,8 +51,14 @@ jobs:
           # The action ships a pinned older CLI. Stage 0 reads facts out of the
           # binary, so the sync runs against the release whose changelog entry
           # it is about to audit, not whichever build the installer calls latest.
-          target=$(curl -fsSL https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md \
-            | grep -m1 -oE '^## [0-9]+\.[0-9]+\.[0-9]+' | cut -c4-)
+          # Download to a file before grepping. Piping curl into grep -m1 fails
+          # under pipefail: grep exits at the first match, curl hits a closed pipe
+          # and returns 23.
+          target=""
+          if curl -fsSL https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md \
+              -o "$RUNNER_TEMP/cc-changelog.md"; then
+            target=$(grep -m1 -oE '^## [0-9]+\.[0-9]+\.[0-9]+' "$RUNNER_TEMP/cc-changelog.md" | cut -c4- || true)
+          fi
           if [ -z "$target" ]; then
             echo "Could not read the newest version from the upstream changelog; installing latest"
             target=latest
