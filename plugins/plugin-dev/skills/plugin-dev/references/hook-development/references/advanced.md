@@ -771,17 +771,12 @@ While `command` hooks execute bash scripts and `prompt` hooks evaluate a single 
 
 ### Supported Events
 
-Agent hooks — like prompt hooks — need conversation context to run in. Five events are dispatched without it and reject both types:
+Agent hooks — like prompt hooks — need a live conversation to run in, and 20 of the 33 events are dispatched without one, leaving 13 that accept them. Registering an agent or prompt hook on one of those events fails at dispatch with either
 
-| Event | Accepted types | How a prompt or agent hook fails |
-| ----- | -------------- | -------------------------------- |
-| SessionStart | Command, MCP tool | `agent-type hooks are not supported for SessionStart events (no conversation context is available). Use a command-type hook instead.` |
-| Setup | Command, MCP tool | Same message, naming `Setup` |
-| SubagentStart | Command, HTTP, MCP tool | Same message, naming `SubagentStart` |
-| WorktreeCreate | Command, HTTP, MCP tool | `Agent stop hooks are not yet supported outside REPL` |
-| WorktreeRemove | Command, HTTP, MCP tool | `Agent stop hooks are not yet supported outside REPL` |
+- `agent-type hooks are not supported for <event> events (no conversation context is available). Use a command-type hook instead.`, or
+- `Agent stop hooks are not yet supported outside REPL`
 
-SessionStart and Setup additionally skip HTTP hooks. The remaining 28 events accept all five hook types. The per-event Types column in `../overview.md` (Hook Events Reference) is authoritative.
+depending on which dispatcher the event uses. Which events those are, and what they accept instead, is in `../overview.md` (Hook Types and the Hook Events Reference table), which is authoritative.
 
 Among the events that do accept them, agent hooks are most useful on decision-control events like **Stop** and **SubagentStop**. Their multi-turn latency makes them a poor fit for hot-path events like PreToolUse.
 

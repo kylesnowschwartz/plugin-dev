@@ -209,7 +209,7 @@ The `agent` hook type spawns a full subagent for complex verification workflows.
 
 For comprehensive coverage including configuration, behavior, supported events, when to use agent hooks, and detailed examples, see the hook-development topic (`../../hook-development/references/advanced.md`). The per-event Types column in `../../hook-development/overview.md` (Hook Events Reference) is the authoritative list of which hook types each event accepts.
 
-**Quick summary:** Agent hooks spawn a subagent with full tool access (Read, Bash, Grep, etc.) for multi-step verification. They're significantly slower (30-120 seconds) but more capable than command or prompt hooks. They need conversation context, so they do not run on `SessionStart`, `Setup`, or `SubagentStart`, which take command hooks only; they are most useful on decision-control events such as `Stop` and `SubagentStop`.
+**Quick summary:** Agent hooks spawn a subagent with full tool access (Read, Bash, Grep, etc.) for multi-step verification. They're significantly slower (30-120 seconds) but more capable than command or prompt hooks. They are unavailable on `SessionStart`, `Setup`, `SubagentStart`, `WorktreeCreate`, and `WorktreeRemove` (see the Types column linked above for what those events accept); they are most useful on decision-control events such as `Stop` and `SubagentStop`.
 
 ## Auto-Update Behavior
 

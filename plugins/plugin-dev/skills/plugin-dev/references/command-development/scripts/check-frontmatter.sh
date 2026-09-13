@@ -29,6 +29,38 @@ KNOWN_FIELDS="description model allowed-tools disallowed-tools argument-hint dis
 total_errors=0
 total_warnings=0
 
+# Validates a tool-list field (allowed-tools / disallowed-tools).
+# Strips surrounding single or double quotes before comparing, so a
+# YAML-quoted bare star ("*" or '*') is still flagged.
+# Args: field-name value empty-message broad-message
+# Echoes the result line(s) and returns 0 if a warning was emitted, 1 otherwise.
+check_tool_list_field() {
+  local field_name="$1"
+  local raw_value="$2"
+  local empty_message="$3"
+  local broad_message="$4"
+  local value="$raw_value"
+
+  # Strip one layer of surrounding single or double quotes.
+  if [[ "$value" =~ ^\"(.*)\"$ ]] || [[ "$value" =~ ^\'(.*)\'$ ]]; then
+    value="${BASH_REMATCH[1]}"
+  fi
+
+  if [ -z "$value" ]; then
+    echo "⚠️  Warning: $empty_message"
+    return 0
+  elif [[ "$value" == "*" ]]; then
+    echo "⚠️  Warning: $field_name: $raw_value $broad_message"
+    return 0
+  elif [[ "$value" =~ Bash\(\*\) ]]; then
+    echo "⚠️  Warning: Bash(*) is very permissive (consider Bash(git *) or similar)"
+    return 0
+  else
+    echo "✅ $field_name: $raw_value"
+    return 1
+  fi
+}
+
 check_frontmatter() {
   local COMMAND_FILE="$1"
   local error_count=0
@@ -115,20 +147,11 @@ check_frontmatter() {
     local tools
     tools=$(echo "$frontmatter" | grep "^allowed-tools:" | cut -d: -f2- | sed 's/^ *//')
 
-    if [ -z "$tools" ]; then
-      echo "⚠️  Warning: Empty allowed-tools field"
+    local result
+    result=$(check_tool_list_field "allowed-tools" "$tools" "Empty allowed-tools field" "grants all tools (consider restricting)")
+    echo "$result"
+    if [[ "$result" == ⚠️* ]]; then
       ((warning_count++))
-    else
-      # Check for common patterns
-      if [[ "$tools" == "*" ]]; then
-        echo "⚠️  Warning: allowed-tools: * grants all tools (consider restricting)"
-        ((warning_count++))
-      elif [[ "$tools" =~ Bash\(\*\) ]]; then
-        echo "⚠️  Warning: Bash(*) is very permissive (consider Bash(git *) or similar)"
-        ((warning_count++))
-      else
-        echo "✅ allowed-tools: $tools"
-      fi
     fi
   fi
 
@@ -137,20 +160,11 @@ check_frontmatter() {
     local disallowed_tools
     disallowed_tools=$(echo "$frontmatter" | grep "^disallowed-tools:" | cut -d: -f2- | sed 's/^ *//')
 
-    if [ -z "$disallowed_tools" ]; then
-      echo "⚠️  Warning: Empty disallowed-tools field"
+    local disallowed_result
+    disallowed_result=$(check_tool_list_field "disallowed-tools" "$disallowed_tools" "Empty disallowed-tools field" "blocks all tools (consider restricting)")
+    echo "$disallowed_result"
+    if [[ "$disallowed_result" == ⚠️* ]]; then
       ((warning_count++))
-    else
-      # Check for common patterns
-      if [[ "$disallowed_tools" == "*" ]]; then
-        echo "⚠️  Warning: disallowed-tools: * blocks all tools (consider restricting)"
-        ((warning_count++))
-      elif [[ "$disallowed_tools" =~ Bash\(\*\) ]]; then
-        echo "⚠️  Warning: Bash(*) is very broad (consider Bash(git *) or similar)"
-        ((warning_count++))
-      else
-        echo "✅ disallowed-tools: $disallowed_tools"
-      fi
     fi
   fi
 

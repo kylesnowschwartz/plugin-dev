@@ -53,14 +53,16 @@ Every hook receives these fields:
 
 ### Stop / SubagentStop
 
-| Field                   | Type    | Events       | Description                                                                                                                                                                                                                                                                                                                                           |
-| ----------------------- | ------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `stop_hook_active`      | boolean | Both         | Whether hook is already continuing (loop guard)                                                                                                                                                                                                                                                                                                       |
-| `background_tasks`      | array   | Both         | In-flight background work (running/pending plus backgrounded) registered in the session; empty when nothing is in flight. Distinguishes "session is done" from "session is paused waiting for background work". Entries carry `id`, `type`, `status`, `description`, plus `command`, `agent_type`, `server`, `tool`, or `name` depending on task type |
-| `session_crons`         | array   | Both         | Session-scoped cron tasks (CronCreate, ScheduleWakeup, `/loop`) that will wake the session later; empty when none are scheduled. Entries carry `id`, `schedule`, `recurring`, `prompt`                                                                                                                                                                |
-| `agent_id`              | string  | SubagentStop | Unique subagent identifier                                                                                                                                                                                                                                                                                                                            |
-| `agent_type`            | string  | SubagentStop | Agent name                                                                                                                                                                                                                                                                                                                                            |
-| `agent_transcript_path` | string  | SubagentStop | Path to subagent transcript                                                                                                                                                                                                                                                                                                                           |
+| Field                   | Type    | Events       | Description                                     |
+| ----------------------- | ------- | ------------ | ----------------------------------------------- |
+| `stop_hook_active`      | boolean | Both         | Whether hook is already continuing (loop guard) |
+| `background_tasks`      | array   | Both         | In-flight background work in this session       |
+| `session_crons`         | array   | Both         | Cron tasks that will wake this session later    |
+| `agent_id`              | string  | SubagentStop | Unique subagent identifier                      |
+| `agent_type`            | string  | SubagentStop | Agent name                                      |
+| `agent_transcript_path` | string  | SubagentStop | Path to subagent transcript                     |
+
+`background_tasks` and `session_crons` are both optional and both empty when there is nothing to report. Together they let a hook tell "the session is done" apart from "the session is paused waiting for background work or a scheduled wakeup". Element fields for each are in `event-schemas.md` (Stop).
 
 ### SubagentStart
 

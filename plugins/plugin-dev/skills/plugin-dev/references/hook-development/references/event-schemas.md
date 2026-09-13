@@ -110,7 +110,7 @@ Note: `permission_mode` is not present on SessionStart.
 **Special behavior:** The `CLAUDE_ENV_FILE` environment variable points to a file where you can write `export VAR=value` lines. These persist as environment variables for subsequent Bash tool calls in the session.
 
 **Matchers:** `startup`, `resume`, `clear`, `compact`, `fork`
-**Hook types:** Command, MCP tool — HTTP hooks are skipped for this event, and prompt and agent hooks have no conversation context to run in.
+**Hook types:** Command, MCP tool — HTTP hooks are skipped for this event, and prompt and agent hooks have no conversation context to run in. An `mcp_tool` hook here runs only when MCP servers are already available: at launch, including `--continue` and `--resume`, they are not, and the hook is skipped with `no MCP client context`; on `source` `clear` or `compact` they are, and it runs.
 
 ---
 
@@ -138,7 +138,7 @@ Note: `permission_mode` is not present on SessionStart.
 **Output:** Observability only. No decision control. Runs asynchronously.
 
 **Matchers:** `session_start`, `nested_traversal`, `path_glob_match`, `include`, `compact`
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool — this event is dispatched without a live conversation, so prompt and agent hooks cannot run on it.
 
 ---
 
@@ -163,7 +163,7 @@ Note: `permission_mode` is not present on SessionStart.
 **Default timeout:** 1.5 seconds. Override with `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` environment variable (set in milliseconds).
 
 **Matchers:** `clear`, `resume`, `logout`, `prompt_input_exit`, `other`
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool — this event is dispatched outside the conversation loop, so prompt and agent hooks cannot run on it.
 
 ---
 
@@ -199,7 +199,7 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 **Use cases:** Install project dependencies on `--init`, refresh generated artifacts or caches on `--maintenance`, report repository state into the session.
 
 **Matchers:** `init`, `maintenance` (matches on `trigger`)
-**Hook types:** Command, MCP tool — HTTP hooks are skipped for this event, and prompt and agent hooks have no conversation context to run in.
+**Hook types:** Command — HTTP hooks are skipped for this event, and prompt and agent hooks have no conversation context to run in. An `mcp_tool` hook is accepted in config but never runs here: Setup fires before MCP servers are available, so it is always skipped with `no MCP client context`.
 
 ---
 
@@ -702,7 +702,7 @@ Use `impossible` when the goal is self-contradictory, requires a missing capabil
 **Output:** Ignored. This is an observability-only event. Output and exit codes have no effect.
 
 **Matchers:** `rate_limit`, `authentication_failed`, `billing_error`, `invalid_request`, `server_error`, `max_output_tokens`, `unknown`
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool — this event is dispatched without a live conversation, so prompt and agent hooks cannot run on it.
 
 ---
 
@@ -759,27 +759,8 @@ Use `impossible` when the goal is self-contradictory, requires a missing capabil
   "agent_type": "string",
   "agent_transcript_path": "string (path to subagent's transcript)",
   "last_assistant_message": "string",
-  "background_tasks": [
-    {
-      "id": "string",
-      "type": "string (friendly task-type label: shell, subagent, monitor, workflow)",
-      "status": "string",
-      "description": "string (capped at 1000 chars)",
-      "command": "string (optional, shell tasks only)",
-      "agent_type": "string (optional, subagent tasks only)",
-      "server": "string (optional, monitor/MCP tasks only)",
-      "tool": "string (optional, monitor/MCP tasks only)",
-      "name": "string (optional, workflow tasks only)"
-    }
-  ],
-  "session_crons": [
-    {
-      "id": "string",
-      "schedule": "string (cron expression)",
-      "recurring": true,
-      "prompt": "string"
-    }
-  ]
+  "background_tasks": [],
+  "session_crons": []
 }
 ```
 
@@ -928,7 +909,7 @@ As of CC 2.1.105, PreCompact supports blocking compaction:
 > **CC 2.1.88:** Added partial compaction capability. Claude Code can now compact only a portion of the conversation rather than the entire context, with a structured summary format and analysis process.
 
 **Matchers:** `manual`, `auto`
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool — this event is dispatched outside the conversation loop, so prompt and agent hooks cannot run on it.
 
 ---
 
@@ -954,7 +935,7 @@ As of CC 2.1.105, PreCompact supports blocking compaction:
 Use to verify what survived compaction, log compaction results, or send alerts if critical context was lost.
 
 **Matchers:** `manual`, `auto`
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool — this event is dispatched outside the conversation loop, so prompt and agent hooks cannot run on it.
 
 ---
 
@@ -989,7 +970,7 @@ Use to verify what survived compaction, log compaction results, or send alerts i
 **Important:** Block decisions for `policy_settings` source are silently ignored. Policy changes cannot be blocked.
 
 **Matchers:** `user_settings`, `project_settings`, `local_settings`, `policy_settings`, `skills`
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool — this event is dispatched outside the conversation loop, so prompt and agent hooks cannot run on it.
 
 ---
 
@@ -1020,7 +1001,7 @@ Use to verify what survived compaction, log compaction results, or send alerts i
 **Use case:** Reactive environment management with tools like direnv — reload env vars, activate project-specific toolchains, or run setup scripts on directory change.
 
 **Matchers:** Not supported (fires on every directory change).
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool — this event is dispatched without a live conversation, so prompt and agent hooks cannot run on it.
 
 ---
 
@@ -1051,7 +1032,7 @@ Use to verify what survived compaction, log compaction results, or send alerts i
 **Use case:** Reloading environment variables when config files change, triggering rebuilds on config modifications.
 
 **Matchers:** Pipe-separated basenames (filenames without directory paths), e.g. `".envrc|.env"`.
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool — this event is dispatched without a live conversation, so prompt and agent hooks cannot run on it.
 
 ---
 
@@ -1167,7 +1148,7 @@ Use to verify what survived compaction, log compaction results, or send alerts i
 - `cancel`: Cancel the entire MCP operation
 
 **Matchers:** MCP server name
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool — this event is dispatched outside the conversation loop, so prompt and agent hooks cannot run on it.
 
 ---
 
@@ -1211,7 +1192,7 @@ Use to verify what survived compaction, log compaction results, or send alerts i
 - `decline` or `cancel`: Reject or cancel the operation
 
 **Matchers:** MCP server name
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool — this event is dispatched outside the conversation loop, so prompt and agent hooks cannot run on it.
 
 ---
 
@@ -1253,7 +1234,7 @@ Observability only. No decision control.
 **Desktop/VS Code fix (CC 2.1.233):** Fixed Notification hooks not firing for permission prompts under Desktop and VS Code environments. Plugin developers using the `permission_prompt` matcher should now see consistent behavior across all Claude Code interfaces (CLI, Desktop, VS Code).
 
 **Matchers:** `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog`, `agent_needs_input` (CC 2.1.198), `agent_completed` (CC 2.1.198)
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool — this event is dispatched without a live conversation, so prompt and agent hooks cannot run on it.
 
 ---
 
@@ -1298,7 +1279,7 @@ Observability only. No decision control.
 **Use cases:** Custom message formatting or styling, redacting sensitive information from display, logging assistant output in real-time, observability and monitoring.
 
 **Matchers:** Not supported
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool — this event is dispatched without a live conversation, so prompt and agent hooks cannot run on it.
 
 ---
 
@@ -1316,8 +1297,8 @@ Observability only. No decision control.
   "transcript_path": "string",
   "cwd": "string",
   "hook_event_name": "DirectoryAdded",
-  "directory_path": "string (absolute path to newly added directory)",
-  "source": "user_command|sdk_request"
+  "directory": "string (absolute path of the directory that was added)",
+  "source": "slash_command|register_repo_root"
 }
 ```
 
@@ -1326,7 +1307,7 @@ Observability only. No decision control.
 **Key behaviors:**
 
 - Fires **after** the directory is successfully registered and sandbox is refreshed
-- `source` indicates whether the directory was added via user `/add-dir` command or programmatic SDK `register_repo_root` request
+- `source` is `slash_command` for `/add-dir` and `register_repo_root` for the SDK control request
 - Useful for loading project-specific context, triggering workspace indexing, or notifying external systems of new project scope
 
 **Use cases:**
@@ -1336,8 +1317,8 @@ Observability only. No decision control.
 - Update monitoring or logging systems with new project scope
 - Run initialization scripts for newly added project directories
 
-**Matchers:** `user_command`, `sdk_request`
-**Hook types:** Command, HTTP, Prompt, Agent
+**Matchers:** `slash_command`, `register_repo_root`
+**Hook types:** Command, HTTP, MCP tool — this event is dispatched outside the conversation loop, so prompt and agent hooks cannot run on it.
 
 ---
 
@@ -1386,7 +1367,7 @@ Observability only. No decision control.
 - Inject model-specific context or instructions after switch
 
 **Matchers:** Model names (current or target)
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool — this event is dispatched without a live conversation, so prompt and agent hooks cannot run on it.
 
 ---
 
@@ -1424,7 +1405,7 @@ Observability only. No decision control.
 - Inject model-specific context after switch
 
 **Matchers:** Model names (previous or current)
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool — this event is dispatched without a live conversation, so prompt and agent hooks cannot run on it.
 
 ---
 

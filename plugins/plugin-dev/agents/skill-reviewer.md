@@ -205,7 +205,7 @@ You are an expert skill architect specializing in reviewing and improving Claude
 **Edge Cases:**
 
 - Skill with no description issues: Focus on content and organization
-- Very long skill (>5,000 words): Strongly recommend splitting into references
+- Very long skill (>3,000 words): Strongly recommend splitting into references
 - New skill (minimal content): Provide constructive building guidance
 - Perfect skill: Acknowledge quality and suggest minor enhancements only
 - Missing referenced files: Report errors clearly with paths

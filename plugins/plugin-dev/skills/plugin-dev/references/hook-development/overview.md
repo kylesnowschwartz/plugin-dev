@@ -19,7 +19,7 @@ Five hook types are available. Not all events support all types (see the [event 
 | `mcp_tool` | Validation via MCP tools without agent overhead (CC 2.1.118)   | `server` + `tool`; accepted on every event that accepts command hooks               |
 | `http`     | External service integration, logging, webhooks                | Posts event data to `url`; non-2xx treated as non-blocking                          |
 
-**Event support:** Prompt and agent hooks work on every event except SessionStart, Setup, SubagentStart, WorktreeCreate, and WorktreeRemove, which are dispatched without conversation context; HTTP hooks work everywhere except SessionStart and Setup; command and `mcp_tool` hooks work on all 33. Prompt and agent hooks return the standard hook output JSON, adding `hookSpecificOutput` for event-specific behavior (PreToolUse, PermissionRequest, Elicitation).
+**Event support:** Command and `mcp_tool` hooks work on all 33 events. HTTP hooks work on all but SessionStart and Setup, which skip them. Prompt and agent hooks need a live conversation to run in, and 20 events are dispatched without one: ConfigChange, CwdChanged, DirectoryAdded, Elicitation, ElicitationResult, FileChanged, InstructionsLoaded, MessageDisplay, Notification, PostCompact, PreCompact, PreModelSwitch, PostModelSwitch, SessionEnd, SessionStart, Setup, StopFailure, SubagentStart, WorktreeCreate, and WorktreeRemove. The other 13 accept all five types: PreToolUse, PostToolUse, PostToolUseFailure, PostToolBatch, PermissionRequest, PermissionDenied, UserPromptSubmit, UserPromptExpansion, Stop, SubagentStop, TeammateIdle, TaskCreated, and TaskCompleted. The official hooks reference (<https://code.claude.com/docs/en/hooks>) presents all five hook types as available on every event; the runtime rejects prompt and agent hooks on the 20 events above with `hook_type_unsupported`, so treat the narrower list as the one that governs. Prompt and agent hooks return the standard hook output JSON, adding `hookSpecificOutput` for event-specific behavior (PreToolUse, PermissionRequest, Elicitation).
 
 ## Configuration Formats
 
@@ -110,14 +110,16 @@ Other events match on source/category values, agent type names, MCP server name,
 
 Category, decision control, and hook types for all 33 events. "All" = Command, HTTP, MCP tool, Prompt, Agent. Full schemas and per-event matcher values: `references/event-schemas.md`; matcher syntax: `references/advanced.md` (Event-Specific Matchers).
 
-`mcp_tool` hooks are accepted wherever command hooks are, so a Types cell naming Command always admits `mcp_tool` too. Prompt and agent hooks need conversation context: SessionStart, Setup, SubagentStart, WorktreeCreate, and WorktreeRemove are dispatched without it and reject both. SessionStart and Setup additionally skip HTTP hooks.
+A Types cell naming Command always admits `mcp_tool` too. Which events restrict prompt, agent, and HTTP hooks, and why, is set out under Hook Types above.
+
+An `mcp_tool` hook is accepted on every event, but it only runs where an MCP client set exists. Setup fires before MCP servers are available, so its `mcp_tool` hooks are always skipped. SessionStart fires before servers are available at launch, including `--continue` and `--resume`, so its `mcp_tool` hooks are skipped there; after `/clear` or compaction the servers are up and they run. A skipped hook is not an error — it logs `mcp_tool hooks are not available for the '<event>' hook event (no MCP client context)` and returns no decision.
 
 | Event               | Category     | Decision control                   | Types         |
 | ------------------- | ------------ | ---------------------------------- | ------------- |
 | SessionStart        | Lifecycle    | continue, env vars                 | Command       |
 | Setup               | Lifecycle    | Context injection                  | Command       |
-| InstructionsLoaded  | Lifecycle    | None (observability)               | All           |
-| SessionEnd          | Lifecycle    | None (observability)               | All           |
+| InstructionsLoaded  | Lifecycle    | None (observability)               | Command, HTTP |
+| SessionEnd          | Lifecycle    | None (observability)               | Command, HTTP |
 | UserPromptSubmit    | Input        | Block prompt                       | All           |
 | UserPromptExpansion | Input        | Block expansion, context injection | All           |
 | PreToolUse          | Tool         | Allow/deny/ask/defer, modify input | All           |
@@ -127,26 +129,26 @@ Category, decision control, and hook types for all 33 events. "All" = Command, H
 | PostToolUseFailure  | Tool         | Context injection                  | All           |
 | PostToolBatch       | Tool         | Stop agentic loop (exit 2)         | All           |
 | Stop                | Turn         | Block stop                         | All           |
-| StopFailure         | Turn         | None (observability)               | All           |
+| StopFailure         | Turn         | None (observability)               | Command, HTTP |
 | SubagentStart       | Subagent     | Context injection                  | Command, HTTP |
 | SubagentStop        | Subagent     | Block stop                         | All           |
 | TeammateIdle        | Teams        | Reject idle (exit 2), stop         | All           |
 | TaskCreated         | Teams        | Reject creation (exit 2)           | All           |
 | TaskCompleted       | Teams        | Reject completion (exit 2)         | All           |
-| PreCompact          | Context      | Block compaction (exit 2)          | All           |
-| PostCompact         | Context      | None (observability)               | All           |
-| ConfigChange        | Config       | Block (except policy)              | All           |
-| CwdChanged          | Environment  | None (env vars, watchPaths)        | All           |
-| FileChanged         | Environment  | None (env vars, watchPaths)        | All           |
+| PreCompact          | Context      | Block compaction (exit 2)          | Command, HTTP |
+| PostCompact         | Context      | None (observability)               | Command, HTTP |
+| ConfigChange        | Config       | Block (except policy)              | Command, HTTP |
+| CwdChanged          | Environment  | None (env vars, watchPaths)        | Command, HTTP |
+| FileChanged         | Environment  | None (env vars, watchPaths)        | Command, HTTP |
 | WorktreeCreate      | Worktree     | Return path, exit code             | Command, HTTP |
 | WorktreeRemove      | Worktree     | None (cleanup)                     | Command, HTTP |
-| Elicitation         | MCP          | Accept/decline/cancel              | All           |
-| ElicitationResult   | MCP          | Override response                  | All           |
-| MessageDisplay      | Display      | Display content replacement        | All           |
-| Notification        | Notification | None (observability)               | All           |
-| DirectoryAdded      | Lifecycle    | None (observability)               | All           |
-| PreModelSwitch      | Model        | Block, confirm, annotate           | All           |
-| PostModelSwitch     | Model        | None (observability)               | All           |
+| Elicitation         | MCP          | Accept/decline/cancel              | Command, HTTP |
+| ElicitationResult   | MCP          | Override response                  | Command, HTTP |
+| MessageDisplay      | Display      | Display content replacement        | Command, HTTP |
+| Notification        | Notification | None (observability)               | Command, HTTP |
+| DirectoryAdded      | Lifecycle    | None (observability)               | Command, HTTP |
+| PreModelSwitch      | Model        | Block, confirm, annotate           | Command, HTTP |
+| PostModelSwitch     | Model        | None (observability)               | Command, HTTP |
 
 ## Configuration Locations
 

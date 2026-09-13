@@ -181,8 +181,8 @@ for event in $(jq -r 'keys[]' "$HOOKS_FILE"); do
       esac
 
       # Check hook type support by event (see overview.md support matrix).
-      # Command and mcp_tool hooks are accepted on every event. These five events
-      # are dispatched without conversation context, so prompt and agent hooks
+      # Command and mcp_tool hooks are accepted on every event. These 20 events
+      # are dispatched without a live conversation, so prompt and agent hooks
       # cannot run on them; SessionStart and Setup also skip http hooks.
       case "$event" in
       SessionStart | Setup)
@@ -194,7 +194,9 @@ for event in $(jq -r 'keys[]' "$HOOKS_FILE"); do
           ;;
         esac
         ;;
-      SubagentStart | WorktreeCreate | WorktreeRemove)
+      SubagentStart | WorktreeCreate | WorktreeRemove | SessionEnd | PreCompact | PostCompact | \
+        ConfigChange | DirectoryAdded | Elicitation | ElicitationResult | Notification | StopFailure | \
+        InstructionsLoaded | CwdChanged | FileChanged | MessageDisplay | PreModelSwitch | PostModelSwitch)
         case "$hook_type" in
         command | mcp_tool | http) ;;
         *)
