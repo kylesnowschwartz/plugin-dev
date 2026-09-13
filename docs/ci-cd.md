@@ -19,10 +19,14 @@ Documentation for GitHub Actions workflows, labels, and templates.
 | ------------------- | ------------ | --------------------------------------------- |
 | `upstream-sync.yml` | Every 3 days | Sync plugin-dev docs with Claude Code releases |
 
-The `upstream-sync.yml` job installs the latest Claude Code CLI before the agent
-run, extracts ground truth from that binary into `docs/claude-code-facts.json`,
+The `upstream-sync.yml` job reads the newest version heading from the upstream
+Claude Code changelog and installs exactly that CLI release before the agent run,
+falling back to `latest` only when that build is not downloadable yet. It then
+extracts ground truth from the installed binary into `docs/claude-code-facts.json`
 and writes `.agent-history/drift-report.txt`. The agent reads both artifacts as
-Stage 0 of the sync pipeline. See [Documentation Drift Guard](#documentation-drift-guard).
+Stage 0 of the sync pipeline, and the changelog range it audits never extends past
+the version the facts file records, so `Last audited:` never names a release whose
+binary the run did not inspect. See [Documentation Drift Guard](#documentation-drift-guard).
 
 `.agent-history/` is scratch space for the pipeline — the drift report, the drift
 run's stderr, and the change manifest live there and are inputs to the run, not
@@ -108,9 +112,8 @@ Both feed the upstream sync pipeline in
   the binary they were read from.
 
 `doc-drift.yml` runs the deterministic half on every pull request that touches the
-plugin docs, the facts file, the scripts, the `.github` tree that check J sweeps
-for denylisted names, or the files checks E and L read (`CLAUDE.md`,
-`.claude-plugin/marketplace.json`). It installs the latest Claude Code CLI the same
+plugin docs, the facts file, the scripts, or the `.github` tree that check E reads
+and check J sweeps for denylisted names. It installs the latest Claude Code CLI the same
 way `upstream-sync.yml` does, extracts facts into `/tmp/facts.json`, and runs
 `scripts/check-doc-drift.sh --facts /tmp/facts.json`, so the docs are judged
 against the binary users are on and checks G and H run. Both workflows open with a

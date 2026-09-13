@@ -42,6 +42,15 @@ Each stage produces a structured artifact consumed by the next. Stages 2 and 4 a
 
 Establish what the installed Claude Code binary actually does before reading any changelog. This stage catches facts that were wrong from the start and upstream changes that ship without a changelog line.
 
+**Which binary.** The facts must come from the release the run is about to audit. CI installs the exact version named by the newest heading in the upstream changelog. Locally, compare `claude --version` with that heading first:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md | rg -m1 -oN '^## [0-9]+\.[0-9]+\.[0-9]+'
+claude --version
+```
+
+When the installed binary is older, run `claude update` before extracting. When it cannot be updated, continue: the changelog range in Stage 1 ends at the installed version, recorded as `claude_code_version` in the facts file, and the newer entries wait for a later run. The range never extends past the binary the facts came from.
+
 ```bash
 # Extract facts from the installed CLI. Locally `claude` is on PATH; in CI the
 # workflow exports the path of the CLI it installed.

@@ -52,7 +52,7 @@ Fetch the Claude Code changelog:
 WebFetch: https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md
 ```
 
-Extract all version entries **after** the baseline version from Step 0. If the fetched content does not contain the expected version range, **stop and report the error** rather than proceeding with partial data.
+Extract all version entries **after** the baseline version from Step 0, up to and including the version recorded as `claude_code_version` in `docs/claude-code-facts.json`. That key names the binary Stage 0 read the facts from, and the range never extends past it: a changelog entry newer than the installed binary is left for a later run, and noted in the manifest's Sources line. If the fetched content does not contain the expected version range, **stop and report the error** rather than proceeding with partial data.
 
 An empty range is not an error and not a reason to stop. Continue through the remaining steps and write the manifest with whatever the other sources carry — `DRIFT` lines from `.agent-history/drift-report.txt`, changed keys from `git diff -I '"claude_code_version"' docs/claude-code-facts.json`, or neither.
 
