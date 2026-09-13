@@ -68,23 +68,9 @@ scripts/check-doc-drift.sh > .agent-history/drift-report.txt
 
 Stage 0 runs on every sync, including runs where the changelog range turns out to be empty.
 
-**One open drift pull request at a time.** A run that ends up drift-only opens a `claude/doc-drift-<date>` branch, and the housekeeping that closes superseded sync pull requests leaves those alone. Check for an existing one before doing the work:
+**Every run branches fresh from main.** Stage 0 rewrites `docs/claude-code-facts.json` in the working tree before any branch is cut, and the drift report it produces describes main. The run therefore never checks out or rebases an earlier sync branch — it cuts a new branch from main after Stage 0 and does its work there.
 
-```bash
-gh pr list --state open --search "head:claude/doc-drift-"
-```
-
-An open drift pull request is a base to build on, not a blocker. Reuse it:
-
-```bash
-git fetch origin <head-branch>
-git checkout <head-branch>
-git rebase origin/main
-```
-
-Run the pipeline on top of that branch and, at the release step, push with `git push --force-with-lease` and post a pull request comment summarising what this run added. A stale drift pull request that nobody merged would otherwise block every later run, so the run folds its fixes into the existing one instead.
-
-A rebase conflict is the one case that stops the run: `git rebase --abort`, then report the pull request number and the conflicting files. Resolving someone else's half-merged drift fixes is a human's call.
+Older open pull requests are not this stage's concern. Housekeeping runs as the last step of the workflow and keeps only the newest open pull request in each of the two buckets, `claude/upstream-sync-*` and `claude/doc-drift-*`, closing the older ones in the same bucket as superseded.
 
 ## Stage 1: Discover
 
@@ -253,8 +239,8 @@ Follow your agent instructions exactly.
 Commit and push:
 
 ```bash
-# Stage the files the pipeline changed
-git add -u
+# Stage the files the pipeline changed, including ones Stage 3 newly created
+git add -A -- plugins docs CLAUDE.md CHANGELOG.md .claude-plugin
 
 # Commit with conventional format
 # For patch bumps:
@@ -265,9 +251,7 @@ git commit -m "feat: sync plugin-dev with Claude Code vX.Y.Z-vA.B.C"
 git push
 ```
 
-Never stage `.agent-history/`. It holds the pipeline's own scratch artifacts — the drift report and the manifest — and is git-ignored, so `git add -u` leaves it out. Do not add it back with an explicit path.
-
-On a reused drift branch, push with `git push --force-with-lease` and post a pull request comment summarising what this run added, rather than opening a second pull request.
+The path list is the pipeline's whole output surface. `-A` picks up files Stage 3 creates as well as ones it edits, and the scoped paths keep `.agent-history/` out — it holds the pipeline's own scratch artifacts, the drift report and the manifest, is git-ignored, and sits outside the list.
 
 **Branch and title when the run opens a pull request** (CI always does; locally only when asked):
 
@@ -276,7 +260,9 @@ On a reused drift branch, push with `git push --force-with-lease` and post a pul
 | Changelog range non-empty | `claude/upstream-sync-<date>` | `docs: sync plugin-dev with Claude Code vX.Y.Z-vA.B.C` |
 | Drift-only (empty changelog range) | `claude/doc-drift-<date>` | `docs: fix documentation drift (<date>)` |
 
-The prefixes are load-bearing. The housekeeping that closes superseded pull requests matches `claude/upstream-sync-` only, because those runs all audit forward from the same merged baseline and the newest is a superset of the rest. A drift-only run carries independent fixes, so its branch keeps a prefix that housekeeping ignores.
+A run with any changelog content takes the upstream-sync prefix even when drift items ride along; only a run with an empty changelog range is a drift run.
+
+The prefixes are load-bearing: housekeeping treats them as two independent buckets and keeps the newest open pull request in each. Upstream-sync runs all audit forward from the same merged baseline, so the newest is a superset of the rest. Drift findings are deterministic and recur on every run from the same main baseline, so the newest drift pull request carries the older ones' findings too.
 
 ### On FAIL
 
@@ -328,7 +314,6 @@ Any one non-empty signal continues the run. An empty changelog range on its own 
 | `scripts/extract-cc-facts.sh` exits 2 (sanity check failed) | Stop pipeline, report the stderr message to user |
 | No `claude` binary available for Stage 0 | Stop pipeline, report to user |
 | `scripts/check-doc-drift.sh` exits 2 (tooling error) | Stop pipeline, report to user |
-| Rebasing an open drift pull request onto main conflicts | `git rebase --abort`, stop pipeline, report the pull request number and conflicting files |
 | `claude-code-guide` agent unavailable | Continue with two-source triangulation, note degraded confidence |
 | System-prompts repo not found | Continue with CC changelog only, note degraded confidence |
 | `markdownlint` not installed | Skip lint check in Stage 4, warn in output |

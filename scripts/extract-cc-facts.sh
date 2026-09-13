@@ -328,7 +328,20 @@ if http_filter:
 else:
     problems.append("http_hook_unsupported_events: guard for 'HTTP hooks are not supported for' not found")
 
-mcp_tool_skipped = "mcp_tool hooks are not available for the '" in blob
+# The runtime's own wording for a skipped mcp_tool hook, lifted from the
+# template literal it is built in. The event name is interpolated there, so it
+# is stored as `<event>` and the docs quote the same placeholder.
+mcp_tool_message = re.search(
+    r"mcp_tool hooks are not available for the '\$\{[A-Za-z_$][\w$]*\}'[^`'\"]*",
+    blob,
+)
+mcp_tool_unavailable_message = ""
+if mcp_tool_message:
+    mcp_tool_unavailable_message = re.sub(
+        r"\$\{[A-Za-z_$][\w$]*\}", "<event>", mcp_tool_message.group(0)
+    )
+else:
+    problems.append("mcp_tool_unavailable_message: skip-message template not found")
 
 
 # --- plugin userConfig schema ---------------------------------------------
@@ -425,6 +438,10 @@ for name in http_hook_unsupported_events:
         problems.append("http_hook_unsupported_events: %s is not a hook event" % name)
 if "string" not in user_config["types"]:
     problems.append('user_config.types: "string" missing')
+if "MCP" not in mcp_tool_unavailable_message:
+    problems.append(
+        "mcp_tool_unavailable_message: %r does not mention MCP" % mcp_tool_unavailable_message
+    )
 
 if problems:
     for problem in problems:
@@ -438,7 +455,7 @@ json.dump(
         "hook_event_dispatch": hook_event_dispatch,
         "hook_types": hook_types,
         "http_hook_unsupported_events": http_hook_unsupported_events,
-        "mcp_tool_skipped_without_mcp_context": mcp_tool_skipped,
+        "mcp_tool_unavailable_message": mcp_tool_unavailable_message,
         "user_config": user_config,
         "permission_modes": permission_modes,
         "session_start_sources": session_start_sources,
@@ -453,5 +470,13 @@ PYTHON
 
 out_dir="$(dirname "$out")"
 [ -d "$out_dir" ] || mkdir -p "$out_dir"
-jq -S . "$raw" >"$out" || die "invalid JSON produced for: $out"
+tmp_out="$(mktemp "$out_dir/.claude-code-facts.XXXXXX")"
+jq -S . "$raw" >"$tmp_out" || {
+  rm -f "$tmp_out"
+  die "invalid JSON produced for: $out"
+}
+# mktemp creates the file 0600; the destination is a checked-in, world-readable
+# document.
+chmod 644 "$tmp_out"
+mv "$tmp_out" "$out"
 printf 'extract-cc-facts: wrote %s from Claude Code %s\n' "$out" "$version" >&2

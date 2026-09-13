@@ -92,18 +92,14 @@ jobs:
           fi
 
           # Exit 1 means drift exists, which is the signal the sync acts on.
-          # Exit 2 is a tooling error and fails the job.
           # No --skip-validate: the CLI installed above is on PATH, so the checks
           # that run `claude plugin validate` against the doc fixtures run here too.
           set +e
-          scripts/check-doc-drift.sh > .agent-history/drift-report.txt
+          scripts/check-doc-drift.sh \
+            > .agent-history/drift-report.txt \
+            2> .agent-history/drift-errors.txt
           drift_status=$?
           set -e
-          if [ "$drift_status" -eq 2 ]; then
-            echo "check-doc-drift.sh reported a tooling error"
-            cat .agent-history/drift-report.txt
-            exit 1
-          fi
 
           # claude_code_version records which binary the facts came from. This job
           # installs the latest CLI every run, so that key moves on every release
@@ -120,7 +116,21 @@ jobs:
             echo '```'
             cat .agent-history/drift-report.txt
             echo '```'
+            echo "### Drift run summary (stderr)"
+            echo "Each ERROR line is a check that could not run."
+            echo '```'
+            cat .agent-history/drift-errors.txt
+            echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+          cat .agent-history/drift-errors.txt >&2
+
+          # Exit 2 means a check could not run, so a clean-looking report would be
+          # a false pass. The ERROR lines naming the failed checks are on stderr.
+          if [ "$drift_status" -eq 2 ]; then
+            echo "check-doc-drift.sh reported a tooling error; see the ERROR lines above."
+            exit 1
+          fi
 
       - name: Run upstream sync
         uses: anthropics/claude-code-action@f64219702d7454cf29fe32a74104be6ed43dc637 # v1.0.34
@@ -144,17 +154,18 @@ jobs:
             ## CI Overrides
 
             **Release step override**: Instead of committing directly to main, do this:
-            1. Create a new branch, unless Stage 0 handed you an existing drift
-               branch to reuse (see "Reuse the open drift PR" below). A run with a
-               non-empty changelog range uses `claude/upstream-sync-<date>`; a
-               drift-only run — empty changelog range — uses
+            1. Cut a new branch from main. Never check out or rebase an earlier
+               sync branch — Stage 0 has already rewritten
+               `docs/claude-code-facts.json` in the working tree. A run with any
+               changelog content uses `claude/upstream-sync-<date>` even when drift
+               items ride along; only a run with an empty changelog range uses
                `claude/doc-drift-<date>` (use today's date as YYYY-MM-DD)
-            2. Stage the files the pipeline changed with `git add -u`, then commit
-               with conventional commit format. Never stage `.agent-history/` — it
-               is scratch space for the pipeline's own artifacts and is git-ignored
-            3. Push the branch and open a PR against main. On a reused drift branch,
-               push with `git push --force-with-lease` and add a PR comment
-               summarising what this run added instead of opening a second PR
+            2. Stage the files the pipeline changed with
+               `git add -A -- plugins docs CLAUDE.md CHANGELOG.md .claude-plugin`,
+               then commit with conventional commit format. `-A` picks up files
+               Stage 3 newly created; the scoped paths keep `.agent-history/` out —
+               it is git-ignored scratch space for the pipeline's own artifacts
+            3. Push the branch and open a PR against main
             4. The PR title is `docs: sync plugin-dev with Claude Code vX.Y.Z-vA.B.C` for a
                changelog run, and `docs: fix documentation drift (<date>)` for a drift-only run
             5. The PR body should include:
@@ -162,25 +173,10 @@ jobs:
                - The CC version range covered, or `none (drift)` on a drift-only run
                - A checklist of updated skills/files
 
-            The two prefixes are load-bearing: the housekeeping step that closes
-            superseded PRs only considers `claude/upstream-sync-*` branches, because
-            those all audit forward from the same merged baseline. Drift-only runs carry
-            their own independent fixes, so they keep a prefix that step ignores.
-
-            **Reuse the open drift PR**: there is at most one open drift PR at a
-            time. Before Stage 1, run
-            `gh pr list --state open --search "head:claude/doc-drift-"`. If it returns
-            an open PR, build on it rather than stopping:
-            1. `git fetch origin <head-branch>` and check that branch out
-            2. `git rebase origin/main`. If the rebase conflicts, run
-               `git rebase --abort`, stop the pipeline, and report the PR number and
-               the conflicting files in the step summary — that is the only case
-               that stops the run
-            3. Run the pipeline on top of that branch
-            4. Push with `git push --force-with-lease` and post a PR comment
-               summarising what this run added
-
-            If no open drift PR exists, branch from main as usual.
+            The two prefixes are load-bearing: the housekeeping step treats
+            `claude/upstream-sync-*` and `claude/doc-drift-*` as separate buckets and
+            keeps the newest open PR in each, closing the older ones in the same
+            bucket. Do not close or comment on earlier PRs yourself.
 
             **System prompts path**: The Piebald-AI/claude-code-system-prompts repo is
             checked out at `./claude-code-system-prompts/` — use this path instead of
@@ -239,32 +235,44 @@ jobs:
             --max-turns 150
             --allowedTools "Read,Write,Edit,Bash,Grep,Glob,WebFetch,Agent"
 
-      - name: Close superseded sync PRs
+      - name: Close superseded sync and drift PRs
         if: success()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          # Each run audits forward from the last *merged* baseline recorded in
-          # docs/claude-code-compatibility.md, so every still-open upstream-sync PR
-          # shares that baseline and the newest one is a superset of the older ones.
-          # Keep only the most recent open claude/upstream-sync-* PR; close the rest.
-          # Drift-only runs branch as claude/doc-drift-* and are left alone: they carry
-          # independent fixes rather than a superset of an earlier changelog range.
-          numbers=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 100 \
-            --json number,headRefName \
-            --jq '[.[] | select(.headRefName | startswith("claude/upstream-sync-")) | .number] | sort | reverse | .[]')
+          # Two independent buckets, each keeping only its newest open PR.
+          #
+          # claude/upstream-sync-*: every run audits forward from the last *merged*
+          # baseline recorded in docs/claude-code-compatibility.md, so all still-open
+          # sync PRs share that baseline and the newest is a superset of the rest.
+          #
+          # claude/doc-drift-*: every run branches fresh from main and the drift
+          # checks are deterministic, so the same findings recur on every run and the
+          # newest drift PR carries the older ones' fixes.
+          close_superseded() {
+            prefix="$1"
+            reason="$2"
+            numbers=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 100 \
+              --json number,headRefName \
+              --jq "[.[] | select(.headRefName | startswith(\"$prefix\")) | .number] | sort | reverse | .[]")
 
-          keep=$(printf '%s\n' "$numbers" | head -n1)
-          if [ -z "$keep" ]; then
-            echo "No open upstream-sync PRs; nothing to close."
-            exit 0
-          fi
-          echo "Keeping newest open sync PR: #$keep"
+            keep=$(printf '%s\n' "$numbers" | head -n1)
+            if [ -z "$keep" ]; then
+              echo "No open ${prefix}* PRs; nothing to close."
+              return 0
+            fi
+            echo "Keeping newest open ${prefix}* PR: #$keep"
 
-          printf '%s\n' "$numbers" | tail -n +2 | while read -r pr; do
-            [ -n "$pr" ] || continue
-            echo "Closing superseded PR #$pr"
-            gh pr close "$pr" --repo "$GITHUB_REPOSITORY" --delete-branch \
-              --comment "Superseded by #$keep, a newer automated upstream sync that audits from the same baseline and covers the same and later Claude Code releases. Documentation drift pull requests (branch \`claude/doc-drift-*\`) are exempt from this housekeeping: each carries its own independent fixes rather than a superset of an earlier changelog range. Closed by sync housekeeping."
-          done
+            printf '%s\n' "$numbers" | tail -n +2 | while read -r pr; do
+              [ -n "$pr" ] || continue
+              echo "Closing superseded PR #$pr"
+              gh pr close "$pr" --repo "$GITHUB_REPOSITORY" --delete-branch \
+                --comment "Superseded by #$keep. $reason Closed by sync housekeeping."
+            done
+          }
+
+          close_superseded "claude/upstream-sync-" \
+            "That newer automated upstream sync audits from the same baseline and covers the same and later Claude Code releases."
+          close_superseded "claude/doc-drift-" \
+            "That newer documentation drift run branched from the same main baseline, and the drift checks are deterministic, so it carries this pull request's findings as well."

@@ -88,20 +88,25 @@ Code CLI, extracts facts to `/tmp/facts.json`, and runs
 `scripts/check-doc-drift.sh --facts /tmp/facts.json`, so the docs are judged
 against the binary rather than against the checked-in facts file. It also walks
 `jq`, `python3`, and `strings` one at a time first and fails naming the first tool
-it cannot find, and posts a non-fatal step-summary note when
+it cannot find. Both it and `upstream-sync.yml` capture the run summary from stderr
+to a file and echo it into the step summary, so the `ERROR` lines naming a check
+that could not run are visible on an exit-2 failure. `doc-drift.yml` also posts a
+non-fatal step-summary note when
 `docs/claude-code-facts.json` is behind the installed CLI. That note is
 informational: the next upstream sync refreshes the facts file.
 
-The upstream sync opens a drift-only pull request — one whose changelog range is
-empty — on a `claude/doc-drift-<date>` branch titled
-`docs: fix documentation drift (<date>)`. Real `DRIFT` fixes in such a run are a
-patch release; a run whose only change is the facts file's `claude_code_version`
-key produces no release at all.
+The upstream sync branches fresh from main on every run. A run with any changelog
+content uses `claude/upstream-sync-<date>`; a drift-only run — one whose changelog
+range is empty — uses `claude/doc-drift-<date>`, titled
+`docs: fix documentation drift (<date>)`. Housekeeping keeps the newest open pull
+request in each of those two buckets and closes the older ones in the same bucket.
+Real `DRIFT` fixes in a drift-only run are a patch release; a run whose only change
+is the facts file's `claude_code_version` key produces no release at all.
 
 ### 5. Commit and Push
 
 ```bash
-git add -u
+git add -A -- plugins docs CLAUDE.md CHANGELOG.md .claude-plugin
 git commit -m "feat: release v0.x.x
 
 Brief description of changes."

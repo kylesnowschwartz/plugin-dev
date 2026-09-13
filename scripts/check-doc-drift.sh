@@ -133,7 +133,10 @@ def fail_tooling(*messages):
 
 
 # Facts the checks read directly. A file missing any of them cannot produce a
-# verdict, so it is rejected before a check runs rather than crashing one.
+# verdict, so it is rejected before a check runs rather than crashing one. The
+# string-valued facts are checked below the lists: 'plugin_option_env_prefix'
+# and 'mcp_tool_unavailable_message', the runtime's own wording for a skipped
+# mcp_tool hook, which check N requires the hook overview to quote.
 REQUIRED_FACT_LISTS = (
     "hook_events",
     "hook_types",
@@ -217,6 +220,12 @@ def load_facts(path):
 
     if not isinstance(data.get("plugin_option_env_prefix"), str) or not data["plugin_option_env_prefix"]:
         problems.append("'plugin_option_env_prefix' must be a non-empty string")
+
+    skip_message = data.get("mcp_tool_unavailable_message")
+    if not isinstance(skip_message, str) or not skip_message:
+        problems.append("'mcp_tool_unavailable_message' must be a non-empty string")
+    elif "MCP" not in skip_message:
+        problems.append("'mcp_tool_unavailable_message' does not mention MCP")
 
     if problems:
         fail_tooling(
@@ -551,6 +560,12 @@ def check_ci_allowlist():
 
 # ---------------------------------------------------------------------- F. enums
 
+# A `###` event section ends at the next event heading, and also at any heading
+# that outranks it: an enum line under a following `## ...` belongs to that
+# section, not to the event above it.
+SECTION_CLOSING_HEADING_RE = re.compile(r"^#{1,2}\s")
+
+
 def section_bounds(lines, event):
     start = None
     for idx, line in enumerate(lines):
@@ -558,7 +573,9 @@ def section_bounds(lines, event):
         if m and m.group(1) == event:
             start = idx
             continue
-        if start is not None and EVENT_HEADING_RE.match(line):
+        if start is None:
+            continue
+        if EVENT_HEADING_RE.match(line) or SECTION_CLOSING_HEADING_RE.match(line):
             return start, idx
     if start is None:
         return None
@@ -608,17 +625,31 @@ def check_enum_in_section(event, field, fact_key):
             report("F", EVENT_SCHEMAS, line_no, f"{event} {field} enum has unknown value '{value}'")
 
 
+# Every `"permission_mode": "a|b|c"` sample in the skill spells the same enum,
+# and more than one document carries one. The scan is the whole skill tree
+# rather than a named file list so a sample added to a new document is checked
+# the day it lands.
+PERMISSION_MODE_SAMPLE_RE = re.compile(r'"permission_mode":\s*"([A-Za-z0-9|]+)"')
+
+
 def check_permission_modes():
     expected = set(FACTS["permission_modes"])
-    for idx, line in enumerate(read_lines(EVENT_SCHEMAS), start=1):
-        m = re.search(r'"permission_mode":\s*"([A-Za-z0-9|]+)"', line)
-        if not m or "|" not in m.group(1):
-            continue
-        values = set(m.group(1).split("|"))
-        for value in sorted(expected - values):
-            report("F", EVENT_SCHEMAS, idx, f"permission_mode enum is missing '{value}'")
-        for value in sorted(values - expected):
-            report("F", EVENT_SCHEMAS, idx, f"permission_mode enum has unknown value '{value}'")
+    sample_count = 0
+    for path in markdown_files(SKILL):
+        for idx, line in enumerate(read_lines(path), start=1):
+            m = PERMISSION_MODE_SAMPLE_RE.search(line)
+            if not m or "|" not in m.group(1):
+                continue
+            sample_count += 1
+            values = set(m.group(1).split("|"))
+            for value in sorted(expected - values):
+                report("F", path, idx, f"permission_mode enum is missing '{value}'")
+            for value in sorted(values - expected):
+                report("F", path, idx, f"permission_mode enum has unknown value '{value}'")
+    # No sample at all means the scan proved nothing, which would otherwise
+    # read as agreement with the binary.
+    if sample_count == 0:
+        report("F", EVENT_SCHEMAS, 1, "no permission_mode enum sample found anywhere in the skill")
 
     lines = read_lines(PERMISSION_MODES_DOC)
     documented = {}
@@ -812,15 +843,12 @@ def as_plugin_manifest(data):
 
 
 # G and H split the same fences between them — G takes the userConfig ones, H
-# the rest — so they read one document set. A root in only one of them would
-# leave the other's fences unvalidated.
+# the rest — so they read one document set. The set is the whole skill tree:
+# a named root list leaves a manifest example in any unlisted document
+# unvalidated, and looks_like_plugin_manifest already decides which fences are
+# manifests.
 def validated_markdown_files():
-    roots = [
-        PLUGIN_STRUCTURE,
-        SKILL / "references/lsp-integration",
-        SKILL / "references/mcp-integration",
-    ]
-    return sorted({p for root in roots for p in markdown_files(root)})
+    return markdown_files(SKILL)
 
 
 def check_userconfig_validate():
@@ -930,14 +958,15 @@ def check_paths():
         # as the one that opened it, so a 4-backtick fence wrapping 3-backtick
         # samples stays open across the inner markers.
         open_marker = None
+        open_line = None
         for idx, line in enumerate(read_lines(path), start=1):
             marker_match = FENCE_MARKER_RE.match(line)
             if marker_match:
                 marker = marker_match.group(1)
                 if open_marker is None:
-                    open_marker = marker
+                    open_marker, open_line = marker, idx
                 elif marker[0] == open_marker[0] and len(marker) >= len(open_marker):
-                    open_marker = None
+                    open_marker, open_line = None, None
             in_fence = open_marker is not None
             targets = set()
             for m in LINK_RE.finditer(line):
@@ -965,6 +994,13 @@ def check_paths():
                 if (base / clean).exists():
                     continue
                 report("I", path, idx, f"relative path '{clean}' does not resolve")
+        # An unbalanced fence silences the inline-path scan for the rest of the
+        # document, so the file was only half checked and the run has no
+        # verdict for it.
+        if open_marker is not None:
+            errors.append((
+                "I", f"{rel(path)}: unclosed code fence opened at line {open_line}"
+            ))
 
 
 # ------------------------------------------------------------------- J. denylist
@@ -1160,9 +1196,6 @@ def check_userconfig_fields():
 
 ENV_SECTION_HEADING_RE = re.compile(r"^#+\s+Plugin Environment Variables\s*$")
 HOOK_ENV_MARKER = "**Environment variables**"
-# The runtime's own wording for a skipped mcp_tool hook; the docs quote it so a
-# reader can match what they see in the log.
-MCP_SKIP_PHRASE = "no MCP client context"
 
 
 def env_var_names():
@@ -1221,13 +1254,16 @@ def check_env_vars():
             if name not in text:
                 report("N", OVERVIEW, line_no, f"environment-variable list does not document {name}")
 
-    if FACTS.get("mcp_tool_skipped_without_mcp_context"):
-        if MCP_SKIP_PHRASE not in "\n".join(hook_lines):
-            report(
-                "N", OVERVIEW, 1,
-                f"mcp_tool hooks are skipped without an MCP client set, but '{MCP_SKIP_PHRASE}' "
-                "— the runtime's wording — appears nowhere here",
-            )
+    # The docs quote the runtime's wording so a reader can match what they see
+    # in the log, so the phrase to look for comes from the facts rather than
+    # from a literal here: reword it upstream and this check says so.
+    skip_message = FACTS["mcp_tool_unavailable_message"]
+    if skip_message not in "\n".join(hook_lines):
+        report(
+            "N", OVERVIEW, 1,
+            f"the runtime logs '{skip_message}' when it skips an mcp_tool hook, "
+            "but that wording appears nowhere here",
+        )
 
 
 # ------------------------------------------------------------------------ driver

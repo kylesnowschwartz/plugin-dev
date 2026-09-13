@@ -85,7 +85,7 @@
     "SessionStart",
     "Setup"
   ],
-  "mcp_tool_skipped_without_mcp_context": true,
+  "mcp_tool_unavailable_message": "mcp_tool hooks are not available for the '<event>' hook event (no MCP client context)",
   "permission_modes": [
     "acceptEdits",
     "auto",

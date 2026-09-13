@@ -24,19 +24,25 @@ run, extracts ground truth from that binary into `docs/claude-code-facts.json`,
 and writes `.agent-history/drift-report.txt`. The agent reads both artifacts as
 Stage 0 of the sync pipeline. See [Documentation Drift Guard](#documentation-drift-guard).
 
-`.agent-history/` is scratch space for the pipeline — the drift report and the
-change manifest live there and are inputs to the run, not deliverables. The
-directory is git-ignored, and the sync's release step stages with `git add -u`, so
-those artifacts stay out of the pull request.
+`.agent-history/` is scratch space for the pipeline — the drift report, the drift
+run's stderr, and the change manifest live there and are inputs to the run, not
+deliverables. The directory is git-ignored, and the sync's release step stages with
+`git add -A -- plugins docs CLAUDE.md CHANGELOG.md .claude-plugin`, so those
+artifacts stay out of the pull request while files Stage 3 newly creates stay in.
 
-A run whose changelog range is empty is a drift-only run. It branches as
-`claude/doc-drift-<date>` with the pull request title
-`docs: fix documentation drift (<date>)`. The housekeeping step that closes
-superseded sync pull requests matches `claude/upstream-sync-` only, so drift pull
-requests survive it. At most one is open at a time: a run that finds an open drift
-pull request checks its branch out, rebases it onto main, adds this run's fixes,
-force-pushes with lease, and comments on the pull request. Only a rebase conflict
-stops the run.
+Every run branches fresh from main after Stage 0, because Stage 0 rewrites
+`docs/claude-code-facts.json` in the working tree and the drift report it produces
+describes main. A run with any changelog content branches as
+`claude/upstream-sync-<date>`; a run whose changelog range is empty is a drift-only
+run and branches as `claude/doc-drift-<date>` with the pull request title
+`docs: fix documentation drift (<date>)`.
+
+The housekeeping step runs last and treats those two prefixes as separate buckets,
+keeping the newest open pull request in each and closing the older ones in the same
+bucket as superseded. Open sync pull requests all audit forward from the same
+merged baseline, so the newest covers the rest; drift findings are deterministic
+and recur on every run from the same main baseline, so the newest drift pull
+request carries the older ones' findings too.
 
 ## Other Workflows
 
@@ -73,9 +79,11 @@ it drops the manifest checks, so the drift report is incomplete.
 
 `extract-cc-facts.sh` exits 2 and writes nothing when a sanity check fails.
 `check-doc-drift.sh` exits 0 when clean, 1 when it finds drift, and 2 when a check
-could not run, printing an `ERROR` line on stderr for each one. Both workflows fail
-the job on exit 2 and show the stderr, so a check that silently stopped running
-cannot pass as a clean report.
+could not run, printing an `ERROR` line on stderr for each one. Both workflows
+capture that stderr to a file — `.agent-history/drift-errors.txt` in
+`upstream-sync.yml`, `drift-errors.txt` in `doc-drift.yml` — echo it into the step
+summary and the job log, and fail the job on exit 2, so a check that silently
+stopped running cannot pass as a clean report.
 
 Both feed the upstream sync pipeline in
 `.claude/skills/update-from-upstream/SKILL.md`:

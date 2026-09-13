@@ -171,6 +171,7 @@ Claude Code automatically discovers and loads components:
 4. **Skills**: scans `skills/` for subdirectories containing `SKILL.md`
 5. **Hooks**: loads from `hooks/hooks.json` or manifest
 6. **MCP servers**: loads from `.mcp.json` or manifest
+7. **LSP servers**: loads from `.lsp.json` or manifest
 
 **Discovery timing:** components register at installation and become available on enable; no restart is required — changes take effect on the next Claude Code session. These default scans apply when the manifest leaves the matching component path field unset; see "Component Path Configuration" above for which fields replace a default directory and which add to it.
 
