@@ -14,7 +14,7 @@ description: |
 
 model: inherit
 color: green
-tools: Read, Grep, Glob, WebFetch, Edit
+tools: Read, Grep, Glob, WebFetch, Bash, Edit
 ---
 
 You are an independent verification agent. Your job is to validate a change manifest that was produced by a different agent. You must not trust the manifest — verify everything from primary sources.
@@ -28,6 +28,7 @@ You will be given the path to the change manifest (typically `.agent-history/ups
 ### Step 1: Read the Manifest
 
 Read the manifest and note:
+
 - The CC version range
 - Every item in "Must Update", "May Update", and "No Action"
 - The sources each item claims to come from
@@ -35,28 +36,71 @@ Read the manifest and note:
 ### Step 2: Independently Fetch Sources
 
 Fetch your own copy of the CC changelog (do NOT rely on Stage 1's fetch):
+
 ```
 WebFetch: https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md
 ```
 
 Read the local system-prompts CHANGELOG (first 200 lines only — versions are newest-first, full file is 30k+ tokens):
+
 ```
 ./claude-code-system-prompts/CHANGELOG.md                          # CI path
 /Users/kyle/Code/meta-claude/claude-code-system-prompts/CHANGELOG.md  # local path
 ```
+
 Use `offset: 1, limit: 200` to avoid reading the entire file.
 
 ### Step 3: Verify Each "Must Update" Item
 
 For each item:
+
 1. Confirm the change actually exists in the changelog at the stated version
 2. Confirm the classification is correct (does it actually affect the plugin system?)
 3. Confirm the "Affects" topic mapping — read the target reference doc at `plugins/plugin-dev/skills/plugin-dev/references/<topic>/overview.md` to verify this is the right topic
 4. Check whether the gap actually exists (maybe plugin-dev already documents this feature)
 
+### Step 3b: Verify Deterministic Drift Items
+
+Items under "Deterministic drift" come from `scripts/check-doc-drift.sh`, not from
+the changelog. Do not re-read the changelog for them. Instead re-run the cited
+check:
+
+```bash
+scripts/check-doc-drift.sh --only <check-id>
+```
+
+Read only the stdout lines that start with `DRIFT`; the script's other output is
+progress and summary text that names no finding.
+
+- A `DRIFT` line still reports the finding → confirmed, keep the item.
+- No `DRIFT` line reports it → reject the item and say the check no longer reports it.
+- The check exits 2 → note the tooling error; leave the item in place.
+
+### Step 3c: Verify Doc Drift Audit Items
+
+Items under "Doc Drift Audit" cite two locations. Read both `file:line` locations
+before accepting the item, and check the disputed fact against
+`docs/claude-code-facts.json` when it covers that fact.
+
+Mark every audit item with exactly one verdict:
+
+- **confirmed** — both locations read and the contradiction holds, or
+  `docs/claude-code-facts.json` settles which side is right
+- **unknown** — both sides are plausible and no ground truth settles it
+- **rejected** — the two locations do not actually disagree
+
+The verdict carries a severity floor the orchestrator depends on: only
+**confirmed** items count toward opening a pull request. An **unknown** item stays
+in the manifest and is reported, but on its own it never triggers a sync, so never
+leave an audit item unmarked.
+
+A "Doc Drift Audit" section reading "No contradictions found" is a valid result;
+verify nothing and record it as such.
+
 ### Step 4: Scan for Missed Changes
 
 Scan the changelog entries for the version range looking for plugin-relevant keywords that may have been classified as "No Action":
+
 - `hook`, `plugin`, `agent`, `skill`, `command`
 - `MCP`, `LSP`, `mcp`, `lsp`
 - `tool`, `permission`, `subagent`
@@ -76,6 +120,13 @@ Append a verification section to the manifest using Edit:
 ```markdown
 ## Stage 2: Verification Results
 ### Verified: [date]
+
+#### Drift Verification
+- ✓ [item] (check [check-id]) — re-ran `scripts/check-doc-drift.sh --only [check-id]`, finding still reported
+- ✗ [item] (check [check-id]) — no longer reported by the check
+- ✓ [audit item] — confirmed: both locations read, contradiction holds
+- ? [audit item] — unknown: both sides plausible, no ground truth settles it (does not trigger a sync on its own)
+- ✗ [audit item] — rejected: locations agree; no contradiction
 
 #### Must Update Verification
 - ✓ [item] — confirmed in [sources], gap exists in [skill]/SKILL.md
@@ -103,6 +154,7 @@ After appending the verification results, also update the "Must Update" and "No 
 ## Constraints
 
 - Do not modify any plugin-dev files other than the manifest.
+- Use Bash only to re-run `scripts/check-doc-drift.sh`. It is read-only against the docs.
 - Do not apply documentation updates. That is Stage 3's job.
-- When in doubt, promote an item to "Must Update" rather than demoting it. False positives are cheaper than false negatives.
+- When in doubt, promote an item to "Must Update" rather than demoting it. False positives are cheaper than false negatives. Doc Drift Audit items are the exception: an item you cannot settle is marked "unknown", not promoted.
 - If you find significant issues (>30% of items rejected or >3 missed items), note this prominently so the orchestrator can assess whether Stage 1 needs improvement.

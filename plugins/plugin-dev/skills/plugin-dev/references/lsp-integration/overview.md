@@ -34,9 +34,9 @@ Plugins can provide LSP servers in the plugin manifest:
 }
 ```
 
-### Separate File Configuration
+### Default File Configuration
 
-LSP servers can also be configured in a separate `.lsp.json` file at the plugin root:
+`.lsp.json` at the plugin root is the default location for LSP configuration. Claude Code reads it on plugin load whether or not `plugin.json` mentions it, and merges its servers with any declared under `lspServers` — the same merging behavior the Component Path Fields table in [manifest-reference.md](../plugin-structure/references/manifest-reference.md) records for `mcpServers` and `hooks`.
 
 ```json
 {
@@ -50,12 +50,12 @@ LSP servers can also be configured in a separate `.lsp.json` file at the plugin 
 }
 ```
 
-Reference this file in `plugin.json`:
+Set `lspServers` in `plugin.json` to add further configuration sources alongside it, not to point at it:
 
 ```json
 {
   "name": "my-plugin",
-  "lspServers": "./.lsp.json"
+  "lspServers": "./config/extra-lsp.json"
 }
 ```
 
@@ -228,7 +228,10 @@ Use `${CLAUDE_PLUGIN_ROOT}` for the command path:
   "lspServers": {
     "mylang": {
       "command": "${CLAUDE_PLUGIN_ROOT}/servers/my-lsp-server",
-      "args": ["--stdio"]
+      "args": ["--stdio"],
+      "extensionToLanguage": {
+        ".mylang": "mylang"
+      }
     }
   }
 }

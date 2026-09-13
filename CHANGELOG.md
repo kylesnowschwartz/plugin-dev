@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.43.1] - 2026-09-13
+
+### Fixed
+
+- **plugin-structure**: `plugin.json` examples validate: `repository` is a string URL, `author` is an object (no string form), `agents` and `commands` take file paths (a directory is not accepted for `agents`; setting either field turns off auto-loading of its default directory), `monitors` and `themes` live under `experimental` (the top-level forms still load but are deprecated); `commands`, `agents`, `outputStyles`, `experimental.themes`, and `experimental.monitors` replace their default directories, `skills` adds to it, and `hooks`, `mcpServers`, `lspServers` merge; the LSP `${CLAUDE_PLUGIN_ROOT}` example carries the required `extensionToLanguage`
+- **compatibility log**: the correction-audit row no longer names a Claude Code version in its range column, so the changelog-driven baseline is read only from the `Last audited:` header
+
+### Added
+
+- **Drift guard (maintainer tooling, not shipped in the plugin)**: `scripts/extract-cc-facts.sh` extracts hook events, per-event hook-type support, `userConfig` schema, permission modes, and enum values from the installed Claude Code binary into `docs/claude-code-facts.json`; `scripts/check-doc-drift.sh` compares the references, validator script, and CI allowlist against those facts, runs `claude plugin validate` over every documented `plugin.json`, resolves every relative path, and blocks names of removed features
+- **update-from-upstream pipeline**: Stage 0 runs the drift guard against the newest CLI before reading changelogs; Stage 1b dispatches the `doc-drift-auditor` agent for prose contradictions; the changelog-differ reads the version baseline only from the `Last audited:` header and treats a facts-file diff as an upstream change; the manifest verifier re-runs cited checks; the reviewer fails on any drift line
+- **CI**: `upstream-sync.yml` installs the latest Claude Code CLI and passes it to the action (the action's default is 2.1.19); `doc-drift.yml` installs the same CLI and runs the full drift check, including `claude plugin validate --json` over every documented `plugin.json`, on pull requests touching the plugin, the pipeline, the facts file, or the scripts. Drift-only sync runs use `claude/doc-drift-<date>` branches and open no PR when nothing beyond the CLI version changed
+
 ## [0.43.0] - 2026-09-13
 
 Corrects references that had drifted from Claude Code behaviour, reported in [#62](https://github.com/kylesnowschwartz/plugin-dev/issues/62), plus internal contradictions found in a full sweep of the references. Every claim below is checked against Claude Code 2.1.270.
@@ -882,7 +895,9 @@ Corrects references that had drifted from Claude Code behaviour, reported in [#6
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.42.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.43.1...HEAD
+[0.43.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.43.0...v0.43.1
+[0.43.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.42.0...v0.43.0
 [0.42.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.41.0...v0.42.0
 [0.41.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.40.0...v0.41.0
 [0.40.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.39.0...v0.40.0

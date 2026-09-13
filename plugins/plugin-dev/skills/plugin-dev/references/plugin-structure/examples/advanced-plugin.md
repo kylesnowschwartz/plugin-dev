@@ -113,10 +113,7 @@ enterprise-devops/
     "url": "https://company.com/teams/devops"
   },
   "homepage": "https://docs.company.com/plugins/devops",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/company/devops-plugin.git"
-  },
+  "repository": "https://github.com/company/devops-plugin.git",
   "license": "Apache-2.0",
   "keywords": [
     "devops",
@@ -129,7 +126,13 @@ enterprise-devops/
     "monitoring"
   ],
   "commands": ["./commands/ci", "./commands/monitoring", "./commands/admin"],
-  "agents": ["./agents/orchestration", "./agents/specialized"],
+  "agents": [
+    "./agents/orchestration/deployment-orchestrator.md",
+    "./agents/orchestration/rollback-manager.md",
+    "./agents/specialized/kubernetes-expert.md",
+    "./agents/specialized/terraform-expert.md",
+    "./agents/specialized/security-auditor.md"
+  ],
   "hooks": "./hooks/hooks.json",
   "mcpServers": "./.mcp.json"
 }

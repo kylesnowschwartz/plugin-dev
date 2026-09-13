@@ -1,0 +1,132 @@
+# yamllint disable rule:line-length
+name: Doc Drift
+
+# Compares the shipped plugin-dev docs against ground truth read from the Claude
+# Code CLI this job installs, so a pull request is judged against the release
+# users are on rather than against the checked-in facts file.
+
+on:
+  pull_request:
+    paths:
+      - "plugins/plugin-dev/**"
+      - "docs/claude-code-facts.json"
+      - "scripts/**"
+      # Check J sweeps the whole .github tree for denylisted names, and check E
+      # reads .github/workflows/component-validation.yml.
+      - ".github/**"
+      - "CLAUDE.md"
+      - ".claude-plugin/marketplace.json"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    name: Check Doc Drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Check required tools
+        run: |
+          set -euo pipefail
+          for t in jq python3 strings; do
+            command -v "$t" >/dev/null || { echo "missing: $t"; exit 1; }
+          done
+
+      - name: Install latest Claude Code CLI
+        run: |
+          set -euo pipefail
+          # Checks G and H shell out to `claude plugin validate`, and the facts
+          # are read out of the binary, so the gate needs the current release.
+          for attempt in 1 2 3; do
+            if curl -fsSL https://claude.ai/install.sh | bash -s -- latest; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "Claude Code install failed after 3 attempts"
+              exit 1
+            fi
+            echo "Install attempt $attempt failed; retrying in $((attempt * 5))s"
+            sleep $((attempt * 5))
+          done
+
+          executable="$HOME/.local/bin/claude"
+          [ -x "$executable" ] || {
+            echo "Claude Code CLI not found at $executable"
+            exit 1
+          }
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo "CLAUDE_CODE_EXECUTABLE=$executable" >> "$GITHUB_ENV"
+
+          version=$("$executable" --version)
+          echo "## Claude Code CLI" >> "$GITHUB_STEP_SUMMARY"
+          echo "$version" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check doc drift
+        env:
+          CLAUDE_CODE_EXECUTABLE: ${{ env.CLAUDE_CODE_EXECUTABLE }}
+        run: |
+          set -uo pipefail
+          # Ground truth comes from the installed binary, not from the checked-in
+          # facts file, so a pull request cannot pass by editing both sides.
+          set +e
+          scripts/extract-cc-facts.sh \
+            --binary "$CLAUDE_CODE_EXECUTABLE" \
+            --out /tmp/facts.json
+          extract_status=$?
+          set -e
+          if [ "$extract_status" -ne 0 ]; then
+            echo "extract-cc-facts.sh failed with exit $extract_status"
+            exit 1
+          fi
+
+          set +e
+          scripts/check-doc-drift.sh --facts /tmp/facts.json > drift-report.txt 2>drift-errors.txt
+          status=$?
+          set -e
+
+          {
+            echo "## Doc Drift"
+            echo '```'
+            cat drift-report.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          cat drift-report.txt
+          cat drift-errors.txt >&2
+
+          if [ "$status" -eq 2 ]; then
+            echo "check-doc-drift.sh reported a tooling error; see the ERROR lines above."
+            exit 1
+          fi
+          if [ "$status" -ne 0 ]; then
+            echo "Documentation disagrees with the facts read from the installed Claude Code CLI."
+            exit 1
+          fi
+          echo "No drift found."
+
+      - name: Note a stale facts file
+        if: always()
+        run: |
+          set -euo pipefail
+          # claude_code_version records which binary the facts were read from and
+          # moves with every release, so it is held out of the comparison.
+          [ -f /tmp/facts.json ] || exit 0
+          if git diff --no-index --quiet -I '"claude_code_version"' \
+            docs/claude-code-facts.json /tmp/facts.json; then
+            exit 0
+          fi
+          {
+            echo "## Facts file"
+            echo "docs/claude-code-facts.json is behind the installed CLI; the next sync refreshes it."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "docs/claude-code-facts.json is behind the installed CLI; the next sync refreshes it."

@@ -32,10 +32,111 @@ jobs:
           repository: Piebald-AI/claude-code-system-prompts
           path: claude-code-system-prompts
 
+      - name: Check required tools
+        run: |
+          set -euo pipefail
+          # ripgrep is not on the runner image. The pipeline's agents sweep the
+          # docs tree with it, so install it before the agent step runs.
+          sudo apt-get update -qq
+          sudo apt-get install -y ripgrep
+          for t in jq python3 strings; do
+            command -v "$t" >/dev/null || { echo "missing: $t"; exit 1; }
+          done
+
+      - name: Install latest Claude Code CLI
+        run: |
+          set -euo pipefail
+          # The action ships a pinned older CLI. Stage 0 reads facts out of the
+          # binary, so the sync must run against the release users are on.
+          for attempt in 1 2 3; do
+            if curl -fsSL https://claude.ai/install.sh | bash -s -- latest; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "Claude Code install failed after 3 attempts"
+              exit 1
+            fi
+            echo "Install attempt $attempt failed; retrying in $((attempt * 5))s"
+            sleep $((attempt * 5))
+          done
+
+          executable="$HOME/.local/bin/claude"
+          [ -x "$executable" ] || {
+            echo "Claude Code CLI not found at $executable"
+            exit 1
+          }
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo "CLAUDE_CODE_EXECUTABLE=$executable" >> "$GITHUB_ENV"
+
+          version=$("$executable" --version)
+          echo "## Claude Code CLI" >> "$GITHUB_STEP_SUMMARY"
+          echo "$version" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Extract ground truth and check doc drift
+        env:
+          CLAUDE_CODE_EXECUTABLE: ${{ env.CLAUDE_CODE_EXECUTABLE }}
+        run: |
+          set -uo pipefail
+          mkdir -p .agent-history
+
+          # Exit 2 means a sanity check failed and no facts file was written.
+          set +e
+          scripts/extract-cc-facts.sh \
+            --binary "$CLAUDE_CODE_EXECUTABLE" \
+            --out docs/claude-code-facts.json
+          extract_status=$?
+          set -e
+          if [ "$extract_status" -ne 0 ]; then
+            echo "extract-cc-facts.sh failed with exit $extract_status"
+            exit 1
+          fi
+
+          # Exit 1 means drift exists, which is the signal the sync acts on.
+          # No --skip-validate: the CLI installed above is on PATH, so the checks
+          # that run `claude plugin validate` against the doc fixtures run here too.
+          set +e
+          scripts/check-doc-drift.sh \
+            > .agent-history/drift-report.txt \
+            2> .agent-history/drift-errors.txt
+          drift_status=$?
+          set -e
+
+          # claude_code_version records which binary the facts came from. This job
+          # installs the latest CLI every run, so that key moves on every release
+          # even when no documented fact changed. Holding it out keeps a CLI bump
+          # from reading as an upstream change and opening a content-free PR.
+          {
+            echo "## Ground truth"
+            echo "Changed facts, ignoring claude_code_version:"
+            echo '```'
+            git diff -I '"claude_code_version"' --stat docs/claude-code-facts.json
+            echo '```'
+            echo "### Drift report"
+            echo "Each DRIFT line is one finding."
+            echo '```'
+            cat .agent-history/drift-report.txt
+            echo '```'
+            echo "### Drift run summary (stderr)"
+            echo "Each ERROR line is a check that could not run."
+            echo '```'
+            cat .agent-history/drift-errors.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          cat .agent-history/drift-errors.txt >&2
+
+          # Exit 2 means a check could not run, so a clean-looking report would be
+          # a false pass. The ERROR lines naming the failed checks are on stderr.
+          if [ "$drift_status" -eq 2 ]; then
+            echo "check-doc-drift.sh reported a tooling error; see the ERROR lines above."
+            exit 1
+          fi
+
       - name: Run upstream sync
         uses: anthropics/claude-code-action@f64219702d7454cf29fe32a74104be6ed43dc637 # v1.0.34
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          path_to_claude_code_executable: ${{ env.CLAUDE_CODE_EXECUTABLE }}
           use_commit_signing: true
           show_full_output: true
           prompt: |
@@ -44,32 +145,84 @@ jobs:
             ## Task
 
             Read the orchestration instructions at
-            `.claude/skills/update-from-upstream/SKILL.md` and follow all four
-            stages of the pipeline exactly as documented. The pipeline's
-            verification agents (`changelog-differ`, `update-manifest-verifier`,
+            `.claude/skills/update-from-upstream/SKILL.md` and follow every stage
+            of the pipeline exactly as documented. The pipeline's agents
+            (`changelog-differ`, `doc-drift-auditor`, `update-manifest-verifier`,
             `update-reviewer`) are repo-scoped subagents in `.claude/agents/` and
             are dispatched via the Agent tool — no plugin install is required.
 
             ## CI Overrides
 
             **Release step override**: Instead of committing directly to main, do this:
-            1. Create a new branch named `claude/upstream-sync-<date>` (use today's date as YYYY-MM-DD)
-            2. Commit all changes to that branch with conventional commit format
+            1. Cut a new branch from main. Never check out or rebase an earlier
+               sync branch — Stage 0 has already rewritten
+               `docs/claude-code-facts.json` in the working tree. A run with any
+               changelog content uses `claude/upstream-sync-<date>` even when drift
+               items ride along; only a run with an empty changelog range uses
+               `claude/doc-drift-<date>` (use today's date as YYYY-MM-DD)
+            2. Stage the files the pipeline changed with
+               `git add -A -- plugins docs CLAUDE.md CHANGELOG.md .claude-plugin`,
+               then commit with conventional commit format. `-A` picks up files
+               Stage 3 newly created; the scoped paths keep `.agent-history/` out —
+               it is git-ignored scratch space for the pipeline's own artifacts
             3. Push the branch and open a PR against main
-            4. The PR title should be: `docs: sync plugin-dev with Claude Code vX.Y.Z-vA.B.C`
+            4. The PR title is `docs: sync plugin-dev with Claude Code vX.Y.Z-vA.B.C` for a
+               changelog run, and `docs: fix documentation drift (<date>)` for a drift-only run
             5. The PR body should include:
                - A summary of what changed (from the manifest)
-               - The CC version range covered
+               - The CC version range covered, or `none (drift)` on a drift-only run
                - A checklist of updated skills/files
+
+            The two prefixes are load-bearing: the housekeeping step treats
+            `claude/upstream-sync-*` and `claude/doc-drift-*` as separate buckets and
+            keeps the newest open PR in each, closing the older ones in the same
+            bucket. Do not close or comment on earlier PRs yourself.
 
             **System prompts path**: The Piebald-AI/claude-code-system-prompts repo is
             checked out at `./claude-code-system-prompts/` — use this path instead of
             `/Users/kyle/Code/meta-claude/claude-code-system-prompts` for Stage 1
             triangulation.
 
-            **No changes**: If the pipeline finds no new Claude Code versions since the
-            last audit (check `docs/claude-code-compatibility.md`), exit cleanly with
-            no PR. Report "Already up to date" in the step summary.
+            **Stage 0 override**: A workflow step has already run
+            `scripts/extract-cc-facts.sh` against the installed CLI and written
+            `.agent-history/drift-report.txt`. Read those artifacts and
+            `git diff -I '"claude_code_version"' docs/claude-code-facts.json` instead
+            of re-running the scripts.
+
+            **Facts file version key**: `claude_code_version` records which binary the
+            facts were read from, and this job installs the latest CLI every run, so
+            the key moves on every Claude Code release even when no documented fact
+            changed. Ignore it in every discovery step. A version-only change is
+            committed alongside the next sync that has real content; on its own it is
+            not an upstream change and not a reason to open a PR.
+
+            **Drift report**: act only on lines starting with `DRIFT`. The report's
+            other lines are progress and summary text that name no finding.
+
+            **No changes**: Exit cleanly with no PR only when all four discovery
+            signals are empty:
+            1. No new Claude Code versions after the `Last audited:` header line in
+               `docs/claude-code-compatibility.md`
+            2. No output from
+               `git diff -I '"claude_code_version"' docs/claude-code-facts.json`
+            3. No lines starting with `DRIFT` in `.agent-history/drift-report.txt`
+            4. No `doc-drift-auditor` findings that Stage 2 confirmed
+
+            Report "Already up to date" in the step summary. An empty changelog range on
+            its own is not a reason to stop — drift fixes and ground truth changes are a
+            valid sync on their own.
+
+            **Auditor severity floor**: a `doc-drift-auditor` finding counts as signal 4
+            only once Stage 2 confirms it — both cited locations read and the
+            contradiction verified, or `docs/claude-code-facts.json` settles which side is
+            right. An item Stage 2 marks "unknown" never opens a PR on its own; carry it
+            in the manifest and report it in the step summary.
+
+            **Compatibility header**: advance `Last audited:` only when the changelog
+            range is non-empty, and then only to the newest version in that range. On
+            a drift-only run leave the header unchanged and write `none (drift)` in
+            the new audit log row's CC version range column. Never write the installed
+            binary's version into the header.
 
             ## Important
 
@@ -82,30 +235,44 @@ jobs:
             --max-turns 150
             --allowedTools "Read,Write,Edit,Bash,Grep,Glob,WebFetch,Agent"
 
-      - name: Close superseded sync PRs
+      - name: Close superseded sync and drift PRs
         if: success()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          # Each run audits forward from the last *merged* baseline recorded in
-          # docs/claude-code-compatibility.md, so every still-open upstream-sync PR
-          # shares that baseline and the newest one is a superset of the older ones.
-          # Keep only the most recent open claude/upstream-sync-* PR; close the rest.
-          numbers=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 100 \
-            --json number,headRefName \
-            --jq '[.[] | select(.headRefName | startswith("claude/upstream-sync-")) | .number] | sort | reverse | .[]')
+          # Two independent buckets, each keeping only its newest open PR.
+          #
+          # claude/upstream-sync-*: every run audits forward from the last *merged*
+          # baseline recorded in docs/claude-code-compatibility.md, so all still-open
+          # sync PRs share that baseline and the newest is a superset of the rest.
+          #
+          # claude/doc-drift-*: every run branches fresh from main and the drift
+          # checks are deterministic, so the same findings recur on every run and the
+          # newest drift PR carries the older ones' fixes.
+          close_superseded() {
+            prefix="$1"
+            reason="$2"
+            numbers=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 100 \
+              --json number,headRefName \
+              --jq "[.[] | select(.headRefName | startswith(\"$prefix\")) | .number] | sort | reverse | .[]")
 
-          keep=$(printf '%s\n' "$numbers" | head -n1)
-          if [ -z "$keep" ]; then
-            echo "No open upstream-sync PRs; nothing to close."
-            exit 0
-          fi
-          echo "Keeping newest open sync PR: #$keep"
+            keep=$(printf '%s\n' "$numbers" | head -n1)
+            if [ -z "$keep" ]; then
+              echo "No open ${prefix}* PRs; nothing to close."
+              return 0
+            fi
+            echo "Keeping newest open ${prefix}* PR: #$keep"
 
-          printf '%s\n' "$numbers" | tail -n +2 | while read -r pr; do
-            [ -n "$pr" ] || continue
-            echo "Closing superseded PR #$pr"
-            gh pr close "$pr" --repo "$GITHUB_REPOSITORY" --delete-branch \
-              --comment "Superseded by #$keep, a newer automated upstream sync that audits from the same baseline and covers the same and later Claude Code releases. Closed by sync housekeeping."
-          done
+            printf '%s\n' "$numbers" | tail -n +2 | while read -r pr; do
+              [ -n "$pr" ] || continue
+              echo "Closing superseded PR #$pr"
+              gh pr close "$pr" --repo "$GITHUB_REPOSITORY" --delete-branch \
+                --comment "Superseded by #$keep. $reason Closed by sync housekeeping."
+            done
+          }
+
+          close_superseded "claude/upstream-sync-" \
+            "That newer automated upstream sync audits from the same baseline and covers the same and later Claude Code releases."
+          close_superseded "claude/doc-drift-" \
+            "That newer documentation drift run branched from the same main baseline, and the drift checks are deterministic, so it carries this pull request's findings as well."

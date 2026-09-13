@@ -22,23 +22,44 @@ You are a changelog analysis agent. Your job is to discover what changed in Clau
 ## Inputs
 
 You will be given:
-- The last audited Claude Code version (from `docs/claude-code-compatibility.md`)
+
 - Access to the upstream changelog and local system-prompts repo
+- `.agent-history/drift-report.txt`, written by the pipeline's ground truth stage
+- `docs/claude-code-facts.json`, extracted from the installed Claude Code binary
 
 ## Process
+
+### Step 0: Establish the Version Baseline
+
+Read `docs/claude-code-compatibility.md` and take the baseline from exactly one
+place: the header line
+
+```text
+Last audited: Claude Code X.Y.Z (YYYY-MM-DD)
+```
+
+That version string is the baseline. Ignore every other version in the file. Rows
+in the audit log table, version numbers inside row notes, and plugin-dev's own
+version are not baselines — a version mentioned in a note describes what a past
+audit inspected, not where the changelog range starts. If the header line is
+missing or does not parse, stop and report the error.
 
 ### Step 1: Fetch the CC Changelog
 
 Fetch the Claude Code changelog:
+
 ```
 WebFetch: https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md
 ```
 
-Extract all version entries **after** the last audited version. If the fetched content does not contain the expected version range, **stop and report the error** rather than proceeding with partial data.
+Extract all version entries **after** the baseline version from Step 0. If the fetched content does not contain the expected version range, **stop and report the error** rather than proceeding with partial data.
+
+An empty range is not an error and not a reason to stop. Continue through the remaining steps and write the manifest with whatever the other sources carry — `DRIFT` lines from `.agent-history/drift-report.txt`, changed keys from `git diff -I '"claude_code_version"' docs/claude-code-facts.json`, or neither.
 
 ### Step 2: Read System Prompts Changelog
 
 Read the local system-prompts CHANGELOG.md. Check these paths in order:
+
 ```
 ./claude-code-system-prompts/CHANGELOG.md                          # CI path
 /Users/kyle/Code/meta-claude/claude-code-system-prompts/CHANGELOG.md  # local path
@@ -56,11 +77,39 @@ Dispatch an Agent with `subagent_type: "claude-code-guide"` to cross-reference s
 
 Only if the dispatch fails with an error should you note degraded triangulation in the manifest.
 
+### Step 3b: Read the Ground Truth Signals
+
+Two inputs come from the installed Claude Code binary rather than the changelog.
+
+**Deterministic drift.** Read `.agent-history/drift-report.txt`. Act only on lines
+that start with `DRIFT`; each has the shape
+`DRIFT <check> <file>:<line> <message>` and is a "Must Update" item. Ignore every
+other line — the report can carry progress and summary text that names no finding.
+Map each `DRIFT` line to the topic that owns the cited file — the directory under
+`plugins/plugin-dev/skills/plugin-dev/references/`. If the file is absent, note
+that in the manifest's Sources line and carry on.
+
+**Ground truth changes.** Run:
+
+```bash
+git diff -I '"claude_code_version"' docs/claude-code-facts.json
+```
+
+Every changed key is an upstream change, whether or not a changelog line mentions
+it. Record the key, its old and new values, and the topic it affects.
+
+`claude_code_version` records which binary the facts were read from, and CI installs
+the latest CLI on every run, so that key changes whenever a new release ships even
+when no documented fact moved. The `-I` flag holds it out of the signal. It rides
+along in the commit of the next sync that has real content; on its own it is not an
+upstream change and not a reason to open a pull request.
+
 ### Step 4: Classify Changes
 
 For each change found, classify by relevance to plugin-dev:
 
 **Affects plugin system** (must update):
+
 - New plugin.json fields or manifest changes
 - New or modified hook events
 - Agent feature changes (model, tools, permissions, teams)
@@ -69,10 +118,12 @@ For each change found, classify by relevance to plugin-dev:
 - MCP or LSP integration changes
 
 **Affects tool behavior** (may update):
+
 - Changes to built-in tools (Bash, Edit, Read, Grep, Glob, Write, Agent)
 - Changes that affect examples or reference docs
 
 **Irrelevant** (no action):
+
 - IDE extension changes (VSCode, JetBrains)
 - API headers, proxy support
 - Internal performance fixes
@@ -82,13 +133,29 @@ For each change found, classify by relevance to plugin-dev:
 
 ## Output
 
-Write the manifest to `.agent-history/upstream-changes.md` in this format:
+Write the manifest to `.agent-history/upstream-changes.md` on every run that reaches this step, even when every source came back empty. Write the header and every section heading, leaving a section with no items empty. The doc drift audit stage appends to this file and cannot append to a file that does not exist.
+
+Use this format:
 
 ```markdown
 # Upstream Change Manifest
 ## CC Version Range: [start] - [end]
 ## Generated: [date]
-## Sources: changelog [✓/✗], system-prompts [✓/✗], claude-code-guide [✓/✗/skipped]
+## Sources: changelog [✓/✗], system-prompts [✓/✗], claude-code-guide [✓/✗/skipped], drift-report [✓/✗], facts.json diff [✓/✗]
+
+### Ground truth changes
+- [ ] [key] changed from [old] to [new] in docs/claude-code-facts.json
+  - Source: claude-code-facts.json diff
+  - Confidence: high
+  - Affects: [topic]
+  - Details: [what the changed fact means for the docs]
+
+### Deterministic drift
+- [ ] [message] (check [check-id])
+  - Source: .agent-history/drift-report.txt
+  - Confidence: high
+  - Affects: [topic]
+  - Location: [file]:[line]
 
 ### Must Update
 - [ ] [Description of change] (CC [version])
@@ -114,3 +181,4 @@ Write the manifest to `.agent-history/upstream-changes.md` in this format:
 - Do not attempt to fix or update documentation. That is Stage 3's job.
 - Be thorough — a missed change is worse than a false positive.
 - Include the raw changelog text for each "Must Update" item so downstream agents can verify independently.
+- Items under "Ground truth changes" and "Deterministic drift" are Must Update items. Carry the check id and the cited `file:line` verbatim so Stage 2 can re-run the check.

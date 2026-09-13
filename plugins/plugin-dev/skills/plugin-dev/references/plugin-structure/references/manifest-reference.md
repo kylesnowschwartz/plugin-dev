@@ -108,14 +108,6 @@ Brief explanation of plugin purpose and functionality.
 }
 ```
 
-**Alternative format** (string only):
-
-```json
-{
-  "author": "Jane Developer <jane@example.com> (https://janedeveloper.com)"
-}
-```
-
 **Use cases**:
 
 - Credit and attribution
@@ -145,28 +137,14 @@ Link to plugin documentation or landing page.
 
 #### repository
 
-**Type**: String (URL) or Object
+**Type**: String (URL)
 **Example**: `"https://github.com/user/plugin-name"`
 
 Source code repository location.
 
-**String format**:
-
 ```json
 {
   "repository": "https://github.com/user/plugin-name"
-}
-```
-
-**Object format** (detailed):
-
-```json
-{
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/user/plugin-name.git",
-    "directory": "packages/plugin-name"
-  }
 }
 ```
 
@@ -228,6 +206,22 @@ Tags for plugin discovery and categorization.
 
 ### Component Path Fields
 
+Each of these fields points at where a component type lives. Setting one changes whether the component's default directory is still scanned, and the answer differs per field:
+
+| Field                   | Default location       | Setting the field                                                |
+| ----------------------- | ---------------------- | ---------------------------------------------------------------- |
+| `skills`                | `skills/`              | Loads alongside the default — the directory is still scanned      |
+| `commands`              | `commands/`            | Replaces the default — the directory is not auto-loaded           |
+| `agents`                | `agents/`              | Replaces the default — the directory is not auto-loaded           |
+| `outputStyles`          | `output-styles/`       | Replaces the default — the directory is not auto-loaded           |
+| `experimental.themes`   | `themes/`              | Replaces the default — the directory is not auto-loaded           |
+| `experimental.monitors` | `monitors/monitors.json` | Replaces the default — the file is read only when omitted       |
+| `hooks`                 | `hooks/hooks.json`     | Merges — every declared source combines with the default          |
+| `mcpServers`            | `.mcp.json`            | Merges — every declared source combines with the default          |
+| `lspServers`            | `.lsp.json`            | Merges — every declared source combines with the default          |
+
+For a replacing field, list the default directory's own files alongside the new ones when you want both: `"commands": ["./commands/", "./extras/"]`.
+
 #### skills
 
 **Type**: String or Array of strings
@@ -235,6 +229,8 @@ Tags for plugin discovery and categorization.
 **Example**: `"./custom-skills"`
 
 Paths to directories containing skill definitions.
+
+**Behavior**: Loads alongside the default `skills/` directory, which is always scanned. `skills` is the one component path field that adds rather than replaces. The exception: for a marketplace entry whose `source` resolves to the marketplace root, declaring specific subdirectories replaces the `skills/` scan.
 
 **Root-Level Skills (CC 2.1.221):** Plugins can now use `"skills": "."` to load a root-level `SKILL.md` directly from the plugin root. This enables simpler single-skill plugin structures:
 
@@ -259,7 +255,7 @@ With this configuration, place `SKILL.md` at the plugin root instead of in a `sk
 **Default**: `["./commands"]`
 **Example**: `"./cli-commands"`
 
-Additional directories or files containing command definitions.
+Path to a command file or skill directory, relative to the plugin root — or an array of such paths. When set, the default `commands/` directory is not auto-loaded; list its files here too if you want both.
 
 **Single path**:
 
@@ -277,7 +273,7 @@ Additional directories or files containing command definitions.
 }
 ```
 
-**Behavior**: Supplements default `commands/` directory (does not replace)
+**Behavior**: Replaces the default `commands/` auto-load — the directory is not auto-loaded once this field is set.
 
 **Use cases**:
 
@@ -289,11 +285,9 @@ Additional directories or files containing command definitions.
 
 **Type**: String or Array of strings
 **Default**: `["./agents"]`
-**Example**: `"./specialized-agents"`
+**Example**: `"./agents/code-reviewer.md"`
 
-Additional directories or files containing agent definitions.
-
-**Format**: Same as `commands` field
+Path to an agent file, relative to the plugin root — or an array of such paths. Directories are not accepted; each entry must point at an agent `.md` file. When set, the default `agents/` directory is not auto-loaded; list its files here too if you want both.
 
 **Use cases**:
 
@@ -436,7 +430,7 @@ Path(s) to output style definition files or directories.
 }
 ```
 
-**Behavior**: Supplements default `output-styles/` directory (does not replace)
+**Behavior**: Replaces the default `output-styles/` auto-load — the directory is not auto-loaded once this field is set. List its files here too if you want both.
 
 Output style files are markdown with YAML frontmatter (`name`, `description`, `keep-coding-instructions`). See `output-styles.md` for the complete frontmatter schema.
 
@@ -446,27 +440,88 @@ Output style files are markdown with YAML frontmatter (`name`, `description`, `k
 - Bundling multiple style options for users to choose from
 - Offering specialized output modes for different workflows
 
-#### monitors
+### experimental (CC 2.1.129)
 
 **Type**: Object
-**Added**: CC 2.1.105
-**Example**: See below
 
-Background monitoring scripts that run independently and stream events as chat notifications via the Monitor tool.
-
-**Configuration**:
+Experimental plugin components are declared under the `"experimental"` key in plugin.json. Two components live there: `themes` and `monitors`.
 
 ```json
 {
-  "monitors": {
-    "build-watcher": {
-      "command": "bash",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/watch-build.sh"],
-      "description": "Watches for build failures"
-    }
+  "name": "my-plugin",
+  "version": "1.0.0",
+  "experimental": {
+    "themes": ["./themes/"],
+    "monitors": "./monitors/monitors.json"
   }
 }
 ```
+
+Top-level `themes` and `monitors` also load, and `claude plugin validate` accepts them with a deprecation warning:
+
+```text
+themes: 'themes' is an experimental component; declare it under 'experimental.themes'
+instead of at the top level. Top-level still loads for now but will be removed in a
+future release.
+```
+
+Declare both under `experimental` so the plugin keeps working once the top-level form is removed.
+
+#### experimental.themes
+
+**Type**: String (path to a themes directory or file) or Array of such paths
+**Default**: `["./themes"]`
+
+Custom UI themes for Claude Code.
+
+```json
+{
+  "experimental": {
+    "themes": ["./themes/dark.json", "./themes/light.json"]
+  }
+}
+```
+
+**Behavior**: Replaces the default `themes/` auto-load — the directory is not auto-loaded once this field is set. List its files here too if you want both.
+
+#### experimental.monitors
+
+**Type**: String (path to a JSON file containing the monitors array) or Array of inline monitor objects
+**Added**: CC 2.1.105 (top-level), CC 2.1.129 (under `experimental`)
+**Default**: `"./monitors/monitors.json"`
+
+Background watch scripts the host arms as persistent Monitor tasks. They run unsandboxed, at the same trust tier as hooks, and stream events as chat notifications without the model having to arm them.
+
+**File path**:
+
+```json
+{
+  "experimental": {
+    "monitors": "./monitors/monitors.json"
+  }
+}
+```
+
+**Inline definitions**:
+
+```json
+{
+  "experimental": {
+    "monitors": [
+      {
+        "name": "build-watch",
+        "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/watch-build.sh",
+        "description": "Reports build failures as they happen",
+        "when": "always"
+      }
+    ]
+  }
+}
+```
+
+Each entry requires `name`, `command`, and `description`. `when` is optional and defaults to `"always"`, which arms the monitor at session start and on plugin reload; `"on-skill-invoke:<skill>"` arms it the first time that skill is dispatched. Monitor names must be unique within a plugin.
+
+**Behavior**: Replaces the default `monitors/monitors.json` auto-load — that file is read only when the field is omitted.
 
 **Important: Silence is NOT success.** Unlike hooks where no output means success, monitors must actively output events to the Monitor tool. A silent monitor provides no value — design monitors to regularly emit status updates or event notifications.
 
@@ -480,51 +535,7 @@ Background monitoring scripts that run independently and stream events as chat n
 | Tool validation              | ❌       | ✅      |
 | Streaming output             | ✅       | ❌      |
 
-**Output format**: Monitors should emit JSON objects to stdout that the Monitor tool can process and display as chat notifications.
-
-**Nesting (CC 2.1.129):** As of CC 2.1.129, `monitors` (and `themes`) must be declared under the `experimental` key, not at the plugin.json root. The root-level form shown above is the pre-2.1.129 layout. See the `experimental` field below.
-
-### experimental (CC 2.1.129)
-
-**Type**: Object
-
-Experimental plugin features must be declared under the `"experimental"` key in plugin.json:
-
-```json
-{
-  "name": "my-plugin",
-  "version": "1.0.0",
-  "experimental": {
-    "themes": ["./themes/"],
-    "monitors": ["./monitors/"]
-  }
-}
-```
-
-**Currently experimental:**
-
-- **themes** — Custom UI themes for Claude Code
-- **monitors** — Background monitoring scripts (see the `monitors` section above and `advanced-topics.md`)
-
-**Breaking change:** Prior to CC 2.1.129, `themes` and `monitors` were declared at the plugin.json root level. They must now be nested under `"experimental"`. Plugins using the old format will fail to load these features.
-
-**Migration:**
-
-```json
-// Before (CC < 2.1.129)
-{
-  "themes": ["./themes/"],
-  "monitors": ["./monitors/"]
-}
-
-// After (CC >= 2.1.129)
-{
-  "experimental": {
-    "themes": ["./themes/"],
-    "monitors": ["./monitors/"]
-  }
-}
-```
+**Output format**: Each stdout line from a monitor command is delivered to the model as a task notification.
 
 ### defaultEnabled (CC 2.1.154)
 
@@ -655,12 +666,14 @@ claude plugin install my-plugin@my-marketplace \
 
 ### Plugin Environment Variables
 
-Claude Code sets these variables for plugin hooks and expands them in plugin MCP/LSP server configuration (`command`, `args`, `env`, `url`):
+Claude Code sets these variables for plugin hooks. Plugin MCP/LSP server configuration (`command`, `args`, `env`, `url`) expands `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA` only:
 
 | Variable | Value |
 | --- | --- |
 | `CLAUDE_PLUGIN_ROOT` | The plugin's own directory — use it for every intra-plugin path |
 | `CLAUDE_PLUGIN_DATA` | `~/.claude/plugins/data/<plugin>-<marketplace>`, a per-plugin state directory |
+| `CLAUDE_PROJECT_DIR` | The project root the session runs in. Set for plugin hooks; not expanded in MCP/LSP server configuration |
+| `CLAUDE_PLUGIN_OPTION_<KEY>` | One variable per `userConfig` option, holding its configured value. Absent until the option is set |
 
 `CLAUDE_PLUGIN_DATA` is where a plugin keeps state that must survive across sessions — caches, databases, logs, counters. The directory is created when the plugin is installed and removed when it is uninstalled, so nothing inside it survives a reinstall. It is plugin-only: hooks declared in skill frontmatter receive `${CLAUDE_PLUGIN_ROOT}` but not `${CLAUDE_PLUGIN_DATA}`.
 
@@ -687,24 +700,15 @@ All paths in component fields must follow these rules:
 
 ### Resolution Order
 
-When Claude Code loads components:
+When Claude Code loads components, the manifest decides which locations are scanned at all — see the table under "Component Path Fields" for the per-field rule.
 
-1. **Default directories**: Scans standard locations first
-   - `./commands/`
-   - `./agents/`
-   - `./skills/`
-   - `./hooks/hooks.json`
-   - `./.mcp.json`
+1. **Replacing fields** (`commands`, `agents`, `outputStyles`, `experimental.themes`, `experimental.monitors`): only the paths named in the manifest are scanned. The matching default directory is skipped. For `commands`, `agents`, `outputStyles`, and `experimental.themes`, Claude Code reports the skipped directory as shadowed: `Plugin <name>: <dir>/ folder exists but is not auto-loaded because the manifest sets "<field>"`. `experimental.monitors` and `workflows` replace their default silently — no message names them.
 
-2. **Custom paths**: Scans paths specified in manifest
-   - Paths from `commands` field
-   - Paths from `agents` field
-   - Files from `hooks` and `mcpServers` fields
+2. **Adding field** (`skills`): the default `skills/` directory is scanned first, then every path named in the manifest.
 
-3. **Merge behavior**: Components from all locations load
-   - No overwriting
-   - All discovered components register
-   - Name conflicts cause errors
+3. **Merging fields** (`hooks`, `mcpServers`, `lspServers`): the default file is read and every declared source combines with it.
+
+4. **Registration**: all discovered components register with no overwriting. Name conflicts cause errors.
 
 ## Validation
 
@@ -846,10 +850,7 @@ Full configuration with all features:
     "url": "https://company.com/devops"
   },
   "homepage": "https://docs.company.com/plugins/devops",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/company/devops-plugin.git"
-  },
+  "repository": "https://github.com/company/devops-plugin.git",
   "license": "Apache-2.0",
   "keywords": [
     "devops",
@@ -860,7 +861,10 @@ Full configuration with all features:
     "deployment"
   ],
   "commands": ["./commands", "./admin-commands"],
-  "agents": "./specialized-agents",
+  "agents": [
+    "./specialized-agents/kubernetes-expert.md",
+    "./specialized-agents/security-auditor.md"
+  ],
   "hooks": "./config/hooks.json",
   "mcpServers": "./.mcp.json"
 }

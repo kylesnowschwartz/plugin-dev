@@ -1,0 +1,143 @@
+{
+  "claude_code_version": "2.1.270",
+  "directory_added_sources": [
+    "slash_command",
+    "register_repo_root"
+  ],
+  "hook_event_dispatch": {
+    "ConfigChange": "outside-repl",
+    "CwdChanged": "outside-repl",
+    "DirectoryAdded": "outside-repl",
+    "Elicitation": "outside-repl",
+    "ElicitationResult": "outside-repl",
+    "FileChanged": "outside-repl",
+    "InstructionsLoaded": "outside-repl",
+    "MessageDisplay": "no-context",
+    "Notification": "outside-repl",
+    "PermissionDenied": "conversation",
+    "PermissionRequest": "conversation",
+    "PostCompact": "outside-repl",
+    "PostModelSwitch": "no-context",
+    "PostToolBatch": "conversation",
+    "PostToolUse": "conversation",
+    "PostToolUseFailure": "conversation",
+    "PreCompact": "outside-repl",
+    "PreModelSwitch": "no-context",
+    "PreToolUse": "conversation",
+    "SessionEnd": "outside-repl",
+    "SessionStart": "no-context",
+    "Setup": "no-context",
+    "Stop": "conversation",
+    "StopFailure": "outside-repl",
+    "SubagentStart": "no-context",
+    "SubagentStop": "conversation",
+    "TaskCompleted": "conversation",
+    "TaskCreated": "conversation",
+    "TeammateIdle": "conversation",
+    "UserPromptExpansion": "conversation",
+    "UserPromptSubmit": "conversation",
+    "WorktreeCreate": "outside-repl",
+    "WorktreeRemove": "outside-repl"
+  },
+  "hook_events": [
+    "PreToolUse",
+    "PostToolUse",
+    "PostToolUseFailure",
+    "PostToolBatch",
+    "Notification",
+    "UserPromptSubmit",
+    "UserPromptExpansion",
+    "SessionStart",
+    "SessionEnd",
+    "Stop",
+    "StopFailure",
+    "SubagentStart",
+    "SubagentStop",
+    "PreCompact",
+    "PostCompact",
+    "PreModelSwitch",
+    "PostModelSwitch",
+    "PermissionRequest",
+    "PermissionDenied",
+    "Setup",
+    "TeammateIdle",
+    "TaskCreated",
+    "TaskCompleted",
+    "Elicitation",
+    "ElicitationResult",
+    "ConfigChange",
+    "WorktreeCreate",
+    "WorktreeRemove",
+    "InstructionsLoaded",
+    "CwdChanged",
+    "FileChanged",
+    "DirectoryAdded",
+    "MessageDisplay"
+  ],
+  "hook_types": [
+    "command",
+    "prompt",
+    "mcp_tool",
+    "http",
+    "agent"
+  ],
+  "http_hook_unsupported_events": [
+    "SessionStart",
+    "Setup"
+  ],
+  "mcp_tool_unavailable_message": "mcp_tool hooks are not available for the '<event>' hook event (no MCP client context)",
+  "permission_modes": [
+    "acceptEdits",
+    "auto",
+    "bypassPermissions",
+    "default",
+    "dontAsk",
+    "plan"
+  ],
+  "plugin_env_vars": [
+    "CLAUDE_PROJECT_DIR",
+    "CLAUDE_PLUGIN_ROOT",
+    "CLAUDE_PLUGIN_DATA"
+  ],
+  "plugin_option_env_prefix": "CLAUDE_PLUGIN_OPTION_",
+  "session_end_reasons": [
+    "clear",
+    "resume",
+    "logout",
+    "prompt_input_exit",
+    "other"
+  ],
+  "session_start_sources": [
+    "startup",
+    "resume",
+    "clear",
+    "compact",
+    "fork"
+  ],
+  "user_config": {
+    "fields": {
+      "default": "Default value used when the user provides nothing",
+      "description": "Help text shown beneath the field in the config dialog",
+      "max": "Maximum value (number type only)",
+      "min": "Minimum value (number type only)",
+      "multiple": "For string type: allow an array of strings",
+      "required": "If true, validation fails when this field is empty",
+      "sensitive": "If true, masks dialog input and stores value in secure storage (keychain/credentials file) instead of settings.json",
+      "title": "Human-readable label shown in the config dialog",
+      "type": "Type of the configuration value"
+    },
+    "key_pattern": "^[A-Za-z_]\\w*$",
+    "required_fields": [
+      "type",
+      "title",
+      "description"
+    ],
+    "types": [
+      "string",
+      "number",
+      "boolean",
+      "directory",
+      "file"
+    ]
+  }
+}

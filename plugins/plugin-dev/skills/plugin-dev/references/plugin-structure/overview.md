@@ -77,22 +77,28 @@ These plugin.json fields control installation and runtime behavior — full deta
 
 - **`defaultEnabled`** (CC 2.1.154): `false` installs the plugin disabled so users must enable it via `/plugin` (default `true`). Use for resource-heavy, config-required, opt-in, or security-sensitive plugins.
 - **`userConfig`**: declares user-configurable options. Every option needs `type` (`string`, `number`, `boolean`, `directory`, or `file`), `title`, and `description`; `required`, `default`, `multiple`, `sensitive`, `min`, and `max` are optional and the schema rejects anything else. Values reach the plugin as `${user_config.KEY}` (non-sensitive) or `CLAUDE_PLUGIN_OPTION_<KEY>` env vars; `sensitive: true` values go to secure storage. `claude plugin install` does not prompt — users run `/plugin configure <plugin>` or the install passes `--config KEY=VALUE`. **CC 2.1.207 breaking change:** `pluginConfigs` are no longer read from project `.claude/settings.json` — only user/`--settings`/managed settings.
-- **`experimental`** (CC 2.1.129): `themes` and `monitors` must nest under this key (previously root-level; old format fails to load).
+- **`experimental`** (CC 2.1.129): `themes` and `monitors` belong under this key — `experimental.themes` takes a themes directory or file path (or an array of them), `experimental.monitors` takes a path to a JSON file holding the monitors array (or an inline array of monitor objects). Declaring either at the top level still loads, but `claude plugin validate` warns that a future release removes the top-level form.
 
 ### Component Path Configuration
 
-Custom paths supplement (never replace) default directories — components in both defaults and custom paths load:
+Whether a custom path replaces or adds to the default directory depends on the field:
 
 ```json
 {
   "commands": "./custom-commands",
-  "agents": ["./agents", "./specialized-agents"],
+  "agents": ["./agents/reviewer.md", "./specialized-agents/migrator.md"],
   "hooks": "./config/hooks.json",
   "mcpServers": "./.mcp.json"
 }
 ```
 
-**Path rules:** relative to plugin root, start with `./`, no absolute paths, arrays allowed for multiple locations. See `references/manifest-reference.md` for resolution order and validation.
+- **Replace the default directory** — `commands`, `agents`, `outputStyles`, `experimental.themes`, `experimental.monitors`. Once the field is set, the matching default directory is not auto-loaded; list its files here too when you want both.
+- **Add to the default directory** — `skills`. The `skills/` directory is always scanned, and the declared paths load alongside it.
+- **Merge with the default file** — `hooks`, `mcpServers`, `lspServers`. Every declared source combines with the default.
+
+`agents` entries must each point at an agent `.md` file; a directory path is rejected.
+
+**Path rules:** relative to plugin root, start with `./`, no absolute paths, arrays allowed for multiple locations. See `references/manifest-reference.md` for the per-field table, resolution order, and validation.
 
 ## Component Organization
 
@@ -134,7 +140,7 @@ Each component type has a default location and auto-discovers on plugin enable. 
 
 - **LSP servers** — inline in `plugin.json` under `lspServers`, keyed by language with `command`, `args`, and `extensionToLanguage`; start when matching files open, providing go-to-definition, find-references, and hover. For detailed LSP configuration, see the lsp-integration topic (`../lsp-integration/overview.md`).
 - **Output styles** — `outputStyles` field pointing to a directory (`"./styles/"`) or array of markdown files; customize how Claude formats responses. See `references/output-styles.md` for the frontmatter schema (`name`, `description`, `keep-coding-instructions`) and when to prefer styles over skills, agents, or CLAUDE.md.
-- **Monitors** (CC 2.1.129, nested under `experimental`) — background scripts streaming events via the Monitor tool. Silence is NOT success: monitors must actively emit output. See `references/manifest-reference.md` for the monitors-vs-hooks guidance.
+- **Monitors** — `experimental.monitors` pointing at a JSON file holding the monitors array (`"./monitors/monitors.json"`, the default when the field is omitted) or an inline array of monitor objects. Background scripts streaming events via the Monitor tool. Silence is NOT success: monitors must actively emit output. See `references/manifest-reference.md` for the entry schema and the monitors-vs-hooks guidance.
 - **Executables (`bin/`, CC 2.1.91)** — files in `bin/` (compiled binaries or scripts with a shebang) can be invoked as bare commands from the Bash tool. Requires execute permissions (`chmod +x`) and platform-compatible binaries. Use to ship formatters, linters, converters, or standalone utilities.
 
 ## Portable Path References
@@ -165,8 +171,9 @@ Claude Code automatically discovers and loads components:
 4. **Skills**: scans `skills/` for subdirectories containing `SKILL.md`
 5. **Hooks**: loads from `hooks/hooks.json` or manifest
 6. **MCP servers**: loads from `.mcp.json` or manifest
+7. **LSP servers**: loads from `.lsp.json` or manifest
 
-**Discovery timing:** components register at installation and become available on enable; no restart is required — changes take effect on the next Claude Code session. Custom paths in `plugin.json` supplement (not replace) default directories.
+**Discovery timing:** components register at installation and become available on enable; no restart is required — changes take effect on the next Claude Code session. These default scans apply when the manifest leaves the matching component path field unset; see "Component Path Configuration" above for which fields replace a default directory and which add to it.
 
 Related discovery behaviors are detailed in `references/advanced-topics.md`: automatic local skill loading from `.claude/skills/` (CC 2.1.157) and nested `.claude/` directory precedence in monorepos (CC 2.1.178).
 

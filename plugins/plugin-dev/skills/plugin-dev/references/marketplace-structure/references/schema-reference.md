@@ -127,14 +127,18 @@ Plugin marketplaces now support `headersHelper` for minting HTTP headers when ac
 
 ### Component Configuration Fields
 
-These fields override or supplement plugin component paths:
+The entry can declare `commands`, `agents`, `skills`, `outputStyles`, `experimental.themes`, and `hooks`. What happens to them depends on whether the plugin folder has its own `plugin.json` — see Strict Mode Details below.
 
-| Field        | Type             | Description                                  |
-| ------------ | ---------------- | -------------------------------------------- |
-| `commands`   | string or array  | Custom paths to command files or directories |
-| `agents`     | string or array  | Custom paths to agent files                  |
-| `hooks`      | string or object | Hooks configuration or path to hooks file    |
-| `mcpServers` | string or object | MCP server configurations or path            |
+| Field          | Type             | Description                                  |
+| -------------- | ---------------- | -------------------------------------------- |
+| `commands`     | string or array  | Custom paths to command files or directories |
+| `agents`       | string or array  | Custom paths to agent files                  |
+| `skills`       | string or array  | Custom paths to skill directories            |
+| `outputStyles` | string or array  | Custom paths to output style files           |
+| `hooks`        | string or object | Hooks configuration or path to hooks file    |
+| `mcpServers`   | string or object | MCP server configurations or path            |
+
+`mcpServers` and `lspServers` in an entry apply only when the plugin folder has no `plugin.json` and the entry stands in as the manifest.
 
 ## Source Types
 
@@ -324,13 +328,15 @@ Advanced plugin entry with all optional fields:
 ### strict: true (Default)
 
 - Plugin directory must contain `.claude-plugin/plugin.json`
-- Marketplace entry fields supplement plugin manifest values
-- Plugin manifest takes precedence for conflicting fields
+- Entry component paths supplement the plugin's own rather than replacing them: `commands`, `agents`, `skills`, `outputStyles`, and `experimental.themes` are appended to the paths the manifest already resolved, and entry `hooks` merge over the manifest's hooks key by key
+- `mcpServers` and `lspServers` in the entry are not applied — the plugin's own manifest is the only source for them
+- Entry `displayName`, `description`, `author`, `homepage`, `repository`, `license`, and `keywords` override the manifest's values when set
 
 ### strict: false
 
 - `plugin.json` is optional in plugin directory
 - Marketplace entry serves as complete plugin manifest if no `plugin.json` exists
+- When a `plugin.json` does exist and the entry also declares components, the plugin fails to load: `Plugin <name> has conflicting manifests: both plugin.json and marketplace entry specify components. Set strict: true in marketplace entry or remove component specs from one location.`
 - Useful for curating external plugins or lightweight plugin directories
 
 ### When to Use strict: false

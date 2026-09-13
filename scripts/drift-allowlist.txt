@@ -1,0 +1,29 @@
+# Paths that check I (relative-path resolution) must not report.
+# Every entry names a target that is illustrative rather than a file in this
+# repository. Real cross-document links stay unlisted so a rename breaks CI.
+#
+# Line format, blank lines and # comments ignored:
+#   <target>                       the target, wherever it appears
+#   <document-glob> <target>       the target, only in documents matching the glob
+# Both fields are shell globs matched with fnmatch, where * also crosses "/".
+# Scope an entry to its document whenever the target shares a name with a file
+# that really exists somewhere in the tree.
+
+*/documentation-patterns.md CONTRIBUTING.md  # README template sample; the file belongs to the reader's plugin
+*/documentation-patterns.md LICENSE  # README template sample; the file belongs to the reader's plugin
+*/plugin-structure/overview.md ./scripts/  # anti-pattern example: named so readers avoid working-directory-relative paths
+*/real-world-examples.md scripts/setup-ralph-loop.sh  # script in the separate ralph-wiggum plugin, called out as such inline
+*/skill-development/*.md scripts/rotate_pdf.py  # fictional pdf-editor skill layout
+*/skill-development/*.md scripts/test-hook.sh  # fictional hooks skill layout
+*/skill-development/*.md scripts/validate-hook-schema.sh  # fictional hooks skill layout
+*/skill-development/*.md references/api_docs.md  # fictional skill layout illustrating what belongs in references/
+*/skill-development/*.md references/api-reference.md  # fictional skill layout illustrating what belongs in references/
+*/skill-development/*.md references/schema.md  # fictional big-query skill layout
+*/skill-development/*.md references/finance.md  # fictional finance skill layout
+*/skill-development/*.md references/mnda.md  # fictional finance skill layout
+*/skill-development/*.md references/policies.md  # fictional finance skill layout
+*/skill-development/*.md references/patterns.md  # fictional hooks skill layout
+*/skill-development/*.md references/advanced.md  # fictional skill layout illustrating what belongs in references/
+*/skill-development/*.md references/migration.md  # fictional skill layout illustrating what belongs in references/
+*/complete-skill.md references/authentication-guide.md  # fictional api-tester skill worked through end to end
+*/complete-skill.md references/assertion-patterns.md  # fictional api-tester skill worked through end to end
