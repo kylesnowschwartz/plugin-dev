@@ -329,8 +329,8 @@ input=$(cat)
 file_size=$(echo "$input" | jq -r '.tool_input.content | length')
 
 if [ "$file_size" -gt "$max_file_size" ]; then
-  echo '{"decision": "deny", "reason": "File exceeds configured size limit"}' >&2
-  exit 2
+  echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "File exceeds configured size limit"}}'
+  exit 0
 fi
 ```
 

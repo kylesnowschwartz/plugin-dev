@@ -119,7 +119,7 @@ For the generic (non-plugin) skill-creator methodology, including `init_skill.py
 
 ### Visibility Budget
 
-Skill descriptions share a budget of 1% of the context window measured in characters — 8,000 characters for the default 200K-token window — controlled by `SLASH_COMMAND_TOOL_CHAR_BUDGET`. If total skill descriptions exceed this budget, some skills may be excluded from auto-discovery (still invocable via `/skill-name`). Keep descriptions concise but include trigger phrases; skills with longer descriptions are excluded first under pressure. See `references/advanced-frontmatter.md` for optimization strategies.
+Skill descriptions share a budget of 1% of the context window measured in characters — 8,000 characters for the default 200K-token window — controlled by `SLASH_COMMAND_TOOL_CHAR_BUDGET`. If total skill descriptions exceed this budget, some skills may be excluded from auto-discovery (still invocable via `/skill-name`). Descriptions are added in priority order — project, then user, then plugin — until the budget is exhausted, so lower-priority skills are the ones excluded. Keep descriptions concise but include trigger phrases: shorter descriptions leave room for more items overall. See `references/advanced-frontmatter.md` for optimization strategies.
 
 ## Dynamic Content
 

@@ -122,7 +122,7 @@ description: This skill should be used when the user asks to "test plugin", "val
 | `description`              | Yes      | string  | When to use (third-person)                   |
 | `allowed-tools`            | No       | string  | Comma-separated tool names                   |
 | `disallowed-tools`         | No       | string  | Tools to withhold (CC 2.1.152)               |
-| `context`                  | No       | string  | Extra context injected with the skill        |
+| `context`                  | No       | string  | `fork` runs the skill in a subagent          |
 | `agent`                    | No       | string  | Agent the skill runs in                      |
 | `skills`                   | No       | array   | Skills loaded alongside this one             |
 | `user-invocable`           | No       | boolean | Whether `/skillname` is offered              |

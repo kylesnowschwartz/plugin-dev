@@ -326,8 +326,8 @@ curl -X POST "$SLACK_WEBHOOK" \
   -d "{\"text\": \"Hook ${decision} ${tool_name} operation\"}" \
   2>/dev/null
 
-echo '{"decision": "deny"}' >&2
-exit 2
+echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Blocked by hook policy"}}'
+exit 0
 ```
 
 ### Database Logging
@@ -402,8 +402,8 @@ tool_name=$(echo "$input" | jq -r '.tool_name')
 
 # Validate tool name format
 if [[ ! "$tool_name" =~ ^[a-zA-Z0-9_]+$ ]]; then
-  echo '{"decision": "deny", "reason": "Invalid tool name"}' >&2
-  exit 2
+  echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Invalid tool name"}}'
+  exit 0
 fi
 ```
 
@@ -416,14 +416,14 @@ file_path=$(echo "$input" | jq -r '.tool_input.file_path')
 
 # Deny path traversal
 if [[ "$file_path" == *".."* ]]; then
-  echo '{"decision": "deny", "reason": "Path traversal detected"}' >&2
-  exit 2
+  echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Path traversal detected"}}'
+  exit 0
 fi
 
 # Deny sensitive files
 if [[ "$file_path" == *".env"* ]]; then
-  echo '{"decision": "deny", "reason": "Sensitive file"}' >&2
-  exit 2
+  echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Sensitive file"}}'
+  exit 0
 fi
 ```
 
@@ -455,8 +455,8 @@ file_path=$(echo "$input" | jq -r '.tool_input.file_path')
 # Resolve symlinks and check if path escapes project
 resolved=$(realpath -m "$file_path" 2>/dev/null || echo "$file_path")
 if [[ ! "$resolved" =~ ^"$CLAUDE_PROJECT_DIR" ]]; then
-  echo '{"decision": "deny", "reason": "Path resolves outside project"}' >&2
-  exit 2
+  echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Path resolves outside project"}}'
+  exit 0
 fi
 ```
 
@@ -501,8 +501,8 @@ if [ -f "$rate_file" ]; then
 
   if [ "$current_minute" = "$last_minute" ]; then
     if [ "$count" -gt 10 ]; then
-      echo '{"decision": "deny", "reason": "Rate limit exceeded"}' >&2
-      exit 2
+      echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Rate limit exceeded"}}'
+      exit 0
     fi
     count=$((count + 1))
   else
@@ -541,8 +541,8 @@ content=$(echo "$input" | jq -r '.tool_input.content')
 
 # Check for common secret patterns
 if echo "$content" | grep -qE "(api[_-]?key|password|secret|token).{0,20}['\"]?[A-Za-z0-9]{20,}"; then
-  echo '{"decision": "deny", "reason": "Potential secret detected in content"}' >&2
-  exit 2
+  echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Potential secret detected in content"}}'
+  exit 0
 fi
 
 exit 0

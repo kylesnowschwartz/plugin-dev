@@ -123,14 +123,14 @@ file_path=$(echo "$input" | jq -r '.tool_input.file_path')
 #   resolved=$(realpath -m "$file_path" 2>/dev/null || echo "$file_path")
 # and comparing against an allowed directory prefix
 if [[ "$file_path" == *".."* ]]; then
-  echo '{"decision": "deny", "reason": "Path traversal detected"}' >&2
-  exit 2
+  echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Path traversal detected"}}'
+  exit 0
 fi
 
 # Check for system paths
 if [[ "$file_path" == "/etc/"* ]] || [[ "$file_path" == "/sys/"* ]]; then
-  echo '{"decision": "deny", "reason": "System file"}' >&2
-  exit 2
+  echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "System file"}}'
+  exit 0
 fi
 ```
 
@@ -182,8 +182,8 @@ file_path=$(echo "$input" | jq -r '.tool_input.file_path')
 size=$(stat -f%z "$file_path" 2>/dev/null || stat -c%s "$file_path" 2>/dev/null)
 
 if [ "$size" -gt 10000000 ]; then
-  echo '{"decision": "deny", "reason": "File too large"}' >&2
-  exit 2
+  echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "File too large"}}'
+  exit 0
 fi
 ```
 
