@@ -427,7 +427,7 @@ if [[ "$file_path" == *".env"* ]]; then
 fi
 ```
 
-See `examples/validate-write.sh` and `examples/validate-bash.sh` for complete examples.
+See `../examples/validate-write.sh` and `../examples/validate-bash.sh` for complete examples.
 
 ### Symlink Vulnerability Fix in File Tools (CC 2.1.251)
 
@@ -771,7 +771,17 @@ While `command` hooks execute bash scripts and `prompt` hooks evaluate a single 
 
 ### Supported Events
 
-Agent hooks — like prompt hooks — need conversation context to run in. Events dispatched outside a conversation do not have it, and a prompt or agent hook registered on one fails with `agent-type hooks are not supported for <event> events (no conversation context is available). Use a command-type hook instead.` **SessionStart**, **Setup**, and **SubagentStart** are dispatched this way and take command hooks only; SessionStart and Setup additionally skip HTTP hooks. Every other event accepts agent hooks. The per-event Types column in `../overview.md` (Hook Events Reference) is authoritative.
+Agent hooks — like prompt hooks — need conversation context to run in. Five events are dispatched without it and reject both types:
+
+| Event | Accepted types | How a prompt or agent hook fails |
+| ----- | -------------- | -------------------------------- |
+| SessionStart | Command, MCP tool | `agent-type hooks are not supported for SessionStart events (no conversation context is available). Use a command-type hook instead.` |
+| Setup | Command, MCP tool | Same message, naming `Setup` |
+| SubagentStart | Command, HTTP, MCP tool | Same message, naming `SubagentStart` |
+| WorktreeCreate | Command, HTTP, MCP tool | `Agent stop hooks are not yet supported outside REPL` |
+| WorktreeRemove | Command, HTTP, MCP tool | `Agent stop hooks are not yet supported outside REPL` |
+
+SessionStart and Setup additionally skip HTTP hooks. The remaining 28 events accept all five hook types. The per-event Types column in `../overview.md` (Hook Events Reference) is authoritative.
 
 Among the events that do accept them, agent hooks are most useful on decision-control events like **Stop** and **SubagentStop**. Their multi-turn latency makes them a poor fit for hot-path events like PreToolUse.
 
@@ -864,14 +874,13 @@ Display text shown in the UI while the hook is executing. Helps users understand
 
 ## Event-Specific Matchers
 
-Matchers filter which registered hooks run for an occurrence of an event. Each event names one input field to match against, and matches on that field's value:
+Matchers filter which registered hooks run for an occurrence of an event. Each event names one input field to match against; **which field, and which values it accepts, is documented on that event's Matchers line in `event-schemas.md`**, which covers all 33 events. This section covers only the syntax that applies once you know what an event matches on.
 
-- **Tool events** (PreToolUse, PermissionRequest, PostToolUse, PostToolUseFailure) match `tool_name` as a case-sensitive regular expression — not a glob. Use `"Write"`, `"Read|Write|Edit"`, or `"mcp__.*__delete.*"`.
-- **Subagent events** (SubagentStart, SubagentStop) match the agent type name.
-- **Source and category events** match a fixed value set: SessionStart on `source`, SessionEnd on `reason`, PreCompact and Setup on `trigger`, Notification on `notification_type`, InstructionsLoaded on `load_reason`, ConfigChange and DirectoryAdded on `source`, UserPromptExpansion on `command_name`, FileChanged on the file path.
-- **Several events ignore `matcher` entirely.** An entry without a `matcher` matches every occurrence.
-
-The accepted values for each event are listed on that event's **Matchers** line in `event-schemas.md`, which covers all 33 events. This section covers matcher syntax; `event-schemas.md` is the complete per-event value reference.
+- **Tool-name matching is a case-sensitive regular expression, not a glob.** `"Write"` matches exactly; `"mcp__.*__delete.*"` needs the `.*`, because `"mcp__*__delete*"` is not a pattern this accepts.
+- **Alternate with a pipe, never a comma.** `"Bash|PowerShell"` matches either. `"Bash,PowerShell"` silently never fires (CC 2.1.191).
+- **Hyphenated matchers require an exact match (CC 2.1.195).** A matcher containing a hyphen no longer substring-matches, so `"mcp__brave-search"` matches only that exact value — write `"mcp__brave-search__.*"` for partial matches. This affects custom agent names, MCP server names, and any hyphenated identifier.
+- **`*` matches everything,** and so does omitting `matcher` altogether.
+- **Some events ignore `matcher` entirely.** Their Matchers line reads "Not supported"; an entry's matcher is silently discarded rather than rejected.
 
 ## Decision Control Output Schemas
 

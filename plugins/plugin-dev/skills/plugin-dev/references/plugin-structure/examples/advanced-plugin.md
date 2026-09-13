@@ -221,7 +221,17 @@ After successful build:
 ```markdown
 ---
 name: deployment-orchestrator
-description: Orchestrates complex multi-environment deployments with rollback capabilities and health monitoring. Use this agent when the user asks to deploy to staging/production, coordinate a multi-stage rollout, or trigger an automated rollback. <example>Context: User wants to ship a release. user: "Deploy this to production with a canary rollout" assistant: "I'll use the deployment-orchestrator agent to plan the staged rollout and monitor health." <commentary>Deployment request triggers the deployment-orchestrator agent.</commentary></example>
+description: |
+  Orchestrates complex multi-environment deployments with rollback capabilities and health monitoring. Use this agent when the user asks to deploy to staging/production, coordinate a multi-stage rollout, or trigger an automated rollback.
+
+  <example>
+  Context: User wants to ship a release.
+  user: "Deploy this to production with a canary rollout"
+  assistant: "I'll use the deployment-orchestrator agent to plan the staged rollout and monitor health."
+  <commentary>
+  Deployment request triggers the deployment-orchestrator agent.
+  </commentary>
+  </example>
 model: inherit
 color: red
 ---

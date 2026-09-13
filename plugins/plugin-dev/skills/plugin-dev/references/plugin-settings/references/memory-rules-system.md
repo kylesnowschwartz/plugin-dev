@@ -76,7 +76,7 @@ Claude Code can automatically persist learnings between sessions using memory fi
 **Plugin interaction:**
 
 - Plugins should not write to or modify the user's auto-memory files
-- Plugin agents with `memory` frontmatter use a separate, agent-specific memory directory (see agent-development skill)
+- Plugin agents with `memory` frontmatter use a separate, agent-specific memory directory (see the agent-development topic at `../../agent-development/overview.md`)
 - If your plugin generates knowledge worth persisting, instruct users to save it to CLAUDE.md rather than relying on auto-memory
 
 **Import syntax note:** The `@path` import syntax works in all CLAUDE.md files (project, user, local), not just the root one. This enables modular configuration:

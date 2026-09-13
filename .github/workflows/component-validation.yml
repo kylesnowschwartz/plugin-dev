@@ -125,7 +125,7 @@ jobs:
 
             For changed hooks file, verify:
             - [ ] File is valid JSON
-            - [ ] Event types are valid: UserPromptSubmit, PreToolUse, PostToolUse, Stop, SubagentStop, SessionStart, SessionEnd, PreCompact, Notification
+            - [ ] Event types are valid: PreToolUse, PostToolUse, PostToolUseFailure, PostToolBatch, Notification, UserPromptSubmit, UserPromptExpansion, SessionStart, SessionEnd, Stop, StopFailure, SubagentStart, SubagentStop, PreCompact, PostCompact, PreModelSwitch, PostModelSwitch, PermissionRequest, PermissionDenied, Setup, TeammateIdle, TaskCreated, TaskCompleted, Elicitation, ElicitationResult, ConfigChange, WorktreeCreate, WorktreeRemove, InstructionsLoaded, CwdChanged, FileChanged, DirectoryAdded, MessageDisplay
             - [ ] Matcher patterns are valid regex (test by attempting to compile)
 
             ## Output Format

@@ -523,7 +523,7 @@ This pattern ensures users have visibility into what verification ran before com
 
 Study the skills in this plugin as examples of best practices:
 
-**hook-development skill:**
+**the hook-development topic (`../../hook-development/`):**
 
 - Excellent trigger phrases: "create a hook", "add a PreToolUse hook", etc.
 - Lean SKILL.md (2,125 words)
@@ -531,14 +531,14 @@ Study the skills in this plugin as examples of best practices:
 - 3 examples/ of working hooks
 - 3 scripts/ utilities
 
-**agent-development skill:**
+**the agent-development topic (`../../agent-development/`):**
 
 - Strong triggers: "create an agent", "agent frontmatter", etc.
 - Focused SKILL.md (1,896 words)
 - References include the AI generation prompt from Claude Code
 - Complete agent examples
 
-**plugin-settings skill:**
+**the plugin-settings topic (`../../plugin-settings/`):**
 
 - Specific triggers: "plugin settings", ".local.md files", "YAML frontmatter"
 - References show real implementations (multi-agent-swarm, ralph-wiggum)

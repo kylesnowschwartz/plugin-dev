@@ -110,7 +110,7 @@ Note: `permission_mode` is not present on SessionStart.
 **Special behavior:** The `CLAUDE_ENV_FILE` environment variable points to a file where you can write `export VAR=value` lines. These persist as environment variables for subsequent Bash tool calls in the session.
 
 **Matchers:** `startup`, `resume`, `clear`, `compact`, `fork`
-**Hook types:** Command only
+**Hook types:** Command, MCP tool — HTTP hooks are skipped for this event, and prompt and agent hooks have no conversation context to run in.
 
 ---
 
@@ -199,7 +199,7 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 **Use cases:** Install project dependencies on `--init`, refresh generated artifacts or caches on `--maintenance`, report repository state into the session.
 
 **Matchers:** `init`, `maintenance` (matches on `trigger`)
-**Hook types:** Command only — HTTP hooks are skipped for this event, and prompt and agent hooks have no conversation context to run in.
+**Hook types:** Command, MCP tool — HTTP hooks are skipped for this event, and prompt and agent hooks have no conversation context to run in.
 
 ---
 
@@ -737,7 +737,7 @@ Use `impossible` when the goal is self-contradictory, requires a missing capabil
 ```
 
 **Matchers:** Agent type names (`Bash`, `Explore`, `Plan`, or custom agent names from plugins)
-**Hook types:** Command only — this event is dispatched without conversation context, so prompt and agent hooks cannot run on it.
+**Hook types:** Command, HTTP, MCP tool — this event is dispatched without conversation context, so prompt and agent hooks cannot run on it.
 
 ---
 
@@ -1090,7 +1090,7 @@ Use to verify what survived compaction, log compaction results, or send alerts i
 > **worktree.baseRef setting (CC 2.1.133):** The `worktree.baseRef` setting controls the base reference for new worktrees. Options are `fresh` (default, branch from `origin/<default-branch>`) and `head` (branch from current local HEAD). Hooks processing WorktreeCreate events can check this setting to understand the worktree's origin point.
 
 **Matchers:** Not supported.
-**Hook types:** Command, HTTP.
+**Hook types:** Command, HTTP, MCP tool — this event is dispatched outside the conversation loop, so prompt and agent hooks cannot run on it.
 
 ---
 
@@ -1113,7 +1113,7 @@ Use to verify what survived compaction, log compaction results, or send alerts i
 **Output:** Cleanup only. Output and exit code are ignored.
 
 **Matchers:** Not supported.
-**Hook types:** Command only.
+**Hook types:** Command, HTTP, MCP tool — this event is dispatched outside the conversation loop, so prompt and agent hooks cannot run on it.
 
 ---
 
@@ -1430,12 +1430,10 @@ Observability only. No decision control.
 
 ## SDK Parity Notes
 
-Not all events are typed in both SDKs.
+The CLI supports all 33 events. Neither SDK types all of them, so an event that works in a `hooks.json` may have no type in the SDK you are embedding.
 
-**Python SDK** (`claude-agent-sdk`) types 10 of 33 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
+**Python SDK** (`claude-agent-sdk`) types exactly 10, as the `HookEvent` union in `types.py`: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest. The other 23 events are untyped there.
 
-**TypeScript SDK** (`@anthropic-ai/claude-agent-sdk`) is closer to parity with the CLI, and types TeammateIdle, TaskCompleted, ConfigChange, Elicitation, and ElicitationResult in addition to the events the Python SDK covers.
+**TypeScript SDK** (`@anthropic-ai/claude-agent-sdk`) is closer to parity and additionally types TeammateIdle, TaskCompleted, ConfigChange, Elicitation, and ElicitationResult. Check the package's own type declarations for the current union rather than assuming an event is present.
 
-**CLI** supports all 33 events.
-
-Events only available in CLI (not yet in either SDK): WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88), MessageDisplay (CC 2.1.152), DirectoryAdded (CC 2.1.219), PreModelSwitch (CC 2.1.251), PostModelSwitch (CC 2.1.251), PostToolBatch (CC 2.1.263), Setup (CC 2.1.263), TaskCreated (CC 2.1.263), UserPromptExpansion (CC 2.1.263).
+Events known to be CLI-only, typed in neither SDK — a partial list, since the SDKs add events independently of the CLI: WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88), MessageDisplay (CC 2.1.152), DirectoryAdded (CC 2.1.219), PreModelSwitch (CC 2.1.251), PostModelSwitch (CC 2.1.251), PostToolBatch (CC 2.1.263), Setup (CC 2.1.263), TaskCreated (CC 2.1.263), UserPromptExpansion (CC 2.1.263).

@@ -132,6 +132,28 @@ check_frontmatter() {
     fi
   fi
 
+  # Check 'disallowed-tools' field
+  if echo "$frontmatter" | grep -q "^disallowed-tools:"; then
+    local disallowed_tools
+    disallowed_tools=$(echo "$frontmatter" | grep "^disallowed-tools:" | cut -d: -f2- | sed 's/^ *//')
+
+    if [ -z "$disallowed_tools" ]; then
+      echo "⚠️  Warning: Empty disallowed-tools field"
+      ((warning_count++))
+    else
+      # Check for common patterns
+      if [[ "$disallowed_tools" == "*" ]]; then
+        echo "⚠️  Warning: disallowed-tools: * blocks all tools (consider restricting)"
+        ((warning_count++))
+      elif [[ "$disallowed_tools" =~ Bash\(\*\) ]]; then
+        echo "⚠️  Warning: Bash(*) is very broad (consider Bash(git *) or similar)"
+        ((warning_count++))
+      else
+        echo "✅ disallowed-tools: $disallowed_tools"
+      fi
+    fi
+  fi
+
   # Check 'argument-hint' field
   if echo "$frontmatter" | grep -q "^argument-hint:"; then
     local hint

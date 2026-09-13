@@ -180,19 +180,28 @@ for event in $(jq -r 'keys[]' "$HOOKS_FILE"); do
         ;;
       esac
 
-      # Check hook type support by event (see overview.md support matrix)
+      # Check hook type support by event (see overview.md support matrix).
+      # Command and mcp_tool hooks are accepted on every event. These five events
+      # are dispatched without conversation context, so prompt and agent hooks
+      # cannot run on them; SessionStart and Setup also skip http hooks.
       case "$event" in
-      SessionStart | WorktreeRemove | Setup)
-        if [ "$hook_type" != "command" ]; then
-          echo "❌ ${event}[$i].hooks[$j]: $event only supports 'command' hook type, not '$hook_type'"
+      SessionStart | Setup)
+        case "$hook_type" in
+        command | mcp_tool) ;;
+        *)
+          echo "❌ ${event}[$i].hooks[$j]: $event supports only 'command' and 'mcp_tool' hook types, not '$hook_type'"
           error_count=$((error_count + 1))
-        fi
+          ;;
+        esac
         ;;
-      WorktreeCreate)
-        if [ "$hook_type" != "command" ] && [ "$hook_type" != "http" ]; then
-          echo "❌ ${event}[$i].hooks[$j]: $event only supports 'command' and 'http' hook types, not '$hook_type'"
+      SubagentStart | WorktreeCreate | WorktreeRemove)
+        case "$hook_type" in
+        command | mcp_tool | http) ;;
+        *)
+          echo "❌ ${event}[$i].hooks[$j]: $event supports only 'command', 'mcp_tool', and 'http' hook types, not '$hook_type' (no conversation context is available)"
           error_count=$((error_count + 1))
-        fi
+          ;;
+        esac
         ;;
       esac
 
