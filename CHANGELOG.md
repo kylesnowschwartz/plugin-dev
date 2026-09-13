@@ -7,8 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.44.0] - 2026-09-13
+
+Synced with Claude Code v2.1.268-v2.1.270.
+
+### Added
+
+- **skill-development**: `claude plugin eval` documented as generally available (CC 2.1.269) — case layout (`prompt.md` + `graders/`, optional `case.yaml`, `mocks/<server>/<tool>.md`), the six grader types (`regex`, `tool_used`, `tool_order`, `file_exists`, `llm`, `baseline`), `--eval-dir`, `--json` and HTML reports, MCP mock recording, and the directory-trust requirement
+- **plugin-structure**: `experimental.evals` plugin.json field (CC 2.1.269) for pointing the eval harness at a case directory; `--json` on `claude plugin install`/`uninstall`/`update`/`enable`/`disable` with the `command`/`outcome`/`message`/`pluginId`/`scope`/`failureCode` object and `errorDetails`/`noteDetails` in `plugin list --json` (CC 2.1.268); `/plugin` menu changes applying on menu close (CC 2.1.268); plugin archive extraction hardening (CC 2.1.269); root-level `SKILL.md` discovery and unreadable-default reporting (CC 2.1.268); JSX surface-specific limitations and mobile rendering (CC 2.1.268); `permission_denials` covering path-deny-blocked Read/Edit/Write in stream-json (CC 2.1.269); organization plugins loading headless and on Desktop (CC 2.1.269)
+- **hook-development**: SessionEnd's 1.5-second budget documented as shared across hooks, raised by a longer per-hook `timeout` up to a 60-second ceiling (CC 2.1.268); PermissionRequest hooks firing in `--print` mode (CC 2.1.268); SessionStart hooks no longer gating the first render on `--continue`/`--resume` (CC 2.1.268)
+- **agent-development**: `!`-prefixed deny/ask rules scoped to their own settings source (CC 2.1.269); `Edit()` deny rules and the write-path check covering Bash `tee` destinations (CC 2.1.269); deny/ask rules applying through symlinked directories and opaque Bash wrappers (CC 2.1.268); plain `WebFetch` rules no longer gating Artifact reads and updates (CC 2.1.268); `CLAUDE_CODE_WORKFLOW_MAX_CONCURRENT_AGENTS` (CC 2.1.269); respawn trust boundary for in-process teammates (CC 2.1.268); model-gating of task-tracking tools (CC 2.1.268)
+- **lsp-integration**: `exit` sent even when `shutdown` fails, so servers that reject `shutdown` params are no longer left running at session end (CC 2.1.269)
+- **mcp-integration**: `alwaysLoad` servers connecting mid-conversation usable on the next turn, synced plugin servers reconnecting on remote resume, and query-parameter reordering no longer forcing a reconnect (CC 2.1.269); `${VAR}` secrets redacted in MCP diagnostics (CC 2.1.268)
+- **marketplace-structure**: `headersHelper` and git-source secret redaction fixes (CC 2.1.268, 2.1.269)
+
 ### Fixed
 
+- **skill-development**: model invocation documented as the default rather than the opposite — the "Skills Require Explicit Invocation" section claimed Claude "cannot invoke it autonomously" and that every activation needs `/skillname`, contradicting auto-discovery, the Skill tool, and the `disable-model-invocation` opt-out documented elsewhere
+- **skill-development / command-development**: the Skill-tool character budget is 1% of the context window in characters (8,000 for a 200K window), not 15,000 and not ~2%/~16KB; the per-skill description cap in the model-facing listing is 1,536 characters, so the "250 characters, full description still used for matching" claim was wrong on both halves
+- **marketplace-structure**: `strictKnownMarketplaces` is a list of owner-wildcard entries, not a boolean — the schema table, its example, and the overview bullet all said `true`
+- **agent-development**: nested subagent depth is 3 levels, not 5; the orchestration guidance built on the 5-level figure was stale CC 2.1.172-era text
+- **hook-development**: `permissionDecision: "defer"` suspends the tool call; it is not a pass-through to the normal permission flow (`passthrough` is a separate, distinct behavior)
+- **hook-development / plugin-settings**: plugin hooks refresh via `/reload-plugins` within a session; the blanket "hooks cannot be hot-swapped, restart `claude`" claim now applies only to hooks declared in `settings.json` (fixed in three places)
+- **lsp-integration**: `claude /install-plugin` is not a command — replaced with `claude plugin install` and `--plugin-dir` in the LSP overview and the minimal-LSP example README
+- **plugin-structure**: the "What Does NOT Work in Headless Mode" slash-command bullet narrowed to skill slash commands, which the same file's `claude -p "/reload-plugins"` example contradicted; sandbox confinement claims corrected (CC 2.1.268)
+- **skill-reviewer agent / skill-development**: the agent's optional-frontmatter list and the frontmatter-template table were stale subsets, omitting `disallowed-tools`, `model`, `hooks`, `paths`, and `argument-hint`
+- **plugin-structure**: monitor watches documented as expiring — use bounded watches, check for an existing monitor before arming, re-arm expired ones (CC 2.1.268)
 - **drift guard**: check D reads the hook validator's type-switch arms with a linear regex, so it finishes on any script shape instead of hanging; the version-sync check is removed because `version-check.yml` already enforces it
 - **upstream sync**: CI installs the exact Claude Code release named by the newest upstream changelog heading, and the audited changelog range never extends past the version recorded in `docs/claude-code-facts.json`, so `Last audited:` names only releases whose binary the run inspected
 
@@ -900,7 +924,8 @@ Corrects references that had drifted from Claude Code behaviour, reported in [#6
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.43.1...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.44.0...HEAD
+[0.44.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.43.1...v0.44.0
 [0.43.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.43.0...v0.43.1
 [0.43.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.42.0...v0.43.0
 [0.42.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.41.0...v0.42.0

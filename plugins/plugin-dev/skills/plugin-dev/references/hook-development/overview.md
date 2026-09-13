@@ -174,7 +174,12 @@ Other essentials: validate inputs, block path traversal (`..`) and sensitive fil
 
 ## Lifecycle, Limitations, and Debugging
 
-**Hooks load at session start and cannot be hot-swapped.** Editing `hooks/hooks.json` or adding scripts has no effect on the current session — exit and restart `claude`. Hooks are validated at startup (invalid JSON fails loading, missing scripts warn, syntax errors show in debug mode). Use `/hooks` to review loaded hooks.
+**Hooks load at session start; reloading depends on where they live.**
+
+- **Plugin hooks** (`hooks/hooks.json` inside a plugin) refresh in the running session. Run `/reload-plugins` after editing the file, or toggle the plugin through the `/plugin` menu — menu changes apply when the menu closes (CC 2.1.268). Claude Code also surfaces "Plugins changed. Run /reload-plugins to activate." when it notices edits on disk
+- **Settings hooks** (`hooks` in `settings.json`) load at session start — exit and restart `claude` to pick up edits
+
+Hooks are validated at load (invalid JSON fails loading, missing scripts warn, syntax errors show in debug mode). Use `/hooks` to review loaded hooks.
 
 Debug with `claude --debug` (shows registration, execution logs, input/output JSON, timing). Test command hooks by piping sample JSON on stdin (`echo '{...}' | bash script.sh`) and validating output with `jq`.
 
@@ -192,7 +197,7 @@ This applies to function-hook plugins (those using the JSX runtime or direct Jav
 
 1. **`Setup` is not a session-lifecycle event.** It fires only for repository setup runs — the hidden CLI flags `--init` and `--init-only` fire it with `trigger: "init"`, and `--maintenance` fires it with `trigger: "maintenance"`. A normal `claude` launch never fires it, so per-session initialization belongs on `SessionStart` with matcher `startup`. `Setup` accepts command hooks only (HTTP hooks are skipped; prompt and agent hooks have no conversation context to run in).
 2. **Shell profile noise breaks JSON parsing.** If `.bashrc`/`.zshrc` prints to stdout it contaminates output — redirect profile output to stderr.
-3. **SessionEnd has a 1.5 second timeout.** Set `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` for longer cleanup.
+3. **SessionEnd hooks share a 1.5 second budget.** It is a total across all SessionEnd hooks, not per hook. A longer per-hook `timeout` raises the budget to match, up to 60 seconds (CC 2.1.268); `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` also extends hooks that declare no `timeout`.
 4. **Duplicate hooks are deduplicated.** Command hooks by command string, HTTP hooks by URL.
 5. **PreToolUse deprecated fields.** Old `decision: "approve|block"` replaced by `hookSpecificOutput.permissionDecision`.
 6. **Policy settings cannot be blocked.** ConfigChange for `policy_settings` silently ignores block decisions.

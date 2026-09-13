@@ -20,7 +20,7 @@ claude -p "Analyze this codebase for security issues" --allowedTools "Read,Grep,
 
 ### What Does NOT Work in Headless Mode
 
-- **Slash commands:** `/skill-name` invocation requires an interactive session. Skills cannot be invoked via slash commands in `-p` mode.
+- **Skill slash commands:** `/skill-name` invocation requires an interactive session. Skills cannot be invoked via slash commands in `-p` mode. This is scoped to skills — some built-in slash commands do run headless, including `claude -p "/reload-plugins"` (CC 2.1.260).
 - **Interactive prompts:** `AskUserQuestion` tool is not available — there's no user to answer.
 - **Skill tool (manual):** Users can't type `/` to invoke skills. Instead, describe the task and let Claude use the skill content if loaded.
 
@@ -272,6 +272,17 @@ claude -p "Run analysis with subagents" \
 - Monitoring background agent progress without interactive terminal access
 
 **Plugin design tip:** If your plugin spawns background agents, document that users can use `--forward-subagent-text` to capture subagent output in CI logs.
+
+### `permission_denials` in stream-json (CC 2.1.269)
+
+The result object emitted by `--output-format stream-json` carries a `permission_denials` array listing tool calls the permission layer refused. As of CC 2.1.269 it includes `Read`, `Edit`, and `Write` calls blocked by a **path-scoped deny rule**; those were previously omitted, so a CI run could report a clean result while silently skipping file operations.
+
+Useful when validating that a plugin runs within its declared permissions — assert the array is empty, or inspect it to see which rule blocked what:
+
+```bash
+claude -p "run the plugin task" --output-format stream-json \
+  | jq -s '.[] | select(.type == "result") | .permission_denials'
+```
 
 ## Remote Control Subagent Tool Call Streaming (CC 2.1.251)
 

@@ -12,20 +12,20 @@ Claude Code includes a built-in "Invoke skill" tool that loads packaged skills b
 
 This tool is how Claude programmatically loads skills — plugin developers don't need to call it directly, but understanding its behavior helps when designing skills that may be invoked automatically vs. manually.
 
-## Skills Require Explicit Invocation (CC 2.1.215)
+## Model Invocation vs. Explicit Invocation
 
-As of CC 2.1.215, Claude Code requires explicit user invocation for most skills. Key changes:
+Model invocation is the **default**. Claude Code builds a model-facing skill listing from every discovered skill's `name` and `description`, and Claude calls the Skill tool when a task matches one. Users can also invoke a skill explicitly by typing `/skillname`. Both paths are live at once.
 
-- **No automatic skill execution** — Skills like `/verify` and `/code-review` no longer auto-execute when Claude detects they might be useful
-- **User must invoke with `/skillname`** — All skill activation requires the user to type the slash-command explicitly
-- **Skill guidance remains available** — Claude can suggest using a skill, but cannot invoke it autonomously
+- **Auto-discovery is the default path** — A skill with a well-written `description` is invoked by Claude without the user typing anything
+- **Explicit invocation always works** — `/skillname` loads the skill regardless of what Claude infers
+- **Opt out per skill** — Set `disable-model-invocation: true` in frontmatter to make a skill user-invocable only. The opt-out exists precisely because model invocation is the default
+- **CC 2.1.215 narrowed auto-execution, not auto-invocation** — Some built-in skills stopped firing on weak signals. That tightened the matching bar; it did not remove the Skill tool or the model-facing listing
 
 **Implications for plugin developers:**
 
-- Design skills with clear invocation triggers documented in the description
-- Don't rely on Claude automatically invoking your skill — users must do it explicitly
-- Consider adding guidance in your plugin's README about when to invoke each skill
-- Skills that previously benefited from auto-invocation should be redesigned for explicit invocation patterns
+- Write trigger phrases into the description — that text is what auto-discovery matches against
+- Document explicit invocation in your README as a fallback, not as the only path
+- Reach for `disable-model-invocation: true` only when autonomous invocation would be harmful (destructive operations, actions needing deliberate user intent)
 
 ## Invoke Skill Background Guidance (CC 2.1.218)
 
@@ -67,6 +67,10 @@ Users can load multiple skills simultaneously using stacked slash-skill invocati
 ## Skill Precedence
 
 Skills follow precedence: Enterprise > Personal (`~/.claude/skills/`) > Project (`.claude/skills/`) > Plugin skills. Higher-priority skills with the same name shadow lower-priority ones. Use distinctive, namespaced names for plugin skills to avoid collisions.
+
+**Qualified names in errors (CC 2.1.269):** When a bare skill name matches exactly one plugin skill, the Skill tool's "Unknown skill" error names the skill in its full `plugin-name:skill-name` form. A user who typed the bare name gets told what to type instead, which makes a shadowed plugin skill much easier to diagnose.
+
+**Reserved-ish prefix: `anthropic-skills:` (CC 2.1.269).** Skills synced from claude.ai into cloud sessions are named `anthropic-skills:<name>`, matching Claude Desktop. The bare name still resolves when nothing else claims it. Do not name a plugin `anthropic-skills` — its skills would collide with the synced namespace.
 
 ## Nested Skill Directories (CC 2.1.178)
 
@@ -284,7 +288,12 @@ Changes to skill content, frontmatter, and references are picked up. No need to 
 
 ## /skills Menu Display (CC 2.1.86)
 
-The `/skills` menu truncates descriptions at **250 characters**. Descriptions longer than this are cut off in the menu listing (though the full description is still used for auto-discovery matching). Place the most important trigger phrases early in the description so they remain visible.
+Two separate caps apply to a skill description, and they are easy to conflate:
+
+- **Model-facing skill listing** — Each description is truncated at **1,536 characters** (`skillListingMaxDescChars`) in the listing Claude sees. Text past that point is not available for auto-discovery matching
+- **`/skills` menu display** — The interactive menu truncates long descriptions for display only
+
+Place the most important trigger phrases early in the description so they survive both cuts.
 
 Skills are listed **alphabetically** and in the `/skills` menu. Name skills with discoverability in mind — a skill named `api-testing` appears near the top, while `zsh-config` appears at the bottom.
 
@@ -335,27 +344,64 @@ The `/skill-doctor` command diagnoses skill issues and identifies unused skills 
 
 **History:** `/skill-doctor` was in early access (CC 2.1.233-2.1.235), briefly removed from bundled prompts (CC 2.1.251), and restored as generally available in CC 2.1.261.
 
-## Plugin Eval (`claude plugin eval`) — Early Access
+## Plugin Eval (`claude plugin eval`) — Generally Available (CC 2.1.269)
 
-> **Note:** Plugin Eval remains in early access and requires explicit enablement. Unlike `/skill-doctor`, it has not been restored to GA status.
-
-The `claude plugin eval` command runs evaluation suites against plugins to measure skill triggering accuracy, hook correctness, and agent behavior:
-
-**Key features:**
-
-- Configurable `--eval-dir` for custom evaluation suites
-- Containment-checked plugin discovery
-- Image judging support for visual output skills
-- Binary-grading remedies for pass/fail evaluations
-- Sandbox isolation during evaluation runs
-- CI integration for automated testing
-- SIGTERM handling for graceful shutdown
-
-**Enablement:** Plugin eval requires the `CLAUDE_CODE_WALNUT_SPIRE=1` environment variable:
+`claude plugin eval` runs a plugin's eval suite against Claude Code and reports scored, reproducible results. It became generally available in CC 2.1.269; no enablement environment variable is needed (the former `CLAUDE_CODE_WALNUT_SPIRE=1` gate is gone).
 
 ```bash
-CLAUDE_CODE_WALNUT_SPIRE=1 claude plugin eval
+claude plugin eval                  # run every case in the eval dir
+claude plugin eval init             # scaffold a new case
+claude plugin eval --json report.json
 ```
+
+**Where cases live.** The eval directory defaults to `evals/` at the plugin root. Override it per-run with `--eval-dir <dir>`, or per-plugin with the `experimental.evals` key in `plugin.json`:
+
+```json
+{
+  "name": "my-plugin",
+  "version": "1.0.0",
+  "experimental": {
+    "evals": "evals"
+  }
+}
+```
+
+`experimental.evals` is a path relative to the plugin root. A list is accepted; its first entry is the case directory. Because it sits under `experimental`, its shape may change without a deprecation cycle.
+
+**Case layout:**
+
+```text
+evals/
+├── my-case/
+│   ├── prompt.md            # the prompt, plus case frontmatter
+│   ├── case.yaml            # optional: alternative/extended case definition
+│   └── graders/
+│       ├── triggered.md     # one grader per file
+│       └── output.md
+└── mocks/
+    └── <server>/<tool>.md   # optional MCP mocks
+```
+
+A case needs a prompt — either the `prompt.md` body or `execution.prompt` in `case.yaml`. Useful `prompt.md` frontmatter keys include `runs`, `max_turns`, `timeout_seconds`, `allowed_tools`, `model`, and `append_system_prompt`. `case.yaml` carries a required `schema_version` plus keys such as `scaffold_script`, `history_file`, and `add_dirs`.
+
+**Grader types.** Each file in `graders/` must declare `type:` in its frontmatter, one of:
+
+| Type          | Checks                                         |
+| ------------- | ---------------------------------------------- |
+| `regex`       | Output matches a pattern                       |
+| `tool_used`   | A specific tool was called                     |
+| `tool_order`  | Tools were called in a given order             |
+| `file_exists` | A file was created at a path                   |
+| `llm`         | A model judges the transcript against criteria |
+| `baseline`    | Compared against a recorded baseline run       |
+
+Graders also accept `weight` (relative contribution to the score) and `arm` (which run arm the grader applies to).
+
+**MCP mocks.** `--mocks record` (the default) reads stand-ins from `<eval dir>/mocks/`. A plugin MCP server with no mock is **not** started, and its tools are unavailable for that run — add `mocks/<server>/` to cover it. `--mocks off` disables mocking.
+
+**Reports.** Results land in `<eval dir>/results/`. `--json [path]` prints the full machine-readable result; a self-contained HTML report (scores, prompts, grader verdicts) can be written to a path of your choosing.
+
+**Trust.** `claude plugin eval` loads the plugin and runs its suite on your machine as you. A plugin directory must be trusted before the first run; a piloted run started from a non-interactive session cannot stop to ask, so it writes cases without running them.
 
 ## Built-in Skill Patterns (CC 2.1.247-2.1.248 — Removed in CC 2.1.251)
 

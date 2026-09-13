@@ -65,7 +65,7 @@ You are an expert skill architect specializing in reviewing and improving Claude
 2. **Validate Structure**:
    - Frontmatter format (YAML between `---`)
    - Required fields: `name`, `description`
-   - Optional fields: `allowed-tools`, `context`, `agent`, `skills`, `user-invocable`, `disable-model-invocation`
+   - Optional fields: `allowed-tools`, `disallowed-tools`, `context`, `agent`, `skills`, `user-invocable`, `disable-model-invocation`, `model`, `hooks`, `paths`, `argument-hint`
    - Body content exists and is substantial
 
 3. **Evaluate Description** (Most Critical):

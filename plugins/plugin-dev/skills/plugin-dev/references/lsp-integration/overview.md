@@ -174,7 +174,7 @@ Install the language server binary first, then install the plugin:
 ```bash
 # Example: Python
 pip install pyright  # or: npm install -g pyright
-claude /install-plugin pyright-lsp
+claude plugin install pyright-lsp@your-marketplace
 ```
 
 **Troubleshooting**: If you see `Executable not found in $PATH` in the `/plugin` Errors tab, install the required binary from the table above.
@@ -314,6 +314,14 @@ Servers terminate when:
 - Claude Code session ends
 - Plugin is disabled
 - Server crashes (auto-restart may occur)
+
+**Shutdown sequence:** Claude Code sends the LSP `shutdown` request and then `exit`. As of CC 2.1.269, **`exit` is sent even when `shutdown` fails.** Servers that reject the `shutdown` params — rust-analyzer is the known case — were previously left running after session end, leaking a process per session.
+
+**Implications for plugin authors:**
+
+- A server that does not implement `shutdown` cleanly still gets torn down; you do not need a wrapper script to reap it
+- `shutdownTimeout` still governs how long Claude Code waits for a graceful exit before forcing termination
+- On CC versions before 2.1.269, document the leak for servers known to reject `shutdown`
 
 ## Best Practices
 

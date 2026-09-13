@@ -391,7 +391,7 @@ After editing `.claude/my-plugin.local.md`:
 4. New settings will be loaded
 ```
 
-Hooks cannot be hot-swapped within a session.
+Plugin hooks refresh within a session — run `/reload-plugins` after editing `hooks/hooks.json`. Hooks declared in `settings.json` load at session start and need a restart.
 
 ## Security Considerations
 

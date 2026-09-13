@@ -69,6 +69,14 @@ Plugin marketplaces now support `headersHelper` for minting HTTP headers when ac
 - Ensure helper sources are from trusted marketplace definitions
 - Credentials are minted fresh per-request for security
 
+**Secret redaction fixes (CC 2.1.268, 2.1.269):**
+
+- Plugin and marketplace errors no longer print a token or password embedded in a git source URL (CC 2.1.268)
+- `headersHelper` consent prompts no longer show a URL path that could be misread as a different host, so the host a user is approving is unambiguous (CC 2.1.269)
+- Plugin errors no longer redact a relative Windows path whose folder name starts with `@` as `[redacted URL]` (CC 2.1.269)
+
+Even with these fixes, do not put credentials in a marketplace source URL. Mint them in the helper so they never enter a path that might be logged.
+
 ## Owner Object
 
 ### Required Owner Fields
@@ -390,15 +398,17 @@ Organizations can control marketplace behavior through managed settings:
 
 | Setting                   | Type    | Description                                           |
 | ------------------------- | ------- | ----------------------------------------------------- |
-| `strictKnownMarketplaces` | boolean | Only allow plugins from approved marketplaces         |
+| `strictKnownMarketplaces` | array   | Allowlist of approved marketplace entries (see below) |
 | `enabledPlugins`          | array   | Pre-configured list of enabled plugins                |
 | `extraKnownMarketplaces`  | object  | Additional approved marketplaces beyond built-in ones |
+
+`strictKnownMarketplaces` is a **list of entries, never a boolean**. Entries take the `owner/*` wildcard form or a source object, and may carry a `pathPattern` regex. Writing `true` does not enable strict mode. See [overview.md](../overview.md#owner-wildcard-entries-cc-21223) for wildcard syntax.
 
 ### Example Managed Settings
 
 ```json
 {
-  "strictKnownMarketplaces": true,
+  "strictKnownMarketplaces": ["company-internal/*", "approved-vendor/*"],
   "enabledPlugins": ["security-scanner@company-tools"],
   "extraKnownMarketplaces": {
     "company-tools": {

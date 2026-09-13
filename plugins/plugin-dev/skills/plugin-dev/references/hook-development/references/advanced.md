@@ -895,7 +895,8 @@ Different hook events support different output formats for controlling Claude's 
 }
 ```
 
-- `permissionDecision`: `allow` (proceed), `deny` (block), `ask` (prompt user), `defer` (CC 2.1.89 — fall through to the normal permission flow)
+- `permissionDecision`: `allow` (proceed), `deny` (block), `ask` (prompt user), `defer` (CC 2.1.89 — suspend the tool call rather than running it)
+- `defer` is **not** a pass-through. The call does not run; it is recorded as deferred and the session can be resumed later with `-p --resume`. Deferral is unsupported for calls served to a cloud session, which fail with "deferred this call … so nothing ran". See [event-schemas.md](event-schemas.md) for the headless deferral flow
 - `ask` depends on the session being interactive: an interactive session shows `Hook PreToolUse:<Tool> requires confirmation ... [plugin:<name>]`, while headless runs (`claude -p`) have no one to prompt and treat the same `ask` as a block, surfacing the reason to the model.
 - `updatedInput`: Optionally modify tool parameters before execution
 - `additionalContext`: Injected into Claude's context

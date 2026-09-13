@@ -115,7 +115,7 @@ description: A command  # Obvious - provides no information
 
 ### Default Budget
 
-The Skill tool has a character budget limiting how many command/skill descriptions Claude receives. The default budget is **15,000 characters**.
+The Skill tool has a character budget limiting how many command/skill descriptions Claude receives. The default is **1% of the context window measured in characters** — `contextWindowTokens × 4 × 0.01`, which is **8,000 characters** for the default 200K-token window.
 
 ### How Budget Works
 

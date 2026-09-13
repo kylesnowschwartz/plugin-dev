@@ -236,7 +236,7 @@ Use `strict: false` when:
 
 Organizations can restrict plugin sources via managed settings:
 
-- `strictKnownMarketplaces: true` — Only allow plugins from known/approved marketplaces
+- `strictKnownMarketplaces` — A **list** of approved marketplace entries; only plugins from entries on the list are allowed. Not a boolean
 - `extraKnownMarketplaces` — Add organization-approved marketplace URLs in managed settings
 
 ### Organization Plugin Blocking (CC 2.1.85)

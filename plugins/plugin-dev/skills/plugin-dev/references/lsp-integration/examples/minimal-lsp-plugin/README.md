@@ -19,7 +19,7 @@ which gopls
 ## Installation
 
 ```bash
-claude /install-plugin /path/to/go-lsp
+claude --plugin-dir /path/to/go-lsp
 ```
 
 ## Features

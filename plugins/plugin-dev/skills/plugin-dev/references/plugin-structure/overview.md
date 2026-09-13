@@ -168,12 +168,14 @@ Claude Code automatically discovers and loads components:
 1. **Plugin manifest**: reads `.claude-plugin/plugin.json` when the plugin enables
 2. **Commands**: scans `commands/` for `.md` files
 3. **Agents**: scans `agents/` for `.md` files
-4. **Skills**: scans `skills/` for subdirectories containing `SKILL.md`
+4. **Skills**: scans `skills/` for subdirectories containing `SKILL.md`; a plugin with no `skills/` directory can instead ship a single **root-level `SKILL.md`**, whose frontmatter `name` supplies the invocation name
 5. **Hooks**: loads from `hooks/hooks.json` or manifest
 6. **MCP servers**: loads from `.mcp.json` or manifest
 7. **LSP servers**: loads from `.lsp.json` or manifest
 
 **Discovery timing:** components register at installation and become available on enable; no restart is required — changes take effect on the next Claude Code session. These default scans apply when the manifest leaves the matching component path field unset; see "Component Path Configuration" above for which fields replace a default directory and which add to it.
+
+**Unreadable defaults are reported, not skipped (CC 2.1.268).** If a default `monitors/monitors.json` or a root-level `SKILL.md` exists but cannot be checked — a permissions problem, a dangling symlink — the plugin surfaces the failure instead of quietly loading without it. A plugin that appears to be missing a component should be checked for file-permission problems rather than assumed misconfigured.
 
 Related discovery behaviors are detailed in `references/advanced-topics.md`: automatic local skill loading from `.claude/skills/` (CC 2.1.157) and nested `.claude/` directory precedence in monorepos (CC 2.1.178).
 

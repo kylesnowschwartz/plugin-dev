@@ -1,12 +1,13 @@
 # Claude Code Compatibility
 
-Last audited: Claude Code 2.1.267 (2026-09-10)
-Plugin-dev version: 0.43.1
+Last audited: Claude Code 2.1.270 (2026-09-13)
+Plugin-dev version: 0.44.0
 
 ## Audit Log
 
 | plugin-dev | CC version range | Date | Notes |
 |---|---|---|---|
+| v0.44.0 | 2.1.268-2.1.270 | 2026-09-13 | `claude plugin eval` GA and the `experimental.evals` manifest field (CC 2.1.269), `--json` on the `claude plugin` mutation subcommands (CC 2.1.268), `/plugin` menu changes applying on close (CC 2.1.268), SessionEnd's shared 1.5s budget and 60s ceiling (CC 2.1.268), PermissionRequest firing under `--print` (CC 2.1.268), `!`-scoped and `tee`-aware permission rules (CC 2.1.268-2.1.269), LSP force-exit on failed `shutdown` (CC 2.1.269), archive extraction hardening (CC 2.1.269). Drift audit fixed 10 confirmed contradictions against the 2.1.270 binary: skills auto-invocation (documented as impossible, it is the default), `strictKnownMarketplaces` typed boolean (it is a list), subagent depth 5 (it is 3), `defer` as pass-through (it suspends), the Skill-tool budget (8,000 chars, not 15,000 or ~16KB), the listing description cap (1,536, not 250), hook hot-swap (plugin hooks reload; settings hooks do not), `/install-plugin` (no such command), and two stale frontmatter field lists. `AskUserQuestion` headless availability remains unresolved. Binary: 2.1.270 |
 | v0.43.1 | none (drift guard) | 2026-09-13 | `plugin.json` example fixes (`repository`, `agents`, `commands`, `experimental.monitors`, replace-vs-supplement semantics) found by the new `scripts/check-doc-drift.sh`; drift-guard scripts, `doc-drift-auditor` agent, Stage 0/1b in the sync pipeline, latest-CLI install in CI. Changelog-driven baseline stays at 2.1.267 |
 | v0.43.0 | none (correction audit, #62) | 2026-09-13 | No new changelog range. References checked against the Claude Code 2.1.270 binary and `claude plugin validate`: userConfig requires type/title/description, pluginRoot applies to bare-name sources only, hook event table is the 33 dispatched events (PostSession and BackgroundTasksChanged removed; UserPromptExpansion, PostToolBatch, TaskCreated, Setup added), prompt/agent hooks run on 13 of 33 events (HTTP unavailable on SessionStart and Setup; mcp_tool skipped on Setup and SessionStart at launch), SessionEnd reasons and permission modes corrected (no `delegate`; `auto` added), CLAUDE_PLUGIN_DATA documented, cross-reference and terminology fixes. Changelog-driven baseline stays at 2.1.267 |
 | v0.42.0 | 2.1.264-2.1.267 | 2026-09-10 | `maxEffortLevel` setting to cap effort across providers (CC 2.1.267), `--system-prompt-snapshot off` flag for fresh prompt rendering (CC 2.1.267), function-hook plugin engine interface expansion (settings/environment access, inbound session deliveries) (CC 2.1.267), hook-failure handlers (.catch, transcript notices, debug logging) (CC 2.1.267), JSX surface element constructor clarification (destructuring requirement, keyed box hover styles) (CC 2.1.267), Bash description parameter plain-language requirement (CC 2.1.267), `--plugin-dir` folder support (CC 2.1.265) |

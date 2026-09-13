@@ -80,6 +80,10 @@ Permission specifiers define exactly which tool invocations a rule matches. Each
 
 Space before `*` means word boundary: `Bash(ls *)` matches `ls -la` but NOT `lsof`. No space means substring: `Bash(git*)` matches both `git push` and `gitk`.
 
+**Commands that write files are matched on their destination too (CC 2.1.269).** A `Bash(tee:*)` allow rule no longer covers destinations outside the working directories, and the write-path check plus any `Edit()` deny rule now apply to the file a `tee` command writes. A rule pair like `Bash(tee:*)` allow plus `Edit(//etc/**)` deny behaves as an author would expect: the allow does not smuggle a write past the deny.
+
+**Deny and ask rules survive obfuscation (CC 2.1.268).** A `Read` or `Edit` deny rule applies even when an unanalyzable command such as `env -C` or `eval` shares the command line, so a wrapper cannot be used to slip past a deny rule.
+
 ### Path Patterns for Edit/Read/Write
 
 Path specifiers follow the gitignore specification:
@@ -94,12 +98,21 @@ Path specifiers follow the gitignore specification:
 | `*`      | Single directory level wildcard              | `Read(src/*)`          |
 | `**`     | Recursive directory wildcard                 | `Edit(src/**)`         |
 
+**Symlinked directories resolve to their real location (CC 2.1.268).** Deny and ask rules on directories that are symlinks — `/etc`, `/tmp`, `/var` on macOS, `/bin` on Linux — apply when a path is supplied by its real location, and Bash commands honor deny rules written using the symlinked spelling. A rule written either way covers both.
+
 ### WebFetch Patterns
 
 Restrict by domain:
 
-```
+```text
 WebFetch(domain:example.com)
+```
+
+**A plain `WebFetch` rule does not gate Artifact reads and updates (CC 2.1.268).** A domainless `WebFetch` deny or ask rule no longer applies to the Artifact tool. To block or gate Artifact access, write an `Artifact` rule, or scope the WebFetch rule to the host:
+
+```text
+Artifact
+WebFetch(domain:claude.ai)
 ```
 
 ### MCP Tool Patterns
@@ -133,6 +146,8 @@ Rules are evaluated in a strict order — first match wins within each tier:
 1. **Deny** rules checked first
 2. **Ask** rules checked second
 3. **Allow** rules checked last
+
+**Rules beginning with `"!"` are scoped to their own settings source (CC 2.1.269).** A deny or ask rule written with a leading `"!"` applies only within the settings file that declared it; it no longer leaks into rules contributed by other sources. A bare `"!"` with nothing after it is ignored entirely. The `"!"` prefix is not part of the officially documented permission-rule syntax — do not build plugin guidance on it. If your plugin needs a rule to apply only in one scope, say so in your README rather than relying on the prefix.
 
 ### Blocked Categories
 
@@ -214,6 +229,9 @@ When multiple rules match:
 1. **deny** rules always take precedence over **allow** rules
 2. More specific rules take precedence over general ones
 3. Explicit rules override `permissionMode` settings
+4. A `"!"`-prefixed deny or ask rule is confined to its own settings source (CC 2.1.269)
+
+**Auto-mode denials name the blocking rule (CC 2.1.268).** When `permissionMode: auto` refuses an operation, the message identifies which rule blocked it, so a plugin author can tell a policy denial from a security-monitor denial.
 
 ### Plugin Developer Guidance
 

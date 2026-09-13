@@ -116,11 +116,23 @@ description: This skill should be used when the user asks to "test plugin", "val
 
 ## Frontmatter Field Reference
 
-| Field           | Required | Type   | Description                   |
-| --------------- | -------- | ------ | ----------------------------- |
-| `name`          | Yes      | string | Skill identifier (kebab-case) |
-| `description`   | Yes      | string | When to use (third-person)    |
-| `allowed-tools` | No       | string | Comma-separated tool names    |
+| Field                      | Required | Type    | Description                                  |
+| -------------------------- | -------- | ------- | -------------------------------------------- |
+| `name`                     | Yes      | string  | Skill identifier (kebab-case)                |
+| `description`              | Yes      | string  | When to use (third-person)                   |
+| `allowed-tools`            | No       | string  | Comma-separated tool names                   |
+| `disallowed-tools`         | No       | string  | Tools to withhold (CC 2.1.152)               |
+| `context`                  | No       | string  | Extra context injected with the skill        |
+| `agent`                    | No       | string  | Agent the skill runs in                      |
+| `skills`                   | No       | array   | Skills loaded alongside this one             |
+| `user-invocable`           | No       | boolean | Whether `/skillname` is offered              |
+| `disable-model-invocation` | No       | boolean | Opt out of autonomous invocation             |
+| `model`                    | No       | string  | Model override for the skill                 |
+| `hooks`                    | No       | object  | Hooks scoped to the skill                    |
+| `paths`                    | No       | array   | Path globs that scope the skill              |
+| `argument-hint`            | No       | string  | Argument hint shown in the command menu      |
+
+Full field semantics live in [../references/advanced-frontmatter.md](../references/advanced-frontmatter.md).
 
 ## Common Mistakes
 

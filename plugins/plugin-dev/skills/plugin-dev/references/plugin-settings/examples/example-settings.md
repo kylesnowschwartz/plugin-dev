@@ -159,4 +159,4 @@ exit  # Exit Claude Code
 claude  # Restart
 ```
 
-Changes require Claude Code restart - hooks can't be hot-swapped.
+Changes to plugin `hooks/hooks.json` apply after `/reload-plugins`; hooks declared in `settings.json` require a Claude Code restart.

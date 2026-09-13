@@ -87,6 +87,8 @@ Note: `permission_mode` is not present on SessionStart.
 
 > **CC 2.1.214/2.1.218:** SessionStart hooks now report `source: "fork"` when the session begins as a fork (via `/fork` command or programmatic fork). Previously, forked sessions were reported as `"resume"`. This allows hooks to distinguish genuine session resumption from fork-initiated sessions.
 
+**First render on resume (CC 2.1.268):** On `--continue` and `--resume`, the conversation renders immediately instead of waiting for SessionStart hooks to finish. The hooks still run — they just no longer gate the first paint. A SessionStart hook that injects `additionalContext` should not assume its output is in place before the user sees the restored transcript.
+
 **Output:**
 
 ```json
@@ -160,7 +162,14 @@ Note: `permission_mode` is not present on SessionStart.
 
 **Output:** Observability only. No decision control.
 
-**Default timeout:** 1.5 seconds. Override with `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` environment variable (set in milliseconds).
+**Default timeout:** 1.5 seconds — and it is a **shared budget across all SessionEnd hooks**, not a per-hook allowance. Every SessionEnd hook draws from the same 1.5 seconds.
+
+Two ways to extend it:
+
+- Set a longer per-hook `timeout` in the hook definition. Claude Code raises the shared budget to match, up to a **60-second ceiling** (CC 2.1.268)
+- Set `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` (milliseconds). As of CC 2.1.268 this also extends SessionEnd hooks that declare no per-hook `timeout`; previously those were cancelled at 1.5 seconds regardless. The environment variable is not in the official settings reference
+
+Keep SessionEnd cleanup short. A hook that needs more than a second or two of work is better off handing it to a detached process.
 
 **Matchers:** `clear`, `resume`, `logout`, `prompt_input_exit`, `other`
 **Hook types:** Command, HTTP, MCP tool — this event is dispatched outside the conversation loop, so prompt and agent hooks cannot run on it.
@@ -410,7 +419,9 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 - `message`: Reason for denial, shown to user (deny only)
 - `interrupt`: If true, stops Claude entirely (deny only)
 
-**Difference from PreToolUse:** PreToolUse runs before every tool execution regardless of permission status. PermissionRequest runs only when a permission dialog would be shown to the user.
+**Difference from PreToolUse:** PreToolUse runs before every tool execution regardless of permission status. PermissionRequest runs only when a permission decision is needed — the point at which a dialog would be shown in an interactive session.
+
+**Headless (CC 2.1.268):** PermissionRequest hooks fire in `--print` / `-p` mode. They were previously skipped there. A headless run has no dialog to show, so the hook's own `behavior` decision settles the call — which makes PermissionRequest a usable policy point for CI plugins, not an interactive-only event.
 
 **Known issues:** `additionalContext` is parsed but silently dropped ([anthropics/claude-code#28035](https://github.com/anthropics/claude-code/issues/28035)) — it works in PreToolUse but not here. Race condition where the dialog may briefly show despite returning "allow" ([#12176](https://github.com/anthropics/claude-code/issues/12176)).
 
