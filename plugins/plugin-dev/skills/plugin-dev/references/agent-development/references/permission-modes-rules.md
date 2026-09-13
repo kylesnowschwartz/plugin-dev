@@ -19,7 +19,7 @@ permissionMode: acceptEdits
 | `dontAsk`           | Skip all permission dialogs                                  | Trusted automation agents, CI/CD agents             |
 | `bypassPermissions` | Full bypass of all permission checks                         | Fully trusted agents only                           |
 | `plan`              | Planning mode — propose changes without executing            | Architecture/design agents, review agents           |
-| `delegate`          | Coordination-only — restricted to team management tools      | Team lead agents that should not implement directly |
+| `auto`              | Claude classifies each tool call and runs the lower-risk ones | Agents that should proceed without prompts but keep a safety check |
 
 ### Mode Details
 
@@ -55,15 +55,15 @@ Planning mode restricts the agent to read-only operations. The agent can explore
 
 **When to use:** Architecture planning, design review, impact analysis agents.
 
-#### delegate
+#### auto
 
-Restricts the agent to team coordination tools only: spawning teammates, sending messages, managing tasks, and shutting down teammates. The agent cannot use implementation tools (Edit, Write, Bash, etc.) directly.
+Claude checks each tool call for risky actions and prompt injection before executing, runs the ones it assesses as lower-risk, and blocks the rest. No permission dialogs are shown.
 
-**When to use:** Team lead agents that should coordinate work across teammates without implementing tasks themselves.
+**When to use:** Agents that need to run unattended but should still refuse clearly risky actions; prefer `dontAsk` only when every action the agent can take is already safe.
 
 ```yaml
-# Team lead agent that only coordinates
-permissionMode: delegate
+# Unattended agent with automatic risk checks
+permissionMode: auto
 ```
 
 ## Permission Specifier Syntax

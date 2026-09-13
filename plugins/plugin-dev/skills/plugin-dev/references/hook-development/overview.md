@@ -3,9 +3,9 @@
 
 ## Overview
 
-Hooks are event-driven automation that execute in response to Claude Code events — use them to validate operations, enforce policies, add context, and integrate external tools. Claude Code has **31 hook events** (categorized in the [reference table](#hook-events-reference) below).
+Hooks are event-driven automation that execute in response to Claude Code events — use them to validate operations, enforce policies, add context, and integrate external tools. Claude Code has **33 hook events** (categorized in the [reference table](#hook-events-reference) below).
 
-This overview is the concept map and quick reference; complete per-event input/output schemas live in **`references/event-schemas.md`**, per-event matcher values in `references/advanced.md` (Event-Specific Matchers).
+This overview is the concept map and quick reference; complete per-event input/output schemas and matcher values live in **`references/event-schemas.md`**; matcher syntax is explained in `references/advanced.md` (Event-Specific Matchers).
 
 ## Hook Types
 
@@ -19,7 +19,7 @@ Five hook types are available. Not all events support all types (see the [event 
 | `mcp_tool` | Validation via MCP tools without agent overhead (CC 2.1.118)    | `server` + `tool`; same event support as command                      |
 | `http`     | External service integration, logging, webhooks                 | Posts event data to `url`; non-2xx treated as non-blocking            |
 
-**Event support:** Prompt/agent/HTTP work on most events; SessionStart, PostSession, and WorktreeRemove are command-only; WorktreeCreate is command + HTTP. Prompt and agent hooks return the standard hook output JSON, adding `hookSpecificOutput` for event-specific behavior (PreToolUse, PermissionRequest, Elicitation).
+**Event support:** Prompt/agent/HTTP work on most events; SessionStart, Setup, SubagentStart, and WorktreeRemove are command-only; WorktreeCreate is command + HTTP. Prompt and agent hooks return the standard hook output JSON, adding `hookSpecificOutput` for event-specific behavior (PreToolUse, PermissionRequest, Elicitation).
 
 ## Configuration Formats
 
@@ -76,16 +76,17 @@ All hooks receive JSON via stdin with common fields:
   "transcript_path": "/path/to/transcript.jsonl",
   "cwd": "/current/working/dir",
   "hook_event_name": "PreToolUse",
-  "permission_mode": "default|plan|acceptEdits|dontAsk|bypassPermissions"
+  "permission_mode": "default|acceptEdits|bypassPermissions|plan|dontAsk|auto"
 }
 ```
 
 Inside a subagent, `agent_id` and `agent_type` are also present. Event-specific fields vary — per-event and per-tool input fields are in `references/hook-input-schemas.md`; complete schemas in `references/event-schemas.md`. Prompt hooks access input via `$TOOL_INPUT`, `$TOOL_NAME`, `$USER_PROMPT`, etc.
 
-**Environment variables** in command hooks:
+**Environment variables** in command hooks. A hook shipped in a plugin receives `CLAUDE_PLUGIN_ROOT`, `CLAUDE_PLUGIN_DATA`, and `CLAUDE_PROJECT_DIR`; a hook declared in skill frontmatter receives `CLAUDE_PLUGIN_ROOT` only. Full descriptions, including `CLAUDE_PLUGIN_OPTION_<KEY>`: `../plugin-structure/references/manifest-reference.md` (Plugin Environment Variables).
 
 - `$CLAUDE_PROJECT_DIR` — project root path.
 - `$CLAUDE_PLUGIN_ROOT` — plugin directory; use for portable paths. Loader-bound in frontmatter hooks (see the Scoped hooks caveat above).
+- `$CLAUDE_PLUGIN_DATA` — per-plugin state directory at `~/.claude/plugins/data/<plugin>-<marketplace>`, created on install and removed on uninstall. Use it for caches, logs, and anything that must outlive a session.
 - `$CLAUDE_ENV_FILE` — write `export VAR=value` lines to persist env vars (SessionStart, CwdChanged, FileChanged).
 - `$CLAUDE_CODE_REMOTE` — set if running in remote context.
 - `$CLAUDE_CODE_SESSION_ID` — current session identifier (CC 2.1.132), for correlating events.
@@ -103,29 +104,34 @@ Matchers filter which hooks run for an event; each event defines the values it a
 - **Hyphenated matchers require exact matches (CC 2.1.195, breaking change).** Matchers with hyphens (e.g. `code-reviewer`, `mcp__brave-search`) no longer substring-match — use a wildcard for partial matches: `"mcp__brave-search__.*"`. Affects custom agent names, MCP server names, and any hyphenated identifier.
 - **Use pipe, not comma, for multiple matchers (CC 2.1.191).** Comma-separated matchers silently never fired before CC 2.1.191. Correct: `"Bash|PowerShell"`. Wrong: `"Bash,PowerShell"`.
 
-Other events match on source/category values, agent type names, MCP server name, or pipe-separated basenames; several events (UserPromptSubmit, Stop, and others) ignore `matcher` entirely. Per-event matcher values are documented in `references/event-schemas.md` and `references/advanced.md` (Event-Specific Matchers).
+Other events match on source/category values, agent type names, MCP server name, or pipe-separated basenames; several events (UserPromptSubmit, Stop, and others) ignore `matcher` entirely. Per-event matcher values are documented on each event's Matchers line in `references/event-schemas.md`; `references/advanced.md` (Event-Specific Matchers) explains the syntax.
 
 ## Hook Events Reference
 
-Category, decision control, and hook types for all 31 events. "All" = Command, HTTP, Prompt, Agent. Full schemas: `references/event-schemas.md`; per-event matcher values: `references/advanced.md` (Event-Specific Matchers).
+Category, decision control, and hook types for all 33 events. "All" = Command, HTTP, MCP tool, Prompt, Agent. Full schemas and per-event matcher values: `references/event-schemas.md`; matcher syntax: `references/advanced.md` (Event-Specific Matchers).
+
+Prompt and agent hooks need conversation context. SessionStart, Setup, and SubagentStart are dispatched without it, so they take command hooks only; SessionStart and Setup additionally skip HTTP hooks.
 
 | Event                  | Category    | Decision control                   | Types         |
 | ---------------------- | ----------- | ---------------------------------- | ------------- |
 | SessionStart           | Lifecycle   | continue, env vars                 | Command       |
+| Setup                  | Lifecycle   | Context injection                  | Command       |
 | InstructionsLoaded     | Lifecycle   | None (observability)               | All           |
 | SessionEnd             | Lifecycle   | None (observability)               | All           |
-| PostSession            | Lifecycle   | None (cleanup only)                | Command       |
 | UserPromptSubmit       | Input       | Block prompt                       | All           |
+| UserPromptExpansion    | Input       | Block expansion, context injection | All           |
 | PreToolUse             | Tool        | Allow/deny/ask/defer, modify input | All           |
 | PermissionRequest      | Tool        | Allow/deny, modify input           | All           |
 | PermissionDenied       | Tool        | Request retry                      | All           |
 | PostToolUse            | Tool        | Block, modify tool output          | All           |
 | PostToolUseFailure     | Tool        | Context injection                  | All           |
+| PostToolBatch          | Tool        | Stop agentic loop (exit 2)         | All           |
 | Stop                   | Turn        | Block stop                         | All           |
 | StopFailure            | Turn        | None (observability)               | All           |
-| SubagentStart          | Subagent    | Context injection                  | All           |
+| SubagentStart          | Subagent    | Context injection                  | Command       |
 | SubagentStop           | Subagent    | Block stop                         | All           |
 | TeammateIdle           | Teams       | Reject idle (exit 2), stop         | All           |
+| TaskCreated            | Teams       | Reject creation (exit 2)           | All           |
 | TaskCompleted          | Teams       | Reject completion (exit 2)         | All           |
 | PreCompact             | Context     | Block compaction (exit 2)          | All           |
 | PostCompact            | Context     | None (observability)               | All           |
@@ -138,7 +144,6 @@ Category, decision control, and hook types for all 31 events. "All" = Command, H
 | ElicitationResult      | MCP         | Override response                  | All           |
 | MessageDisplay         | Display     | Display content replacement        | All           |
 | Notification           | Notification| None (observability)               | All           |
-| BackgroundTasksChanged | Background  | None (observability)               | All           |
 | DirectoryAdded         | Lifecycle   | None (observability)               | All           |
 | PreModelSwitch         | Model       | Block, confirm, annotate           | All           |
 | PostModelSwitch        | Model       | None (observability)               | All           |
@@ -183,7 +188,7 @@ This applies to function-hook plugins (those using the JSX runtime or direct Jav
 
 ## Critical Gotchas
 
-1. **No "Setup" event.** Use `SessionStart` with matcher `startup` for initialization.
+1. **`Setup` is not a session-lifecycle event.** It fires only for repository setup runs — the hidden CLI flags `--init` and `--init-only` fire it with `trigger: "init"`, and `--maintenance` fires it with `trigger: "maintenance"`. A normal `claude` launch never fires it, so per-session initialization belongs on `SessionStart` with matcher `startup`. `Setup` accepts command hooks only (HTTP hooks are skipped; prompt and agent hooks have no conversation context to run in).
 2. **Shell profile noise breaks JSON parsing.** If `.bashrc`/`.zshrc` prints to stdout it contaminates output — redirect profile output to stderr.
 3. **SessionEnd has a 1.5 second timeout.** Set `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` for longer cleanup.
 4. **Duplicate hooks are deduplicated.** Command hooks by command string, HTTP hooks by URL.
@@ -201,7 +206,7 @@ This applies to function-hook plugins (those using the JSX runtime or direct Jav
 
 | Reference                          | When to read                                                                                          |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `references/event-schemas.md`      | Need the exact input/output JSON or version notes for a specific event; SDK parity (matcher values: `advanced.md`) |
+| `references/event-schemas.md`      | Need the exact input/output JSON, matcher values, or version notes for a specific event; SDK parity |
 | `references/hook-input-schemas.md` | Need per-event input fields or the `tool_input` schema for a specific tool (Bash, Write, Edit, etc.)  |
 | `references/advanced.md`           | Multi-stage validation, full hook-entry schema, `if`/agent/async/scoped hooks, `${CLAUDE_PLUGIN_ROOT}` loader caveat, security patterns, shell-injection migration |
 | `references/patterns.md`           | Ready-made pattern for a common goal (security validation, test enforcement, worktree mgmt, elicitation, config auditing) |

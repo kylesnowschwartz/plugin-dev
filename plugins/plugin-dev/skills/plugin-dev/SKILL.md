@@ -16,12 +16,12 @@ Comprehensive guide for developing Claude Code plugins. Read the relevant refere
 | Skills | `references/skill-development/overview.md` | SKILL.md format, skill frontmatter, triggers, progressive disclosure, context:fork, bundled resources, visibility budget, file-scoped skills |
 | Agents | `references/agent-development/overview.md` | Agent creation, system prompts, agent frontmatter, teams, permissions, maxTurns, disallowedTools, background agents, initialPrompt |
 | Hooks | `references/hook-development/overview.md` | Event hooks, PreToolUse, PostToolUse, Stop, prompt-based hooks, scoped hooks, hook decisions (allow/block/defer), statusMessage, async hooks |
-| MCP integration | `references/mcp-integration/overview.md` | MCP servers in plugins, .mcp.json, tool search, MCP prompts, server types (stdio/SSE/HTTP), allowedMcpServers, MCP CLI commands |
+| MCP integration | `references/mcp-integration/overview.md` | MCP servers in plugins, .mcp.json, tool search, MCP prompts, server types (stdio/SSE/HTTP/WebSocket), allowedMcpServers, MCP CLI commands |
 | LSP integration | `references/lsp-integration/overview.md` | Language servers, code intelligence, socket transport, initializationOptions, extensionToLanguage |
 | Marketplace | `references/marketplace-structure/overview.md` | marketplace.json, multi-plugin distribution, hosting, strictKnownMarketplaces, private marketplaces, version pinning |
 | Plugin settings | `references/plugin-settings/overview.md` | .local.md files, YAML frontmatter config, per-project settings, CLAUDE.md imports, rules system, memory hierarchy |
 
-Each topic directory also contains additional references/, examples/, and scripts/ for detailed content. Read those when the overview alone is insufficient.
+Each topic directory also contains additional `references/` and `examples/` for detailed content, and some contain `scripts/`. Read those when the overview alone is insufficient.
 
 ## Available Agents
 

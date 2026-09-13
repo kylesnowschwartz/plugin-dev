@@ -717,7 +717,7 @@ Session-level events (`SessionStart`, `UserPromptSubmit`, `Notification`, etc.) 
 | Aspect         | `hooks.json`                               | Frontmatter `hooks`                                 |
 | -------------- | ------------------------------------------ | --------------------------------------------------- |
 | Scope          | Global (always active when plugin enabled) | Component-specific (active only during use)         |
-| Events         | All 11+ hook events                        | PreToolUse, PostToolUse, Stop                       |
+| Events         | All 33 hook events                         | PreToolUse, PostToolUse, Stop                       |
 | Location       | `hooks/hooks.json` file                    | YAML frontmatter in SKILL.md or agent .md           |
 | Merge behavior | Merges with user/project hooks             | Merges with global hooks during component lifecycle |
 
@@ -771,7 +771,9 @@ While `command` hooks execute bash scripts and `prompt` hooks evaluate a single 
 
 ### Supported Events
 
-Agent hooks are supported on all hook events, but they're most useful on decision-control events like **Stop** and **SubagentStop**. Their multi-turn latency makes them a poor fit for hot-path events like PreToolUse.
+Agent hooks — like prompt hooks — need conversation context to run in. Events dispatched outside a conversation do not have it, and a prompt or agent hook registered on one fails with `agent-type hooks are not supported for <event> events (no conversation context is available). Use a command-type hook instead.` **SessionStart**, **Setup**, and **SubagentStart** are dispatched this way and take command hooks only; SessionStart and Setup additionally skip HTTP hooks. Every other event accepts agent hooks. The per-event Types column in `../overview.md` (Hook Events Reference) is authoritative.
+
+Among the events that do accept them, agent hooks are most useful on decision-control events like **Stop** and **SubagentStop**. Their multi-turn latency makes them a poor fit for hot-path events like PreToolUse.
 
 ### When to Use Agent Hooks
 
@@ -862,17 +864,14 @@ Display text shown in the UI while the hook is executing. Helps users understand
 
 ## Event-Specific Matchers
 
-Some hook events support matcher values beyond tool names:
+Matchers filter which registered hooks run for an occurrence of an event. Each event names one input field to match against, and matches on that field's value:
 
-| Event         | Matcher Values                                                                 |
-| ------------- | ------------------------------------------------------------------------------ |
-| SessionStart  | `startup`, `resume`, `clear`, `compact`                                        |
-| SessionEnd    | `clear`, `logout`, `prompt_input_exit`, `bypass_permissions_disabled`, `other` |
-| Notification  | `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog`, `agent_needs_input`, `agent_completed` (CC 2.1.198) |
-| PreCompact    | `manual`, `auto`                                                               |
-| SubagentStart | Agent type name (e.g., `Bash`, `Explore`, `Plan`, or custom agent names)       |
-| SubagentStop  | Agent type name (same as SubagentStart)                                        |
-| PreToolUse    | Tool name (exact, regex, or `*` wildcard)                                      |
+- **Tool events** (PreToolUse, PermissionRequest, PostToolUse, PostToolUseFailure) match `tool_name` as a case-sensitive regular expression — not a glob. Use `"Write"`, `"Read|Write|Edit"`, or `"mcp__.*__delete.*"`.
+- **Subagent events** (SubagentStart, SubagentStop) match the agent type name.
+- **Source and category events** match a fixed value set: SessionStart on `source`, SessionEnd on `reason`, PreCompact and Setup on `trigger`, Notification on `notification_type`, InstructionsLoaded on `load_reason`, ConfigChange and DirectoryAdded on `source`, UserPromptExpansion on `command_name`, FileChanged on the file path.
+- **Several events ignore `matcher` entirely.** An entry without a `matcher` matches every occurrence.
+
+The accepted values for each event are listed on that event's **Matchers** line in `event-schemas.md`, which covers all 33 events. This section covers matcher syntax; `event-schemas.md` is the complete per-event value reference.
 
 ## Decision Control Output Schemas
 
@@ -893,6 +892,7 @@ Different hook events support different output formats for controlling Claude's 
 ```
 
 - `permissionDecision`: `allow` (proceed), `deny` (block), `ask` (prompt user), `defer` (CC 2.1.89 — fall through to the normal permission flow)
+- `ask` depends on the session being interactive: an interactive session shows `Hook PreToolUse:<Tool> requires confirmation ... [plugin:<name>]`, while headless runs (`claude -p`) have no one to prompt and treat the same `ask` as a block, surfacing the reason to the model.
 - `updatedInput`: Optionally modify tool parameters before execution
 - `additionalContext`: Injected into Claude's context
 

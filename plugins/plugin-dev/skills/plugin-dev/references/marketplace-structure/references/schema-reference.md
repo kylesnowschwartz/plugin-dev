@@ -29,7 +29,7 @@ Complete field reference for `marketplace.json` and plugin entries.
 | --------------- | ---------------- | ---------------------------------------------- |
 | `description`   | string           | Brief marketplace description (1-200 chars)    |
 | `version`       | string           | Marketplace version (semver X.Y.Z recommended) |
-| `pluginRoot`    | string           | Base path for relative plugin sources          |
+| `pluginRoot`    | string           | Base path prefixed to bare-name plugin sources |
 | `headersHelper` | string or object | Authentication helper for HTTP requests (CC 2.1.238) |
 
 ### Marketplace headersHelper (CC 2.1.238)
@@ -148,10 +148,17 @@ For plugins in the same repository:
 }
 ```
 
-Paths are relative to:
+A `./relative/path` source always resolves from the marketplace root and ignores `metadata.pluginRoot`.
 
-1. `metadata.pluginRoot` if specified
-2. Repository root otherwise
+### Bare Name (String)
+
+```json
+{
+  "source": "my-plugin"
+}
+```
+
+A bare-name source (no `./` prefix) resolves under `metadata.pluginRoot`, e.g. `pluginRoot: "./plugins"` plus `source: "my-plugin"` resolves to `<marketplace>/plugins/my-plugin`. A bare-name source without `metadata.pluginRoot` set is an error.
 
 ### GitHub Repository (Object)
 

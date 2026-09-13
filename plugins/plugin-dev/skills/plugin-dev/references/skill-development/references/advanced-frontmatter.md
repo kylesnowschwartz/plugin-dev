@@ -307,7 +307,7 @@ Other events (`SessionStart`, `UserPromptSubmit`, etc.) are session-level and do
 | Aspect   | `hooks.json`                               | Frontmatter `hooks`                           |
 | -------- | ------------------------------------------ | --------------------------------------------- |
 | Scope    | Global (always active when plugin enabled) | Skill-specific (active only during skill use) |
-| Events   | All 11+ hook events                        | PreToolUse, PostToolUse, Stop                 |
+| Events   | All 33 hook events                         | PreToolUse, PostToolUse, Stop                 |
 | Location | `hooks/hooks.json` file                    | YAML frontmatter in SKILL.md                  |
 | Use case | Plugin-wide validation, logging            | Skill-specific safety checks                  |
 

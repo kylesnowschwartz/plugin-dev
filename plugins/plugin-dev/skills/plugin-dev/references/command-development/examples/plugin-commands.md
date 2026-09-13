@@ -545,6 +545,7 @@ Use for: Verifying required plugin files exist
    ```
 
 4. **Validate resource availability:**
+
    ```bash
    # Check all plugin resources exist
    `ls -la ${CLAUDE_PLUGIN_ROOT}/scripts/`
@@ -608,5 +609,5 @@ Use for: Verifying required plugin files exist
 
 ---
 
-For detailed plugin-specific features, see `references/plugin-features-reference.md`.
+For detailed plugin-specific features, see `../references/plugin-features-reference.md`.
 For general command development, see main `SKILL.md`.

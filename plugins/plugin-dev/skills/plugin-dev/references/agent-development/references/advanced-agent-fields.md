@@ -268,14 +268,9 @@ Coordinator mode now supports a **forced-inheritance variant** where the worker 
 
 Team leads coordinate work across multiple teammates. Key design considerations:
 
-- **Use `permissionMode: delegate`** to restrict the lead to coordination-only tools (spawn, message, shut down teammates, manage tasks). This prevents the lead from implementing tasks directly.
+- **Restrict the lead's tools** with `tools` so it holds only coordination tools (spawn, message, shut down teammates, manage tasks) and cannot implement tasks directly. There is no dedicated permission mode for this.
 - **System prompt focus**: Task decomposition, work assignment, progress monitoring, quality review
 - **Tools**: Team leads automatically get access to `TeamCreate`, `TaskCreate`, `TaskUpdate`, `TaskList`, `SendMessage`, and `Task` (for spawning)
-
-```yaml
-# Example team lead agent
-permissionMode: delegate
-```
 
 ### Permission Inheritance
 

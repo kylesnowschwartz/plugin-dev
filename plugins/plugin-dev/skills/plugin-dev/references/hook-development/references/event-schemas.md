@@ -1,8 +1,6 @@
 # Hook Event Schemas Reference
 
-Complete input and output JSON schemas for all 31 Claude Code hook events.
-
-**Last verified:** 2026-08-31 against official docs, Python SDK (`claude-agent-sdk`), and TypeScript SDK.
+Complete input and output JSON schemas for all 33 Claude Code hook events.
 
 ## Common Fields
 
@@ -14,14 +12,14 @@ Complete input and output JSON schemas for all 31 Claude Code hook events.
   "transcript_path": "string (path to transcript JSONL)",
   "cwd": "string (current working directory)",
   "hook_event_name": "string (event discriminant)",
-  "permission_mode": "default|plan|acceptEdits|dontAsk|bypassPermissions",
+  "permission_mode": "default|acceptEdits|bypassPermissions|plan|dontAsk|auto",
   "effort": {
     "level": "string (CC 2.1.133)"
   }
 }
 ```
 
-`permission_mode` is present on most events but not all (notably absent from SessionStart and InstructionsLoaded).
+`permission_mode` carries the session's current permission mode: `default` (prompt for permission), `acceptEdits`, `bypassPermissions`, `plan` (no tool execution), `dontAsk` (deny anything not pre-approved), or `auto` (a model classifier approves or denies prompts). The field is typed as an optional string rather than a closed enum, and it is present on most events but not all — notably absent from SessionStart and InstructionsLoaded.
 
 > **CC 2.1.133:** Hooks now receive the active effort level via the `effort.level` JSON input field and `$CLAUDE_EFFORT` environment variable. Enables hooks to adapt behavior based on effort settings.
 
@@ -156,7 +154,7 @@ Note: `permission_mode` is not present on SessionStart.
   "transcript_path": "string",
   "cwd": "string",
   "hook_event_name": "SessionEnd",
-  "reason": "clear|logout|prompt_input_exit|bypass_permissions_disabled|resume|other"
+  "reason": "clear|resume|logout|prompt_input_exit|other"
 }
 ```
 
@@ -164,14 +162,14 @@ Note: `permission_mode` is not present on SessionStart.
 
 **Default timeout:** 1.5 seconds. Override with `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` environment variable (set in milliseconds).
 
-**Matchers:** `clear`, `logout`, `prompt_input_exit`, `bypass_permissions_disabled`, `resume`, `other`
+**Matchers:** `clear`, `resume`, `logout`, `prompt_input_exit`, `other`
 **Hook types:** Command, HTTP, Prompt, Agent
 
 ---
 
-### PostSession (CC 2.1.169)
+### Setup (CC 2.1.263)
 
-**When:** After session ends, before workspace deletion. Designed for self-hosted runners that need cleanup time.
+**When:** A repository setup run. The hidden CLI flags `--init` and `--init-only` fire it with `trigger: "init"`; `--maintenance` fires it with `trigger: "maintenance"`. A normal `claude` launch does not fire it — use SessionStart for per-session initialization.
 
 **Input:**
 
@@ -180,23 +178,28 @@ Note: `permission_mode` is not present on SessionStart.
   "session_id": "string",
   "transcript_path": "string",
   "cwd": "string",
-  "hook_event_name": "PostSession"
+  "hook_event_name": "Setup",
+  "trigger": "init|maintenance"
 }
 ```
 
-**Output:** Observability only. No decision control. Command hooks only.
+**Output:**
 
-**Key features:**
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "Setup",
+    "additionalContext": "string (optional)"
+  }
+}
+```
 
-- Runs **after** SessionEnd, providing additional cleanup window
-- Configurable SIGTERM→SIGKILL window for graceful shutdown
-- Ideal for self-hosted runners that need to persist logs, artifacts, or state
-- Workspace is still available during this hook (deleted after)
+Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to the user only and does not block.
 
-**Use cases:** Upload session artifacts to external storage, persist logs for debugging, clean up external resources created during the session, notify monitoring systems of session completion.
+**Use cases:** Install project dependencies on `--init`, refresh generated artifacts or caches on `--maintenance`, report repository state into the session.
 
-**Matchers:** Not supported
-**Hook types:** Command only
+**Matchers:** `init`, `maintenance` (matches on `trigger`)
+**Hook types:** Command only — HTTP hooks are skipped for this event, and prompt and agent hooks have no conversation context to run in.
 
 ---
 
@@ -235,6 +238,51 @@ Note: `permission_mode` is not present on SessionStart.
 ```
 
 **Matchers:** Not supported (matcher field is silently ignored).
+**Hook types:** Command, HTTP, Prompt, Agent
+
+---
+
+### UserPromptExpansion (CC 2.1.263)
+
+**When:** A user-typed slash command or MCP prompt expands into a prompt, before Claude processes the expansion.
+
+**Input:**
+
+```json
+{
+  "session_id": "string",
+  "transcript_path": "string",
+  "cwd": "string",
+  "permission_mode": "string",
+  "hook_event_name": "UserPromptExpansion",
+  "expansion_type": "slash_command|mcp_prompt",
+  "command_name": "string",
+  "command_args": "string",
+  "command_source": "string (optional)",
+  "prompt": "string (the expanded prompt)"
+}
+```
+
+**Output:**
+
+```json
+{
+  "decision": "block",
+  "reason": "string (shown to user when blocking)",
+  "hookSpecificOutput": {
+    "hookEventName": "UserPromptExpansion",
+    "additionalContext": "string (optional)",
+    "suppressOriginalPrompt": false
+  }
+}
+```
+
+- `suppressOriginalPrompt`: when `decision` is `"block"`, omits the original prompt from the block message.
+- Exit code 0 with plain stdout injects that text as `additionalContext`. Exit code 2 blocks the expansion and shows stderr to the user only.
+
+**Use cases:** Gate which slash commands may run, add repository context to a command before Claude sees it, audit MCP prompt usage.
+
+**Matchers:** Command name (matches on `command_name`)
 **Hook types:** Command, HTTP, Prompt, Agent
 
 ---
@@ -503,6 +551,50 @@ Note: `permission_mode` is not present on SessionStart.
 
 ---
 
+### PostToolBatch (CC 2.1.263)
+
+**When:** Once after every tool call in a batch has resolved, before the next model request. PostToolUse fires per tool and may run concurrently for parallel tool calls; PostToolBatch fires exactly once with the full batch.
+
+**Input:**
+
+```json
+{
+  "session_id": "string",
+  "transcript_path": "string",
+  "cwd": "string",
+  "permission_mode": "string",
+  "hook_event_name": "PostToolBatch",
+  "tool_calls": [
+    {
+      "tool_name": "string",
+      "tool_input": {},
+      "tool_use_id": "string",
+      "tool_response": "any (optional)"
+    }
+  ]
+}
+```
+
+**Output:**
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PostToolBatch",
+    "additionalContext": "string (optional)"
+  }
+}
+```
+
+`additionalContext` is injected once for the whole batch. Exit code 2 stops the agentic loop, with stderr shown to the user only. A block decision is discarded when the turn has already ended without a further model request.
+
+**Use cases:** Run a single lint or type-check pass after a batch of edits, summarize a batch of reads into one context injection, halt a runaway loop after a batch fails.
+
+**Matchers:** Not supported
+**Hook types:** Command, HTTP, Prompt, Agent
+
+---
+
 ## Turn Control
 
 ### Stop
@@ -519,11 +611,34 @@ Note: `permission_mode` is not present on SessionStart.
   "permission_mode": "string",
   "hook_event_name": "Stop",
   "stop_hook_active": true,
-  "last_assistant_message": "string"
+  "last_assistant_message": "string",
+  "background_tasks": [
+    {
+      "id": "string",
+      "type": "string (friendly task-type label: shell, subagent, monitor, workflow)",
+      "status": "string",
+      "description": "string (capped at 1000 chars)",
+      "command": "string (optional, shell tasks only)",
+      "agent_type": "string (optional, subagent tasks only)",
+      "server": "string (optional, monitor/MCP tasks only)",
+      "tool": "string (optional, monitor/MCP tasks only)",
+      "name": "string (optional, workflow tasks only)"
+    }
+  ],
+  "session_crons": [
+    {
+      "id": "string",
+      "schedule": "string (cron expression, e.g. \"0 9 * * 1-5\")",
+      "recurring": true,
+      "prompt": "string (submitted when the cron fires, capped at 1000 chars)"
+    }
+  ]
 }
 ```
 
 - `stop_hook_active`: Whether a Stop hook is currently processing (prevents infinite recursion)
+- `background_tasks` (optional): in-flight background work — running, pending, or backgrounded — registered in this session. It lets a hook tell "the session is done" apart from "the session is paused waiting for background work to wake it". The array is empty when nothing is in flight. Values capped at 1000 characters carry an in-string `… [+N chars]` marker.
+- `session_crons` (optional): session-scoped cron tasks (CronCreate, ScheduleWakeup, `/loop`) that will wake this session later. Empty when none are scheduled. `recurring` is `false` for one-shot wakeups whose `schedule` encodes a single fire time, and `true` for tasks that re-fire on every match.
 
 **Output:**
 
@@ -622,7 +737,7 @@ Use `impossible` when the goal is self-contradictory, requires a missing capabil
 ```
 
 **Matchers:** Agent type names (`Bash`, `Explore`, `Plan`, or custom agent names from plugins)
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command only — this event is dispatched without conversation context, so prompt and agent hooks cannot run on it.
 
 ---
 
@@ -643,9 +758,32 @@ Use `impossible` when the goal is self-contradictory, requires a missing capabil
   "agent_id": "string",
   "agent_type": "string",
   "agent_transcript_path": "string (path to subagent's transcript)",
-  "last_assistant_message": "string"
+  "last_assistant_message": "string",
+  "background_tasks": [
+    {
+      "id": "string",
+      "type": "string (friendly task-type label: shell, subagent, monitor, workflow)",
+      "status": "string",
+      "description": "string (capped at 1000 chars)",
+      "command": "string (optional, shell tasks only)",
+      "agent_type": "string (optional, subagent tasks only)",
+      "server": "string (optional, monitor/MCP tasks only)",
+      "tool": "string (optional, monitor/MCP tasks only)",
+      "name": "string (optional, workflow tasks only)"
+    }
+  ],
+  "session_crons": [
+    {
+      "id": "string",
+      "schedule": "string (cron expression)",
+      "recurring": true,
+      "prompt": "string"
+    }
+  ]
 }
 ```
+
+- `background_tasks` and `session_crons` (both optional): same shape and meaning as on Stop — in-flight background work and session-scoped cron wakeups, each empty when there are none.
 
 **Output:**
 
@@ -691,6 +829,36 @@ Same semantics as Stop: blocking causes the subagent to continue working with `r
 2. **JSON `{"continue": false, "stopReason": "..."}`:** Teammate stops entirely
 
 Normal exit (code 0) with no blocking output allows the teammate to go idle.
+
+**Matchers:** Not supported.
+**Hook types:** Command, HTTP, Prompt, Agent
+
+---
+
+### TaskCreated (CC 2.1.263)
+
+**When:** A task is being created, before it is registered.
+
+**Input:**
+
+```json
+{
+  "session_id": "string",
+  "transcript_path": "string",
+  "cwd": "string",
+  "permission_mode": "string",
+  "hook_event_name": "TaskCreated",
+  "task_id": "string",
+  "task_subject": "string",
+  "task_description": "string (optional)",
+  "teammate_name": "string (optional)",
+  "team_name": "string (optional, deprecated — sessions have a single implicit team)"
+}
+```
+
+**Output:** Exit code 2 prevents the task from being created and feeds stderr back to the model. Exit code 0 with no blocking output allows creation to proceed.
+
+**Use cases:** Enforce a task-naming or description standard, reject tasks that duplicate existing work, log task creation to an external tracker.
 
 **Matchers:** Not supported.
 **Hook types:** Command, HTTP, Prompt, Agent
@@ -1134,49 +1302,6 @@ Observability only. No decision control.
 
 ---
 
-## Background Tasks
-
-### BackgroundTasksChanged (CC 2.1.203)
-
-**When:** Background task state changes (tasks started, completed, or failed).
-
-**Input:**
-
-```json
-{
-  "session_id": "string",
-  "transcript_path": "string",
-  "cwd": "string",
-  "hook_event_name": "BackgroundTasksChanged",
-  "tasks": [
-    {
-      "id": "string (task identifier)"
-    }
-  ]
-}
-```
-
-**Key behaviors:**
-
-- **Replace-set semantics:** The `tasks` array contains the complete current set of background tasks (not incremental updates). Compare against previous state to determine what changed.
-- **Unspecified ordering:** Task changes may arrive out of order relative to bookend events (SubagentStart/SubagentStop). Do not assume ordering guarantees.
-- **Id-only payloads:** Task entries contain only the `id` field. Use other mechanisms to query task details if needed.
-- **Per-process reset:** Task state resets when the Claude Code process restarts.
-
-**Output:** Observability only. No decision control.
-
-**Use cases:**
-
-- Track background agent progress for dashboards or monitoring
-- Trigger notifications when tasks complete or fail
-- Implement custom task coordination logic
-- Log task state changes for debugging multi-agent workflows
-
-**Matchers:** Not supported
-**Hook types:** Command, HTTP, Prompt, Agent
-
----
-
 ## Directory Lifecycle
 
 ### DirectoryAdded (CC 2.1.219)
@@ -1305,12 +1430,12 @@ Observability only. No decision control.
 
 ## SDK Parity Notes
 
-Not all events are typed in both SDKs. As of August 2026:
+Not all events are typed in both SDKs.
 
-**Python SDK** (`claude-agent-sdk`) types 10 of 31 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
+**Python SDK** (`claude-agent-sdk`) types 10 of 33 events: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest.
 
-**TypeScript SDK** (`@anthropic-ai/claude-agent-sdk`) is closer to parity with the CLI. Events added over time: TeammateIdle and TaskCompleted (v2.1.34), ConfigChange (v0.2.49), Elicitation and ElicitationResult (v0.2.76).
+**TypeScript SDK** (`@anthropic-ai/claude-agent-sdk`) is closer to parity with the CLI, and types TeammateIdle, TaskCompleted, ConfigChange, Elicitation, and ElicitationResult in addition to the events the Python SDK covers.
 
-**CLI** supports all 31 events.
+**CLI** supports all 33 events.
 
-Events only available in CLI (not yet in either SDK): WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88), MessageDisplay (CC 2.1.152), PostSession (CC 2.1.169), BackgroundTasksChanged (CC 2.1.203), DirectoryAdded (CC 2.1.219), PreModelSwitch (CC 2.1.251), PostModelSwitch (CC 2.1.251).
+Events only available in CLI (not yet in either SDK): WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88), MessageDisplay (CC 2.1.152), DirectoryAdded (CC 2.1.219), PreModelSwitch (CC 2.1.251), PostModelSwitch (CC 2.1.251), PostToolBatch (CC 2.1.263), Setup (CC 2.1.263), TaskCreated (CC 2.1.263), UserPromptExpansion (CC 2.1.263).

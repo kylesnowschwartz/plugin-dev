@@ -12,6 +12,7 @@ if [ $# -eq 0 ]; then
   echo "  - 'model' field (sonnet, opus, haiku, or full model ID)"
   echo "  - 'description' length (warns if > 60 chars)"
   echo "  - 'allowed-tools' format"
+  echo "  - 'disallowed-tools' format"
   echo "  - 'argument-hint' format"
   echo "  - 'disable-model-invocation' boolean"
   echo "  - Unknown fields (warning)"
@@ -23,7 +24,7 @@ if [ $# -eq 0 ]; then
 fi
 
 # Known frontmatter fields for commands
-KNOWN_FIELDS="description model allowed-tools argument-hint disable-model-invocation"
+KNOWN_FIELDS="description model allowed-tools disallowed-tools argument-hint disable-model-invocation"
 
 total_errors=0
 total_warnings=0
@@ -191,7 +192,7 @@ check_frontmatter() {
         unknown_found=true
       fi
     fi
-  done <<< "$frontmatter"
+  done <<<"$frontmatter"
 
   if [ "$unknown_found" = false ]; then
     echo "✅ No unknown fields"

@@ -76,7 +76,7 @@ Use semantic versioning (`MAJOR.MINOR.PATCH`); keywords aid discovery and catego
 These plugin.json fields control installation and runtime behavior — full detail in `references/manifest-reference.md`:
 
 - **`defaultEnabled`** (CC 2.1.154): `false` installs the plugin disabled so users must enable it via `/plugin` (default `true`). Use for resource-heavy, config-required, opt-in, or security-sensitive plugins.
-- **`userConfig`**: declares values users are prompted for on enable, accessed as `${user_config.KEY}` (non-sensitive) or `CLAUDE_PLUGIN_OPTION_<KEY>` env vars; `sensitive: true` values go to the keychain. **CC 2.1.207 breaking change:** `pluginConfigs` are no longer read from project `.claude/settings.json` — only user/`--settings`/managed settings.
+- **`userConfig`**: declares user-configurable options. Every option needs `type` (`string`, `number`, `boolean`, `directory`, or `file`), `title`, and `description`; `required`, `default`, `multiple`, `sensitive`, `min`, and `max` are optional and the schema rejects anything else. Values reach the plugin as `${user_config.KEY}` (non-sensitive) or `CLAUDE_PLUGIN_OPTION_<KEY>` env vars; `sensitive: true` values go to secure storage. `claude plugin install` does not prompt — users run `/plugin configure <plugin>` or the install passes `--config KEY=VALUE`. **CC 2.1.207 breaking change:** `pluginConfigs` are no longer read from project `.claude/settings.json` — only user/`--settings`/managed settings.
 - **`experimental`** (CC 2.1.129): `themes` and `monitors` must nest under this key (previously root-level; old format fails to load).
 
 ### Component Path Configuration
@@ -98,10 +98,10 @@ Custom paths supplement (never replace) default directories — components in bo
 
 Each component type has a default location and auto-discovers on plugin enable. Detailed organization patterns (flat, categorized, hierarchical, role/capability/workflow-based) live in `references/component-patterns.md`.
 
-- **Commands (legacy)** — `.md` files in `commands/` with YAML frontmatter (`name`, `description`) become slash commands. The `commands/` directory is a legacy format; for new plugins prefer `skills/<name>/SKILL.md`, which supports progressive disclosure via `references/` and `examples/`. Both formats load identically and are invoked via the Skill tool — commands are essentially simple skills.
-- **Agents** — `.md` files in `agents/` with YAML frontmatter (`description`, `capabilities`). Users invoke them manually or Claude Code selects them automatically by task context.
+- **Commands (legacy)** — `.md` files in `commands/` with YAML frontmatter (`description` plus other optional fields — see `../command-development/references/frontmatter-reference.md` for the full list; the filename, not a frontmatter field, is the command name) become slash commands. The `commands/` directory is a legacy format; for new plugins prefer `skills/<name>/SKILL.md`, which supports progressive disclosure via `references/` and `examples/`. Both formats load identically and are invoked via the Skill tool — commands are essentially simple skills.
+- **Agents** — `.md` files in `agents/` with YAML frontmatter (`name`, `description`, `model`, `color` required; `tools` and other fields optional — see the Agent Development reference). Users invoke them manually or Claude Code selects them automatically by task context.
 - **Skills** — each in its own `skills/<name>/` directory with a required `SKILL.md` (frontmatter `name`, `description`). Optional `allowed-tools` frontmatter (e.g. `Read, Grep, Glob`) restricts tool access for read-only or security-sensitive workflows. Skills can bundle `scripts/`, `references/`, `examples/`, or `assets/`. Claude Code autonomously activates skills based on the description.
-- **Hooks** — JSON config in `hooks/hooks.json` or inline in `plugin.json`; register automatically on enable. 28 events are available (PreToolUse, PostToolUse, Stop, SessionStart, and more) — see the hook-development topic (`../hook-development/overview.md`) for the full event table.
+- **Hooks** — JSON config in `hooks/hooks.json` or inline in `plugin.json`; register automatically on enable. 33 events are available (PreToolUse, PostToolUse, Stop, SessionStart, and more) — see the hook-development topic (`../hook-development/overview.md`) for the full event table.
 
   ```json
   {
@@ -132,7 +132,7 @@ Each component type has a default location and auto-discovers on plugin enable. 
   }
   ```
 
-- **LSP servers** — inline in `plugin.json` under `lspServers`, keyed by language with `command`, `args`, and `extensionToLanguage`; start when matching files open, providing go-to-definition, find-references, and hover. For detailed LSP configuration, see the `lsp-integration` skill.
+- **LSP servers** — inline in `plugin.json` under `lspServers`, keyed by language with `command`, `args`, and `extensionToLanguage`; start when matching files open, providing go-to-definition, find-references, and hover. For detailed LSP configuration, see the lsp-integration topic (`../lsp-integration/overview.md`).
 - **Output styles** — `outputStyles` field pointing to a directory (`"./styles/"`) or array of markdown files; customize how Claude formats responses. See `references/output-styles.md` for the frontmatter schema (`name`, `description`, `keep-coding-instructions`) and when to prefer styles over skills, agents, or CLAUDE.md.
 - **Monitors** (CC 2.1.129, nested under `experimental`) — background scripts streaming events via the Monitor tool. Silence is NOT success: monitors must actively emit output. See `references/manifest-reference.md` for the monitors-vs-hooks guidance.
 - **Executables (`bin/`, CC 2.1.91)** — files in `bin/` (compiled binaries or scripts with a shebang) can be invoked as bare commands from the Bash tool. Requires execute permissions (`chmod +x`) and platform-compatible binaries. Use to ship formatters, linters, converters, or standalone utilities.
@@ -146,6 +146,8 @@ Use the `${CLAUDE_PLUGIN_ROOT}` environment variable for all intra-plugin path r
 ```
 
 It matters because plugins install in different locations depending on installation method, OS conventions, and user preferences. Use it in hook command paths, MCP server arguments, script execution references, and resource file paths. It works in manifest JSON fields, in component markdown (commands, agents, skills), and as an environment variable inside executed scripts (`source "${CLAUDE_PLUGIN_ROOT}/lib/common.sh"`).
+
+`${CLAUDE_PLUGIN_DATA}` is the companion variable for writable state: it points at `~/.claude/plugins/data/<plugin>-<marketplace>`, a per-plugin directory created on install and removed on uninstall. Write caches, logs, and counters there rather than inside the plugin directory, which is a cache copy. Both variables are set for plugin hooks and expanded in plugin MCP/LSP server config; hooks declared in skill frontmatter get `${CLAUDE_PLUGIN_ROOT}` only.
 
 **Never use** hardcoded absolute paths (`/Users/name/...`), working-directory-relative paths (`./scripts/...` in commands), or home shortcuts (`~/plugins/...`). External paths fail because plugins run from a cache copy — see `references/advanced-topics.md` ("Why External Paths Fail" and "Caching Details").
 
@@ -207,7 +209,7 @@ claude --verbose          # Additional debugging
 
 **Validation Warnings (CC 2.1.221):** `claude plugin validate` now shows warnings for marketplace/plugin names that would be rejected by Claude Desktop's sync. This helps ensure plugins are compatible with Claude Desktop before publishing. If you see naming warnings, adjust your plugin or marketplace name to meet Claude Desktop's requirements.
 
-Use `/plugins` in the TUI to view installed plugins and their status. Discovery tools (`SearchPlugins`, `SearchSkills`, CC 2.1.199), scaffolding (`claude plugin init`, CC 2.1.157), pruning (`claude plugin prune`, CC 2.1.121), install improvements (CC 2.1.117), and additional source types are documented in `references/advanced-topics.md`.
+Use `/plugin` in the TUI to view installed plugins and their status. Discovery tools (`SearchPlugins`, `SearchSkills`, CC 2.1.199), scaffolding (`claude plugin init`, CC 2.1.157), pruning (`claude plugin prune`, CC 2.1.121), install improvements (CC 2.1.117), and additional source types are documented in `references/advanced-topics.md`.
 
 ## Troubleshooting
 

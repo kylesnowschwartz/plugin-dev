@@ -57,7 +57,7 @@ fi
 # Check 3: Root structure
 echo ""
 echo "Checking root structure..."
-VALID_EVENTS=("SessionStart" "InstructionsLoaded" "SessionEnd" "PostSession" "UserPromptSubmit" "PreToolUse" "PermissionRequest" "PermissionDenied" "PostToolUse" "PostToolUseFailure" "Stop" "StopFailure" "MessageDisplay" "SubagentStart" "SubagentStop" "TeammateIdle" "TaskCompleted" "PreCompact" "PostCompact" "ConfigChange" "CwdChanged" "FileChanged" "WorktreeCreate" "WorktreeRemove" "Elicitation" "ElicitationResult" "Notification" "BackgroundTasksChanged")
+VALID_EVENTS=("SessionStart" "Setup" "InstructionsLoaded" "SessionEnd" "UserPromptSubmit" "UserPromptExpansion" "PreToolUse" "PermissionRequest" "PermissionDenied" "PostToolUse" "PostToolUseFailure" "PostToolBatch" "Stop" "StopFailure" "MessageDisplay" "SubagentStart" "SubagentStop" "TeammateIdle" "TaskCreated" "TaskCompleted" "PreCompact" "PostCompact" "ConfigChange" "CwdChanged" "FileChanged" "DirectoryAdded" "WorktreeCreate" "WorktreeRemove" "Elicitation" "ElicitationResult" "Notification" "PreModelSwitch" "PostModelSwitch")
 
 for event in $(jq -r 'keys[]' "$HOOKS_FILE"); do
   found=false
@@ -92,7 +92,7 @@ for event in $(jq -r 'keys[]' "$HOOKS_FILE"); do
   for ((i = 0; i < hook_count; i++)); do
     # Check matcher (optional -- some events don't support matchers)
     matcher=$(jq -r ".\"$event\"[$i].matcher // empty" "$HOOKS_FILE")
-    NO_MATCHER_EVENTS=("UserPromptSubmit" "Stop" "TeammateIdle" "TaskCompleted" "CwdChanged" "WorktreeCreate" "WorktreeRemove" "PostSession" "MessageDisplay" "BackgroundTasksChanged")
+    NO_MATCHER_EVENTS=("UserPromptSubmit" "Stop" "TeammateIdle" "TaskCreated" "TaskCompleted" "CwdChanged" "WorktreeCreate" "WorktreeRemove" "PostToolBatch" "MessageDisplay")
     is_no_matcher=false
     for nm_event in "${NO_MATCHER_EVENTS[@]}"; do
       if [ "$event" = "$nm_event" ]; then
@@ -182,7 +182,7 @@ for event in $(jq -r 'keys[]' "$HOOKS_FILE"); do
 
       # Check hook type support by event (see overview.md support matrix)
       case "$event" in
-      SessionStart | WorktreeRemove | PostSession)
+      SessionStart | WorktreeRemove | Setup)
         if [ "$hook_type" != "command" ]; then
           echo "❌ ${event}[$i].hooks[$j]: $event only supports 'command' hook type, not '$hook_type'"
           error_count=$((error_count + 1))

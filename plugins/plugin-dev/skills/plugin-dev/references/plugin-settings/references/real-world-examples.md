@@ -233,7 +233,7 @@ exit 0
 
 ### Creation
 
-**File:** `scripts/setup-ralph-loop.sh`
+**File:** `scripts/setup-ralph-loop.sh` (part of the ralph-wiggum plugin, not this repo)
 
 ```bash
 #!/bin/bash
