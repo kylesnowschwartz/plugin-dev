@@ -32,6 +32,9 @@ jobs:
           repository: Piebald-AI/claude-code-system-prompts
           path: claude-code-system-prompts
 
+      - name: Check required tools
+        run: command -v jq python3 strings
+
       - name: Install latest Claude Code CLI
         run: |
           set -euo pipefail
@@ -133,14 +136,27 @@ jobs:
             ## CI Overrides
 
             **Release step override**: Instead of committing directly to main, do this:
-            1. Create a new branch named `claude/upstream-sync-<date>` (use today's date as YYYY-MM-DD)
+            1. Create a new branch. A run with a non-empty changelog range uses
+               `claude/upstream-sync-<date>`; a drift-only run — empty changelog range —
+               uses `claude/doc-drift-<date>` (use today's date as YYYY-MM-DD)
             2. Commit all changes to that branch with conventional commit format
             3. Push the branch and open a PR against main
-            4. The PR title should be: `docs: sync plugin-dev with Claude Code vX.Y.Z-vA.B.C`
+            4. The PR title is `docs: sync plugin-dev with Claude Code vX.Y.Z-vA.B.C` for a
+               changelog run, and `docs: fix documentation drift (<date>)` for a drift-only run
             5. The PR body should include:
                - A summary of what changed (from the manifest)
-               - The CC version range covered
+               - The CC version range covered, or `none (drift)` on a drift-only run
                - A checklist of updated skills/files
+
+            The two prefixes are load-bearing: the housekeeping step that closes
+            superseded PRs only considers `claude/upstream-sync-*` branches, because
+            those all audit forward from the same merged baseline. Drift-only runs carry
+            their own independent fixes, so they keep a prefix that step ignores.
+
+            **One open drift PR at a time**: before opening a drift-only PR, run
+            `gh pr list --state open --search "head:claude/doc-drift-"`. If it returns an
+            open PR, stop without opening a second one and report the existing PR number
+            in the step summary.
 
             **System prompts path**: The Piebald-AI/claude-code-system-prompts repo is
             checked out at `./claude-code-system-prompts/` — use this path instead of
@@ -163,14 +179,24 @@ jobs:
             **Drift report**: act only on lines starting with `DRIFT`. The report's
             other lines are progress and summary text that name no finding.
 
-            **No changes**: Exit cleanly with no PR only when all three discovery
-            signals are empty: no new Claude Code versions after the `Last audited:`
-            header line in `docs/claude-code-compatibility.md`, no output from
-            `git diff -I '"claude_code_version"' docs/claude-code-facts.json`, and no
-            lines starting with `DRIFT` in `.agent-history/drift-report.txt` plus no
-            findings from the `doc-drift-auditor`. Report "Already up to date" in the
-            step summary. An empty changelog range on its own is not a reason to stop
-            — drift fixes and ground truth changes are a valid sync on their own.
+            **No changes**: Exit cleanly with no PR only when all four discovery
+            signals are empty:
+            1. No new Claude Code versions after the `Last audited:` header line in
+               `docs/claude-code-compatibility.md`
+            2. No output from
+               `git diff -I '"claude_code_version"' docs/claude-code-facts.json`
+            3. No lines starting with `DRIFT` in `.agent-history/drift-report.txt`
+            4. No `doc-drift-auditor` findings that Stage 2 confirmed
+
+            Report "Already up to date" in the step summary. An empty changelog range on
+            its own is not a reason to stop — drift fixes and ground truth changes are a
+            valid sync on their own.
+
+            **Auditor severity floor**: a `doc-drift-auditor` finding counts as signal 4
+            only once Stage 2 confirms it — both cited locations read and the
+            contradiction verified, or `docs/claude-code-facts.json` settles which side is
+            right. An item Stage 2 marks "unknown" never opens a PR on its own; carry it
+            in the manifest and report it in the step summary.
 
             **Compatibility header**: advance `Last audited:` only when the changelog
             range is non-empty, and then only to the newest version in that range. On
@@ -199,6 +225,8 @@ jobs:
           # docs/claude-code-compatibility.md, so every still-open upstream-sync PR
           # shares that baseline and the newest one is a superset of the older ones.
           # Keep only the most recent open claude/upstream-sync-* PR; close the rest.
+          # Drift-only runs branch as claude/doc-drift-* and are left alone: they carry
+          # independent fixes rather than a superset of an earlier changelog range.
           numbers=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 100 \
             --json number,headRefName \
             --jq '[.[] | select(.headRefName | startswith("claude/upstream-sync-")) | .number] | sort | reverse | .[]')
@@ -214,5 +242,5 @@ jobs:
             [ -n "$pr" ] || continue
             echo "Closing superseded PR #$pr"
             gh pr close "$pr" --repo "$GITHUB_REPOSITORY" --delete-branch \
-              --comment "Superseded by #$keep, a newer automated upstream sync that audits from the same baseline and covers the same and later Claude Code releases. Closed by sync housekeeping."
+              --comment "Superseded by #$keep, a newer automated upstream sync that audits from the same baseline and covers the same and later Claude Code releases. Documentation drift pull requests (branch \`claude/doc-drift-*\`) are exempt from this housekeeping: each carries its own independent fixes rather than a superset of an earlier changelog range. Closed by sync housekeeping."
           done

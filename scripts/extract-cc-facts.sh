@@ -53,7 +53,9 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-for tool in rg jq python3 strings; do
+# The dump is searched with Python regexes, so no ripgrep is needed; `strings`
+# comes from binutils, which GitHub's runner images carry.
+for tool in jq python3 strings; do
   command -v "$tool" >/dev/null 2>&1 || die "required tool not found: $tool"
 done
 
@@ -118,14 +120,26 @@ def sole_literal(label, min_items, must_contain):
 
 
 # --- hook events -----------------------------------------------------------
-# The canonical roster is the only literal naming the whole tool-call family
-# plus MessageDisplay; shorter literals elsewhere are capability subsets.
-event_candidates = array_literals(
-    10, ["PreToolUse", "PostToolUse", "PostToolUseFailure", "PostToolBatch", "MessageDisplay"]
-)
-hook_events = max(event_candidates, key=len) if event_candidates else []
-if not hook_events:
-    problems.append("hook_events: no candidate array literal found")
+# The canonical roster is the only literal that is both roster-sized and names
+# the whole tool-call family plus MessageDisplay; shorter literals elsewhere are
+# capability subsets. Picking the longest of several candidates would quietly
+# accept a near-miss, so more than one candidate is a failure to report.
+EVENT_ROSTER_ANCHORS = [
+    "PreToolUse", "PostToolUse", "PostToolUseFailure", "PostToolBatch", "MessageDisplay",
+]
+event_candidates = array_literals(30, EVENT_ROSTER_ANCHORS)
+hook_events = []
+if len(event_candidates) == 1:
+    hook_events = event_candidates[0]
+else:
+    problems.append(
+        "hook_events: expected exactly one array literal of 30+ members containing %s, found %d%s"
+        % (
+            ", ".join(EVENT_ROSTER_ANCHORS),
+            len(event_candidates),
+            "".join("\n  candidate: %r" % c for c in event_candidates),
+        )
+    )
 
 
 # --- hook executors --------------------------------------------------------
@@ -202,6 +216,50 @@ if in_names or out_names:
     )
 
 
+# How far past a call's opening parenthesis its argument object may run. The
+# object is delimited by brace matching rather than by this bound; the bound
+# only stops a runaway scan over the rest of the bundle.
+ARGUMENT_SCAN_LIMIT = 8000
+
+
+def call_argument_object(open_paren_end):
+    """The `{...}` object literal passed at a call site, or None.
+
+    None means the argument is not an object literal or does not close within
+    the scan limit. Reading a fixed slice instead would answer "no
+    toolUseContext" for an object whose tail fell outside the slice, so the
+    absence of a key is only trusted once the whole object has been delimited.
+    """
+    text = blob[open_paren_end:open_paren_end + ARGUMENT_SCAN_LIMIT]
+    index = 0
+    while index < len(text) and text[index].isspace():
+        index += 1
+    if index >= len(text) or text[index] != "{":
+        return None
+    depth = 0
+    quote = None
+    escaped = False
+    for offset in range(index, len(text)):
+        char = text[offset]
+        if quote is not None:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == quote:
+                quote = None
+            continue
+        if char in "\"'`":
+            quote = char
+        elif char in "{[(":
+            depth += 1
+        elif char in "}])":
+            depth -= 1
+            if depth == 0:
+                return text[index:offset + 1]
+    return None
+
+
 def dispatch_class(pos, depth=0):
     window = blob[pos:pos + 700]
     call = executor_call.search(window) if executor_call else None
@@ -210,7 +268,9 @@ def dispatch_class(pos, depth=0):
             return "outside-repl"
         # toolUseContext in the call's argument object is what makes
         # prompt/agent hooks legal for the event.
-        arguments = window[call.end():call.end() + 500]
+        arguments = call_argument_object(pos + call.end())
+        if arguments is None:
+            return None
         return "conversation" if "toolUseContext" in arguments else "no-context"
     if depth < 2:
         # Some events hand off to a thin wrapper that calls an executor itself.

@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Drift guard (maintainer tooling, not shipped in the plugin)**: `scripts/extract-cc-facts.sh` extracts hook events, per-event hook-type support, `userConfig` schema, permission modes, and enum values from the installed Claude Code binary into `docs/claude-code-facts.json`; `scripts/check-doc-drift.sh` compares the references, validator script, and CI allowlist against those facts, runs `claude plugin validate` over every documented `plugin.json`, resolves every relative path, and blocks names of removed features
 - **update-from-upstream pipeline**: Stage 0 runs the drift guard against the newest CLI before reading changelogs; Stage 1b dispatches the `doc-drift-auditor` agent for prose contradictions; the changelog-differ reads the version baseline only from the `Last audited:` header and treats a facts-file diff as an upstream change; the manifest verifier re-runs cited checks; the reviewer fails on any drift line
-- **CI**: `upstream-sync.yml` installs the latest Claude Code CLI and passes it to the action (the action's default is 2.1.19); `doc-drift.yml` runs the drift check on pull requests touching the plugin, the facts file, or the scripts
+- **CI**: `upstream-sync.yml` installs the latest Claude Code CLI and passes it to the action (the action's default is 2.1.19); `doc-drift.yml` installs the same CLI and runs the full drift check, including `claude plugin validate --json` over every documented `plugin.json`, on pull requests touching the plugin, the pipeline, the facts file, or the scripts. Drift-only sync runs use `claude/doc-drift-<date>` branches and open no PR when nothing beyond the CLI version changed
 
 ## [0.43.0] - 2026-09-13
 

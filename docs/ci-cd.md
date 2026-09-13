@@ -8,7 +8,7 @@ Documentation for GitHub Actions workflows, labels, and templates.
 | -------------------------- | ------------------------------ | --------------------------- |
 | `links.yml`                | `**.md` changed                | Check for broken links      |
 | `component-validation.yml` | Plugin components changed      | Validate plugin components  |
-| `doc-drift.yml`            | Plugin docs or scripts changed | Check docs against CC facts |
+| `doc-drift.yml`            | Plugin docs, scripts, pipeline, or version files changed | Check docs against the installed CC binary |
 | `version-check.yml`        | Version files changed          | Ensure version consistency  |
 | `validate-workflows.yml`   | `.github/workflows/**` changed | Lint GitHub Actions         |
 | `yaml-lint.yml`            | `.github/workflows/**` changed | Lint YAML files             |
@@ -23,6 +23,12 @@ The `upstream-sync.yml` job installs the latest Claude Code CLI before the agent
 run, extracts ground truth from that binary into `docs/claude-code-facts.json`,
 and writes `.agent-history/drift-report.txt`. The agent reads both artifacts as
 Stage 0 of the sync pipeline. See [Documentation Drift Guard](#documentation-drift-guard).
+
+A run whose changelog range is empty is a drift-only run. It branches as
+`claude/doc-drift-<date>` with the pull request title
+`docs: fix documentation drift (<date>)`. The housekeeping step that closes
+superseded sync pull requests matches `claude/upstream-sync-` only, so drift pull
+requests survive it; the pipeline opens at most one at a time.
 
 ## Other Workflows
 
@@ -58,8 +64,10 @@ and nothing else. Use `--skip-validate` only where no `claude` CLI is available 
 it drops the manifest checks, so the drift report is incomplete.
 
 `extract-cc-facts.sh` exits 2 and writes nothing when a sanity check fails.
-`check-doc-drift.sh` exits 0 when clean, 1 when it finds drift, and 2 on a tooling
-error.
+`check-doc-drift.sh` exits 0 when clean, 1 when it finds drift, and 2 when a check
+could not run, printing an `ERROR` line on stderr for each one. Both workflows fail
+the job on exit 2 and show the stderr, so a check that silently stopped running
+cannot pass as a clean report.
 
 Both feed the upstream sync pipeline in
 `.claude/skills/update-from-upstream/SKILL.md`:
@@ -80,7 +88,20 @@ Both feed the upstream sync pipeline in
   the binary they were read from.
 
 `doc-drift.yml` runs the deterministic half on every pull request that touches the
-plugin docs, the facts file, or the scripts.
+plugin docs, the facts file, the scripts, the sync pipeline in `.claude/`, or the
+files checks E and L read (`.github/workflows/component-validation.yml`,
+`CLAUDE.md`, `.claude-plugin/marketplace.json`). It installs the latest Claude Code
+CLI the same way `upstream-sync.yml` does, extracts facts into `/tmp/facts.json`,
+and runs `scripts/check-doc-drift.sh --facts /tmp/facts.json`, so the docs are
+judged against the binary users are on and checks G and H run. Both workflows open
+with a preflight step that prints the path of `jq`, `python3`, and `strings` and
+fails when one is missing.
+
+A separate non-fatal step compares `/tmp/facts.json` with the checked-in
+`docs/claude-code-facts.json`, ignoring `claude_code_version`. When they differ it
+writes a step-summary note that the facts file is behind the installed CLI and the
+next sync refreshes it. It never fails the job — refreshing the facts file is the
+sync pipeline's work, not a pull request author's.
 
 ## Labels
 

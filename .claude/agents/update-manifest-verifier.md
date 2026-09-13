@@ -80,9 +80,22 @@ progress and summary text that names no finding.
 
 Items under "Doc Drift Audit" cite two locations. Read both `file:line` locations
 before accepting the item, and check the disputed fact against
-`docs/claude-code-facts.json` when it covers that fact. Reject an item where the
-two locations do not actually disagree. Mark an item "unknown" when both sides are
-plausible and no ground truth settles it.
+`docs/claude-code-facts.json` when it covers that fact.
+
+Mark every audit item with exactly one verdict:
+
+- **confirmed** — both locations read and the contradiction holds, or
+  `docs/claude-code-facts.json` settles which side is right
+- **unknown** — both sides are plausible and no ground truth settles it
+- **rejected** — the two locations do not actually disagree
+
+The verdict carries a severity floor the orchestrator depends on: only
+**confirmed** items count toward opening a pull request. An **unknown** item stays
+in the manifest and is reported, but on its own it never triggers a sync, so never
+leave an audit item unmarked.
+
+A "Doc Drift Audit" section reading "No contradictions found" is a valid result;
+verify nothing and record it as such.
 
 ### Step 4: Scan for Missed Changes
 
@@ -111,8 +124,9 @@ Append a verification section to the manifest using Edit:
 #### Drift Verification
 - ✓ [item] (check [check-id]) — re-ran `scripts/check-doc-drift.sh --only [check-id]`, finding still reported
 - ✗ [item] (check [check-id]) — no longer reported by the check
-- ✓ [audit item] — both locations read, contradiction confirmed
-- ✗ [audit item] — locations agree; no contradiction
+- ✓ [audit item] — confirmed: both locations read, contradiction holds
+- ? [audit item] — unknown: both sides plausible, no ground truth settles it (does not trigger a sync on its own)
+- ✗ [audit item] — rejected: locations agree; no contradiction
 
 #### Must Update Verification
 - ✓ [item] — confirmed in [sources], gap exists in [skill]/SKILL.md
@@ -142,5 +156,5 @@ After appending the verification results, also update the "Must Update" and "No 
 - Do not modify any plugin-dev files other than the manifest.
 - Use Bash only to re-run `scripts/check-doc-drift.sh`. It is read-only against the docs.
 - Do not apply documentation updates. That is Stage 3's job.
-- When in doubt, promote an item to "Must Update" rather than demoting it. False positives are cheaper than false negatives.
+- When in doubt, promote an item to "Must Update" rather than demoting it. False positives are cheaper than false negatives. Doc Drift Audit items are the exception: an item you cannot settle is marked "unknown", not promoted.
 - If you find significant issues (>30% of items rejected or >3 missed items), note this prominently so the orchestrator can assess whether Stage 1 needs improvement.

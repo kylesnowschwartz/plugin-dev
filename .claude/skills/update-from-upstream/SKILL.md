@@ -68,6 +68,14 @@ scripts/check-doc-drift.sh > .agent-history/drift-report.txt
 
 Stage 0 runs on every sync, including runs where the changelog range turns out to be empty.
 
+**One open drift pull request at a time.** A run that ends up drift-only opens a `claude/doc-drift-<date>` branch, and the housekeeping that closes superseded sync pull requests leaves those alone. Check for an existing one before doing the work:
+
+```bash
+gh pr list --state open --search "head:claude/doc-drift-"
+```
+
+If that returns an open pull request, stop and report it instead of opening a second one.
+
 ## Stage 1: Discover
 
 Dispatch the `changelog-differ` agent with this prompt:
@@ -123,6 +131,10 @@ Follow your agent instructions exactly.
 
 The auditor's findings are manifest items like any other: Stage 2 verifies them, Stage 3 applies them, Stage 4 checks them.
 
+A clean sweep is a valid result. "No contradictions found" ends this stage with no manifest section beyond that statement.
+
+**Severity floor.** An auditor finding counts toward opening a pull request only once Stage 2 confirms it: both cited locations read and the contradiction verified, or `docs/claude-code-facts.json` settles which side is right. An item Stage 2 marks "unknown" stays in the manifest and is reported, but on its own it never triggers a sync.
+
 ## Stage 2: Verify Plan
 
 Dispatch the `update-manifest-verifier` agent with this prompt:
@@ -136,6 +148,8 @@ reading the reference docs at plugins/plugin-dev/skills/plugin-dev/references/<t
 
 Verify deterministic drift items by re-running scripts/check-doc-drift.sh for the
 cited check, and doc drift audit items by reading both cited file:line locations.
+Mark every doc drift audit item confirmed, unknown, or rejected — only confirmed
+items count toward opening a pull request.
 
 Follow your agent instructions exactly.
 ```
@@ -176,8 +190,9 @@ Use judgment. If the change materially affects examples or references that users
 
 **Version bump** — determine scope. The same rule covers drift fixes and changelog-driven edits:
 
-- **Patch** (e.g., 0.7.1 → 0.7.2): doc corrections, minor additions to existing sections
+- **Patch** (e.g., 0.7.1 → 0.7.2): doc corrections, minor additions to existing sections, including a drift-only run that fixes real `DRIFT` findings or Stage 2-confirmed auditor items
 - **Minor** (e.g., 0.7.1 → 0.8.0): new sections, new capabilities documented, structural changes
+- **No release**: a drift-only run whose only changes are the facts file's `claude_code_version` key, or auditor items marked "unknown", produces no version bump, no changelog entry, and no pull request
 
 **Bump version in all three locations:**
 
@@ -236,6 +251,15 @@ git commit -m "feat: sync plugin-dev with Claude Code vX.Y.Z-vA.B.C"
 git push
 ```
 
+**Branch and title when the run opens a pull request** (CI always does; locally only when asked):
+
+| Run | Branch | Pull request title |
+|---|---|---|
+| Changelog range non-empty | `claude/upstream-sync-<date>` | `docs: sync plugin-dev with Claude Code vX.Y.Z-vA.B.C` |
+| Drift-only (empty changelog range) | `claude/doc-drift-<date>` | `docs: fix documentation drift (<date>)` |
+
+The prefixes are load-bearing. The housekeeping that closes superseded pull requests matches `claude/upstream-sync-` only, because those runs all audit forward from the same merged baseline and the newest is a superset of the rest. A drift-only run carries independent fixes, so its branch keeps a prefix that housekeeping ignores.
+
 ### On FAIL
 
 1. Read the reviewer's specific fix instructions
@@ -264,11 +288,25 @@ Then proceed with Stage 1 as normal.
 
 ## Error Handling
 
+### Early exit
+
+Stop the pipeline and report "already up to date" only when all four discovery signals are empty:
+
+1. No new Claude Code versions after the `Last audited:` header line in `docs/claude-code-compatibility.md`
+2. No output from `git diff -I '"claude_code_version"' docs/claude-code-facts.json`
+3. No lines starting with `DRIFT` in `.agent-history/drift-report.txt`
+4. No `doc-drift-auditor` findings that Stage 2 confirmed
+
+Signal 4 carries a severity floor: an auditor finding counts only once Stage 2 confirms it — both cited locations read and the contradiction verified, or `docs/claude-code-facts.json` settles which side is right. An item Stage 2 marks "unknown" never triggers a sync on its own.
+
+Any one non-empty signal continues the run. An empty changelog range on its own is not a reason to stop.
+
 | Condition | Action |
 |---|---|
 | CC changelog fetch fails | Stop pipeline, report to user |
-| No new versions, no facts diff outside `claude_code_version`, no `DRIFT` lines, no auditor findings | Stop pipeline, report "already up to date" |
-| No new versions, but Stage 0 or the auditor found something | Continue — the manifest carries the drift and ground truth items |
+| All four early-exit signals empty | Stop pipeline, report "already up to date" |
+| No new versions, but Stage 0 or a Stage 2-confirmed auditor finding has content | Continue — the manifest carries the drift and ground truth items |
+| The only auditor findings are marked "unknown" and no other signal has content | Stop pipeline, report the unknown items without opening a PR |
 | `scripts/extract-cc-facts.sh` exits 2 (sanity check failed) | Stop pipeline, report the stderr message to user |
 | No `claude` binary available for Stage 0 | Stop pipeline, report to user |
 | `scripts/check-doc-drift.sh` exits 2 (tooling error) | Stop pipeline, report to user |

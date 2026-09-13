@@ -3,8 +3,10 @@
 # binary (scripts/extract-cc-facts.sh). stdout carries findings and nothing
 # else, one per line, so it can be redirected straight into a report file:
 #   DRIFT <check-id> <file>:<line> <message>
-# Diagnostics and the summary count go to stderr.
-# Exit 0 = clean, 1 = drift found, 2 = the run could not reach a verdict.
+# Diagnostics and the summary count go to stderr, where a check that could not
+# run is named as `ERROR <check-id> <message>`.
+# Exit 0 = clean, 1 = every selected check ran and at least one found drift,
+# 2 = the run could not reach a verdict.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -69,23 +71,16 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-for tool in rg jq python3; do
-  if ! command -v "$tool" >/dev/null 2>&1; then
-    echo "check-doc-drift: required tool '$tool' not found on PATH" >&2
-    exit 2
-  fi
-done
-
-if [ ! -f "$FACTS" ]; then
-  echo "check-doc-drift: facts file not found: $FACTS" >&2
-  echo "check-doc-drift: generate it with scripts/extract-cc-facts.sh" >&2
+# Every check runs on bash and python3 alone; checks G and H additionally shell
+# out to the claude CLI. Nothing here needs ripgrep, which is absent from
+# GitHub's ubuntu-24.04 runner image.
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "check-doc-drift: required tool 'python3' not found on PATH" >&2
   exit 2
 fi
 
-if ! jq empty "$FACTS" >/dev/null 2>&1; then
-  echo "check-doc-drift: facts file is not valid JSON: $FACTS" >&2
-  exit 2
-fi
+# The facts file is read once, by the checker itself: --facts accepts a process
+# substitution, which a preflight read here would drain.
 
 # Only checks G and H shell out to the CLI, so a host without it can still run
 # every other check as long as G/H were not asked for.
@@ -125,8 +120,85 @@ SKIP_VALIDATE = os.environ["DRIFT_SKIP_VALIDATE"] == "1"
 ONLY = {c.strip().upper() for c in os.environ["DRIFT_ONLY"].split(",") if c.strip()}
 ALL_CHECKS = list("ABCDEFGHIJKL")
 
-with open(os.environ["DRIFT_FACTS"]) as fh:
-    FACTS = json.load(fh)
+FACTS_PATH = os.environ["DRIFT_FACTS"]
+
+
+def fail_tooling(*messages):
+    for message in messages:
+        print(f"check-doc-drift: {message}", file=sys.stderr)
+    sys.exit(2)
+
+
+# Facts the checks read directly. A file missing any of them cannot produce a
+# verdict, so it is rejected before a check runs rather than crashing one.
+REQUIRED_FACT_LISTS = (
+    "hook_events",
+    "http_hook_unsupported_events",
+    "permission_modes",
+    "session_start_sources",
+    "session_end_reasons",
+    "directory_added_sources",
+)
+DISPATCH_CLASSES = frozenset({"conversation", "no-context", "outside-repl"})
+
+
+def load_facts(path):
+    try:
+        with open(path) as fh:
+            data = json.load(fh)
+    except (OSError, json.JSONDecodeError) as exc:
+        fail_tooling(
+            f"facts file {path} could not be read: {exc}",
+            "generate it with scripts/extract-cc-facts.sh",
+        )
+    if not isinstance(data, dict):
+        fail_tooling(f"facts file {path} is not a JSON object")
+
+    problems = []
+    for key in REQUIRED_FACT_LISTS:
+        value = data.get(key)
+        if not isinstance(value, list) or not value:
+            problems.append(f"'{key}' must be a non-empty array")
+        elif not all(isinstance(v, str) for v in value):
+            problems.append(f"'{key}' must contain only strings")
+    dispatch = data.get("hook_event_dispatch")
+    if not isinstance(dispatch, dict) or not dispatch:
+        problems.append("'hook_event_dispatch' must be a non-empty object")
+        dispatch = {}
+    else:
+        bad = sorted(k for k, v in dispatch.items() if v not in DISPATCH_CLASSES)
+        if bad:
+            problems.append(
+                "'hook_event_dispatch' has values outside "
+                f"{sorted(DISPATCH_CLASSES)} for: {', '.join(bad)}"
+            )
+    if not problems:
+        events = set(data["hook_events"])
+        missing = sorted(events - set(dispatch))
+        if missing:
+            problems.append(
+                "'hook_event_dispatch' has no class for: " + ", ".join(missing)
+            )
+        stray = sorted(set(dispatch) - events)
+        if stray:
+            problems.append(
+                "'hook_event_dispatch' names events absent from 'hook_events': "
+                + ", ".join(stray)
+            )
+        unknown_http = sorted(set(data["http_hook_unsupported_events"]) - events)
+        if unknown_http:
+            problems.append(
+                "'http_hook_unsupported_events' names events absent from "
+                "'hook_events': " + ", ".join(unknown_http)
+            )
+    if problems:
+        fail_tooling(
+            *(f"facts file {path} is unusable: {problem}" for problem in problems)
+        )
+    return data
+
+
+FACTS = load_facts(FACTS_PATH)
 
 SKILL = REPO / "plugins/plugin-dev/skills/plugin-dev"
 HOOK_DEV = SKILL / "references/hook-development"
@@ -171,6 +243,11 @@ def sorted_join(values):
 
 # ---------------------------------------------------------------- shared parsing
 
+# A whole inline-code span. Checks F and I both read documents one token at a
+# time: enum members and path links are written as inline code, so prose around
+# them never reaches the value being judged.
+INLINE_CODE_RE = re.compile(r"`([^`\n]+)`")
+
 TABLE_HEADER_RE = re.compile(r"^\|\s*Event\s*\|")
 EVENT_TABLE_HEADING_RE = re.compile(r"^#+\s+Hook Events Reference\s*$")
 # A heading is an event heading when its only word is a CamelCase name, with an
@@ -207,12 +284,36 @@ def parse_event_table():
     return header_line, rows
 
 
+# Two independent facts decide what an event accepts: whether it is dispatched
+# with a conversation (prompt and agent hooks) and whether HTTP hooks are
+# filtered out for it. Command and mcp_tool hooks run on every event.
+ALL_HOOK_TYPES = frozenset({"command", "mcp_tool", "http", "prompt", "agent"})
+TYPES_CELL_TEXT = {
+    (True, True): "All",
+    (True, False): "Command, MCP tool, Prompt, Agent",
+    (False, True): "Command, HTTP",
+    (False, False): "Command",
+}
+
+
+def event_capability(event):
+    """(Types-cell text, accepted hook types) for an event, from the facts.
+
+    Checks A and D both read this so the table and the validator script can
+    never be judged against different rules.
+    """
+    conversation = DISPATCH.get(event) == "conversation"
+    http_ok = event not in HTTP_UNSUPPORTED
+    types = {"command", "mcp_tool"}
+    if conversation:
+        types |= {"prompt", "agent"}
+    if http_ok:
+        types.add("http")
+    return TYPES_CELL_TEXT[(conversation, http_ok)], frozenset(types)
+
+
 def expected_types_cell(event):
-    if DISPATCH.get(event) == "conversation":
-        return "All"
-    if event in HTTP_UNSUPPORTED:
-        return "Command"
-    return "Command, HTTP"
+    return event_capability(event)[0]
 
 
 def event_headings():
@@ -327,16 +428,17 @@ def check_script_allowlist():
     if not arms:
         report("D", VALIDATE_SH, decl_line, "hook-type support switch arms not found")
         return
+    # An arm restricts the hook types its events accept, so an event belongs to
+    # the arm whose type list equals the event's accepted types. Events that
+    # accept everything belong to no arm at all.
+    accepted = {event: event_capability(event)[1] for event in EVENTS}
+    listed_anywhere = set()
     for arm in arms:
         arm_line = text[: arm.start()].count("\n") + 1
         arm_events = set(re.findall(r"[A-Za-z]+", arm.group(1)))
-        arm_types = set(re.findall(r"[a-z_]+", arm.group(2)))
-        accepts_http = "http" in arm_types
-        expected = {
-            e for e in EVENTS
-            if DISPATCH.get(e) != "conversation"
-            and (e not in HTTP_UNSUPPORTED) == accepts_http
-        }
+        arm_types = frozenset(re.findall(r"[a-z_]+", arm.group(2)))
+        listed_anywhere |= arm_events
+        expected = {e for e in EVENTS if accepted[e] == arm_types}
         for event in sorted(expected - arm_events):
             report(
                 "D", VALIDATE_SH, arm_line,
@@ -346,7 +448,15 @@ def check_script_allowlist():
             report(
                 "D", VALIDATE_SH, arm_line,
                 f"hook-type switch arm ({sorted_join(arm_types)}) should not list {event} "
-                f"(dispatch={DISPATCH.get(event, 'unknown event')})",
+                f"(dispatch={DISPATCH.get(event, 'unknown event')}, accepts "
+                f"{sorted_join(accepted.get(event, ALL_HOOK_TYPES))})",
+            )
+    for event in sorted(e for e in EVENTS if accepted[e] != ALL_HOOK_TYPES):
+        if event not in listed_anywhere:
+            report(
+                "D", VALIDATE_SH, decl_line,
+                f"no hook-type switch arm restricts {event} to "
+                f"{sorted_join(accepted[event])} (dispatch={DISPATCH.get(event)})",
             )
 
 
@@ -385,14 +495,13 @@ def section_bounds(lines, event):
 # Enum members are written as whole inline-code tokens. Reading only those
 # keeps prose out of the value set: a "(CC 2.1.219)" note on a Matchers line is
 # not a matcher, and a member such as `oauth2` keeps its digits.
-BACKTICK_TOKEN_RE = re.compile(r"`([^`\n]+)`")
 ENUM_VALUE_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
 
 def matchers_enum_values(line):
     """Backticked whole-word values on a `**Matchers:**` line."""
     return {
-        token for token in BACKTICK_TOKEN_RE.findall(line)
+        token for token in INLINE_CODE_RE.findall(line)
         if ENUM_VALUE_RE.fullmatch(token)
     }
 
@@ -473,8 +582,6 @@ def check_enums():
 # ---------------------------------------------- G/H. manifest examples validation
 
 FENCE_RE = re.compile(r"```json\n(.*?)```", re.S)
-# `//` that starts a line comment rather than a URL scheme or a path separator.
-LINE_COMMENT_RE = re.compile(r"(?<![:/])//(?!/)\s*(.*)$")
 
 
 def strip_json_comments(body):
@@ -512,60 +619,39 @@ def json_fences(path):
         yield text[: m.start()].count("\n") + 1, m.group(1)
 
 
-# Warning text that means the documented manifest no longer matches the schema
-# Claude Code accepts: a key it is retiring, or one it does not know at all.
-# Matched case-insensitively as substrings; extend either list as upstream
-# invents new wording.
-SCHEMA_DRIFT_WARNINGS = (
-    "deprecat",
-    "will be removed",
-    "instead of",
-    "unknown field",
-    "experimental component",
-)
-# Warning text about the throwaway directory the example is validated in, or
-# about metadata a documentation snippet is not expected to carry.
-ADVISORY_WARNINGS = (
-    "no author information",
-    "no marketplace description",
-    "path not found",
-    "consider adding",
-)
-
-# Section banners, matched on their wording so a change of glyph does not
-# silently merge the error list into the warning list.
-ERROR_SECTION_RE = re.compile(r"Found \d+ errors?:")
-WARNING_SECTION_RE = re.compile(r"Found \d+ warnings?:")
+# A documentation snippet is validated in a throwaway directory and carries no
+# marketplace metadata, so some of what the validator says is about the harness
+# rather than about the manifest. These entries are advisory: the paths name
+# metadata an example is not expected to supply, and the message shapes cover
+# the suggestions and the component paths that only exist in a real plugin.
+ADVISORY_PATHS = frozenset({"author", "description"})
+ADVISORY_MESSAGE_PREFIXES = ("No ", "Consider ")
+ADVISORY_MESSAGE_SUBSTRINGS = ("Path not found",)
 
 
-def validator_problems(output):
-    """Validator lines that signal drift, in the order the CLI printed them.
+def is_advisory(entry, allow_paths):
+    message = str(entry.get("message", ""))
+    if allow_paths and str(entry.get("path", "")) in ADVISORY_PATHS:
+        return True
+    if message.startswith(ADVISORY_MESSAGE_PREFIXES):
+        return True
+    return any(marker in message for marker in ADVISORY_MESSAGE_SUBSTRINGS)
 
-    The CLI exits 0 for a manifest that only earns warnings, so the exit status
-    and the "Invalid input" text alone miss schema changes that upstream has
-    so far only warned about.
+
+def validator_problems(payload):
+    """Validator entries that signal drift, as "<path>: <message>" strings.
+
+    Every error counts. A warning counts too — the CLI exits 0 for a manifest
+    that only earns warnings, so a key upstream has started retiring would
+    otherwise pass unnoticed — unless it is advisory.
     """
+    manifest = payload.get("manifest") or {}
     problems = []
-    in_error_section = False
-    for raw in output.splitlines():
-        text = raw.strip()
-        if ERROR_SECTION_RE.search(text):
-            in_error_section = True
-            continue
-        if WARNING_SECTION_RE.search(text):
-            in_error_section = False
-            continue
-        if not (text.startswith("❯") or "Invalid input" in text):
-            continue
-        text = text.lstrip("❯").strip()
-        lowered = text.lower()
-        if any(marker in lowered for marker in ADVISORY_WARNINGS):
-            continue
-        if in_error_section or "Invalid input" in text:
-            problems.append(text)
-            continue
-        if any(marker in lowered for marker in SCHEMA_DRIFT_WARNINGS):
-            problems.append(text)
+    for kind, allow_paths in (("errors", False), ("warnings", True)):
+        for entry in manifest.get(kind) or []:
+            if not isinstance(entry, dict) or is_advisory(entry, allow_paths):
+                continue
+            problems.append(f"{entry.get('path', '?')}: {entry.get('message', '')}")
     return problems
 
 
@@ -576,15 +662,24 @@ def run_plugin_validate(manifest, check, path, line):
         plugin_dir.mkdir()
         (plugin_dir / "plugin.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
         proc = subprocess.run(
-            ["claude", "plugin", "validate", workdir],
+            ["claude", "plugin", "validate", "--json", workdir],
             capture_output=True, text=True, timeout=120,
         )
     except (OSError, subprocess.SubprocessError) as exc:
-        errors.append(f"check {check}: running 'claude plugin validate' failed: {exc}")
+        errors.append((check, f"running 'claude plugin validate' failed: {exc}"))
         return
     finally:
         shutil.rmtree(workdir, ignore_errors=True)
-    problems = validator_problems(proc.stdout + proc.stderr)
+    try:
+        payload = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        errors.append((
+            check,
+            "'claude plugin validate --json' did not print JSON for "
+            f"{rel(path)}:{line}: {(proc.stdout + proc.stderr).strip()[:200]}",
+        ))
+        return
+    problems = validator_problems(payload)
     if not problems:
         return
     report(
@@ -630,17 +725,29 @@ def check_userconfig_validate():
 # Keys that only a plugin.json declares. "description" is deliberately absent
 # from both lists: `name` + `description` also describes an MCP tool schema,
 # which the plugin validator has no opinion about.
+# Source of truth: the component fields documented in
+# plugins/plugin-dev/skills/plugin-dev/references/plugin-structure/references/manifest-reference.md,
+# which the same check validates against `claude plugin validate`.
 MANIFEST_COMPONENT_KEYS = frozenset({
     "hooks", "mcpServers", "lspServers", "agents", "commands", "skills",
-    "userConfig", "experimental", "defaultEnabled",
+    "outputStyles", "workflows", "userConfig", "experimental", "defaultEnabled",
 })
 MANIFEST_METADATA_KEYS = frozenset({
     "version", "author", "homepage", "repository", "license", "keywords",
 })
 
 
+# A marketplace entry carries name and version too, so it reaches this check
+# looking like a manifest. `source` says where a plugin is installed from and
+# belongs only to the marketplace entry, which is validated as marketplace.json
+# rather than as plugin.json.
+MARKETPLACE_ENTRY_KEYS = frozenset({"source"})
+
+
 def looks_like_plugin_manifest(data):
     keys = set(data)
+    if keys & MARKETPLACE_ENTRY_KEYS:
+        return False
     has_component = bool(keys & MANIFEST_COMPONENT_KEYS)
     if isinstance(data.get("name"), str):
         # A bare {"name": ...} fence is the minimal manifest the docs show.
@@ -680,7 +787,6 @@ PATH_TOKEN_RE = re.compile(
     r"^(?:\.\./|\./)*(?:[A-Za-z0-9_-]+/)*(?:references|examples|scripts)/[A-Za-z0-9_./-]+$"
 )
 LINK_RE = re.compile(r"\]\(([^)\s]+)\)")
-INLINE_CODE_RE = re.compile(r"`([^`\n]+)`")
 FENCE_MARKER_RE = re.compile(r"^\s*(`{3,}|~{3,})")
 
 
@@ -757,25 +863,41 @@ def check_paths():
 
 # ------------------------------------------------------------------- J. denylist
 
+# The denylist scan reads whole trees rather than a file list, so it has to
+# decide what is text. Anything that does not decode as UTF-8 holds no prose to
+# drift, and a .git directory holds object data rather than documentation.
+DENYLIST_SCOPES = ("plugins", ".github")
+DENYLIST_EXCLUDED = ("docs/claude-code-compatibility.md", "CHANGELOG.md")
+
+
+def denylist_files():
+    for scope in DENYLIST_SCOPES:
+        root = REPO / scope
+        if not root.is_dir():
+            continue
+        for path in sorted(root.rglob("*")):
+            if not path.is_file() or path.is_symlink():
+                continue
+            if ".git" in path.parts:
+                continue
+            if rel(path) in DENYLIST_EXCLUDED:
+                continue
+            try:
+                yield path, path.read_text(encoding="utf-8")
+            except (UnicodeDecodeError, OSError):
+                continue
+
+
 def check_denylist():
     names = load_list_file(REPO / "scripts/drift-denylist.txt")
     if not names:
-        errors.append("check J: scripts/drift-denylist.txt is empty or missing")
+        errors.append(("J", "scripts/drift-denylist.txt is empty or missing"))
         return
-    scopes = [str(REPO / "plugins"), str(REPO / ".github")]
-    for name in names:
-        proc = subprocess.run(
-            ["rg", "--fixed-strings", "--line-number", "--no-heading", "--", name, *scopes],
-            capture_output=True, text=True,
-        )
-        if proc.returncode not in (0, 1):
-            errors.append(f"check J: rg failed for '{name}': {proc.stderr.strip()}")
-            continue
-        for hit in proc.stdout.splitlines():
-            parts = hit.split(":", 2)
-            if len(parts) < 3:
-                continue
-            report("J", parts[0], parts[1], f"removed or non-existent name '{name}' appears here")
+    for path, text in denylist_files():
+        for idx, line in enumerate(text.splitlines(), start=1):
+            for name in names:
+                if name in line:
+                    report("J", path, idx, f"removed or non-existent name '{name}' appears here")
 
 
 # ------------------------------------------------------------- K. removed-events
@@ -793,6 +915,9 @@ def check_removed_events():
 # --------------------------------------------------------------- L. version-sync
 
 def check_version_sync():
+    # .github/workflows/version-check.yml enforces the same agreement in CI.
+    # This check is three file reads, so it stays here as well: a local run
+    # reports the mismatch without waiting for a push.
     plugin_json = REPO / "plugins/plugin-dev/.claude-plugin/plugin.json"
     marketplace_json = REPO / ".claude-plugin/marketplace.json"
     claude_md = REPO / "CLAUDE.md"
@@ -850,8 +975,7 @@ CHECKS = {
 
 unknown = ONLY - set(ALL_CHECKS)
 if unknown:
-    print(f"check-doc-drift: unknown check(s) in --only: {sorted_join(unknown)}", file=sys.stderr)
-    sys.exit(2)
+    fail_tooling(f"unknown check(s) in --only: {sorted_join(unknown)}")
 
 ran = []
 for check in ALL_CHECKS:
@@ -862,23 +986,29 @@ for check in ALL_CHECKS:
     ran.append(check)
     try:
         CHECKS[check][1]()
-    except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
-        errors.append(f"check {check} ({CHECKS[check][0]}): {type(exc).__name__}: {exc}")
+    except Exception as exc:  # a crashed check is a tooling failure, not a verdict
+        errors.append((check, f"{CHECKS[check][0]}: {type(exc).__name__}: {exc}"))
 
+# stdout carries DRIFT lines and nothing else: consumers append it to a report
+# file and read every line there as a finding. The findings from the checks
+# that did run are still worth printing when another check broke.
 for check, path, line, message in sorted(findings):
     print(f"DRIFT {check} {path}:{line} {message}")
 
-for message in errors:
-    print(f"check-doc-drift: {message}", file=sys.stderr)
+for check, message in errors:
+    print(f"ERROR {check} {message}", file=sys.stderr)
 
-# stdout carries DRIFT lines and nothing else: consumers append it to a report
-# file and read every line there as a finding.
 scope = "".join(ran) if ran else "none"
 print(f"check-doc-drift: {len(findings)} finding(s) across checks {scope}", file=sys.stderr)
 
-# Drift outranks a non-fatal tooling problem; exit 2 means the run could not
-# produce a verdict at all.
-if findings:
-    sys.exit(1)
-sys.exit(2 if errors else 0)
+# A check that could not run leaves the verdict incomplete, so a tooling
+# failure outranks the findings the other checks produced. Exit 1 means every
+# selected check ran and at least one of them found drift.
+if errors:
+    print(
+        f"check-doc-drift: {len(errors)} check(s) failed to run; verdict is incomplete",
+        file=sys.stderr,
+    )
+    sys.exit(2)
+sys.exit(1 if findings else 0)
 PYTHON
