@@ -145,28 +145,14 @@ Link to plugin documentation or landing page.
 
 #### repository
 
-**Type**: String (URL) or Object
+**Type**: String (URL)
 **Example**: `"https://github.com/user/plugin-name"`
 
 Source code repository location.
 
-**String format**:
-
 ```json
 {
   "repository": "https://github.com/user/plugin-name"
-}
-```
-
-**Object format** (detailed):
-
-```json
-{
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/user/plugin-name.git",
-    "directory": "packages/plugin-name"
-  }
 }
 ```
 
@@ -259,7 +245,7 @@ With this configuration, place `SKILL.md` at the plugin root instead of in a `sk
 **Default**: `["./commands"]`
 **Example**: `"./cli-commands"`
 
-Additional directories or files containing command definitions.
+Path to a command file or skill directory, relative to the plugin root — or an array of such paths. When set, the default `commands/` directory is not auto-loaded; list its files here too if you want both.
 
 **Single path**:
 
@@ -277,7 +263,7 @@ Additional directories or files containing command definitions.
 }
 ```
 
-**Behavior**: Supplements default `commands/` directory (does not replace)
+**Behavior**: Replaces the default `commands/` auto-load — the directory is not auto-loaded once this field is set.
 
 **Use cases**:
 
@@ -289,11 +275,9 @@ Additional directories or files containing command definitions.
 
 **Type**: String or Array of strings
 **Default**: `["./agents"]`
-**Example**: `"./specialized-agents"`
+**Example**: `"./agents/code-reviewer.md"`
 
-Additional directories or files containing agent definitions.
-
-**Format**: Same as `commands` field
+Path to an agent file, relative to the plugin root — or an array of such paths. Directories are not accepted; each entry must point at an agent `.md` file. When set, the default `agents/` directory is not auto-loaded; list its files here too if you want both.
 
 **Use cases**:
 
@@ -448,23 +432,17 @@ Output style files are markdown with YAML frontmatter (`name`, `description`, `k
 
 #### monitors
 
-**Type**: Object
+**Type**: String (path to a JSON file)
 **Added**: CC 2.1.105
-**Example**: See below
+**Default**: `"./monitors/monitors.json"`
 
-Background monitoring scripts that run independently and stream events as chat notifications via the Monitor tool.
+Background monitoring scripts that run independently and stream events as chat notifications via the Monitor tool. `monitors` is a top-level plugin.json key, not nested under `experimental`.
 
 **Configuration**:
 
 ```json
 {
-  "monitors": {
-    "build-watcher": {
-      "command": "bash",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/watch-build.sh"],
-      "description": "Watches for build failures"
-    }
-  }
+  "monitors": "./monitors/monitors.json"
 }
 ```
 
@@ -482,8 +460,6 @@ Background monitoring scripts that run independently and stream events as chat n
 
 **Output format**: Monitors should emit JSON objects to stdout that the Monitor tool can process and display as chat notifications.
 
-**Nesting (CC 2.1.129):** As of CC 2.1.129, `monitors` (and `themes`) must be declared under the `experimental` key, not at the plugin.json root. The root-level form shown above is the pre-2.1.129 layout. See the `experimental` field below.
-
 ### experimental (CC 2.1.129)
 
 **Type**: Object
@@ -495,8 +471,7 @@ Experimental plugin features must be declared under the `"experimental"` key in 
   "name": "my-plugin",
   "version": "1.0.0",
   "experimental": {
-    "themes": ["./themes/"],
-    "monitors": ["./monitors/"]
+    "themes": ["./themes/"]
   }
 }
 ```
@@ -504,24 +479,23 @@ Experimental plugin features must be declared under the `"experimental"` key in 
 **Currently experimental:**
 
 - **themes** — Custom UI themes for Claude Code
-- **monitors** — Background monitoring scripts (see the `monitors` section above and `advanced-topics.md`)
 
-**Breaking change:** Prior to CC 2.1.129, `themes` and `monitors` were declared at the plugin.json root level. They must now be nested under `"experimental"`. Plugins using the old format will fail to load these features.
+`monitors` is not part of `experimental`; it is a top-level plugin.json key (see the `monitors` section above and `advanced-topics.md`).
+
+**Breaking change:** Prior to CC 2.1.129, `themes` was declared at the plugin.json root level. It must now be nested under `"experimental"`. Plugins using the old format will fail to load this feature.
 
 **Migration:**
 
 ```json
 // Before (CC < 2.1.129)
 {
-  "themes": ["./themes/"],
-  "monitors": ["./monitors/"]
+  "themes": ["./themes/"]
 }
 
 // After (CC >= 2.1.129)
 {
   "experimental": {
-    "themes": ["./themes/"],
-    "monitors": ["./monitors/"]
+    "themes": ["./themes/"]
   }
 }
 ```
@@ -846,10 +820,7 @@ Full configuration with all features:
     "url": "https://company.com/devops"
   },
   "homepage": "https://docs.company.com/plugins/devops",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/company/devops-plugin.git"
-  },
+  "repository": "https://github.com/company/devops-plugin.git",
   "license": "Apache-2.0",
   "keywords": [
     "devops",
@@ -860,7 +831,10 @@ Full configuration with all features:
     "deployment"
   ],
   "commands": ["./commands", "./admin-commands"],
-  "agents": "./specialized-agents",
+  "agents": [
+    "./specialized-agents/kubernetes-expert.md",
+    "./specialized-agents/security-auditor.md"
+  ],
   "hooks": "./config/hooks.json",
   "mcpServers": "./.mcp.json"
 }

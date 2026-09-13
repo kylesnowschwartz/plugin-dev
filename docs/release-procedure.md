@@ -57,7 +57,27 @@ rg '"version"' plugins/plugin-dev/.claude-plugin/plugin.json .claude-plugin/mark
 rg 'Version.*v[0-9]' CLAUDE.md
 ```
 
-### 4. Commit and Push
+### 4. Check Documentation Drift
+
+The reference docs describe Claude Code's runtime behavior, so they can go stale
+without anyone editing them. Run the drift guard before every release:
+
+```bash
+# Refresh ground truth from the installed Claude Code CLI
+scripts/extract-cc-facts.sh --out docs/claude-code-facts.json
+
+# Compare the shipped docs against it — must exit 0
+scripts/check-doc-drift.sh
+```
+
+Each finding prints as `DRIFT <check> <file>:<line> <message>`. Fix every one
+before releasing, and commit `docs/claude-code-facts.json` alongside the fixes.
+A changed facts file is itself an upstream change worth documenting.
+
+`scripts/check-doc-drift.sh --skip-validate` skips the two checks that shell out
+to the `claude` CLI, which is what `doc-drift.yml` runs on pull requests.
+
+### 5. Commit and Push
 
 ```bash
 git add -u

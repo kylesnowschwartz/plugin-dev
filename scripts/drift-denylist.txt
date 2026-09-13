@@ -1,0 +1,11 @@
+# Names that upstream Claude Code removed, renamed, or never shipped.
+# Any occurrence under plugins/ or .github/ is stale documentation.
+# One literal per line; blank lines and # comments ignored.
+# docs/claude-code-compatibility.md and CHANGELOG.md are outside the scanned
+# trees on purpose: both record history and may name these legitimately.
+PostSession
+BackgroundTasksChanged
+bypass_permissions_disabled
+user_command
+sdk_request
+permissionMode: delegate

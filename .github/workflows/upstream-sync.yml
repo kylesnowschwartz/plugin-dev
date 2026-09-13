@@ -32,10 +32,82 @@ jobs:
           repository: Piebald-AI/claude-code-system-prompts
           path: claude-code-system-prompts
 
+      - name: Install latest Claude Code CLI
+        run: |
+          set -euo pipefail
+          # The action ships a pinned older CLI. Stage 0 reads facts out of the
+          # binary, so the sync must run against the release users are on.
+          for attempt in 1 2 3; do
+            if curl -fsSL https://claude.ai/install.sh | bash -s -- latest; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "Claude Code install failed after 3 attempts"
+              exit 1
+            fi
+            echo "Install attempt $attempt failed; retrying in $((attempt * 5))s"
+            sleep $((attempt * 5))
+          done
+
+          executable="$HOME/.local/bin/claude"
+          [ -x "$executable" ] || {
+            echo "Claude Code CLI not found at $executable"
+            exit 1
+          }
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo "CLAUDE_CODE_EXECUTABLE=$executable" >> "$GITHUB_ENV"
+
+          version=$("$executable" --version)
+          echo "## Claude Code CLI" >> "$GITHUB_STEP_SUMMARY"
+          echo "$version" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Extract ground truth and check doc drift
+        env:
+          CLAUDE_CODE_EXECUTABLE: ${{ env.CLAUDE_CODE_EXECUTABLE }}
+        run: |
+          set -uo pipefail
+          mkdir -p .agent-history
+
+          # Exit 2 means a sanity check failed and no facts file was written.
+          set +e
+          scripts/extract-cc-facts.sh \
+            --binary "$CLAUDE_CODE_EXECUTABLE" \
+            --out docs/claude-code-facts.json
+          extract_status=$?
+          set -e
+          if [ "$extract_status" -ne 0 ]; then
+            echo "extract-cc-facts.sh failed with exit $extract_status"
+            exit 1
+          fi
+
+          # Exit 1 means drift exists, which is the signal the sync acts on.
+          # Exit 2 is a tooling error and fails the job.
+          set +e
+          scripts/check-doc-drift.sh --skip-validate > .agent-history/drift-report.txt
+          drift_status=$?
+          set -e
+          if [ "$drift_status" -eq 2 ]; then
+            echo "check-doc-drift.sh reported a tooling error"
+            cat .agent-history/drift-report.txt
+            exit 1
+          fi
+
+          {
+            echo "## Ground truth"
+            echo '```'
+            git diff --stat docs/claude-code-facts.json
+            echo '```'
+            echo "### Drift report"
+            echo '```'
+            cat .agent-history/drift-report.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Run upstream sync
         uses: anthropics/claude-code-action@f64219702d7454cf29fe32a74104be6ed43dc637 # v1.0.34
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          path_to_claude_code_executable: ${{ env.CLAUDE_CODE_EXECUTABLE }}
           use_commit_signing: true
           show_full_output: true
           prompt: |
@@ -44,9 +116,9 @@ jobs:
             ## Task
 
             Read the orchestration instructions at
-            `.claude/skills/update-from-upstream/SKILL.md` and follow all four
-            stages of the pipeline exactly as documented. The pipeline's
-            verification agents (`changelog-differ`, `update-manifest-verifier`,
+            `.claude/skills/update-from-upstream/SKILL.md` and follow every stage
+            of the pipeline exactly as documented. The pipeline's agents
+            (`changelog-differ`, `doc-drift-auditor`, `update-manifest-verifier`,
             `update-reviewer`) are repo-scoped subagents in `.claude/agents/` and
             are dispatched via the Agent tool — no plugin install is required.
 
@@ -67,9 +139,19 @@ jobs:
             `/Users/kyle/Code/meta-claude/claude-code-system-prompts` for Stage 1
             triangulation.
 
-            **No changes**: If the pipeline finds no new Claude Code versions since the
-            last audit (check `docs/claude-code-compatibility.md`), exit cleanly with
-            no PR. Report "Already up to date" in the step summary.
+            **Stage 0 override**: A workflow step has already run
+            `scripts/extract-cc-facts.sh` against the installed CLI and written
+            `.agent-history/drift-report.txt`. Read those artifacts and
+            `git diff docs/claude-code-facts.json` instead of re-running the scripts.
+
+            **No changes**: Exit cleanly with no PR only when all three discovery
+            signals are empty: no new Claude Code versions after the `Last audited:`
+            header line in `docs/claude-code-compatibility.md`, no diff in
+            `docs/claude-code-facts.json`, and no DRIFT lines in
+            `.agent-history/drift-report.txt` plus no findings from the
+            `doc-drift-auditor`. Report "Already up to date" in the step summary. An
+            empty changelog range on its own is not a reason to stop — drift fixes and
+            ground truth changes are a valid sync on their own.
 
             ## Important
 

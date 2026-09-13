@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.43.1] - 2026-09-13
+
+### Fixed
+
+- **plugin-structure**: `plugin.json` examples validate: `repository` is a string URL, `agents` and `commands` take file paths (a directory is not accepted for `agents`; setting either field turns off auto-loading of its default directory), `monitors` is a top-level key given as a path to a JSON file and does not live under `experimental`
+- **compatibility log**: the correction-audit row no longer names a Claude Code version in its range column, so the changelog-driven baseline is read only from the `Last audited:` header
+
+### Added
+
+- **Drift guard (maintainer tooling, not shipped in the plugin)**: `scripts/extract-cc-facts.sh` extracts hook events, per-event hook-type support, `userConfig` schema, permission modes, and enum values from the installed Claude Code binary into `docs/claude-code-facts.json`; `scripts/check-doc-drift.sh` compares the references, validator script, and CI allowlist against those facts, runs `claude plugin validate` over every documented `plugin.json`, resolves every relative path, and blocks names of removed features
+- **update-from-upstream pipeline**: Stage 0 runs the drift guard against the newest CLI before reading changelogs; Stage 1b dispatches the `doc-drift-auditor` agent for prose contradictions; the changelog-differ reads the version baseline only from the `Last audited:` header and treats a facts-file diff as an upstream change; the manifest verifier re-runs cited checks; the reviewer fails on any drift line
+- **CI**: `upstream-sync.yml` installs the latest Claude Code CLI and passes it to the action (the action's default is 2.1.19); `doc-drift.yml` runs the drift check on pull requests touching the plugin, the facts file, or the scripts
+
 ## [0.43.0] - 2026-09-13
 
 Corrects references that had drifted from Claude Code behaviour, reported in [#62](https://github.com/kylesnowschwartz/plugin-dev/issues/62), plus internal contradictions found in a full sweep of the references. Every claim below is checked against Claude Code 2.1.270.

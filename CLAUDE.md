@@ -6,7 +6,7 @@ Guidance for Claude Code working in this repository.
 
 Plugin marketplace containing the **plugin-dev** plugin - a toolkit for developing Claude Code plugins. The shipped plugin provides 1 consolidated skill, 3 agents, and 1 hook (a PreToolUse guard that reminds Claude to load the plugin-dev skill when reading from `~/.claude/plugins`). Maintainer-only upstream-sync tooling (1 skill + 3 agents) lives in this repo's `.claude/`, not the plugin.
 
-**Version**: v0.43.0 | [CHANGELOG.md](CHANGELOG.md)
+**Version**: v0.43.1 | [CHANGELOG.md](CHANGELOG.md)
 
 ## MCP Tool Requirements (CRITICAL)
 
@@ -55,6 +55,12 @@ shellcheck plugins/plugin-dev/skills/*/scripts/*.sh
 
 # Lint YAML files
 uvx yamllint .github/workflows/
+
+# Refresh ground truth from the installed Claude Code CLI
+scripts/extract-cc-facts.sh --out docs/claude-code-facts.json
+
+# Check the shipped docs against that ground truth
+scripts/check-doc-drift.sh
 ```
 
 ## Key Conventions
@@ -103,5 +109,11 @@ orchestration file directly rather than invoking it as a plugin skill.
 
 - **`.claude/skills/update-from-upstream/SKILL.md`**: Orchestration that syncs plugin-dev docs with Claude Code releases
 - **`.claude/agents/changelog-differ.md`**: Discovers upstream changes (Stage 1)
+- **`.claude/agents/doc-drift-auditor.md`**: Sweeps the shipped docs for contradictions and stale claims (Stage 1b)
 - **`.claude/agents/update-manifest-verifier.md`**: Validates change manifest (Stage 2)
 - **`.claude/agents/update-reviewer.md`**: Verifies applied updates (Stage 4)
+
+The drift guard scripts live at the repo root and are maintainer tooling too:
+
+- **`scripts/extract-cc-facts.sh`**: Reads hook, userConfig, and permission facts out of the Claude Code binary into `docs/claude-code-facts.json` (Stage 0)
+- **`scripts/check-doc-drift.sh`**: Compares the shipped docs against that facts file, one `DRIFT` line per finding (Stage 0, Stage 4, and `doc-drift.yml` on pull requests)

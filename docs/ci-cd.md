@@ -4,13 +4,14 @@ Documentation for GitHub Actions workflows, labels, and templates.
 
 ## PR Workflows
 
-| Workflow                   | Trigger                        | Purpose                    |
-| -------------------------- | ------------------------------ | -------------------------- |
-| `links.yml`                | `**.md` changed                | Check for broken links     |
-| `component-validation.yml` | Plugin components changed      | Validate plugin components |
-| `version-check.yml`        | Version files changed          | Ensure version consistency |
-| `validate-workflows.yml`   | `.github/workflows/**` changed | Lint GitHub Actions        |
-| `yaml-lint.yml`            | `.github/workflows/**` changed | Lint YAML files            |
+| Workflow                   | Trigger                        | Purpose                     |
+| -------------------------- | ------------------------------ | --------------------------- |
+| `links.yml`                | `**.md` changed                | Check for broken links      |
+| `component-validation.yml` | Plugin components changed      | Validate plugin components  |
+| `doc-drift.yml`            | Plugin docs or scripts changed | Check docs against CC facts |
+| `version-check.yml`        | Version files changed          | Ensure version consistency  |
+| `validate-workflows.yml`   | `.github/workflows/**` changed | Lint GitHub Actions         |
+| `yaml-lint.yml`            | `.github/workflows/**` changed | Lint YAML files             |
 
 ## Scheduled Workflows
 
@@ -18,10 +19,56 @@ Documentation for GitHub Actions workflows, labels, and templates.
 | ------------------- | ------------ | --------------------------------------------- |
 | `upstream-sync.yml` | Every 3 days | Sync plugin-dev docs with Claude Code releases |
 
+The `upstream-sync.yml` job installs the latest Claude Code CLI before the agent
+run, extracts ground truth from that binary into `docs/claude-code-facts.json`,
+and writes `.agent-history/drift-report.txt`. The agent reads both artifacts as
+Stage 0 of the sync pipeline. See [Documentation Drift Guard](#documentation-drift-guard).
+
 ## Other Workflows
 
 - `claude.yml` - On-demand `@claude` in issues/PRs
 - `sync-labels.yml` - Synchronizes repository labels
+
+## Documentation Drift Guard
+
+The plugin's reference docs describe Claude Code's runtime behavior. Two scripts
+keep those claims tied to the binary rather than to the changelog, so a fact that
+was wrong from the start, or that changed upstream without a changelog line, is
+still caught.
+
+| Script                        | Reads                   | Writes                        |
+| ----------------------------- | ----------------------- | ----------------------------- |
+| `scripts/extract-cc-facts.sh` | The Claude Code binary  | `docs/claude-code-facts.json` |
+| `scripts/check-doc-drift.sh`  | The facts file and docs | A `DRIFT` line per finding    |
+
+```bash
+# Ground truth from the installed CLI
+scripts/extract-cc-facts.sh --out docs/claude-code-facts.json
+
+# Compare the shipped docs against it
+scripts/check-doc-drift.sh
+
+# Without a Claude Code CLI: skips the two checks that shell out to it
+scripts/check-doc-drift.sh --skip-validate
+```
+
+`extract-cc-facts.sh` exits 2 and writes nothing when a sanity check fails.
+`check-doc-drift.sh` exits 0 when clean, 1 when it finds drift, and 2 on a tooling
+error.
+
+Both feed the upstream sync pipeline in
+`.claude/skills/update-from-upstream/SKILL.md`:
+
+- **Stage 0 (ground truth)** runs both scripts. A diff in
+  `docs/claude-code-facts.json` is an upstream change signal on its own, and each
+  `DRIFT` line becomes a manifest item.
+- **Stage 1b (doc drift audit)** dispatches the `doc-drift-auditor` agent for the
+  contradictions a script cannot detect: the same fact stated two ways, claims a
+  sibling file refutes, terminology drift.
+- **Stage 4** fails the review on any `DRIFT` line and on a stale facts file.
+
+`doc-drift.yml` runs the deterministic half on every pull request that touches the
+plugin docs, the facts file, or the scripts.
 
 ## Labels
 

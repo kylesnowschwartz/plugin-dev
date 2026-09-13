@@ -14,45 +14,108 @@ description: >-
 
 # Update From Upstream
 
-Sync plugin-dev documentation with Claude Code upstream changes using a four-stage pipeline with independent verification.
+Sync plugin-dev documentation with Claude Code upstream changes using a staged pipeline with independent verification. The pipeline has two discovery sources: the upstream changelog, and ground truth read straight out of the installed Claude Code binary.
 
 ## Prerequisites
 
 Before running this skill, ensure:
+
 - The local clone of `claude-code-system-prompts` is up to date: `cd /Users/kyle/Code/meta-claude/claude-code-system-prompts && git pull`
 - `docs/claude-code-compatibility.md` exists (the skill creates it on first run if missing)
+- A Claude Code binary is available for Stage 0: `claude` on PATH locally, or the executable path exported by the CI workflow
 
 ## Pipeline Overview
 
 ```
-Stage 1: Discover     → changelog-differ agent
-Stage 2: Verify Plan  → update-manifest-verifier agent
-Stage 3: Apply        → orchestrator (you, inline)
-Stage 4: Verify Work  → update-reviewer agent
+Stage 0:  Ground truth    → extract-cc-facts.sh + check-doc-drift.sh (you, inline)
+Stage 1:  Discover        → changelog-differ agent
+Stage 1b: Doc drift audit → doc-drift-auditor agent
+Stage 2:  Verify plan     → update-manifest-verifier agent
+Stage 3:  Apply           → orchestrator (you, inline)
+Stage 4:  Verify work     → update-reviewer agent
 Release: Commit, bump version, update compatibility log
 ```
 
 Each stage produces a structured artifact consumed by the next. Stages 2 and 4 are verification gates run by agents with independent context.
+
+## Stage 0: Ground Truth
+
+Establish what the installed Claude Code binary actually does before reading any changelog. This stage catches facts that were wrong from the start and upstream changes that ship without a changelog line.
+
+```bash
+# Extract facts from the installed CLI. Locally `claude` is on PATH; in CI the
+# workflow exports the path of the CLI it installed.
+scripts/extract-cc-facts.sh --out docs/claude-code-facts.json
+scripts/extract-cc-facts.sh --binary "$CLAUDE_CODE_EXECUTABLE" --out docs/claude-code-facts.json
+
+# Any diff here is an upstream change signal, changelog line or not
+git diff --stat docs/claude-code-facts.json
+git diff docs/claude-code-facts.json
+
+# Deterministic drift between the shipped docs and those facts
+mkdir -p .agent-history
+scripts/check-doc-drift.sh > .agent-history/drift-report.txt
+```
+
+**Exit codes:** `extract-cc-facts.sh` exits 2 when a sanity check fails, and writes no output file — stop the pipeline and report. `check-doc-drift.sh` exits 0 when clean, 1 when drift is found (expected — continue), and 2 on a tooling error — stop and report.
+
+**What the outputs mean:**
+
+- A non-empty `git diff docs/claude-code-facts.json` is an upstream change. Keep the full diff: Stage 1 records it in the manifest under "Ground truth changes", one item per changed fact, each mapped to the topic it affects.
+- Every `DRIFT <check> <file>:<line> <message>` line in `.agent-history/drift-report.txt` becomes a "Must Update" item in the manifest under "Deterministic drift". Stage 1 reads the file directly.
+
+Stage 0 runs on every sync, including runs where the changelog range turns out to be empty.
 
 ## Stage 1: Discover
 
 Dispatch the `changelog-differ` agent with this prompt:
 
 ```
-Find all Claude Code changes since our last audit. Read the last audited
-version from docs/claude-code-compatibility.md, then:
+Find all Claude Code changes since our last audit. Take the baseline from the
+`Last audited: Claude Code X.Y.Z` header line of docs/claude-code-compatibility.md
+and from nowhere else — never infer a version from an audit log row. Then:
 
 1. Fetch the CC changelog from https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md
 2. Read the system-prompts CHANGELOG at /Users/kyle/Code/meta-claude/claude-code-system-prompts/CHANGELOG.md
 3. Cross-reference with the claude-code-guide agent for official doc coverage
-4. Classify all changes and write the manifest to .agent-history/upstream-changes.md
+4. Read .agent-history/drift-report.txt and record every DRIFT line as a
+   "Must Update" item under a "Deterministic drift" section, with the check id,
+   the file:line it cites, and the topic it affects
+5. Run `git diff docs/claude-code-facts.json` and record every changed fact
+   under a "Ground truth changes" section, with the topic it affects
+6. Classify all changes and write the manifest to .agent-history/upstream-changes.md
+
+Write the manifest even when the changelog returns no versions after the
+baseline, as long as the drift report or the facts diff has content.
 
 Follow your agent instructions exactly.
 ```
 
 **Wait for the agent to complete before proceeding.**
 
-If the agent reports that the CC changelog could not be fetched or the version range is empty (already up to date), stop the pipeline and report to the user.
+If the agent reports that the CC changelog could not be fetched, stop the pipeline and report to the user.
+
+An empty changelog range on its own does not end the run. See the early-exit rule under Error Handling.
+
+## Stage 1b: Doc Drift Audit
+
+Dispatch the `doc-drift-auditor` agent with this prompt:
+
+```text
+Sweep plugin-dev's shipped documentation for internal contradictions and stale
+claims that deterministic checks cannot catch. Ground truth is
+docs/claude-code-facts.json. Append your findings to
+.agent-history/upstream-changes.md as a "Doc Drift Audit" section.
+
+Skip anything scripts/check-doc-drift.sh already owns: event counts and table
+membership, broken relative paths, denylisted names, version sync.
+
+Follow your agent instructions exactly.
+```
+
+**Wait for the agent to complete before proceeding.**
+
+The auditor's findings are manifest items like any other: Stage 2 verifies them, Stage 3 applies them, Stage 4 checks them.
 
 ## Stage 2: Verify Plan
 
@@ -64,6 +127,9 @@ Independently verify the change manifest at .agent-history/upstream-changes.md.
 Re-fetch the CC changelog yourself (do not trust Stage 1's data). Check every
 item for correctness, scan for missed changes, and validate topic mappings by
 reading the reference docs at plugins/plugin-dev/skills/plugin-dev/references/<topic>/overview.md.
+
+Verify deterministic drift items by re-running scripts/check-doc-drift.sh for the
+cited check, and doc drift audit items by reading both cited file:line locations.
 
 Follow your agent instructions exactly.
 ```
@@ -96,20 +162,24 @@ Use judgment. If the change materially affects examples or references that users
 ### After all edits, update metadata
 
 **Compatibility file** (`docs/claude-code-compatibility.md`):
+
 - Set `Last audited:` to the newest CC version in the range
 - Update `Plugin-dev version:` to the new version
 - Append a row to the audit log table
 
-**Version bump** — determine scope:
+**Version bump** — determine scope. The same rule covers drift fixes and changelog-driven edits:
+
 - **Patch** (e.g., 0.7.1 → 0.7.2): doc corrections, minor additions to existing sections
 - **Minor** (e.g., 0.7.1 → 0.8.0): new sections, new capabilities documented, structural changes
 
 **Bump version in all three locations:**
+
 - `plugins/plugin-dev/.claude-plugin/plugin.json` — `"version"` field
 - `.claude-plugin/marketplace.json` — both `metadata.version` and the plugin entry `version`
 - `CLAUDE.md` (root) — version line, component counts if changed
 
 **Update CHANGELOG.md:**
+
 - Add a new version entry following Keep a Changelog format
 - Organize changes into Added/Changed/Fixed sections
 - Reference the CC version range in the entry
@@ -126,6 +196,11 @@ Review the applied documentation updates against the verified manifest at
 
 Check completeness, accuracy, lint (run markdownlint), version sync, regressions,
 and style. Report PASS or FAIL with specific fix instructions.
+
+Run the deterministic gate as part of the review:
+- `scripts/check-doc-drift.sh` must exit 0. Any DRIFT line is a FAIL.
+- Re-run `scripts/extract-cc-facts.sh --out /tmp/facts.json` and diff it against
+  docs/claude-code-facts.json to confirm the checked-in facts are current.
 
 Follow your agent instructions exactly.
 ```
@@ -180,7 +255,11 @@ Then proceed with Stage 1 as normal.
 | Condition | Action |
 |---|---|
 | CC changelog fetch fails | Stop pipeline, report to user |
-| No new versions since last audit | Stop pipeline, report "already up to date" |
+| No new versions, no facts diff, no drift lines, no auditor findings | Stop pipeline, report "already up to date" |
+| No new versions, but Stage 0 or the auditor found something | Continue — the manifest carries the drift and ground truth items |
+| `scripts/extract-cc-facts.sh` exits 2 (sanity check failed) | Stop pipeline, report the stderr message to user |
+| No `claude` binary available for Stage 0 | Stop pipeline, report to user |
+| `scripts/check-doc-drift.sh` exits 2 (tooling error) | Stop pipeline, report to user |
 | `claude-code-guide` agent unavailable | Continue with two-source triangulation, note degraded confidence |
 | System-prompts repo not found | Continue with CC changelog only, note degraded confidence |
 | `markdownlint` not installed | Skip lint check in Stage 4, warn in output |

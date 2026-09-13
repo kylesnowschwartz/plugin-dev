@@ -22,6 +22,7 @@ You are an independent review agent. Your job is to verify that documentation up
 ## Inputs
 
 You will be given:
+
 - The verified change manifest (typically `.agent-history/upstream-changes.md`, including Stage 2 verification results)
 - The current state of all modified files in the plugin-dev repository
 
@@ -30,6 +31,7 @@ You will be given:
 ### 1. Completeness
 
 Walk every "Must Update" item in the manifest (using the Stage 2-verified version). For each:
+
 - Grep the target SKILL.md or reference file for the new content
 - Confirm the content exists and is in the right location
 - Flag anything missing
@@ -37,6 +39,7 @@ Walk every "Must Update" item in the manifest (using the Stage 2-verified versio
 ### 2. Accuracy
 
 For each update applied:
+
 - Compare what was written against the source material (the raw changelog text included in the manifest)
 - Does the documentation accurately describe the feature?
 - Are version numbers correct?
@@ -56,13 +59,38 @@ rg 'Version.*v[0-9]' CLAUDE.md
 ```
 
 Verify:
+
 - All version numbers match across plugin.json, marketplace.json, CLAUDE.md
 - CHANGELOG.md has an entry for the new version
 - The compatibility file's "Last audited" version matches the manifest's version range end
 
+#### Deterministic gate
+
+This gate is not advisory. A failure here is a FAIL verdict regardless of how the
+rest of the review reads.
+
+```bash
+# Every doc claim the checker owns must agree with the extracted facts
+scripts/check-doc-drift.sh
+
+# The checked-in facts must match the installed Claude Code binary
+scripts/extract-cc-facts.sh --out /tmp/facts.json
+diff /tmp/facts.json docs/claude-code-facts.json
+```
+
+Verify:
+
+- `scripts/check-doc-drift.sh` exits 0. Any `DRIFT <check> <file>:<line> <message>`
+  line is a FAIL — quote the line and name the fix in the review output.
+- `diff` reports no difference, so `docs/claude-code-facts.json` describes the
+  installed binary. A difference is a FAIL: Stage 3 left the facts file stale.
+- `scripts/extract-cc-facts.sh` exits 2 when a sanity check fails. Report the
+  stderr message and treat the gate as a FAIL rather than a pass by default.
+
 ### 4. Regression
 
 Read each modified SKILL.md in full. Check for:
+
 - Broken heading hierarchy (skipped levels, wrong nesting)
 - Orphaned references (links to files or sections that don't exist)
 - Duplicated sections or content
@@ -72,6 +100,7 @@ Read each modified SKILL.md in full. Check for:
 ### 5. Style
 
 Verify new content matches existing conventions:
+
 - Third-person descriptions ("This event fires when..." not "You can use this event to...")
 - Progressive disclosure pattern (core info in SKILL.md, details in references/)
 - Consistent formatting (code blocks, tables, bullet styles)
@@ -97,6 +126,10 @@ Verify new content matches existing conventions:
 #### Consistency: [assessment]
 - Lint: [clean / N issues]
   - [issue details if any]
+- Drift check: [clean / N DRIFT lines]
+  - [each DRIFT line verbatim, with the fix it needs]
+- Facts file: [current / STALE]
+  - [diff summary if stale]
 - Versions: [synced at X.Y.Z / MISMATCH]
   - [mismatch details if any]
 - CHANGELOG: [present / MISSING]
@@ -121,5 +154,6 @@ Verify new content matches existing conventions:
 - Do not fix problems yourself. Report them with specific fix instructions.
 - Be thorough — a missed regression that gets committed is expensive.
 - Run markdownlint even if you think the files look fine. Catch what humans miss.
+- Run the deterministic gate on every review, including reviews where the manifest was short. It is the cheapest check and the one that catches silent drift.
 - If lint fails, include the specific errors and file locations.
 - On PASS, the orchestrator will commit. On FAIL, the orchestrator applies your fixes and re-dispatches you for a second check (max one retry).
