@@ -42,9 +42,9 @@ Foreground agents should only be used when the very next action depends on their
 
 Sub-agents can now spawn their own sub-agents, enabling complex orchestration patterns. Previously, sub-agents could not spawn further sub-agents.
 
-**Nesting limit:** Sub-agents can nest up to **5 levels deep**. Attempts to spawn beyond 5 levels will fail.
+**Nesting limit:** Sub-agents nest up to **3 levels deep** (tightened from 5 in CC 2.1.219). Attempts to spawn beyond the limit fail. `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` overrides the default. See the runtime limits table in [advanced-agent-fields.md](advanced-agent-fields.md#session-resource-limits-cc-21212-updated-21224).
 
-**Reconciliation with worker fork guidance:** The CC 2.1.169 guidance that forked workers should not spawn subagents still applies — forked workers should execute their directive directly. The 5-level nesting capability is for orchestrator patterns where a top-level agent spawns sub-agents that themselves need to coordinate further sub-tasks.
+**Reconciliation with worker fork guidance:** The CC 2.1.169 guidance that forked workers should not spawn subagents still applies — forked workers should execute their directive directly. Nesting is for orchestrator patterns where a top-level agent spawns sub-agents that themselves need to coordinate further sub-tasks.
 
 **Use cases:**
 
@@ -54,9 +54,9 @@ Sub-agents can now spawn their own sub-agents, enabling complex orchestration pa
 
 **Design guidance:**
 
-- Keep nesting shallow when possible (2-3 levels is typical)
+- Keep nesting shallow — with a 3-level cap, an orchestrator plus one worker layer is usually all the room available
 - Top-level orchestrators handle coordination; leaf agents do the work
-- Avoid recursive patterns that could hit the 5-level limit
+- Avoid recursive patterns that could hit the depth limit
 
 ## SendUserFile Tool (CC 2.1.142)
 

@@ -39,6 +39,12 @@ import { Box, Text, Svg } from '@anthropic/claude-code-jsx';
 
 **Keyed box hover styles (CC 2.1.267):** Keyed boxes (`<Box key="...">`) scope hover styles to their subtree. This enables isolated hover effects within complex layouts.
 
+**Surface-specific limitations and mobile rendering (CC 2.1.268):** A render hook's output is drawn on whichever surface the session is running on, and surfaces do not all support the same elements. Mobile surfaces in particular render in a narrow viewport with a reduced element set.
+
+- Do not assume every primitive is available on every surface — design the tree so the essential information survives when an element is unsupported
+- Keep layouts narrow enough to remain legible on a mobile-width surface; do not rely on wide fixed-width boxes
+- An invalid or unsupported tree falls back to a simpler rendering rather than failing the hook. Run with `claude --debug` to see why a tree was rejected
+
 **Usage context:**
 
 - Only available within function-hook render contexts
@@ -93,6 +99,8 @@ Function-hook plugins now have improved error handling and debugging capabilitie
 - JSX rendering only works in environments that support it (not all TUI modes)
 - More complex to debug than command hooks
 - Official documentation still evolving
+
+**Claude no longer carries the plugin-authoring reference in-prompt (CC 2.1.269).** The embedded plugin-development skill covering function hooks, rendering surfaces, dispatch lifetimes, validation, and registered tools was removed from Claude Code's bundled system prompts. The **feature is unaffected** — the JSX runtime and function hooks are still present in the CC 2.1.270 binary. What changed is that Claude cannot answer function-hook questions from built-in knowledge, so an author working on one should point Claude at this reference (or the official docs) explicitly rather than assuming it already knows the API.
 
 **Note:** This is an advanced feature. Most plugins work well with declarative `hooks.json` configuration. Consider function-hooks only when the simpler approach doesn't meet your requirements.
 
@@ -303,6 +311,32 @@ claude plugin update plugin-name@marketplace
 claude plugin uninstall plugin-name@marketplace
 ```
 
+### Machine-Readable Output (CC 2.1.268)
+
+`install`, `uninstall`, `update`, `enable`, and `disable` all accept `--json`. The last line of stdout is a single JSON object:
+
+```bash
+claude plugin install my-plugin@my-marketplace --json
+```
+
+```json
+{
+  "command": "install",
+  "outcome": "success",
+  "message": "Installed my-plugin@my-marketplace",
+  "pluginId": "my-plugin@my-marketplace",
+  "scope": "user"
+}
+```
+
+On failure the object carries a `failureCode` alongside `outcome`. Because only the **last** line is guaranteed to be the JSON object, parse it with `tail -n 1` rather than feeding the whole stream to `jq`:
+
+```bash
+claude plugin install my-plugin@my-marketplace --json | tail -n 1 | jq -r '.outcome'
+```
+
+`claude plugin list --json` rows gained `errorDetails` and `noteDetails`, which surface load failures and advisory notes per plugin — useful for asserting a clean install in CI.
+
 ### Marketplace Management
 
 ```bash
@@ -362,9 +396,11 @@ Team members get the plugin when they clone the repo.
 
 Organizations can use managed settings to:
 
-- **Allowlist marketplaces:** `strictKnownMarketplaces` restricts which marketplaces users can add
+- **Allowlist marketplaces:** `strictKnownMarketplaces` restricts which marketplaces users can add. It takes a **list** of approved entries, not a boolean
 - **Force plugins:** Pre-configure required plugins via managed settings
 - **Block plugins:** Prevent specific plugins from being installed
+
+**Headless and Desktop coverage (CC 2.1.269):** Plugins enabled through managed settings previously failed to load in headless sessions and on Claude Desktop. They now load in both, from the next session onward — Desktop picks this up once it bundles a CLI at or above CC 2.1.269. A plugin distributed by enterprise policy can therefore be relied on in CI, not just in interactive terminal sessions.
 
 ### Enterprise Hook and Permission Control
 
@@ -650,6 +686,11 @@ claude plugin install https://example.com/my-plugin.zip --sha256=abc123...
 | Marketplace support | No | Yes |
 | Use case | Testing/development | Production distribution |
 
+**Extraction hardening (CC 2.1.269):** Archives extracted for a session are no longer readable by other local users, extracted files no longer keep world-writable permission bits carried in the archive, and stale files no longer survive a re-extraction. Two consequences for plugin authors publishing archives:
+
+- Do not rely on permission bits set inside the archive. Scripts that must be executable should be invoked through an interpreter (`bash ${CLAUDE_PLUGIN_ROOT}/scripts/x.sh`) rather than depending on the archived mode
+- A re-extraction is now a clean replacement, so a file removed between releases is genuinely gone. Do not count on a stale file lingering from an earlier version
+
 ## Safe Mode (CC 2.1.169)
 
 The `--safe-mode` flag disables all customizations for troubleshooting:
@@ -782,6 +823,13 @@ The `sandbox.network.strictAllowlist` setting enforces a strict network allowlis
 - Document any external network dependencies in your plugin's README
 - Consider providing offline fallbacks for network-dependent features
 
+### Sandbox Confinement Claims (CC 2.1.268)
+
+Claude Code's own Bash sandbox instructions were corrected to stop over-stating confinement. Two changes matter when writing plugin docs that describe what the sandbox guarantees:
+
+- When filesystem isolation is **off**, no path allowlist is enforced. Earlier instructions named path lists that were not actually applied — do not repeat that framing in plugin documentation
+- **Strict mode no longer claims commands can never run unsandboxed.** Treat the sandbox as a strong default, not an absolute guarantee, and keep security-relevant checks in your hooks rather than relying on sandbox confinement alone
+
 ## Cowork Plugin Format (CC 2.1.163)
 
 Claude Code includes comprehensive Cowork plugin component format references for authoring plugins that integrate with the Cowork collaboration system.
@@ -870,6 +918,17 @@ Plugins now **activate immediately when safe**, removing the previous requiremen
 - Plugin functionality is available faster after install
 - Update any documentation that previously mentioned needing `/reload-plugins` after installation
 - Plugins with `defaultEnabled: false` still require explicit user enablement via `/plugin`
+
+### `/plugin` Menu Changes Apply on Close (CC 2.1.268)
+
+CC 2.1.221 covered installation. CC 2.1.268 extends the same behavior to enable and disable: **installing, enabling or disabling a plugin through the `/plugin` menu takes effect when the menu closes.** `/reload-plugins` is not needed afterwards.
+
+`/reload-plugins` is still a supported command and is still the right tool for changes the menu did not make:
+
+- Editing plugin files on disk (`hooks/hooks.json`, skills, commands, agents) during development
+- MCP server changes, which need the servers re-initialized
+
+**Implications for plugin developers:** Do not tell users to run `/reload-plugins` after a menu toggle. Do keep it in your development-loop instructions, where files change outside the menu.
 
 ### Additional Source Types
 

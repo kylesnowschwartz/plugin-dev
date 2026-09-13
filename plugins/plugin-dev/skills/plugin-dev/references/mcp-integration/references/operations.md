@@ -199,6 +199,10 @@ Handle MCP server unavailability:
 
 **Policy enforcement fix (CC 2.1.169):** MCP policy enforcement now works correctly on reconnect and cold starts. Previously, managed MCP policies could be bypassed in certain reconnection scenarios. This fix ensures MCP server restrictions are consistently applied.
 
+**Reconnect fixes (CC 2.1.269):** Synced plugin MCP servers failed to connect when a remote session resumed; they now reconnect. Separately, a config change that only **reorders the query parameters** of a server URL no longer forces a reconnect — semantically identical URLs are treated as unchanged.
+
+**Secrets in MCP diagnostics (CC 2.1.268):** `/mcp`, the `/plugin` server details view, `claude mcp list`, `claude mcp get`, and MCP login errors no longer print secrets resolved from `${VAR}` placeholders in MCP configs. Keep using `${VAR}` placeholders rather than literal credentials — the placeholder form is what keeps values out of these surfaces.
+
 **Connection failure system reminder (CC 2.1.205):** When configured MCP servers fail to connect, Claude Code displays a system reminder informing the agent that:
 
 - The server's tools should be treated as unavailable due to connection failure (not missing capability)
@@ -250,6 +254,8 @@ Use `alwaysLoad: true` to bypass lazy loading and tool-search deferral:
   }
 }
 ```
+
+**Mid-conversation connection (CC 2.1.269):** In first-party sessions with telemetry disabled, an `alwaysLoad` server that finishes connecting after the session has started is usable on the very next turn, without a tool-search round trip first. This narrows an earlier gap where a slow-starting server stayed effectively invisible until a tool search ran.
 
 **Use cases:**
 

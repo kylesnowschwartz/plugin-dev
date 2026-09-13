@@ -444,7 +444,7 @@ Output style files are markdown with YAML frontmatter (`name`, `description`, `k
 
 **Type**: Object
 
-Experimental plugin components are declared under the `"experimental"` key in plugin.json. Two components live there: `themes` and `monitors`.
+Experimental plugin components are declared under the `"experimental"` key in plugin.json. Three components live there: `themes`, `evals`, and `monitors`. Fields under `experimental` may change shape without a deprecation cycle.
 
 ```json
 {
@@ -452,6 +452,7 @@ Experimental plugin components are declared under the `"experimental"` key in pl
   "version": "1.0.0",
   "experimental": {
     "themes": ["./themes/"],
+    "evals": "evals",
     "monitors": "./monitors/monitors.json"
   }
 }
@@ -483,6 +484,23 @@ Custom UI themes for Claude Code.
 ```
 
 **Behavior**: Replaces the default `themes/` auto-load — the directory is not auto-loaded once this field is set. List its files here too if you want both.
+
+#### experimental.evals (CC 2.1.269)
+
+**Type**: String (path to the eval case directory, relative to the plugin root) or Array of such paths
+**Default**: `"evals"`
+
+Directory of eval cases for the `claude plugin eval` harness. When an array is given, its first entry is the case directory.
+
+```json
+{
+  "experimental": {
+    "evals": "evals"
+  }
+}
+```
+
+`--eval-dir <dir>` overrides this per run. See [Plugin Eval](../../skill-development/references/skill-loading-and-runtime.md#plugin-eval-claude-plugin-eval--generally-available-cc-21269) for the case layout and grader types.
 
 #### experimental.monitors
 
@@ -521,7 +539,13 @@ Background watch scripts the host arms as persistent Monitor tasks. They run uns
 
 Each entry requires `name`, `command`, and `description`. `when` is optional and defaults to `"always"`, which arms the monitor at session start and on plugin reload; `"on-skill-invoke:<skill>"` arms it the first time that skill is dispatched. Monitor names must be unique within a plugin.
 
-**Behavior**: Replaces the default `monitors/monitors.json` auto-load — that file is read only when the field is omitted.
+**Behavior**: Replaces the default `monitors/monitors.json` auto-load — that file is read only when the field is omitted. If the default file exists but cannot be read, the plugin reports the failure instead of silently skipping it (CC 2.1.268).
+
+**Watches expire — do not assume session-long persistence (CC 2.1.268).** A monitor watch is not guaranteed to stay armed for the whole session. Design monitors accordingly:
+
+- Use **bounded watches** with an explicit stopping condition rather than open-ended ones
+- **Check for an existing monitor** before arming another one, so a re-arm does not duplicate a live watch
+- **Re-arm an expired watch** when the work it covers is still in flight
 
 **Important: Silence is NOT success.** Unlike hooks where no output means success, monitors must actively output events to the Monitor tool. A silent monitor provides no value — design monitors to regularly emit status updates or event notifications.
 

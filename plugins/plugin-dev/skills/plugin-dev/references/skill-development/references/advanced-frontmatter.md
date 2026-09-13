@@ -349,7 +349,7 @@ Claude Code allocates a character budget for skill descriptions to manage contex
 ### How It Works
 
 1. All installed skills contribute their `description` text to a shared budget
-2. Default budget: approximately 2% of the context window or ~16KB fallback (controlled by `SLASH_COMMAND_TOOL_CHAR_BUDGET`)
+2. Default budget: 1% of the context window measured in characters — `contextWindowTokens × 4 × 0.01`, or 8,000 characters for the default 200K-token window (controlled by `SLASH_COMMAND_TOOL_CHAR_BUDGET`)
 3. When total descriptions exceed the budget, lower-priority skills may be excluded from auto-discovery
 4. Excluded skills are still available via explicit `/skill-name` invocation — they just won't auto-trigger
 

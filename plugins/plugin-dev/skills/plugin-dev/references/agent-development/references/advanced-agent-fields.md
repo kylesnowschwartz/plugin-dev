@@ -272,6 +272,8 @@ Team leads coordinate work across multiple teammates. Key design considerations:
 - **System prompt focus**: Task decomposition, work assignment, progress monitoring, quality review
 - **Tools**: Team leads automatically get access to `TeamCreate`, `TaskCreate`, `TaskUpdate`, `TaskList`, `SendMessage`, and `Task` (for spawning)
 
+**Task-tracking tools are model-gated (CC 2.1.268).** `TaskCreate`, `TaskGet`, `TaskUpdate`, `TaskList`, and `TodoWrite` are offered only on Claude 3.x, Opus 4.0–4.7, Sonnet 4.0–4.6, and Haiku 4.5. On newer models — including Opus 5, the current default — they are absent unless `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` is set. An agent whose `tools` list names them, or whose system prompt instructs it to track work with them, silently loses that capability on a default-model session. Design agents to report progress in their output rather than depending on task-tracking tools being present.
+
 ### Permission Inheritance
 
 Teammates inherit the team lead's permission settings. If the lead runs with `--dangerously-skip-permissions`, all teammates inherit that too. Plan permission modes accordingly — a permissive lead creates permissive teammates.
@@ -288,6 +290,8 @@ This allows teammates to share both local files and user-uploaded files passed t
 ### Context Isolation
 
 Teammates load CLAUDE.md, MCP servers, and skills from the project, but do NOT inherit the lead's conversation history. Each teammate starts with a fresh context window; the spawn prompt provides initial task context.
+
+**Respawn trust boundary (CC 2.1.268):** A respawned in-process teammate could previously pick up tools or a system prompt from a same-named agent file sitting in a folder the user had not trusted. Definitions now resolve only from trusted sources. For plugin authors this means an agent name is not a safe channel for injecting a definition — an untrusted directory that happens to contain `agents/<name>.md` no longer shadows a trusted agent of the same name on respawn.
 
 ### Token Cost
 
@@ -511,6 +515,9 @@ Claude Code enforces per-session limits to prevent runaway usage:
 | WebSearch calls | 200 per session | Additional calls blocked |
 | Concurrent subagents | 20 (default) | New spawns wait (CC 2.1.217) |
 | Nested subagent depth | 3 levels (CC 2.1.219) | Deeper nesting blocked |
+| Workflow concurrent agents | 16 per run (default) | Additional agents queue |
+
+**Overrides:** `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` raises or lowers the nesting depth. `CLAUDE_CODE_WORKFLOW_MAX_CONCURRENT_AGENTS` (1–256, CC 2.1.269) raises the Workflow tool's per-run concurrent agent limit for inference-bound fan-outs; the default is up to 16, fewer on CPU-limited hosts or in containers.
 
 **Subagent spawn cap removed (CC 2.1.224):** The previous 200-subagent-per-session spawn cap has been removed. Sessions can now spawn unlimited subagents, though concurrency and depth limits still apply. This reverses the limit added in CC 2.1.213.
 
