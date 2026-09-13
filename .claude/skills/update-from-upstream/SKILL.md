@@ -49,8 +49,8 @@ scripts/extract-cc-facts.sh --out docs/claude-code-facts.json
 scripts/extract-cc-facts.sh --binary "$CLAUDE_CODE_EXECUTABLE" --out docs/claude-code-facts.json
 
 # Any diff here is an upstream change signal, changelog line or not
-git diff --stat docs/claude-code-facts.json
-git diff docs/claude-code-facts.json
+git diff -I '"claude_code_version"' --stat docs/claude-code-facts.json
+git diff -I '"claude_code_version"' docs/claude-code-facts.json
 
 # Deterministic drift between the shipped docs and those facts
 mkdir -p .agent-history
@@ -61,8 +61,10 @@ scripts/check-doc-drift.sh > .agent-history/drift-report.txt
 
 **What the outputs mean:**
 
-- A non-empty `git diff docs/claude-code-facts.json` is an upstream change. Keep the full diff: Stage 1 records it in the manifest under "Ground truth changes", one item per changed fact, each mapped to the topic it affects.
-- Every `DRIFT <check> <file>:<line> <message>` line in `.agent-history/drift-report.txt` becomes a "Must Update" item in the manifest under "Deterministic drift". Stage 1 reads the file directly.
+- A non-empty `git diff -I '"claude_code_version"' docs/claude-code-facts.json` is an upstream change. Keep the full diff: Stage 1 records it in the manifest under "Ground truth changes", one item per changed fact, each mapped to the topic it affects.
+- Every line starting with `DRIFT` in `.agent-history/drift-report.txt` becomes a "Must Update" item in the manifest under "Deterministic drift". The lines have the shape `DRIFT <check> <file>:<line> <message>`. Ignore lines that do not start with `DRIFT` — the report can carry progress and summary text that names no finding. Stage 1 reads the file directly.
+
+**Why `claude_code_version` is held out of the signal:** the facts file records which binary it was read from, and CI installs the latest CLI on every run, so that key changes whenever a new release ships even when no documented fact moved. On its own a version-only change is not an upstream change and not a reason to open a pull request. It rides along in the commit of the next sync that has real content.
 
 Stage 0 runs on every sync, including runs where the changelog range turns out to be empty.
 
@@ -78,15 +80,19 @@ and from nowhere else — never infer a version from an audit log row. Then:
 1. Fetch the CC changelog from https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md
 2. Read the system-prompts CHANGELOG at /Users/kyle/Code/meta-claude/claude-code-system-prompts/CHANGELOG.md
 3. Cross-reference with the claude-code-guide agent for official doc coverage
-4. Read .agent-history/drift-report.txt and record every DRIFT line as a
-   "Must Update" item under a "Deterministic drift" section, with the check id,
-   the file:line it cites, and the topic it affects
-5. Run `git diff docs/claude-code-facts.json` and record every changed fact
-   under a "Ground truth changes" section, with the topic it affects
+4. Read .agent-history/drift-report.txt and record every line starting with
+   "DRIFT " as a "Must Update" item under a "Deterministic drift" section, with
+   the check id, the file:line it cites, and the topic it affects. Ignore lines
+   that do not start with "DRIFT "
+5. Run `git diff -I '"claude_code_version"' docs/claude-code-facts.json` and
+   record every changed fact under a "Ground truth changes" section, with the
+   topic it affects. The ignored key tracks which binary the facts came from,
+   not a documented fact, so it is never a manifest item
 6. Classify all changes and write the manifest to .agent-history/upstream-changes.md
 
 Write the manifest even when the changelog returns no versions after the
-baseline, as long as the drift report or the facts diff has content.
+baseline, as long as the drift report has a DRIFT line or the facts diff has
+content once claude_code_version is ignored.
 
 Follow your agent instructions exactly.
 ```
@@ -163,9 +169,10 @@ Use judgment. If the change materially affects examples or references that users
 
 **Compatibility file** (`docs/claude-code-compatibility.md`):
 
-- Set `Last audited:` to the newest CC version in the range
+- `Last audited:` moves only when the changelog range is non-empty. Set it to the newest CC version in that range. On a drift-only run — no versions after the baseline — leave the header exactly as it is. The baseline is a claim about which changelog entries have been read, and a drift-only run reads none, so advancing it would silently mark unaudited entries as audited.
+- Never write the installed binary's version into `Last audited:`. The binary is whatever CI installed, not a point the changelog was audited to.
 - Update `Plugin-dev version:` to the new version
-- Append a row to the audit log table
+- Append a row to the audit log table. The "CC version range" column takes the changelog range, or `none (drift)` on a drift-only run. When the binary version matters to the row, name it in the Notes column.
 
 **Version bump** — determine scope. The same rule covers drift fixes and changelog-driven edits:
 
@@ -198,9 +205,14 @@ Check completeness, accuracy, lint (run markdownlint), version sync, regressions
 and style. Report PASS or FAIL with specific fix instructions.
 
 Run the deterministic gate as part of the review:
-- `scripts/check-doc-drift.sh` must exit 0. Any DRIFT line is a FAIL.
+- `scripts/check-doc-drift.sh` must exit 0. Any line of its stdout starting with
+  `DRIFT` is a FAIL; ignore lines that do not.
 - Re-run `scripts/extract-cc-facts.sh --out /tmp/facts.json` and diff it against
   docs/claude-code-facts.json to confirm the checked-in facts are current.
+
+Check the compatibility header against the manifest: `Last audited:` advances only
+on a run whose changelog range is non-empty, and then only to the newest version in
+that range.
 
 Follow your agent instructions exactly.
 ```
@@ -255,7 +267,7 @@ Then proceed with Stage 1 as normal.
 | Condition | Action |
 |---|---|
 | CC changelog fetch fails | Stop pipeline, report to user |
-| No new versions, no facts diff, no drift lines, no auditor findings | Stop pipeline, report "already up to date" |
+| No new versions, no facts diff outside `claude_code_version`, no `DRIFT` lines, no auditor findings | Stop pipeline, report "already up to date" |
 | No new versions, but Stage 0 or the auditor found something | Continue — the manifest carries the drift and ground truth items |
 | `scripts/extract-cc-facts.sh` exits 2 (sanity check failed) | Stop pipeline, report the stderr message to user |
 | No `claude` binary available for Stage 0 | Stop pipeline, report to user |

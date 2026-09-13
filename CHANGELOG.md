@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **plugin-structure**: `plugin.json` examples validate: `repository` is a string URL, `agents` and `commands` take file paths (a directory is not accepted for `agents`; setting either field turns off auto-loading of its default directory), `monitors` is a top-level key given as a path to a JSON file and does not live under `experimental`
+- **plugin-structure**: `plugin.json` examples validate: `repository` is a string URL, `author` is an object (no string form), `agents` and `commands` take file paths (a directory is not accepted for `agents`; setting either field turns off auto-loading of its default directory), `monitors` and `themes` live under `experimental` (the top-level forms still load but are deprecated); `commands`, `agents`, `outputStyles`, `experimental.themes`, and `experimental.monitors` replace their default directories, `skills` adds to it, and `hooks`, `mcpServers`, `lspServers` merge; the LSP `${CLAUDE_PLUGIN_ROOT}` example carries the required `extensionToLanguage`
 - **compatibility log**: the correction-audit row no longer names a Claude Code version in its range column, so the changelog-driven baseline is read only from the `Last audited:` header
 
 ### Added

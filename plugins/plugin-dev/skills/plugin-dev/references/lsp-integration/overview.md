@@ -228,7 +228,10 @@ Use `${CLAUDE_PLUGIN_ROOT}` for the command path:
   "lspServers": {
     "mylang": {
       "command": "${CLAUDE_PLUGIN_ROOT}/servers/my-lsp-server",
-      "args": ["--stdio"]
+      "args": ["--stdio"],
+      "extensionToLanguage": {
+        ".mylang": "mylang"
+      }
     }
   }
 }

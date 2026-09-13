@@ -70,12 +70,17 @@ scripts/extract-cc-facts.sh --out docs/claude-code-facts.json
 scripts/check-doc-drift.sh
 ```
 
-Each finding prints as `DRIFT <check> <file>:<line> <message>`. Fix every one
-before releasing, and commit `docs/claude-code-facts.json` alongside the fixes.
-A changed facts file is itself an upstream change worth documenting.
+Each finding prints to stdout as `DRIFT <check> <file>:<line> <message>`; the run
+summary goes to stderr. Fix every `DRIFT` line before releasing, and commit
+`docs/claude-code-facts.json` alongside the fixes.
 
-`scripts/check-doc-drift.sh --skip-validate` skips the two checks that shell out
-to the `claude` CLI, which is what `doc-drift.yml` runs on pull requests.
+A changed facts file is an upstream change worth documenting, except for the
+`claude_code_version` key on its own — it records which binary the facts were read
+from, so it moves with every CLI upgrade. Check with
+`git diff -I '"claude_code_version"' docs/claude-code-facts.json`.
+
+`scripts/check-doc-drift.sh --skip-validate` skips checks G and H, the two that
+shell out to the `claude` CLI. That is what `doc-drift.yml` runs on pull requests.
 
 ### 5. Commit and Push
 

@@ -62,7 +62,10 @@ Verify:
 
 - All version numbers match across plugin.json, marketplace.json, CLAUDE.md
 - CHANGELOG.md has an entry for the new version
-- The compatibility file's "Last audited" version matches the manifest's version range end
+- The compatibility file's `Last audited:` header is correct for the run:
+  - Changelog range non-empty → the header names the newest version in that range.
+  - Changelog range empty (a drift-only run) → the header is unchanged from `git show HEAD:docs/claude-code-compatibility.md`, and the new audit log row's CC version range column reads `none (drift)`.
+  - The installed binary's version never appears in the header. It belongs in the row's Notes column when it matters. A header advanced to the binary version is a FAIL: it marks changelog entries as audited that nobody read.
 
 #### Deterministic gate
 
@@ -80,10 +83,15 @@ diff /tmp/facts.json docs/claude-code-facts.json
 
 Verify:
 
-- `scripts/check-doc-drift.sh` exits 0. Any `DRIFT <check> <file>:<line> <message>`
-  line is a FAIL — quote the line and name the fix in the review output.
+- `scripts/check-doc-drift.sh` exits 0. Any stdout line starting with `DRIFT` — the
+  shape is `DRIFT <check> <file>:<line> <message>` — is a FAIL; quote the line and
+  name the fix in the review output. Lines that do not start with `DRIFT` are
+  progress and summary text, not findings.
 - `diff` reports no difference, so `docs/claude-code-facts.json` describes the
-  installed binary. A difference is a FAIL: Stage 3 left the facts file stale.
+  installed binary. A difference is a FAIL: Stage 3 left the facts file stale. This
+  gate includes `claude_code_version`, which the discovery stages ignore: the facts
+  file must match the binary it was read from even though a version-only change is
+  not on its own a reason to sync.
 - `scripts/extract-cc-facts.sh` exits 2 when a sanity check fails. Report the
   stderr message and treat the gate as a FAIL rather than a pass by default.
 
@@ -126,8 +134,8 @@ Verify new content matches existing conventions:
 #### Consistency: [assessment]
 - Lint: [clean / N issues]
   - [issue details if any]
-- Drift check: [clean / N DRIFT lines]
-  - [each DRIFT line verbatim, with the fix it needs]
+- Drift check: [clean / N `DRIFT` lines]
+  - [each `DRIFT` line verbatim, with the fix it needs]
 - Facts file: [current / STALE]
   - [diff summary if stale]
 - Versions: [synced at X.Y.Z / MISMATCH]

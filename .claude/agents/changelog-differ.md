@@ -54,7 +54,7 @@ WebFetch: https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELO
 
 Extract all version entries **after** the baseline version from Step 0. If the fetched content does not contain the expected version range, **stop and report the error** rather than proceeding with partial data.
 
-An empty range is not an error and not a reason to stop. If no versions follow the baseline but `.agent-history/drift-report.txt` contains `DRIFT` lines or `docs/claude-code-facts.json` has changed, continue and write the manifest with those items.
+An empty range is not an error and not a reason to stop. If no versions follow the baseline but `.agent-history/drift-report.txt` contains lines starting with `DRIFT`, or `git diff -I '"claude_code_version"' docs/claude-code-facts.json` is non-empty, continue and write the manifest with those items.
 
 ### Step 2: Read System Prompts Changelog
 
@@ -81,20 +81,28 @@ Only if the dispatch fails with an error should you note degraded triangulation 
 
 Two inputs come from the installed Claude Code binary rather than the changelog.
 
-**Deterministic drift.** Read `.agent-history/drift-report.txt`. Each line has the
-shape `DRIFT <check> <file>:<line> <message>`. Every line is a "Must Update" item.
-Map each one to the topic that owns the cited file — the directory under
+**Deterministic drift.** Read `.agent-history/drift-report.txt`. Act only on lines
+that start with `DRIFT`; each has the shape
+`DRIFT <check> <file>:<line> <message>` and is a "Must Update" item. Ignore every
+other line — the report can carry progress and summary text that names no finding.
+Map each `DRIFT` line to the topic that owns the cited file — the directory under
 `plugins/plugin-dev/skills/plugin-dev/references/`. If the file is absent, note
 that in the manifest's Sources line and carry on.
 
 **Ground truth changes.** Run:
 
 ```bash
-git diff docs/claude-code-facts.json
+git diff -I '"claude_code_version"' docs/claude-code-facts.json
 ```
 
 Every changed key is an upstream change, whether or not a changelog line mentions
 it. Record the key, its old and new values, and the topic it affects.
+
+`claude_code_version` records which binary the facts were read from, and CI installs
+the latest CLI on every run, so that key changes whenever a new release ships even
+when no documented fact moved. The `-I` flag holds it out of the signal. It rides
+along in the commit of the next sync that has real content; on its own it is not an
+upstream change and not a reason to open a pull request.
 
 ### Step 4: Classify Changes
 

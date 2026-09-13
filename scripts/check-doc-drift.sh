@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Compare plugin-dev documentation against facts extracted from the Claude Code
-# binary (scripts/extract-cc-facts.sh). Each finding is one line:
+# binary (scripts/extract-cc-facts.sh). stdout carries findings and nothing
+# else, one per line, so it can be redirected straight into a report file:
 #   DRIFT <check-id> <file>:<line> <message>
-# Exit 0 = clean, 1 = drift found, 2 = tooling error.
+# Diagnostics and the summary count go to stderr.
+# Exit 0 = clean, 1 = drift found, 2 = the run could not reach a verdict.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -85,7 +87,20 @@ if ! jq empty "$FACTS" >/dev/null 2>&1; then
   exit 2
 fi
 
-if [ "$SKIP_VALIDATE" -eq 0 ] && ! command -v claude >/dev/null 2>&1; then
+# Only checks G and H shell out to the CLI, so a host without it can still run
+# every other check as long as G/H were not asked for.
+needs_claude=0
+if [ "$SKIP_VALIDATE" -eq 0 ]; then
+  if [ -z "$ONLY" ]; then
+    needs_claude=1
+  else
+    case ",${ONLY//[[:space:]]/}," in
+    *,[gG],* | *,[hH],*) needs_claude=1 ;;
+    esac
+  fi
+fi
+
+if [ "$needs_claude" -eq 1 ] && ! command -v claude >/dev/null 2>&1; then
   echo "check-doc-drift: 'claude' CLI not found; rerun with --skip-validate to skip checks G and H" >&2
   exit 2
 fi
@@ -157,6 +172,7 @@ def sorted_join(values):
 # ---------------------------------------------------------------- shared parsing
 
 TABLE_HEADER_RE = re.compile(r"^\|\s*Event\s*\|")
+EVENT_TABLE_HEADING_RE = re.compile(r"^#+\s+Hook Events Reference\s*$")
 # A heading is an event heading when its only word is a CamelCase name, with an
 # optional "(CC x.y.z)" version note that documents when the event shipped.
 EVENT_HEADING_RE = re.compile(r"^###\s+([A-Z][A-Za-z0-9]+)\s*(?:\(CC\s+[0-9.]+\))?\s*$")
@@ -168,8 +184,16 @@ def parse_event_table():
     rows = []
     header_line = None
     in_table = False
+    # Other tables in the document also lead with an Event column, so the
+    # roster is the one under its own heading, or failing that the one whose
+    # header carries the Types column this check reads.
+    under_heading = False
     for idx, line in enumerate(lines, start=1):
-        if TABLE_HEADER_RE.match(line):
+        if line.startswith("#"):
+            under_heading = bool(EVENT_TABLE_HEADING_RE.match(line))
+        if header_line is None and TABLE_HEADER_RE.match(line):
+            if not (under_heading or "Types" in line):
+                continue
             header_line = idx
             in_table = True
             continue
@@ -358,7 +382,19 @@ def section_bounds(lines, event):
     return start, len(lines)
 
 
-ENUM_VALUE_RE = re.compile(r"[A-Za-z_][A-Za-z_]*")
+# Enum members are written as whole inline-code tokens. Reading only those
+# keeps prose out of the value set: a "(CC 2.1.219)" note on a Matchers line is
+# not a matcher, and a member such as `oauth2` keeps its digits.
+BACKTICK_TOKEN_RE = re.compile(r"`([^`\n]+)`")
+ENUM_VALUE_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+
+
+def matchers_enum_values(line):
+    """Backticked whole-word values on a `**Matchers:**` line."""
+    return {
+        token for token in BACKTICK_TOKEN_RE.findall(line)
+        if ENUM_VALUE_RE.fullmatch(token)
+    }
 
 
 def check_enum_in_section(event, field, fact_key):
@@ -372,12 +408,14 @@ def check_enum_in_section(event, field, fact_key):
     enum_lines = []
     for offset in range(start, end):
         line = lines[offset]
-        m = re.search(rf'"{field}":\s*"([a-z_|]+)"', line)
+        m = re.search(rf'"{field}":\s*"([a-z0-9_|]+)"', line)
         if m and "|" in m.group(1):
             enum_lines.append((offset + 1, set(m.group(1).split("|"))))
         if line.startswith("**Matchers:**"):
-            values = set(ENUM_VALUE_RE.findall(line.split("**Matchers:**", 1)[1]))
-            enum_lines.append((offset + 1, values))
+            values = matchers_enum_values(line.split("**Matchers:**", 1)[1])
+            # "Not supported" and other prose Matchers lines carry no values.
+            if values:
+                enum_lines.append((offset + 1, values))
     if not enum_lines:
         report("F", EVENT_SCHEMAS, start + 1, f"no {field} enum line found in {event} section")
         return
@@ -391,7 +429,7 @@ def check_enum_in_section(event, field, fact_key):
 def check_permission_modes():
     expected = set(FACTS["permission_modes"])
     for idx, line in enumerate(read_lines(EVENT_SCHEMAS), start=1):
-        m = re.search(r'"permission_mode":\s*"([A-Za-z|]+)"', line)
+        m = re.search(r'"permission_mode":\s*"([A-Za-z0-9|]+)"', line)
         if not m or "|" not in m.group(1):
             continue
         values = set(m.group(1).split("|"))
@@ -474,6 +512,63 @@ def json_fences(path):
         yield text[: m.start()].count("\n") + 1, m.group(1)
 
 
+# Warning text that means the documented manifest no longer matches the schema
+# Claude Code accepts: a key it is retiring, or one it does not know at all.
+# Matched case-insensitively as substrings; extend either list as upstream
+# invents new wording.
+SCHEMA_DRIFT_WARNINGS = (
+    "deprecat",
+    "will be removed",
+    "instead of",
+    "unknown field",
+    "experimental component",
+)
+# Warning text about the throwaway directory the example is validated in, or
+# about metadata a documentation snippet is not expected to carry.
+ADVISORY_WARNINGS = (
+    "no author information",
+    "no marketplace description",
+    "path not found",
+    "consider adding",
+)
+
+# Section banners, matched on their wording so a change of glyph does not
+# silently merge the error list into the warning list.
+ERROR_SECTION_RE = re.compile(r"Found \d+ errors?:")
+WARNING_SECTION_RE = re.compile(r"Found \d+ warnings?:")
+
+
+def validator_problems(output):
+    """Validator lines that signal drift, in the order the CLI printed them.
+
+    The CLI exits 0 for a manifest that only earns warnings, so the exit status
+    and the "Invalid input" text alone miss schema changes that upstream has
+    so far only warned about.
+    """
+    problems = []
+    in_error_section = False
+    for raw in output.splitlines():
+        text = raw.strip()
+        if ERROR_SECTION_RE.search(text):
+            in_error_section = True
+            continue
+        if WARNING_SECTION_RE.search(text):
+            in_error_section = False
+            continue
+        if not (text.startswith("❯") or "Invalid input" in text):
+            continue
+        text = text.lstrip("❯").strip()
+        lowered = text.lower()
+        if any(marker in lowered for marker in ADVISORY_WARNINGS):
+            continue
+        if in_error_section or "Invalid input" in text:
+            problems.append(text)
+            continue
+        if any(marker in lowered for marker in SCHEMA_DRIFT_WARNINGS):
+            problems.append(text)
+    return problems
+
+
 def run_plugin_validate(manifest, check, path, line):
     workdir = tempfile.mkdtemp(prefix="drift-validate-")
     try:
@@ -489,25 +584,12 @@ def run_plugin_validate(manifest, check, path, line):
         return
     finally:
         shutil.rmtree(workdir, ignore_errors=True)
-    output = proc.stdout + proc.stderr
-    if "Invalid input" not in output and "Validation failed" not in output:
-        return
-    problems = []
-    for raw in output.splitlines():
-        text = raw.strip()
-        if not (text.startswith("❯") or "Invalid input" in text):
-            continue
-        text = text.lstrip("❯").strip()
-        # The example is validated on its own, without the plugin tree it
-        # describes, so missing component directories say nothing about drift.
-        if "Path not found" in text:
-            continue
-        problems.append(text)
+    problems = validator_problems(proc.stdout + proc.stderr)
     if not problems:
         return
     report(
         check, path, line,
-        "claude plugin validate rejects this example: " + " | ".join(problems),
+        "claude plugin validate faults this example: " + " | ".join(problems),
     )
 
 
@@ -545,13 +627,44 @@ def check_userconfig_validate():
             run_plugin_validate(as_plugin_manifest(data), "G", path, line)
 
 
+# Keys that only a plugin.json declares. "description" is deliberately absent
+# from both lists: `name` + `description` also describes an MCP tool schema,
+# which the plugin validator has no opinion about.
+MANIFEST_COMPONENT_KEYS = frozenset({
+    "hooks", "mcpServers", "lspServers", "agents", "commands", "skills",
+    "userConfig", "experimental", "defaultEnabled",
+})
+MANIFEST_METADATA_KEYS = frozenset({
+    "version", "author", "homepage", "repository", "license", "keywords",
+})
+
+
+def looks_like_plugin_manifest(data):
+    keys = set(data)
+    has_component = bool(keys & MANIFEST_COMPONENT_KEYS)
+    if isinstance(data.get("name"), str):
+        # A bare {"name": ...} fence is the minimal manifest the docs show.
+        return keys == {"name"} or has_component or bool(keys & MANIFEST_METADATA_KEYS)
+    # Component-path and metadata fragments are printed without the surrounding
+    # name/version; as_plugin_manifest supplies them so the fragment can still
+    # be validated. A fence holding only "description" is prose, not a manifest.
+    has_metadata = bool(keys & MANIFEST_METADATA_KEYS)
+    return (has_component or has_metadata) and keys <= (
+        MANIFEST_COMPONENT_KEYS | MANIFEST_METADATA_KEYS | {"description"}
+    )
+
+
 def check_manifest_examples_validate():
-    targets = [PLUGIN_STRUCTURE / "references/manifest-reference.md"]
-    targets += sorted((PLUGIN_STRUCTURE / "examples").glob("*.md"))
-    for path in targets:
+    roots = [
+        PLUGIN_STRUCTURE,
+        SKILL / "references/lsp-integration",
+        SKILL / "references/mcp-integration",
+    ]
+    paths = sorted({p for root in roots for p in markdown_files(root)})
+    for path in paths:
         for line, body in json_fences(path):
             data = candidate_manifest(body)
-            if data is None or not isinstance(data.get("name"), str):
+            if data is None or not looks_like_plugin_manifest(data):
                 continue
             if "userConfig" in data:
                 continue  # already covered by check G
@@ -568,7 +681,7 @@ PATH_TOKEN_RE = re.compile(
 )
 LINK_RE = re.compile(r"\]\(([^)\s]+)\)")
 INLINE_CODE_RE = re.compile(r"`([^`\n]+)`")
-FENCE_MARKER_RE = re.compile(r"^\s*(```|~~~)")
+FENCE_MARKER_RE = re.compile(r"^\s*(`{3,}|~{3,})")
 
 
 def load_list_file(path):
@@ -601,10 +714,19 @@ def check_paths():
     allow = parse_allowlist()
     for path in markdown_files(SKILL):
         base = path.parent
-        in_fence = False
+        # A fence closes only on a run of the same character at least as long
+        # as the one that opened it, so a 4-backtick fence wrapping 3-backtick
+        # samples stays open across the inner markers.
+        open_marker = None
         for idx, line in enumerate(read_lines(path), start=1):
-            if FENCE_MARKER_RE.match(line):
-                in_fence = not in_fence
+            marker_match = FENCE_MARKER_RE.match(line)
+            if marker_match:
+                marker = marker_match.group(1)
+                if open_marker is None:
+                    open_marker = marker
+                elif marker[0] == open_marker[0] and len(marker) >= len(open_marker):
+                    open_marker = None
+            in_fence = open_marker is not None
             targets = set()
             for m in LINK_RE.finditer(line):
                 target = m.group(1)
@@ -749,10 +871,14 @@ for check, path, line, message in sorted(findings):
 for message in errors:
     print(f"check-doc-drift: {message}", file=sys.stderr)
 
+# stdout carries DRIFT lines and nothing else: consumers append it to a report
+# file and read every line there as a finding.
 scope = "".join(ran) if ran else "none"
-print(f"check-doc-drift: {len(findings)} finding(s) across checks {scope}")
+print(f"check-doc-drift: {len(findings)} finding(s) across checks {scope}", file=sys.stderr)
 
-if errors:
-    sys.exit(2)
-sys.exit(1 if findings else 0)
+# Drift outranks a non-fatal tooling problem; exit 2 means the run could not
+# produce a verdict at all.
+if findings:
+    sys.exit(1)
+sys.exit(2 if errors else 0)
 PYTHON

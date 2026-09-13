@@ -28,7 +28,10 @@ die() {
 }
 
 binary=""
-out="docs/claude-code-facts.json"
+# The default destination is the checked-in facts file, so it is anchored to
+# the repository rather than to wherever the script was invoked from.
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+out="$REPO_ROOT/docs/claude-code-facts.json"
 
 while [ $# -gt 0 ]; do
   case "$1" in

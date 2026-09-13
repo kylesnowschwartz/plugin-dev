@@ -39,7 +39,7 @@ still caught.
 | Script                        | Reads                   | Writes                        |
 | ----------------------------- | ----------------------- | ----------------------------- |
 | `scripts/extract-cc-facts.sh` | The Claude Code binary  | `docs/claude-code-facts.json` |
-| `scripts/check-doc-drift.sh`  | The facts file and docs | A `DRIFT` line per finding    |
+| `scripts/check-doc-drift.sh`  | The facts file and docs | One `DRIFT` line per finding on stdout, a run summary on stderr |
 
 ```bash
 # Ground truth from the installed CLI
@@ -48,9 +48,14 @@ scripts/extract-cc-facts.sh --out docs/claude-code-facts.json
 # Compare the shipped docs against it
 scripts/check-doc-drift.sh
 
-# Without a Claude Code CLI: skips the two checks that shell out to it
+# Without a Claude Code CLI: skips checks G and H, the two that shell out to it
 scripts/check-doc-drift.sh --skip-validate
 ```
+
+Findings go to stdout, one `DRIFT <check> <file>:<line> <message>` line each; the
+run summary goes to stderr. Redirecting stdout to a file gives a report of findings
+and nothing else. Use `--skip-validate` only where no `claude` CLI is available —
+it drops the manifest checks, so the drift report is incomplete.
 
 `extract-cc-facts.sh` exits 2 and writes nothing when a sanity check fails.
 `check-doc-drift.sh` exits 0 when clean, 1 when it finds drift, and 2 on a tooling
@@ -60,12 +65,19 @@ Both feed the upstream sync pipeline in
 `.claude/skills/update-from-upstream/SKILL.md`:
 
 - **Stage 0 (ground truth)** runs both scripts. A diff in
-  `docs/claude-code-facts.json` is an upstream change signal on its own, and each
-  `DRIFT` line becomes a manifest item.
+  `docs/claude-code-facts.json` outside the `claude_code_version` key is an upstream
+  change signal on its own, and each `DRIFT` line becomes a manifest item. Every
+  consumer reads `git diff -I '"claude_code_version"' docs/claude-code-facts.json`:
+  the key names the binary the facts came from, and `upstream-sync.yml` installs the
+  latest CLI on every run, so on its own it would open a content-free pull request
+  every three days. A version-only change is committed alongside the next sync that
+  has real content.
 - **Stage 1b (doc drift audit)** dispatches the `doc-drift-auditor` agent for the
   contradictions a script cannot detect: the same fact stated two ways, claims a
   sibling file refutes, terminology drift.
-- **Stage 4** fails the review on any `DRIFT` line and on a stale facts file.
+- **Stage 4** fails the review on any `DRIFT` line and on a stale facts file. That
+  staleness check does include `claude_code_version`: the committed facts must match
+  the binary they were read from.
 
 `doc-drift.yml` runs the deterministic half on every pull request that touches the
 plugin docs, the facts file, or the scripts.

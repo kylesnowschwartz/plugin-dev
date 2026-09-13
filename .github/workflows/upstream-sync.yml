@@ -82,8 +82,10 @@ jobs:
 
           # Exit 1 means drift exists, which is the signal the sync acts on.
           # Exit 2 is a tooling error and fails the job.
+          # No --skip-validate: the CLI installed above is on PATH, so the checks
+          # that run `claude plugin validate` against the doc fixtures run here too.
           set +e
-          scripts/check-doc-drift.sh --skip-validate > .agent-history/drift-report.txt
+          scripts/check-doc-drift.sh > .agent-history/drift-report.txt
           drift_status=$?
           set -e
           if [ "$drift_status" -eq 2 ]; then
@@ -92,12 +94,18 @@ jobs:
             exit 1
           fi
 
+          # claude_code_version records which binary the facts came from. This job
+          # installs the latest CLI every run, so that key moves on every release
+          # even when no documented fact changed. Holding it out keeps a CLI bump
+          # from reading as an upstream change and opening a content-free PR.
           {
             echo "## Ground truth"
+            echo "Changed facts, ignoring claude_code_version:"
             echo '```'
-            git diff --stat docs/claude-code-facts.json
+            git diff -I '"claude_code_version"' --stat docs/claude-code-facts.json
             echo '```'
             echo "### Drift report"
+            echo "Each DRIFT line is one finding."
             echo '```'
             cat .agent-history/drift-report.txt
             echo '```'
@@ -142,16 +150,33 @@ jobs:
             **Stage 0 override**: A workflow step has already run
             `scripts/extract-cc-facts.sh` against the installed CLI and written
             `.agent-history/drift-report.txt`. Read those artifacts and
-            `git diff docs/claude-code-facts.json` instead of re-running the scripts.
+            `git diff -I '"claude_code_version"' docs/claude-code-facts.json` instead
+            of re-running the scripts.
+
+            **Facts file version key**: `claude_code_version` records which binary the
+            facts were read from, and this job installs the latest CLI every run, so
+            the key moves on every Claude Code release even when no documented fact
+            changed. Ignore it in every discovery step. A version-only change is
+            committed alongside the next sync that has real content; on its own it is
+            not an upstream change and not a reason to open a PR.
+
+            **Drift report**: act only on lines starting with `DRIFT`. The report's
+            other lines are progress and summary text that name no finding.
 
             **No changes**: Exit cleanly with no PR only when all three discovery
             signals are empty: no new Claude Code versions after the `Last audited:`
-            header line in `docs/claude-code-compatibility.md`, no diff in
-            `docs/claude-code-facts.json`, and no DRIFT lines in
-            `.agent-history/drift-report.txt` plus no findings from the
-            `doc-drift-auditor`. Report "Already up to date" in the step summary. An
-            empty changelog range on its own is not a reason to stop — drift fixes and
-            ground truth changes are a valid sync on their own.
+            header line in `docs/claude-code-compatibility.md`, no output from
+            `git diff -I '"claude_code_version"' docs/claude-code-facts.json`, and no
+            lines starting with `DRIFT` in `.agent-history/drift-report.txt` plus no
+            findings from the `doc-drift-auditor`. Report "Already up to date" in the
+            step summary. An empty changelog range on its own is not a reason to stop
+            — drift fixes and ground truth changes are a valid sync on their own.
+
+            **Compatibility header**: advance `Last audited:` only when the changelog
+            range is non-empty, and then only to the newest version in that range. On
+            a drift-only run leave the header unchanged and write `none (drift)` in
+            the new audit log row's CC version range column. Never write the installed
+            binary's version into the header.
 
             ## Important
 

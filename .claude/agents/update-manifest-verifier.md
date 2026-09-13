@@ -69,8 +69,11 @@ check:
 scripts/check-doc-drift.sh --only <check-id>
 ```
 
-- The finding still appears → confirmed, keep the item.
-- The finding is gone → reject the item and say the check no longer reports it.
+Read only the stdout lines that start with `DRIFT`; the script's other output is
+progress and summary text that names no finding.
+
+- A `DRIFT` line still reports the finding → confirmed, keep the item.
+- No `DRIFT` line reports it → reject the item and say the check no longer reports it.
 - The check exits 2 → note the tooling error; leave the item in place.
 
 ### Step 3c: Verify Doc Drift Audit Items
