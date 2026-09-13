@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.43.0] - 2026-09-13
+
+Corrects references that had drifted from Claude Code behaviour, reported in [#62](https://github.com/kylesnowschwartz/plugin-dev/issues/62), plus internal contradictions found in a full sweep of the references. Every claim below is checked against Claude Code 2.1.270.
+
+### Fixed
+
+- **plugin-structure**: `userConfig` options require `type` (`string`, `number`, `boolean`, `directory`, `file`), `title`, and `description`; documented the optional `required`, `default`, `multiple`, `sensitive`, `min`, `max` fields, the strict schema, the option-key identifier rule, and the absence of an enum type. The documented example passes `claude plugin validate`
+- **plugin-structure**: sensitive `userConfig` values live inside the existing `Claude Code-credentials` keychain item under `pluginSecrets/<plugin>@<marketplace>/<KEY>`, not a separate item
+- **marketplace-structure**: `metadata.pluginRoot` applies only to bare-name plugin sources; `./relative` sources resolve from the marketplace root and ignore it. Fixed the two example marketplaces that combined `pluginRoot` with `./` sources
+- **hook-development**: event table corrected to the 33 events Claude Code dispatches. Added `UserPromptExpansion`, `PostToolBatch`, `TaskCreated`, and `Setup` with input schemas; removed `PostSession` and `BackgroundTasksChanged`, which do not exist. Removed the "No Setup event" gotcha
+- **hook-development**: prompt and agent hooks run on 13 events only (`PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PostToolBatch`, `PermissionRequest`, `PermissionDenied`, `UserPromptSubmit`, `UserPromptExpansion`, `Stop`, `SubagentStop`, `TeammateIdle`, `TaskCreated`, `TaskCompleted`); the other 20 are dispatched without a live conversation and reject them with `hook_type_unsupported`. HTTP hooks are unavailable on `SessionStart` and `Setup`; `mcp_tool` is accepted wherever `command` is but is skipped on `Setup` and on `SessionStart` at launch (no MCP client context). `validate-hook-schema.sh` and the CI component-validation allowlist follow the same matrix
+- **hook-development**: `SessionStart` matchers include `fork`; `SessionEnd` reasons are `clear`, `resume`, `logout`, `prompt_input_exit`, `other`; `permission_mode` is an optional string carrying `default`, `acceptEdits`, `bypassPermissions`, `plan`, `dontAsk`, or `auto`; Python SDK hook coverage cited from the `claude-agent-sdk` source
+- **hook-development**: `references/event-schemas.md` is the single per-event matcher reference; `references/advanced.md` explains matcher syntax and no longer carries a partial, stale table
+- **agent-development**: `permissionMode` values are `default`, `acceptEdits`, `dontAsk`, `bypassPermissions`, `plan`, `auto`; `delegate` is not a permission mode; `dontAsk` denies anything that would have prompted rather than skipping checks
+- **plugin-structure**: agent examples use the `name`/`description`/`model`/`color` frontmatter with `description: |` block scalars (the one-line form is invalid YAML) instead of the older `capabilities` field; command frontmatter has no `name` field; the TUI command is `/plugin`
+- **command-development**: `check-frontmatter.sh` accepts and validates `disallowed-tools`
+- **plugin-validator agent**: accepts bare-name marketplace sources when `metadata.pluginRoot` is set
+- **skill-development**: SKILL.md body guidance is consistently under 3,000 words; scoped-hook tables say 33 events
+- Broken relative paths and "hook-development skill" wording fixed across agent-development, command-development, plugin-structure, plugin-settings, and SKILL.md; `mcp-integration` transport list includes WebSocket
+
+### Added
+
+- **plugin-structure**: `CLAUDE_PLUGIN_DATA` — per-plugin state directory at `~/.claude/plugins/data/<plugin>-<marketplace>`, created on install and removed on uninstall, available to plugin hooks and MCP/LSP server configs but not to skill-frontmatter hooks
+- **plugin-structure**: `claude plugin install` does not prompt for `userConfig`; documented the "not yet set" message, the absence of `CLAUDE_PLUGIN_OPTION_*` until configured, and `--config KEY=VALUE` for unattended installs (also in headless-ci-mode)
+- **plugin-structure**: `lspServers` section in the manifest reference
+- **marketplace-structure**: for a local-directory marketplace, `${CLAUDE_PLUGIN_ROOT}` is the source directory itself, so edits apply on the next session without reinstall
+- **hook-development**: PreToolUse `ask` renders as `Hook PreToolUse:<Tool> requires confirmation ... [plugin:<name>]` interactively and becomes a block in headless mode; `background_tasks` and `session_crons` input fields on `Stop` and `SubagentStop`
+
 ## [0.42.0] - 2026-09-10
 
 ### Added

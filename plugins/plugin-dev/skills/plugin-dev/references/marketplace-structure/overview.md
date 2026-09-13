@@ -75,7 +75,14 @@ The `marketplace.json` manifest defines the marketplace and its available plugin
 }
 ```
 
-The `pluginRoot` field sets the base path for relative plugin sources.
+The `pluginRoot` field is prefixed only to bare-name plugin sources (e.g. `"source": "my-plugin"`); it does not apply to `./relative/path` sources, which always resolve from the marketplace root.
+
+```json
+// metadata.pluginRoot: "./plugins"
+{ "name": "my-plugin", "source": "my-plugin" }        // resolves to <marketplace>/plugins/my-plugin
+{ "name": "my-plugin", "source": "./plugins/my-plugin" } // resolves to <marketplace>/plugins/my-plugin
+{ "name": "my-plugin", "source": "./my-plugin" }       // WRONG: resolves to <marketplace>/my-plugin, ignoring pluginRoot
+```
 
 ## Plugin Entry Format
 

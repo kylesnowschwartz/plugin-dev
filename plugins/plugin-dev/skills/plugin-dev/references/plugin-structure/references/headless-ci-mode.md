@@ -201,17 +201,31 @@ claude -p "Run security audit" \
 \`\`\`
 ```
 
-### 4. Handle Missing Environment Gracefully
+### 4. Supply userConfig Values Non-Interactively
+
+`claude plugin install` never prompts for `userConfig` options. It succeeds with the options unset and prints `<N> userConfig option(s) not yet set — run /plugin configure <plugin> in Claude Code, or pass --config KEY=VALUE.`, which leaves a headless session with no `CLAUDE_PLUGIN_OPTION_*` variables at all. In CI, pass each option at install time:
+
+```bash
+claude plugin install my-plugin@my-marketplace \
+  --config API_ENDPOINT=https://api.example.com \
+  --config API_TOKEN="$MY_PLUGIN_TOKEN"
+claude -p "Run security audit" --allowedTools "Read,Grep,Glob"
+```
+
+Options declared `sensitive: true` go to secure storage, so pass them from the CI secret store rather than committing them.
+
+### 5. Handle Missing Environment Gracefully
 
 In CI environments, some tools or context may be unavailable:
 
 - MCP servers may not have authentication tokens
+- `userConfig` options may be unset, so `CLAUDE_PLUGIN_OPTION_*` variables are absent
 - Git history may be shallow clones
 - Environment variables may differ from local dev
 
 Design hooks and skills to handle these cases without failing hard.
 
-### 5. Cost-Conscious Design
+### 6. Cost-Conscious Design
 
 CI runs can accumulate significant API costs. Help users control spending:
 

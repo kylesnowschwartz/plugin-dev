@@ -1,6 +1,6 @@
 # Advanced Agent Fields
 
-This reference covers advanced agent frontmatter fields (maxTurns, memory, mcpServers, hooks, initialPrompt), version-specific behaviors for the core fields (tools, model, mcpServers), and the runtime behaviors that govern autonomous, background, and isolated agent execution. The core fields themselves (name, description, model, color, tools, disallowedTools, skills, permissionMode) are summarized in the topic `overview.md`; this file carries the turn limits, persistent memory, scoped MCP access, lifecycle hooks, autonomous/background operation guidance, isolation and worktree behavior, CLI/testing behaviors, and agent-teams detail.
+This reference covers advanced agent frontmatter fields (maxTurns, memory, mcpServers, hooks, initialPrompt), version-specific behaviors for the core fields (tools, model, mcpServers), and the runtime behaviors that govern autonomous, background, and isolated agent execution. The core fields themselves (name, description, model, color, tools, disallowedTools, skills, permissionMode) are summarized in the topic `../overview.md`; this file carries the turn limits, persistent memory, scoped MCP access, lifecycle hooks, autonomous/background operation guidance, isolation and worktree behavior, CLI/testing behaviors, and agent-teams detail.
 
 ## maxTurns
 
@@ -268,14 +268,9 @@ Coordinator mode now supports a **forced-inheritance variant** where the worker 
 
 Team leads coordinate work across multiple teammates. Key design considerations:
 
-- **Use `permissionMode: delegate`** to restrict the lead to coordination-only tools (spawn, message, shut down teammates, manage tasks). This prevents the lead from implementing tasks directly.
+- **Restrict the lead's tools** with `tools` so it holds only coordination tools (spawn, message, shut down teammates, manage tasks) and cannot implement tasks directly. There is no dedicated permission mode for this.
 - **System prompt focus**: Task decomposition, work assignment, progress monitoring, quality review
 - **Tools**: Team leads automatically get access to `TeamCreate`, `TaskCreate`, `TaskUpdate`, `TaskList`, `SendMessage`, and `Task` (for spawning)
-
-```yaml
-# Example team lead agent
-permissionMode: delegate
-```
 
 ### Permission Inheritance
 
@@ -348,7 +343,7 @@ For complete documentation, see the [official agent teams guide](https://code.cl
 
 ## tools Field: Version Behaviors
 
-Version-specific behaviors for the `tools` frontmatter field (the field itself is summarized in `overview.md`).
+Version-specific behaviors for the `tools` frontmatter field (the field itself is summarized in `../overview.md`).
 
 **Multiple Agent types (CC 2.1.147):** When declaring multiple `Agent(...)` types in the `tools:` field, all entries are now correctly retained. Previously, only the last entry was kept. This enables agents that can spawn multiple agent types:
 

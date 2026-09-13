@@ -141,13 +141,20 @@ After test completion, offer to:
 
 ```markdown
 ---
-description: Expert code reviewer specializing in identifying bugs, security issues, and improvement opportunities
-capabilities:
-  - Analyze code for potential bugs and logic errors
-  - Identify security vulnerabilities
-  - Suggest performance improvements
-  - Ensure code follows project standards
-  - Review test coverage adequacy
+name: code-reviewer
+description: |
+  Expert code reviewer specializing in identifying bugs, security issues, and improvement opportunities. Use this agent when the user asks to review code, check a diff, or audit a pull request.
+
+  <example>
+  Context: User has just written a new function.
+  user: "Can you review this function?"
+  assistant: "I'll use the code-reviewer agent to analyze it for bugs, security issues, and standards compliance."
+  <commentary>
+  Code review request triggers the code-reviewer agent.
+  </commentary>
+  </example>
+model: inherit
+color: blue
 ---
 
 # Code Reviewer Agent
@@ -189,13 +196,20 @@ For each file reviewed:
 
 ```markdown
 ---
-description: Generates comprehensive test suites from code analysis
-capabilities:
-  - Analyze code structure and logic flow
-  - Generate unit tests for functions and methods
-  - Create integration tests for modules
-  - Design edge case and error condition tests
-  - Suggest test fixtures and mocks
+name: test-generator
+description: |
+  Generates comprehensive test suites from code analysis. Use this agent when the user asks to generate tests, add test coverage, or create unit/integration tests for a module.
+
+  <example>
+  Context: User has untested code.
+  user: "Generate tests for this module"
+  assistant: "I'll use the test-generator agent to analyze the code and produce unit and integration tests."
+  <commentary>
+  Test generation request triggers the test-generator agent.
+  </commentary>
+  </example>
+model: inherit
+color: green
 ---
 
 # Test Generator Agent

@@ -205,11 +205,11 @@ If your plugin's MCP server exposes resources, document the available resource U
 
 ## Hook Agent Type Details
 
-The `agent` hook type (covered briefly in the hook-development SKILL.md) spawns a full subagent for complex verification workflows.
+The `agent` hook type spawns a full subagent for complex verification workflows.
 
-For comprehensive coverage including configuration, behavior, supported events, when to use agent hooks, and detailed examples, see the hook-development skill's `references/advanced.md` file.
+For comprehensive coverage including configuration, behavior, supported events, when to use agent hooks, and detailed examples, see the hook-development topic (`../../hook-development/references/advanced.md`). The per-event Types column in `../../hook-development/overview.md` (Hook Events Reference) is the authoritative list of which hook types each event accepts.
 
-**Quick summary:** Agent hooks spawn a subagent with full tool access (Read, Bash, Grep, etc.) for multi-step verification. They're significantly slower (30-120 seconds) but more capable than command or prompt hooks. Only supported on `Stop` and `SubagentStop` events.
+**Quick summary:** Agent hooks spawn a subagent with full tool access (Read, Bash, Grep, etc.) for multi-step verification. They're significantly slower (30-120 seconds) but more capable than command or prompt hooks. They are unavailable on `SessionStart`, `Setup`, `SubagentStart`, `WorktreeCreate`, and `WorktreeRemove` (see the Types column linked above for what those events accept); they are most useful on decision-control events such as `Stop` and `SubagentStop`.
 
 ## Auto-Update Behavior
 
@@ -249,6 +249,7 @@ When a plugin is installed, Claude Code copies plugin content to a cache directo
 
 If your plugin needs content from outside its directory:
 
+- **`${CLAUDE_PLUGIN_DATA}`:** Write state to `~/.claude/plugins/data/<plugin>-<marketplace>`, a per-plugin directory created on install and removed on uninstall. It is the only writable location a plugin owns; the plugin directory itself is a cache copy
 - **Symlinks:** Create symlinks to external files within the plugin directory (followed during cache copy)
 - **Restructure:** Move shared content into the plugin directory
 - **Environment variables:** Reference external paths via environment variables, not file paths
@@ -278,7 +279,12 @@ claude plugin install plugin-name@marketplace-name
 claude plugin install plugin-name@marketplace --scope user     # Personal (default)
 claude plugin install plugin-name@marketplace --scope project  # Team (in .claude/settings.json)
 claude plugin install plugin-name@marketplace --scope local    # Personal project (gitignored)
+
+# Set userConfig options during install (repeatable)
+claude plugin install plugin-name@marketplace --config API_ENDPOINT=https://api.example.com --config MAX_RESULTS=50
 ```
+
+Installing a plugin that declares `userConfig` does not prompt for the values. The install succeeds and prints `<N> userConfig option(s) not yet set — run /plugin configure <plugin> in Claude Code, or pass --config KEY=VALUE.`, and until they are set the session has no `CLAUDE_PLUGIN_OPTION_*` variables. `--config` is the unattended path; `/plugin configure <plugin>` is the interactive one.
 
 ### Management
 
@@ -549,6 +555,7 @@ Paths outside the plugin directory may not work reliably because:
 **Always use:**
 
 - `${CLAUDE_PLUGIN_ROOT}` for paths within the plugin
+- `${CLAUDE_PLUGIN_DATA}` for writable state the plugin keeps between sessions
 - Bundled resources instead of external file references
 - Environment variables for user-specific paths
 

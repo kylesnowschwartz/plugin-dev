@@ -45,14 +45,14 @@ company-plugins/
   "plugins": [
     {
       "name": "code-standards",
-      "source": "./code-standards",
+      "source": "code-standards",
       "description": "Enforces company coding standards",
       "version": "1.5.0",
       "category": "quality"
     },
     {
       "name": "security-scanner",
-      "source": "./security-scanner",
+      "source": "security-scanner",
       "description": "Security vulnerability detection",
       "version": "2.1.0",
       "category": "security"

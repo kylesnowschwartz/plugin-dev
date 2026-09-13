@@ -427,7 +427,7 @@ if [[ "$file_path" == *".env"* ]]; then
 fi
 ```
 
-See `examples/validate-write.sh` and `examples/validate-bash.sh` for complete examples.
+See `../examples/validate-write.sh` and `../examples/validate-bash.sh` for complete examples.
 
 ### Symlink Vulnerability Fix in File Tools (CC 2.1.251)
 
@@ -717,7 +717,7 @@ Session-level events (`SessionStart`, `UserPromptSubmit`, `Notification`, etc.) 
 | Aspect         | `hooks.json`                               | Frontmatter `hooks`                                 |
 | -------------- | ------------------------------------------ | --------------------------------------------------- |
 | Scope          | Global (always active when plugin enabled) | Component-specific (active only during use)         |
-| Events         | All 11+ hook events                        | PreToolUse, PostToolUse, Stop                       |
+| Events         | All 33 hook events                         | PreToolUse, PostToolUse, Stop                       |
 | Location       | `hooks/hooks.json` file                    | YAML frontmatter in SKILL.md or agent .md           |
 | Merge behavior | Merges with user/project hooks             | Merges with global hooks during component lifecycle |
 
@@ -771,7 +771,14 @@ While `command` hooks execute bash scripts and `prompt` hooks evaluate a single 
 
 ### Supported Events
 
-Agent hooks are supported on all hook events, but they're most useful on decision-control events like **Stop** and **SubagentStop**. Their multi-turn latency makes them a poor fit for hot-path events like PreToolUse.
+Agent hooks — like prompt hooks — need a live conversation to run in, and 20 of the 33 events are dispatched without one, leaving 13 that accept them. Registering an agent or prompt hook on one of those events fails at dispatch with either
+
+- `agent-type hooks are not supported for <event> events (no conversation context is available). Use a command-type hook instead.`, or
+- `Agent stop hooks are not yet supported outside REPL`
+
+depending on which dispatcher the event uses. Which events those are, and what they accept instead, is in `../overview.md` (Hook Types and the Hook Events Reference table), which is authoritative.
+
+Among the events that do accept them, agent hooks are most useful on decision-control events like **Stop** and **SubagentStop**. Their multi-turn latency makes them a poor fit for hot-path events like PreToolUse.
 
 ### When to Use Agent Hooks
 
@@ -862,17 +869,13 @@ Display text shown in the UI while the hook is executing. Helps users understand
 
 ## Event-Specific Matchers
 
-Some hook events support matcher values beyond tool names:
+Matchers filter which registered hooks run for an occurrence of an event. Each event names one input field to match against; **which field, and which values it accepts, is documented on that event's Matchers line in `event-schemas.md`**, which covers all 33 events. This section covers only the syntax that applies once you know what an event matches on.
 
-| Event         | Matcher Values                                                                 |
-| ------------- | ------------------------------------------------------------------------------ |
-| SessionStart  | `startup`, `resume`, `clear`, `compact`                                        |
-| SessionEnd    | `clear`, `logout`, `prompt_input_exit`, `bypass_permissions_disabled`, `other` |
-| Notification  | `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog`, `agent_needs_input`, `agent_completed` (CC 2.1.198) |
-| PreCompact    | `manual`, `auto`                                                               |
-| SubagentStart | Agent type name (e.g., `Bash`, `Explore`, `Plan`, or custom agent names)       |
-| SubagentStop  | Agent type name (same as SubagentStart)                                        |
-| PreToolUse    | Tool name (exact, regex, or `*` wildcard)                                      |
+- **Tool-name matching is a case-sensitive regular expression, not a glob.** `"Write"` matches exactly; `"mcp__.*__delete.*"` needs the `.*`, because `"mcp__*__delete*"` is not a pattern this accepts.
+- **Alternate with a pipe, never a comma.** `"Bash|PowerShell"` matches either. `"Bash,PowerShell"` silently never fires (CC 2.1.191).
+- **Hyphenated matchers require an exact match (CC 2.1.195).** A matcher containing a hyphen no longer substring-matches, so `"mcp__brave-search"` matches only that exact value — write `"mcp__brave-search__.*"` for partial matches. This affects custom agent names, MCP server names, and any hyphenated identifier.
+- **`*` matches everything,** and so does omitting `matcher` altogether.
+- **Some events ignore `matcher` entirely.** Their Matchers line reads "Not supported"; an entry's matcher is silently discarded rather than rejected.
 
 ## Decision Control Output Schemas
 
@@ -893,6 +896,7 @@ Different hook events support different output formats for controlling Claude's 
 ```
 
 - `permissionDecision`: `allow` (proceed), `deny` (block), `ask` (prompt user), `defer` (CC 2.1.89 — fall through to the normal permission flow)
+- `ask` depends on the session being interactive: an interactive session shows `Hook PreToolUse:<Tool> requires confirmation ... [plugin:<name>]`, while headless runs (`claude -p`) have no one to prompt and treat the same `ask` as a block, surfacing the reason to the model.
 - `updatedInput`: Optionally modify tool parameters before execution
 - `additionalContext`: Injected into Claude's context
 

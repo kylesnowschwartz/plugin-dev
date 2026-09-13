@@ -57,7 +57,7 @@ fi
 # Check 3: Root structure
 echo ""
 echo "Checking root structure..."
-VALID_EVENTS=("SessionStart" "InstructionsLoaded" "SessionEnd" "PostSession" "UserPromptSubmit" "PreToolUse" "PermissionRequest" "PermissionDenied" "PostToolUse" "PostToolUseFailure" "Stop" "StopFailure" "MessageDisplay" "SubagentStart" "SubagentStop" "TeammateIdle" "TaskCompleted" "PreCompact" "PostCompact" "ConfigChange" "CwdChanged" "FileChanged" "WorktreeCreate" "WorktreeRemove" "Elicitation" "ElicitationResult" "Notification" "BackgroundTasksChanged")
+VALID_EVENTS=("SessionStart" "Setup" "InstructionsLoaded" "SessionEnd" "UserPromptSubmit" "UserPromptExpansion" "PreToolUse" "PermissionRequest" "PermissionDenied" "PostToolUse" "PostToolUseFailure" "PostToolBatch" "Stop" "StopFailure" "MessageDisplay" "SubagentStart" "SubagentStop" "TeammateIdle" "TaskCreated" "TaskCompleted" "PreCompact" "PostCompact" "ConfigChange" "CwdChanged" "FileChanged" "DirectoryAdded" "WorktreeCreate" "WorktreeRemove" "Elicitation" "ElicitationResult" "Notification" "PreModelSwitch" "PostModelSwitch")
 
 for event in $(jq -r 'keys[]' "$HOOKS_FILE"); do
   found=false
@@ -92,7 +92,7 @@ for event in $(jq -r 'keys[]' "$HOOKS_FILE"); do
   for ((i = 0; i < hook_count; i++)); do
     # Check matcher (optional -- some events don't support matchers)
     matcher=$(jq -r ".\"$event\"[$i].matcher // empty" "$HOOKS_FILE")
-    NO_MATCHER_EVENTS=("UserPromptSubmit" "Stop" "TeammateIdle" "TaskCompleted" "CwdChanged" "WorktreeCreate" "WorktreeRemove" "PostSession" "MessageDisplay" "BackgroundTasksChanged")
+    NO_MATCHER_EVENTS=("UserPromptSubmit" "Stop" "TeammateIdle" "TaskCreated" "TaskCompleted" "CwdChanged" "WorktreeCreate" "WorktreeRemove" "PostToolBatch" "MessageDisplay")
     is_no_matcher=false
     for nm_event in "${NO_MATCHER_EVENTS[@]}"; do
       if [ "$event" = "$nm_event" ]; then
@@ -180,19 +180,30 @@ for event in $(jq -r 'keys[]' "$HOOKS_FILE"); do
         ;;
       esac
 
-      # Check hook type support by event (see overview.md support matrix)
+      # Check hook type support by event (see overview.md support matrix).
+      # Command and mcp_tool hooks are accepted on every event. These 20 events
+      # are dispatched without a live conversation, so prompt and agent hooks
+      # cannot run on them; SessionStart and Setup also skip http hooks.
       case "$event" in
-      SessionStart | WorktreeRemove | PostSession)
-        if [ "$hook_type" != "command" ]; then
-          echo "❌ ${event}[$i].hooks[$j]: $event only supports 'command' hook type, not '$hook_type'"
+      SessionStart | Setup)
+        case "$hook_type" in
+        command | mcp_tool) ;;
+        *)
+          echo "❌ ${event}[$i].hooks[$j]: $event supports only 'command' and 'mcp_tool' hook types, not '$hook_type'"
           error_count=$((error_count + 1))
-        fi
+          ;;
+        esac
         ;;
-      WorktreeCreate)
-        if [ "$hook_type" != "command" ] && [ "$hook_type" != "http" ]; then
-          echo "❌ ${event}[$i].hooks[$j]: $event only supports 'command' and 'http' hook types, not '$hook_type'"
+      SubagentStart | WorktreeCreate | WorktreeRemove | SessionEnd | PreCompact | PostCompact | \
+        ConfigChange | DirectoryAdded | Elicitation | ElicitationResult | Notification | StopFailure | \
+        InstructionsLoaded | CwdChanged | FileChanged | MessageDisplay | PreModelSwitch | PostModelSwitch)
+        case "$hook_type" in
+        command | mcp_tool | http) ;;
+        *)
+          echo "❌ ${event}[$i].hooks[$j]: $event supports only 'command', 'mcp_tool', and 'http' hook types, not '$hook_type' (no conversation context is available)"
           error_count=$((error_count + 1))
-        fi
+          ;;
+        esac
         ;;
       esac
 

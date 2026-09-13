@@ -380,6 +380,38 @@ MCP server configuration location or inline definition.
 - Complex plugins: External `.mcp.json` file
 - Multiple servers: Always use external file
 
+#### lspServers
+
+**Type**: Object, keyed by language
+**Default**: none
+
+LSP server configuration, keyed by language, providing go-to-definition, find-references, and hover for matching files.
+
+**Inline configuration**:
+
+```json
+{
+  "name": "my-plugin",
+  "lspServers": {
+    "python": {
+      "command": "pyright-langserver",
+      "args": ["--stdio"],
+      "extensionToLanguage": {
+        ".py": "python",
+        ".pyi": "python"
+      }
+    }
+  }
+}
+```
+
+**Use cases**:
+
+- Bundling a language server so plugin users get code intelligence without separate setup
+- Configuring extension-to-language mapping for languages with multiple file extensions
+
+See `../../lsp-integration/overview.md` for the full configuration reference, including the separate `.lsp.json` file format.
+
 #### outputStyles
 
 **Type**: String or Array of strings
@@ -406,7 +438,7 @@ Path(s) to output style definition files or directories.
 
 **Behavior**: Supplements default `output-styles/` directory (does not replace)
 
-Output style files are markdown with YAML frontmatter (`name`, `description`, `keep-coding-instructions`). See `references/output-styles.md` for the complete frontmatter schema.
+Output style files are markdown with YAML frontmatter (`name`, `description`, `keep-coding-instructions`). See `output-styles.md` for the complete frontmatter schema.
 
 **Use cases**:
 
@@ -472,7 +504,7 @@ Experimental plugin features must be declared under the `"experimental"` key in 
 **Currently experimental:**
 
 - **themes** — Custom UI themes for Claude Code
-- **monitors** — Background monitoring scripts (see the `monitors` section above and `references/advanced-topics.md`)
+- **monitors** — Background monitoring scripts (see the `monitors` section above and `advanced-topics.md`)
 
 **Breaking change:** Prior to CC 2.1.129, `themes` and `monitors` were declared at the plugin.json root level. They must now be nested under `"experimental"`. Plugins using the old format will fail to load these features.
 
@@ -524,37 +556,113 @@ Specifies whether the plugin is enabled by default after installation:
 
 **Type**: Object
 
-Declares configurable values in `.claude-plugin/plugin.json` that users are prompted for when enabling the plugin:
+Declares user-configurable values in `.claude-plugin/plugin.json`. Each key is an option name; each value is an option definition.
 
 ```json
 {
   "name": "plugin-name",
   "userConfig": {
-    "api_endpoint": {
-      "description": "Your team's API endpoint",
-      "sensitive": false
+    "API_ENDPOINT": {
+      "type": "string",
+      "title": "API endpoint",
+      "description": "Base URL of your team API",
+      "required": true,
+      "default": "https://api.example.com"
     },
-    "api_token": {
-      "description": "API authentication token",
+    "API_TOKEN": {
+      "type": "string",
+      "title": "API token",
+      "description": "Token used to authenticate API calls",
+      "required": true,
       "sensitive": true
+    },
+    "MAX_RESULTS": {
+      "type": "number",
+      "title": "Maximum results",
+      "description": "How many results to request per call",
+      "default": 20,
+      "min": 1,
+      "max": 100
+    },
+    "VERBOSE": {
+      "type": "boolean",
+      "title": "Verbose logging",
+      "description": "Write detailed logs to stderr",
+      "default": false
+    },
+    "WORKSPACE_DIR": {
+      "type": "directory",
+      "title": "Workspace directory",
+      "description": "Directory the plugin scans for projects"
+    },
+    "CONFIG_FILE": {
+      "type": "file",
+      "title": "Config file",
+      "description": "Path to an existing configuration file"
+    },
+    "WATCH_PATHS": {
+      "type": "string",
+      "title": "Watched paths",
+      "description": "Paths the plugin watches for changes",
+      "multiple": true,
+      "default": ["src", "lib"]
     }
   }
 }
 ```
 
-**Storage:**
+**Option keys** must be valid identifiers — letters, digits, and underscore, with no leading digit (`^[A-Za-z_]\w*$`). They become `CLAUDE_PLUGIN_OPTION_<KEY>` environment variables, so uppercase names read best.
 
-- Non-sensitive values: stored in `settings.json` under `pluginConfigs[<plugin-id>].options`
-- Sensitive values (`sensitive: true`): stored in the system keychain (macOS) or `~/.claude/.credentials.json` elsewhere
+**Option fields:**
 
-> **CC 2.1.207 Breaking Change:** `pluginConfigs` are no longer read from project-level `.claude/settings.json`. Only user settings (`~/.claude/settings.json`), `--settings` flag, and managed settings are honored. Plugin developers should document this restriction and guide users to store configuration in user settings.
+| Field | Type | Required | Meaning |
+| --- | --- | --- | --- |
+| `type` | `string`, `number`, `boolean`, `directory`, `file` | Yes | Type of the configuration value |
+| `title` | string | Yes | Human-readable label shown in the config dialog |
+| `description` | string | Yes | Help text shown beneath the field in the config dialog |
+| `required` | boolean | No | When `true`, validation fails if the field is empty |
+| `default` | string, number, boolean, or string array | No | Value used when the user provides nothing |
+| `multiple` | boolean | No | For `string` type: accept an array of strings |
+| `sensitive` | boolean | No | Masks dialog input and stores the value in secure storage instead of `settings.json` |
+| `min` | number | No | Minimum value (`number` type only) |
+| `max` | number | No | Maximum value (`number` type only) |
+
+The option schema is strict: any key outside this table fails validation with `userConfig.<KEY>: Invalid input`. Omitting `type`, `title`, or `description` fails with `userConfig.<KEY>.<field>: Invalid input`.
+
+**No enum or select type.** Constrained choices are not expressible in the schema — declare the option as `string` and have the hook or server that consumes it reject values outside the allowed set, listing them in `description`.
 
 **Accessing configured values:**
 
 - In MCP/LSP server configs, hook commands, and skill/agent content: `${user_config.KEY}` (non-sensitive only)
 - As environment variables in plugin subprocesses: `CLAUDE_PLUGIN_OPTION_<KEY>`
 
+**Install-time behavior:** `claude plugin install` does not prompt for these values. Installation succeeds and prints `<N> userConfig option(s) not yet set — run /plugin configure <plugin> in Claude Code, or pass --config KEY=VALUE.` (with `(<M> required)` appended when some options are `required: true`). Until the options are set, the session has no `CLAUDE_PLUGIN_OPTION_*` variables at all — hooks and servers must handle their absence. For unattended installs, pass `--config KEY=VALUE` once per option:
+
+```bash
+claude plugin install my-plugin@my-marketplace \
+  --config API_ENDPOINT=https://api.example.com \
+  --config MAX_RESULTS=50
+```
+
+**Storage:**
+
+- Non-sensitive values: `settings.json` under `pluginConfigs[<plugin-id>].options`
+- Sensitive values (`sensitive: true`): the existing `Claude Code-credentials` keychain item (macOS) or `~/.claude/.credentials.json` elsewhere, keyed `pluginSecrets/<plugin>@<marketplace>/<KEY>` — not a separate keychain entry. Uninstalling the plugin clears its `pluginSecrets` entries.
+
+> **CC 2.1.207 Breaking Change:** `pluginConfigs` are no longer read from project-level `.claude/settings.json`. Only user settings (`~/.claude/settings.json`), `--settings` flag, and managed settings are honored. Plugin developers should document this restriction and guide users to store configuration in user settings.
+
 **Constraints:** Keychain storage has an approximately 2KB total limit for sensitive values. Keep sensitive values small.
+
+### Plugin Environment Variables
+
+Claude Code sets these variables for plugin hooks and expands them in plugin MCP/LSP server configuration (`command`, `args`, `env`, `url`):
+
+| Variable | Value |
+| --- | --- |
+| `CLAUDE_PLUGIN_ROOT` | The plugin's own directory — use it for every intra-plugin path |
+| `CLAUDE_PLUGIN_DATA` | `~/.claude/plugins/data/<plugin>-<marketplace>`, a per-plugin state directory |
+
+`CLAUDE_PLUGIN_DATA` is where a plugin keeps state that must survive across sessions — caches, databases, logs, counters. The directory is created when the plugin is installed and removed when it is uninstalled, so nothing inside it survives a reinstall. It is plugin-only: hooks declared in skill frontmatter receive `${CLAUDE_PLUGIN_ROOT}` but not `${CLAUDE_PLUGIN_DATA}`.
 
 ## Path Resolution
 

@@ -114,6 +114,16 @@ All MCP configurations support environment variable substitution:
 }
 ```
 
+**${CLAUDE_PLUGIN_DATA}** - Per-plugin state directory (`~/.claude/plugins/data/<plugin>-<marketplace>`), created on install and removed on uninstall. Use it for caches, databases, and logs the server writes:
+
+```json
+{
+  "env": {
+    "CACHE_DIR": "${CLAUDE_PLUGIN_DATA}/cache"
+  }
+}
+```
+
 **User environment variables** - From user's shell:
 
 ```json

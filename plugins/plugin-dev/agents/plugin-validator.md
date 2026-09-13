@@ -183,7 +183,7 @@ When `.claude-plugin/marketplace.json` is detected, perform marketplace-specific
      - `name` is required, kebab-case, unique within marketplace
      - `source` is required (string or object)
    - Check source types:
-     - String: relative path starting with `./` or `../`
+     - String: relative path starting with `./` or `../`, or a bare name (e.g. `code-standards`) resolved against `metadata.pluginRoot` — flag a bare name as an error when `metadata.pluginRoot` is absent
      - Object with `source: "github"`: has `repo` field
      - Object with `source: "url"`: has `url` field
    - Validate optional fields:

@@ -3,23 +3,23 @@
 
 ## Overview
 
-Hooks are event-driven automation that execute in response to Claude Code events — use them to validate operations, enforce policies, add context, and integrate external tools. Claude Code has **31 hook events** (categorized in the [reference table](#hook-events-reference) below).
+Hooks are event-driven automation that execute in response to Claude Code events — use them to validate operations, enforce policies, add context, and integrate external tools. Claude Code has **33 hook events** (categorized in the [reference table](#hook-events-reference) below).
 
-This overview is the concept map and quick reference; complete per-event input/output schemas live in **`references/event-schemas.md`**, per-event matcher values in `references/advanced.md` (Event-Specific Matchers).
+This overview is the concept map and quick reference; complete per-event input/output schemas and matcher values live in **`references/event-schemas.md`**; matcher syntax is explained in `references/advanced.md` (Event-Specific Matchers).
 
 ## Hook Types
 
 Five hook types are available. Not all events support all types (see the [event reference table](#hook-events-reference)).
 
-| Type       | Best for                                                        | Notes                                                                 |
-| ---------- | --------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `prompt`   | Context-aware, flexible validation (recommended default)        | LLM-driven; supports `model` and `timeout`                            |
-| `agent`    | Multi-step verification needing tool access                     | Reads files, runs commands; higher cost/latency, so best on decision-control events |
-| `command`  | Fast deterministic checks, file ops, external tool integration  | Runs a bash command; the only type supporting `async`                 |
-| `mcp_tool` | Validation via MCP tools without agent overhead (CC 2.1.118)    | `server` + `tool`; same event support as command                      |
-| `http`     | External service integration, logging, webhooks                 | Posts event data to `url`; non-2xx treated as non-blocking            |
+| Type       | Best for                                                       | Notes                                                                               |
+| ---------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `prompt`   | Context-aware, flexible validation (recommended default)       | LLM-driven; supports `model` and `timeout`                                          |
+| `agent`    | Multi-step verification needing tool access                    | Reads files, runs commands; higher cost/latency, so best on decision-control events |
+| `command`  | Fast deterministic checks, file ops, external tool integration | Runs a bash command; the only type supporting `async`                               |
+| `mcp_tool` | Validation via MCP tools without agent overhead (CC 2.1.118)   | `server` + `tool`; accepted on every event that accepts command hooks               |
+| `http`     | External service integration, logging, webhooks                | Posts event data to `url`; non-2xx treated as non-blocking                          |
 
-**Event support:** Prompt/agent/HTTP work on most events; SessionStart, PostSession, and WorktreeRemove are command-only; WorktreeCreate is command + HTTP. Prompt and agent hooks return the standard hook output JSON, adding `hookSpecificOutput` for event-specific behavior (PreToolUse, PermissionRequest, Elicitation).
+**Event support:** Command and `mcp_tool` hooks work on all 33 events. HTTP hooks work on all but SessionStart and Setup, which skip them. Prompt and agent hooks need a live conversation to run in, and 20 events are dispatched without one: ConfigChange, CwdChanged, DirectoryAdded, Elicitation, ElicitationResult, FileChanged, InstructionsLoaded, MessageDisplay, Notification, PostCompact, PreCompact, PreModelSwitch, PostModelSwitch, SessionEnd, SessionStart, Setup, StopFailure, SubagentStart, WorktreeCreate, and WorktreeRemove. The other 13 accept all five types: PreToolUse, PostToolUse, PostToolUseFailure, PostToolBatch, PermissionRequest, PermissionDenied, UserPromptSubmit, UserPromptExpansion, Stop, SubagentStop, TeammateIdle, TaskCreated, and TaskCompleted. The official hooks reference (<https://code.claude.com/docs/en/hooks>) presents all five hook types as available on every event; the runtime rejects prompt and agent hooks on the 20 events above with `hook_type_unsupported`, so treat the narrower list as the one that governs. Prompt and agent hooks return the standard hook output JSON, adding `hookSpecificOutput` for event-specific behavior (PreToolUse, PermissionRequest, Elicitation).
 
 ## Configuration Formats
 
@@ -76,16 +76,17 @@ All hooks receive JSON via stdin with common fields:
   "transcript_path": "/path/to/transcript.jsonl",
   "cwd": "/current/working/dir",
   "hook_event_name": "PreToolUse",
-  "permission_mode": "default|plan|acceptEdits|dontAsk|bypassPermissions"
+  "permission_mode": "default|acceptEdits|bypassPermissions|plan|dontAsk|auto"
 }
 ```
 
 Inside a subagent, `agent_id` and `agent_type` are also present. Event-specific fields vary — per-event and per-tool input fields are in `references/hook-input-schemas.md`; complete schemas in `references/event-schemas.md`. Prompt hooks access input via `$TOOL_INPUT`, `$TOOL_NAME`, `$USER_PROMPT`, etc.
 
-**Environment variables** in command hooks:
+**Environment variables** in command hooks. A hook shipped in a plugin receives `CLAUDE_PLUGIN_ROOT`, `CLAUDE_PLUGIN_DATA`, and `CLAUDE_PROJECT_DIR`; a hook declared in skill frontmatter receives `CLAUDE_PLUGIN_ROOT` only. Full descriptions, including `CLAUDE_PLUGIN_OPTION_<KEY>`: `../plugin-structure/references/manifest-reference.md` (Plugin Environment Variables).
 
 - `$CLAUDE_PROJECT_DIR` — project root path.
 - `$CLAUDE_PLUGIN_ROOT` — plugin directory; use for portable paths. Loader-bound in frontmatter hooks (see the Scoped hooks caveat above).
+- `$CLAUDE_PLUGIN_DATA` — per-plugin state directory at `~/.claude/plugins/data/<plugin>-<marketplace>`, created on install and removed on uninstall. Use it for caches, logs, and anything that must outlive a session.
 - `$CLAUDE_ENV_FILE` — write `export VAR=value` lines to persist env vars (SessionStart, CwdChanged, FileChanged).
 - `$CLAUDE_CODE_REMOTE` — set if running in remote context.
 - `$CLAUDE_CODE_SESSION_ID` — current session identifier (CC 2.1.132), for correlating events.
@@ -103,45 +104,51 @@ Matchers filter which hooks run for an event; each event defines the values it a
 - **Hyphenated matchers require exact matches (CC 2.1.195, breaking change).** Matchers with hyphens (e.g. `code-reviewer`, `mcp__brave-search`) no longer substring-match — use a wildcard for partial matches: `"mcp__brave-search__.*"`. Affects custom agent names, MCP server names, and any hyphenated identifier.
 - **Use pipe, not comma, for multiple matchers (CC 2.1.191).** Comma-separated matchers silently never fired before CC 2.1.191. Correct: `"Bash|PowerShell"`. Wrong: `"Bash,PowerShell"`.
 
-Other events match on source/category values, agent type names, MCP server name, or pipe-separated basenames; several events (UserPromptSubmit, Stop, and others) ignore `matcher` entirely. Per-event matcher values are documented in `references/event-schemas.md` and `references/advanced.md` (Event-Specific Matchers).
+Other events match on source/category values, agent type names, MCP server name, or pipe-separated basenames; several events (UserPromptSubmit, Stop, and others) ignore `matcher` entirely. Per-event matcher values are documented on each event's Matchers line in `references/event-schemas.md`; `references/advanced.md` (Event-Specific Matchers) explains the syntax.
 
 ## Hook Events Reference
 
-Category, decision control, and hook types for all 31 events. "All" = Command, HTTP, Prompt, Agent. Full schemas: `references/event-schemas.md`; per-event matcher values: `references/advanced.md` (Event-Specific Matchers).
+Category, decision control, and hook types for all 33 events. "All" = Command, HTTP, MCP tool, Prompt, Agent. Full schemas and per-event matcher values: `references/event-schemas.md`; matcher syntax: `references/advanced.md` (Event-Specific Matchers).
 
-| Event                  | Category    | Decision control                   | Types         |
-| ---------------------- | ----------- | ---------------------------------- | ------------- |
-| SessionStart           | Lifecycle   | continue, env vars                 | Command       |
-| InstructionsLoaded     | Lifecycle   | None (observability)               | All           |
-| SessionEnd             | Lifecycle   | None (observability)               | All           |
-| PostSession            | Lifecycle   | None (cleanup only)                | Command       |
-| UserPromptSubmit       | Input       | Block prompt                       | All           |
-| PreToolUse             | Tool        | Allow/deny/ask/defer, modify input | All           |
-| PermissionRequest      | Tool        | Allow/deny, modify input           | All           |
-| PermissionDenied       | Tool        | Request retry                      | All           |
-| PostToolUse            | Tool        | Block, modify tool output          | All           |
-| PostToolUseFailure     | Tool        | Context injection                  | All           |
-| Stop                   | Turn        | Block stop                         | All           |
-| StopFailure            | Turn        | None (observability)               | All           |
-| SubagentStart          | Subagent    | Context injection                  | All           |
-| SubagentStop           | Subagent    | Block stop                         | All           |
-| TeammateIdle           | Teams       | Reject idle (exit 2), stop         | All           |
-| TaskCompleted          | Teams       | Reject completion (exit 2)         | All           |
-| PreCompact             | Context     | Block compaction (exit 2)          | All           |
-| PostCompact            | Context     | None (observability)               | All           |
-| ConfigChange           | Config      | Block (except policy)              | All           |
-| CwdChanged             | Environment | None (env vars, watchPaths)        | All           |
-| FileChanged            | Environment | None (env vars, watchPaths)        | All           |
-| WorktreeCreate         | Worktree    | Return path, exit code             | Command, HTTP |
-| WorktreeRemove         | Worktree    | None (cleanup)                     | Command       |
-| Elicitation            | MCP         | Accept/decline/cancel              | All           |
-| ElicitationResult      | MCP         | Override response                  | All           |
-| MessageDisplay         | Display     | Display content replacement        | All           |
-| Notification           | Notification| None (observability)               | All           |
-| BackgroundTasksChanged | Background  | None (observability)               | All           |
-| DirectoryAdded         | Lifecycle   | None (observability)               | All           |
-| PreModelSwitch         | Model       | Block, confirm, annotate           | All           |
-| PostModelSwitch        | Model       | None (observability)               | All           |
+A Types cell naming Command always admits `mcp_tool` too. Which events restrict prompt, agent, and HTTP hooks, and why, is set out under Hook Types above.
+
+An `mcp_tool` hook is accepted on every event, but it only runs where an MCP client set exists. Setup fires before MCP servers are available, so its `mcp_tool` hooks are always skipped. SessionStart fires before servers are available at launch, including `--continue` and `--resume`, so its `mcp_tool` hooks are skipped there; after `/clear` or compaction the servers are up and they run. A skipped hook is not an error — it logs `mcp_tool hooks are not available for the '<event>' hook event (no MCP client context)` and returns no decision.
+
+| Event               | Category     | Decision control                   | Types         |
+| ------------------- | ------------ | ---------------------------------- | ------------- |
+| SessionStart        | Lifecycle    | continue, env vars                 | Command       |
+| Setup               | Lifecycle    | Context injection                  | Command       |
+| InstructionsLoaded  | Lifecycle    | None (observability)               | Command, HTTP |
+| SessionEnd          | Lifecycle    | None (observability)               | Command, HTTP |
+| UserPromptSubmit    | Input        | Block prompt                       | All           |
+| UserPromptExpansion | Input        | Block expansion, context injection | All           |
+| PreToolUse          | Tool         | Allow/deny/ask/defer, modify input | All           |
+| PermissionRequest   | Tool         | Allow/deny, modify input           | All           |
+| PermissionDenied    | Tool         | Request retry                      | All           |
+| PostToolUse         | Tool         | Block, modify tool output          | All           |
+| PostToolUseFailure  | Tool         | Context injection                  | All           |
+| PostToolBatch       | Tool         | Stop agentic loop (exit 2)         | All           |
+| Stop                | Turn         | Block stop                         | All           |
+| StopFailure         | Turn         | None (observability)               | Command, HTTP |
+| SubagentStart       | Subagent     | Context injection                  | Command, HTTP |
+| SubagentStop        | Subagent     | Block stop                         | All           |
+| TeammateIdle        | Teams        | Reject idle (exit 2), stop         | All           |
+| TaskCreated         | Teams        | Reject creation (exit 2)           | All           |
+| TaskCompleted       | Teams        | Reject completion (exit 2)         | All           |
+| PreCompact          | Context      | Block compaction (exit 2)          | Command, HTTP |
+| PostCompact         | Context      | None (observability)               | Command, HTTP |
+| ConfigChange        | Config       | Block (except policy)              | Command, HTTP |
+| CwdChanged          | Environment  | None (env vars, watchPaths)        | Command, HTTP |
+| FileChanged         | Environment  | None (env vars, watchPaths)        | Command, HTTP |
+| WorktreeCreate      | Worktree     | Return path, exit code             | Command, HTTP |
+| WorktreeRemove      | Worktree     | None (cleanup)                     | Command, HTTP |
+| Elicitation         | MCP          | Accept/decline/cancel              | Command, HTTP |
+| ElicitationResult   | MCP          | Override response                  | Command, HTTP |
+| MessageDisplay      | Display      | Display content replacement        | Command, HTTP |
+| Notification        | Notification | None (observability)               | Command, HTTP |
+| DirectoryAdded      | Lifecycle    | None (observability)               | Command, HTTP |
+| PreModelSwitch      | Model        | Block, confirm, annotate           | Command, HTTP |
+| PostModelSwitch     | Model        | None (observability)               | Command, HTTP |
 
 ## Configuration Locations
 
@@ -183,7 +190,7 @@ This applies to function-hook plugins (those using the JSX runtime or direct Jav
 
 ## Critical Gotchas
 
-1. **No "Setup" event.** Use `SessionStart` with matcher `startup` for initialization.
+1. **`Setup` is not a session-lifecycle event.** It fires only for repository setup runs — the hidden CLI flags `--init` and `--init-only` fire it with `trigger: "init"`, and `--maintenance` fires it with `trigger: "maintenance"`. A normal `claude` launch never fires it, so per-session initialization belongs on `SessionStart` with matcher `startup`. `Setup` accepts command hooks only (HTTP hooks are skipped; prompt and agent hooks have no conversation context to run in).
 2. **Shell profile noise breaks JSON parsing.** If `.bashrc`/`.zshrc` prints to stdout it contaminates output — redirect profile output to stderr.
 3. **SessionEnd has a 1.5 second timeout.** Set `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` for longer cleanup.
 4. **Duplicate hooks are deduplicated.** Command hooks by command string, HTTP hooks by URL.
@@ -199,27 +206,27 @@ This applies to function-hook plugins (those using the JSX runtime or direct Jav
 
 ## References and Examples
 
-| Reference                          | When to read                                                                                          |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `references/event-schemas.md`      | Need the exact input/output JSON or version notes for a specific event; SDK parity (matcher values: `advanced.md`) |
-| `references/hook-input-schemas.md` | Need per-event input fields or the `tool_input` schema for a specific tool (Bash, Write, Edit, etc.)  |
-| `references/advanced.md`           | Multi-stage validation, full hook-entry schema, `if`/agent/async/scoped hooks, `${CLAUDE_PLUGIN_ROOT}` loader caveat, security patterns, shell-injection migration |
-| `references/patterns.md`           | Ready-made pattern for a common goal (security validation, test enforcement, worktree mgmt, elicitation, config auditing) |
-| `references/migration.md`          | Converting command hooks to prompt hooks, or when to keep command hooks                               |
-| `examples/validate-write.sh`       | PreToolUse file write validation                                                                      |
-| `examples/validate-bash.sh`        | PreToolUse bash command validation                                                                    |
-| `examples/load-context.sh`         | SessionStart context loading and `$CLAUDE_ENV_FILE` usage                                             |
-| `examples/stop-failure-alert.sh`   | StopFailure API error alerting                                                                        |
-| `examples/validate-task.sh`        | TaskCompleted deliverable verification                                                                |
-| `examples/teammate-quality-gate.sh`| TeammateIdle quality gate                                                                             |
-| `examples/create-worktree.sh`      | WorktreeCreate custom worktree setup                                                                  |
-| `examples/cleanup-worktree.sh`     | WorktreeRemove resource cleanup                                                                        |
-| `examples/audit-config-change.sh`  | ConfigChange security monitoring                                                                      |
-| `examples/handle-elicitation.sh`   | Elicitation auto-response                                                                              |
-| `examples/log-observability.sh`    | Unified logging for InstructionsLoaded, PreCompact, PostCompact, Notification                         |
-| `scripts/validate-hook-schema.sh`  | Validate `hooks.json` structure and syntax                                                             |
-| `scripts/test-hook.sh`             | Test a hook with sample input before deployment                                                       |
-| `scripts/hook-linter.sh`           | Check hook scripts for common issues and best practices                                               |
+| Reference                           | When to read                                                                                                                                                       |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `references/event-schemas.md`       | Need the exact input/output JSON, matcher values, or version notes for a specific event; SDK parity                                                                |
+| `references/hook-input-schemas.md`  | Need per-event input fields or the `tool_input` schema for a specific tool (Bash, Write, Edit, etc.)                                                               |
+| `references/advanced.md`            | Multi-stage validation, full hook-entry schema, `if`/agent/async/scoped hooks, `${CLAUDE_PLUGIN_ROOT}` loader caveat, security patterns, shell-injection migration |
+| `references/patterns.md`            | Ready-made pattern for a common goal (security validation, test enforcement, worktree mgmt, elicitation, config auditing)                                          |
+| `references/migration.md`           | Converting command hooks to prompt hooks, or when to keep command hooks                                                                                            |
+| `examples/validate-write.sh`        | PreToolUse file write validation                                                                                                                                   |
+| `examples/validate-bash.sh`         | PreToolUse bash command validation                                                                                                                                 |
+| `examples/load-context.sh`          | SessionStart context loading and `$CLAUDE_ENV_FILE` usage                                                                                                          |
+| `examples/stop-failure-alert.sh`    | StopFailure API error alerting                                                                                                                                     |
+| `examples/validate-task.sh`         | TaskCompleted deliverable verification                                                                                                                             |
+| `examples/teammate-quality-gate.sh` | TeammateIdle quality gate                                                                                                                                          |
+| `examples/create-worktree.sh`       | WorktreeCreate custom worktree setup                                                                                                                               |
+| `examples/cleanup-worktree.sh`      | WorktreeRemove resource cleanup                                                                                                                                    |
+| `examples/audit-config-change.sh`   | ConfigChange security monitoring                                                                                                                                   |
+| `examples/handle-elicitation.sh`    | Elicitation auto-response                                                                                                                                          |
+| `examples/log-observability.sh`     | Unified logging for InstructionsLoaded, PreCompact, PostCompact, Notification                                                                                      |
+| `scripts/validate-hook-schema.sh`   | Validate `hooks.json` structure and syntax                                                                                                                         |
+| `scripts/test-hook.sh`              | Test a hook with sample input before deployment                                                                                                                    |
+| `scripts/hook-linter.sh`            | Check hook scripts for common issues and best practices                                                                                                            |
 
 > **Note:** After copying example scripts, make them executable (`chmod +x`). Utility scripts require `jq`. Official docs: <https://code.claude.com/docs/en/hooks>.
 

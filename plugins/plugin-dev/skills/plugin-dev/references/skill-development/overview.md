@@ -46,7 +46,7 @@ Both skills and commands are invoked via the Skill tool and share the same under
 Skills use a three-level loading system to manage context efficiently:
 
 1. **Metadata (name + description)** - Always in context (~100 words)
-2. **SKILL.md body** - When skill triggers (<5k words)
+2. **SKILL.md body** - When skill triggers (<3k words)
 3. **Bundled resources** - As needed by Claude (Unlimited\*)
 
 \*Unlimited because scripts can be executed without reading into context window.

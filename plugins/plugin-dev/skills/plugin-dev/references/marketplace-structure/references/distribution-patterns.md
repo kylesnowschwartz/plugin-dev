@@ -57,6 +57,8 @@ Test marketplaces locally before publishing:
 /plugin marketplace add ./path/to/marketplace.json
 ```
 
+For a local-directory marketplace, `${CLAUDE_PLUGIN_ROOT}` for an installed plugin points at the source directory itself rather than a cached copy, so edits to the plugin's files apply on the next session without reinstalling.
+
 ## Team Distribution Patterns
 
 ### Pattern 1: Shared Repository Settings
@@ -124,10 +126,10 @@ org-plugins/
     "pluginRoot": "./plugins"
   },
   "plugins": [
-    { "name": "security-scanner", "source": "./security-scanner" },
-    { "name": "code-formatter", "source": "./code-formatter" },
-    { "name": "test-runner", "source": "./test-runner" },
-    { "name": "deployment-tools", "source": "./deployment-tools" }
+    { "name": "security-scanner", "source": "security-scanner" },
+    { "name": "code-formatter", "source": "code-formatter" },
+    { "name": "test-runner", "source": "test-runner" },
+    { "name": "deployment-tools", "source": "deployment-tools" }
   ]
 }
 ```

@@ -16,10 +16,10 @@ permissionMode: acceptEdits
 | ------------------- | ------------------------------------------------------------ | --------------------------------------------------- |
 | `default`           | Standard permission model — prompts user for each action     | General-purpose agents, untrusted contexts          |
 | `acceptEdits`       | Auto-accept file edit operations (Write, Edit, NotebookEdit) | Code generation agents that need to write files     |
-| `dontAsk`           | Skip all permission dialogs                                  | Trusted automation agents, CI/CD agents             |
+| `dontAsk`           | No prompts; anything that would have prompted is denied     | Agents whose allowed actions are fully covered by allow rules |
 | `bypassPermissions` | Full bypass of all permission checks                         | Fully trusted agents only                           |
 | `plan`              | Planning mode — propose changes without executing            | Architecture/design agents, review agents           |
-| `delegate`          | Coordination-only — restricted to team management tools      | Team lead agents that should not implement directly |
+| `auto`              | Claude classifies each tool call and runs the lower-risk ones | Agents that should proceed without prompts but keep a safety check |
 
 ### Mode Details
 
@@ -39,9 +39,9 @@ Auto-accepts file writing operations (Write, Edit, NotebookEdit) without prompti
 
 #### dontAsk
 
-Skips all permission dialogs. The agent proceeds without user confirmation for any action.
+No permission dialogs are shown. Any action that would have prompted for permission is denied instead — only actions pre-approved by allow rules run.
 
-**When to use:** Trusted automation, background agents, CI/CD pipelines where no user is present.
+**When to use:** Automation and CI/CD agents whose full set of permitted actions is already enumerated by allow rules, so a denial never blocks required work.
 
 #### bypassPermissions
 
@@ -55,15 +55,15 @@ Planning mode restricts the agent to read-only operations. The agent can explore
 
 **When to use:** Architecture planning, design review, impact analysis agents.
 
-#### delegate
+#### auto
 
-Restricts the agent to team coordination tools only: spawning teammates, sending messages, managing tasks, and shutting down teammates. The agent cannot use implementation tools (Edit, Write, Bash, etc.) directly.
+Claude checks each tool call for risky actions and prompt injection before executing, runs the ones it assesses as lower-risk, and blocks the rest. No permission dialogs are shown.
 
-**When to use:** Team lead agents that should coordinate work across teammates without implementing tasks themselves.
+**When to use:** Agents that need to run unattended but should still refuse clearly risky actions. Use `dontAsk` instead when every action the agent can take is already enumerated by allow rules — `dontAsk` gives a deterministic deny on anything outside those rules, while `auto` leaves the decision to the risk classifier.
 
 ```yaml
-# Team lead agent that only coordinates
-permissionMode: delegate
+# Unattended agent with automatic risk checks
+permissionMode: auto
 ```
 
 ## Permission Specifier Syntax

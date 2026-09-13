@@ -234,6 +234,8 @@ Use `${CLAUDE_PLUGIN_ROOT}` for the command path:
 }
 ```
 
+`${CLAUDE_PLUGIN_DATA}` expands in LSP server config too. It points at `~/.claude/plugins/data/<plugin>-<marketplace>`, a per-plugin directory created on install and removed on uninstall — use it for server caches and index files rather than writing inside the plugin directory.
+
 ### Step 4: Document Requirements
 
 In your plugin README:
