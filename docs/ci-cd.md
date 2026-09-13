@@ -35,7 +35,11 @@ Every run branches fresh from main after Stage 0, because Stage 0 rewrites
 describes main. A run with any changelog content branches as
 `claude/upstream-sync-<date>`; a run whose changelog range is empty is a drift-only
 run and branches as `claude/doc-drift-<date>` with the pull request title
-`docs: fix documentation drift (<date>)`.
+`docs: fix documentation drift (<date>)`. CI appends the workflow run id to the
+branch name so two runs on the same day never collide on one branch.
+
+The job's time limit is 120 minutes. A full sync with a changelog range runs the
+five agent stages in sequence and takes about an hour.
 
 The housekeeping step runs last and treats those two prefixes as separate buckets,
 keeping the newest open pull request in each and closing the older ones in the same

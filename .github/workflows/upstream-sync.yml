@@ -13,7 +13,9 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # A full sync with a changelog range runs five agent stages in sequence and
+    # takes about an hour; the cap leaves headroom for the Stage 4 retry.
+    timeout-minutes: 120
     permissions:
       contents: write
       pull-requests: write
@@ -157,9 +159,11 @@ jobs:
             1. Cut a new branch from main. Never check out or rebase an earlier
                sync branch — Stage 0 has already rewritten
                `docs/claude-code-facts.json` in the working tree. A run with any
-               changelog content uses `claude/upstream-sync-<date>` even when drift
-               items ride along; only a run with an empty changelog range uses
-               `claude/doc-drift-<date>` (use today's date as YYYY-MM-DD)
+               changelog content uses `claude/upstream-sync-<date>-${{ github.run_id }}`
+               even when drift items ride along; only a run with an empty changelog
+               range uses `claude/doc-drift-<date>-${{ github.run_id }}` (use today's
+               date as YYYY-MM-DD). The run id suffix keeps two runs on the same day
+               from colliding on one branch name
             2. Stage the files the pipeline changed with
                `git add -A -- plugins docs CLAUDE.md CHANGELOG.md .claude-plugin`,
                then commit with conventional commit format. `-A` picks up files
