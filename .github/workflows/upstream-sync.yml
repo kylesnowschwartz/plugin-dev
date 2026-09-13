@@ -33,7 +33,15 @@ jobs:
           path: claude-code-system-prompts
 
       - name: Check required tools
-        run: command -v jq python3 strings
+        run: |
+          set -euo pipefail
+          # ripgrep is not on the runner image. The pipeline's agents sweep the
+          # docs tree with it, so install it before the agent step runs.
+          sudo apt-get update -qq
+          sudo apt-get install -y ripgrep
+          for t in jq python3 strings; do
+            command -v "$t" >/dev/null || { echo "missing: $t"; exit 1; }
+          done
 
       - name: Install latest Claude Code CLI
         run: |
@@ -136,11 +144,17 @@ jobs:
             ## CI Overrides
 
             **Release step override**: Instead of committing directly to main, do this:
-            1. Create a new branch. A run with a non-empty changelog range uses
-               `claude/upstream-sync-<date>`; a drift-only run — empty changelog range —
-               uses `claude/doc-drift-<date>` (use today's date as YYYY-MM-DD)
-            2. Commit all changes to that branch with conventional commit format
-            3. Push the branch and open a PR against main
+            1. Create a new branch, unless Stage 0 handed you an existing drift
+               branch to reuse (see "Reuse the open drift PR" below). A run with a
+               non-empty changelog range uses `claude/upstream-sync-<date>`; a
+               drift-only run — empty changelog range — uses
+               `claude/doc-drift-<date>` (use today's date as YYYY-MM-DD)
+            2. Stage the files the pipeline changed with `git add -u`, then commit
+               with conventional commit format. Never stage `.agent-history/` — it
+               is scratch space for the pipeline's own artifacts and is git-ignored
+            3. Push the branch and open a PR against main. On a reused drift branch,
+               push with `git push --force-with-lease` and add a PR comment
+               summarising what this run added instead of opening a second PR
             4. The PR title is `docs: sync plugin-dev with Claude Code vX.Y.Z-vA.B.C` for a
                changelog run, and `docs: fix documentation drift (<date>)` for a drift-only run
             5. The PR body should include:
@@ -153,10 +167,20 @@ jobs:
             those all audit forward from the same merged baseline. Drift-only runs carry
             their own independent fixes, so they keep a prefix that step ignores.
 
-            **One open drift PR at a time**: before opening a drift-only PR, run
-            `gh pr list --state open --search "head:claude/doc-drift-"`. If it returns an
-            open PR, stop without opening a second one and report the existing PR number
-            in the step summary.
+            **Reuse the open drift PR**: there is at most one open drift PR at a
+            time. Before Stage 1, run
+            `gh pr list --state open --search "head:claude/doc-drift-"`. If it returns
+            an open PR, build on it rather than stopping:
+            1. `git fetch origin <head-branch>` and check that branch out
+            2. `git rebase origin/main`. If the rebase conflicts, run
+               `git rebase --abort`, stop the pipeline, and report the PR number and
+               the conflicting files in the step summary — that is the only case
+               that stops the run
+            3. Run the pipeline on top of that branch
+            4. Push with `git push --force-with-lease` and post a PR comment
+               summarising what this run added
+
+            If no open drift PR exists, branch from main as usual.
 
             **System prompts path**: The Piebald-AI/claude-code-system-prompts repo is
             checked out at `./claude-code-system-prompts/` — use this path instead of

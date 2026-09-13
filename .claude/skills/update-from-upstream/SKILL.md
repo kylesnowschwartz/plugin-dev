@@ -74,7 +74,17 @@ Stage 0 runs on every sync, including runs where the changelog range turns out t
 gh pr list --state open --search "head:claude/doc-drift-"
 ```
 
-If that returns an open pull request, stop and report it instead of opening a second one.
+An open drift pull request is a base to build on, not a blocker. Reuse it:
+
+```bash
+git fetch origin <head-branch>
+git checkout <head-branch>
+git rebase origin/main
+```
+
+Run the pipeline on top of that branch and, at the release step, push with `git push --force-with-lease` and post a pull request comment summarising what this run added. A stale drift pull request that nobody merged would otherwise block every later run, so the run folds its fixes into the existing one instead.
+
+A rebase conflict is the one case that stops the run: `git rebase --abort`, then report the pull request number and the conflicting files. Resolving someone else's half-merged drift fixes is a human's call.
 
 ## Stage 1: Discover
 
@@ -98,9 +108,10 @@ and from nowhere else — never infer a version from an audit log row. Then:
    not a documented fact, so it is never a manifest item
 6. Classify all changes and write the manifest to .agent-history/upstream-changes.md
 
-Write the manifest even when the changelog returns no versions after the
-baseline, as long as the drift report has a DRIFT line or the facts diff has
-content once claude_code_version is ignored.
+Always write .agent-history/upstream-changes.md, even when every source comes
+back empty. Write the header and every section, leaving sections with no items
+empty. Stage 1b appends to this file and cannot append to a file that does not
+exist.
 
 Follow your agent instructions exactly.
 ```
@@ -123,6 +134,9 @@ docs/claude-code-facts.json. Append your findings to
 
 Skip anything scripts/check-doc-drift.sh already owns: event counts and table
 membership, broken relative paths, denylisted names, version sync.
+
+If .agent-history/upstream-changes.md does not exist, create it with the
+standard manifest header and only the "Doc Drift Audit" section.
 
 Follow your agent instructions exactly.
 ```
@@ -239,7 +253,7 @@ Follow your agent instructions exactly.
 Commit and push:
 
 ```bash
-# Stage files selectively
+# Stage the files the pipeline changed
 git add -u
 
 # Commit with conventional format
@@ -250,6 +264,10 @@ git commit -m "feat: sync plugin-dev with Claude Code vX.Y.Z-vA.B.C"
 
 git push
 ```
+
+Never stage `.agent-history/`. It holds the pipeline's own scratch artifacts — the drift report and the manifest — and is git-ignored, so `git add -u` leaves it out. Do not add it back with an explicit path.
+
+On a reused drift branch, push with `git push --force-with-lease` and post a pull request comment summarising what this run added, rather than opening a second pull request.
 
 **Branch and title when the run opens a pull request** (CI always does; locally only when asked):
 
@@ -310,6 +328,7 @@ Any one non-empty signal continues the run. An empty changelog range on its own 
 | `scripts/extract-cc-facts.sh` exits 2 (sanity check failed) | Stop pipeline, report the stderr message to user |
 | No `claude` binary available for Stage 0 | Stop pipeline, report to user |
 | `scripts/check-doc-drift.sh` exits 2 (tooling error) | Stop pipeline, report to user |
+| Rebasing an open drift pull request onto main conflicts | `git rebase --abort`, stop pipeline, report the pull request number and conflicting files |
 | `claude-code-guide` agent unavailable | Continue with two-source triangulation, note degraded confidence |
 | System-prompts repo not found | Continue with CC changelog only, note degraded confidence |
 | `markdownlint` not installed | Skip lint check in Stage 4, warn in output |

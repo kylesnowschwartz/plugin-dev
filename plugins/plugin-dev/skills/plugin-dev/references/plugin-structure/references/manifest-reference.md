@@ -666,12 +666,14 @@ claude plugin install my-plugin@my-marketplace \
 
 ### Plugin Environment Variables
 
-Claude Code sets these variables for plugin hooks and expands them in plugin MCP/LSP server configuration (`command`, `args`, `env`, `url`):
+Claude Code sets these variables for plugin hooks. Plugin MCP/LSP server configuration (`command`, `args`, `env`, `url`) expands `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA` only:
 
 | Variable | Value |
 | --- | --- |
 | `CLAUDE_PLUGIN_ROOT` | The plugin's own directory — use it for every intra-plugin path |
 | `CLAUDE_PLUGIN_DATA` | `~/.claude/plugins/data/<plugin>-<marketplace>`, a per-plugin state directory |
+| `CLAUDE_PROJECT_DIR` | The project root the session runs in. Set for plugin hooks; not expanded in MCP/LSP server configuration |
+| `CLAUDE_PLUGIN_OPTION_<KEY>` | One variable per `userConfig` option, holding its configured value. Absent until the option is set |
 
 `CLAUDE_PLUGIN_DATA` is where a plugin keeps state that must survive across sessions — caches, databases, logs, counters. The directory is created when the plugin is installed and removed when it is uninstalled, so nothing inside it survives a reinstall. It is plugin-only: hooks declared in skill frontmatter receive `${CLAUDE_PLUGIN_ROOT}` but not `${CLAUDE_PLUGIN_DATA}`.
 
@@ -700,7 +702,7 @@ All paths in component fields must follow these rules:
 
 When Claude Code loads components, the manifest decides which locations are scanned at all — see the table under "Component Path Fields" for the per-field rule.
 
-1. **Replacing fields** (`commands`, `agents`, `outputStyles`, `experimental.themes`, `experimental.monitors`): only the paths named in the manifest are scanned. The matching default directory is skipped, and Claude Code reports it as shadowed: `Plugin <name>: <dir>/ folder exists but is not auto-loaded because the manifest sets "<field>"`.
+1. **Replacing fields** (`commands`, `agents`, `outputStyles`, `experimental.themes`, `experimental.monitors`): only the paths named in the manifest are scanned. The matching default directory is skipped. For `commands`, `agents`, `outputStyles`, and `experimental.themes`, Claude Code reports the skipped directory as shadowed: `Plugin <name>: <dir>/ folder exists but is not auto-loaded because the manifest sets "<field>"`. `experimental.monitors` and `workflows` replace their default silently — no message names them.
 
 2. **Adding field** (`skills`): the default `skills/` directory is scanned first, then every path named in the manifest.
 

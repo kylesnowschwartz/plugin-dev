@@ -895,7 +895,9 @@ Corrects references that had drifted from Claude Code behaviour, reported in [#6
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.42.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.43.1...HEAD
+[0.43.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.43.0...v0.43.1
+[0.43.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.42.0...v0.43.0
 [0.42.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.41.0...v0.42.0
 [0.41.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.40.0...v0.41.0
 [0.40.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.39.0...v0.40.0

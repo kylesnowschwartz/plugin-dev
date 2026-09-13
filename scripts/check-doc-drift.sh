@@ -20,12 +20,15 @@ Usage: scripts/check-doc-drift.sh [options]
 
   --facts PATH      Facts JSON to check against (default docs/claude-code-facts.json)
   --skip-validate   Skip checks G and H, which shell out to the claude CLI
-  --only A,B,...    Run only the listed checks (A-L)
+  --only A,B,...    Run only the listed checks (letters below)
   -h, --help        Show this message
 
 Checks: A event-table, B event-sections, C event-counts, D script-allowlist,
 E ci-allowlist, F enums, G userconfig-validate, H manifest-examples-validate,
-I paths, J denylist, K removed-events, L version-sync.
+I paths, J denylist, L version-sync, M userconfig-fields, N env-vars.
+
+Selecting only G and/or H together with --skip-validate leaves nothing to run
+and is rejected.
 USAGE
 }
 
@@ -118,7 +121,7 @@ from pathlib import Path
 REPO = Path(os.environ["DRIFT_REPO_ROOT"])
 SKIP_VALIDATE = os.environ["DRIFT_SKIP_VALIDATE"] == "1"
 ONLY = {c.strip().upper() for c in os.environ["DRIFT_ONLY"].split(",") if c.strip()}
-ALL_CHECKS = list("ABCDEFGHIJKL")
+ALL_CHECKS = list("ABCDEFGHIJLMN")
 
 FACTS_PATH = os.environ["DRIFT_FACTS"]
 
@@ -133,13 +136,17 @@ def fail_tooling(*messages):
 # verdict, so it is rejected before a check runs rather than crashing one.
 REQUIRED_FACT_LISTS = (
     "hook_events",
+    "hook_types",
     "http_hook_unsupported_events",
     "permission_modes",
     "session_start_sources",
     "session_end_reasons",
     "directory_added_sources",
+    "plugin_env_vars",
 )
 DISPATCH_CLASSES = frozenset({"conversation", "no-context", "outside-repl"})
+# The userConfig option schema the M check reads out of the manifest reference.
+REQUIRED_USER_CONFIG_LISTS = ("types", "required_fields")
 
 
 def load_facts(path):
@@ -191,6 +198,26 @@ def load_facts(path):
                 "'http_hook_unsupported_events' names events absent from "
                 "'hook_events': " + ", ".join(unknown_http)
             )
+
+    user_config = data.get("user_config")
+    if not isinstance(user_config, dict) or not user_config:
+        problems.append("'user_config' must be a non-empty object")
+    else:
+        fields = user_config.get("fields")
+        if not isinstance(fields, dict) or not fields:
+            problems.append("'user_config.fields' must be a non-empty object")
+        for key in REQUIRED_USER_CONFIG_LISTS:
+            value = user_config.get(key)
+            if not isinstance(value, list) or not value:
+                problems.append(f"'user_config.{key}' must be a non-empty array")
+            elif not all(isinstance(v, str) for v in value):
+                problems.append(f"'user_config.{key}' must contain only strings")
+        if not isinstance(user_config.get("key_pattern"), str):
+            problems.append("'user_config.key_pattern' must be a string")
+
+    if not isinstance(data.get("plugin_option_env_prefix"), str) or not data["plugin_option_env_prefix"]:
+        problems.append("'plugin_option_env_prefix' must be a non-empty string")
+
     if problems:
         fail_tooling(
             *(f"facts file {path} is unusable: {problem}" for problem in problems)
@@ -208,11 +235,14 @@ VALIDATE_SH = HOOK_DEV / "scripts/validate-hook-schema.sh"
 PERMISSION_MODES_DOC = SKILL / "references/agent-development/references/permission-modes-rules.md"
 CI_WORKFLOW = REPO / ".github/workflows/component-validation.yml"
 PLUGIN_STRUCTURE = SKILL / "references/plugin-structure"
+MANIFEST_REFERENCE = PLUGIN_STRUCTURE / "references/manifest-reference.md"
+PLUGIN_STRUCTURE_OVERVIEW = PLUGIN_STRUCTURE / "overview.md"
 
 EVENTS = list(FACTS["hook_events"])
 EVENT_SET = set(EVENTS)
 DISPATCH = FACTS["hook_event_dispatch"]
 HTTP_UNSUPPORTED = set(FACTS["http_hook_unsupported_events"])
+USER_CONFIG = FACTS["user_config"]
 
 findings = []
 errors = []
@@ -286,8 +316,15 @@ def parse_event_table():
 
 # Two independent facts decide what an event accepts: whether it is dispatched
 # with a conversation (prompt and agent hooks) and whether HTTP hooks are
-# filtered out for it. Command and mcp_tool hooks run on every event.
-ALL_HOOK_TYPES = frozenset({"command", "mcp_tool", "http", "prompt", "agent"})
+# filtered out for it. The remaining types run on every event.
+ALL_HOOK_TYPES = frozenset(FACTS["hook_types"])
+# The roster the capability rules below encode. A type outside it has no rule,
+# so the rules stop being a sound basis for a verdict and check A says so.
+MODELLED_HOOK_TYPES = frozenset({"command", "mcp_tool", "http", "prompt", "agent"})
+CONVERSATION_HOOK_TYPES = frozenset({"prompt", "agent"})
+HTTP_HOOK_TYPES = frozenset({"http"})
+UNIVERSAL_HOOK_TYPES = ALL_HOOK_TYPES - CONVERSATION_HOOK_TYPES - HTTP_HOOK_TYPES
+HOOK_TYPES_MODELLED = ALL_HOOK_TYPES == MODELLED_HOOK_TYPES
 TYPES_CELL_TEXT = {
     (True, True): "All",
     (True, False): "Command, MCP tool, Prompt, Agent",
@@ -304,12 +341,31 @@ def event_capability(event):
     """
     conversation = DISPATCH.get(event) == "conversation"
     http_ok = event not in HTTP_UNSUPPORTED
-    types = {"command", "mcp_tool"}
+    types = set(UNIVERSAL_HOOK_TYPES)
     if conversation:
-        types |= {"prompt", "agent"}
+        types |= ALL_HOOK_TYPES & CONVERSATION_HOOK_TYPES
     if http_ok:
-        types.add("http")
+        types |= ALL_HOOK_TYPES & HTTP_HOOK_TYPES
     return TYPES_CELL_TEXT[(conversation, http_ok)], frozenset(types)
+
+
+def check_hook_types():
+    """Guard the hook-type roster the capability rules are written against.
+
+    Reported under A because the Types cells it judges spell the roster out.
+    """
+    added = sorted(ALL_HOOK_TYPES - MODELLED_HOOK_TYPES)
+    dropped = sorted(MODELLED_HOOK_TYPES - ALL_HOOK_TYPES)
+    parts = []
+    if added:
+        parts.append("new type(s) " + ", ".join(added))
+    if dropped:
+        parts.append("retired type(s) " + ", ".join(dropped))
+    report(
+        "A", FACTS_PATH, 1,
+        "hook types changed: " + "; ".join(parts) + " — the Types column rules "
+        f"cover {sorted_join(MODELLED_HOOK_TYPES)}; update them and the docs together",
+    )
 
 
 def expected_types_cell(event):
@@ -333,6 +389,8 @@ def markdown_files(root):
 # ---------------------------------------------------------------- A. event-table
 
 def check_event_table():
+    if not HOOK_TYPES_MODELLED:
+        check_hook_types()
     header_line, rows = parse_event_table()
     if header_line is None:
         report("A", OVERVIEW, 1, "Hook Events Reference table not found")
@@ -344,7 +402,14 @@ def check_event_table():
             continue
         seen[event] = (line_no, types_cell)
         if event not in EVENT_SET:
-            report("A", OVERVIEW, line_no, f"table row names unknown event {event}")
+            report(
+                "A", OVERVIEW, line_no,
+                f"table row documents an event that no longer exists: {event}",
+            )
+            continue
+        if not HOOK_TYPES_MODELLED:
+            # The Types cell spells out a roster the facts no longer agree with,
+            # so comparing cells would report noise on top of the real drift.
             continue
         expected = expected_types_cell(event)
         if types_cell != expected:
@@ -367,7 +432,10 @@ def check_event_sections():
             report("B", EVENT_SCHEMAS, 1, f"no `### {event}` section for event {event}")
     for name, line in documented.items():
         if name not in EVENT_SET:
-            report("B", EVENT_SCHEMAS, line, f"`### {name}` section names unknown event {name}")
+            report(
+                "B", EVENT_SCHEMAS, line,
+                f"`### {name}` documents an event that no longer exists",
+            )
 
 
 # --------------------------------------------------------------- C. event-counts
@@ -415,6 +483,11 @@ def check_script_allowlist():
         report("D", VALIDATE_SH, decl_line, f"VALID_EVENTS is missing event {event}")
     for event in sorted(listed - EVENT_SET):
         report("D", VALIDATE_SH, decl_line, f"VALID_EVENTS names unknown event {event}")
+
+    if not HOOK_TYPES_MODELLED:
+        # Arm expectations come from the capability rules the changed hook-type
+        # roster invalidated, so only check A's roster finding is trustworthy.
+        return
 
     # The hook-type support switch: each arm lists events, then restricts the
     # hook types they accept. Derive the expected event set from the arm's types.
@@ -626,16 +699,28 @@ def json_fences(path):
 # the suggestions and the component paths that only exist in a real plugin.
 ADVISORY_PATHS = frozenset({"author", "description"})
 ADVISORY_MESSAGE_PREFIXES = ("No ", "Consider ")
-ADVISORY_MESSAGE_SUBSTRINGS = ("Path not found",)
+# An error the harness earns rather than the example: a component path in a
+# documentation snippet names a file the throwaway directory does not contain.
+ADVISORY_ERROR_SUBSTRINGS = ("Path not found",)
+# The harness failed to put a manifest where the validator looks, so nothing
+# was validated and the run has no verdict to report.
+NO_MANIFEST_MARKER = "No manifest found"
 
 
-def is_advisory(entry, allow_paths):
+def is_advisory(entry, kind):
+    """Whether a validator entry describes the harness rather than the example.
+
+    Only warnings earn the prose-shaped exemptions: an error whose message
+    happens to open with "No " is still an error, and discarding it would let a
+    check pass having validated nothing.
+    """
     message = str(entry.get("message", ""))
-    if allow_paths and str(entry.get("path", "")) in ADVISORY_PATHS:
-        return True
-    if message.startswith(ADVISORY_MESSAGE_PREFIXES):
-        return True
-    return any(marker in message for marker in ADVISORY_MESSAGE_SUBSTRINGS)
+    if kind == "warnings":
+        if str(entry.get("path", "")) in ADVISORY_PATHS:
+            return True
+        if message.startswith(ADVISORY_MESSAGE_PREFIXES):
+            return True
+    return any(marker in message for marker in ADVISORY_ERROR_SUBSTRINGS)
 
 
 def validator_problems(payload):
@@ -647,12 +732,23 @@ def validator_problems(payload):
     """
     manifest = payload.get("manifest") or {}
     problems = []
-    for kind, allow_paths in (("errors", False), ("warnings", True)):
+    for kind in ("errors", "warnings"):
         for entry in manifest.get(kind) or []:
-            if not isinstance(entry, dict) or is_advisory(entry, allow_paths):
+            if not isinstance(entry, dict) or is_advisory(entry, kind):
                 continue
             problems.append(f"{entry.get('path', '?')}: {entry.get('message', '')}")
     return problems
+
+
+def harness_failure(payload):
+    """Why the validator never reached the example, or None when it did."""
+    manifest = payload.get("manifest")
+    if not isinstance(manifest, dict) or not manifest:
+        return "'claude plugin validate --json' reported no manifest object"
+    for entry in manifest.get("errors") or []:
+        if isinstance(entry, dict) and NO_MANIFEST_MARKER in str(entry.get("message", "")):
+            return f"the validator found no manifest to read: {entry.get('message', '')}"
+    return None
 
 
 def run_plugin_validate(manifest, check, path, line):
@@ -678,6 +774,10 @@ def run_plugin_validate(manifest, check, path, line):
             "'claude plugin validate --json' did not print JSON for "
             f"{rel(path)}:{line}: {(proc.stdout + proc.stderr).strip()[:200]}",
         ))
+        return
+    failure = harness_failure(payload)
+    if failure is not None:
+        errors.append((check, f"{failure} for {rel(path)}:{line}"))
         return
     problems = validator_problems(payload)
     if not problems:
@@ -711,8 +811,20 @@ def as_plugin_manifest(data):
     return manifest
 
 
+# G and H split the same fences between them — G takes the userConfig ones, H
+# the rest — so they read one document set. A root in only one of them would
+# leave the other's fences unvalidated.
+def validated_markdown_files():
+    roots = [
+        PLUGIN_STRUCTURE,
+        SKILL / "references/lsp-integration",
+        SKILL / "references/mcp-integration",
+    ]
+    return sorted({p for root in roots for p in markdown_files(root)})
+
+
 def check_userconfig_validate():
-    for path in markdown_files(PLUGIN_STRUCTURE):
+    for path in validated_markdown_files():
         for line, body in json_fences(path):
             if "userConfig" not in body:
                 continue
@@ -762,13 +874,7 @@ def looks_like_plugin_manifest(data):
 
 
 def check_manifest_examples_validate():
-    roots = [
-        PLUGIN_STRUCTURE,
-        SKILL / "references/lsp-integration",
-        SKILL / "references/mcp-integration",
-    ]
-    paths = sorted({p for root in roots for p in markdown_files(root)})
-    for path in paths:
+    for path in validated_markdown_files():
         for line, body in json_fences(path):
             data = candidate_manifest(body)
             if data is None or not looks_like_plugin_manifest(data):
@@ -866,8 +972,10 @@ def check_paths():
 # The denylist scan reads whole trees rather than a file list, so it has to
 # decide what is text. Anything that does not decode as UTF-8 holds no prose to
 # drift, and a .git directory holds object data rather than documentation.
+# The scopes are also the exclusion: docs/claude-code-compatibility.md and
+# CHANGELOG.md record retired names on purpose, and neither lives under a
+# scanned tree, so they are never read.
 DENYLIST_SCOPES = ("plugins", ".github")
-DENYLIST_EXCLUDED = ("docs/claude-code-compatibility.md", "CHANGELOG.md")
 
 
 def denylist_files():
@@ -879,8 +987,6 @@ def denylist_files():
             if not path.is_file() or path.is_symlink():
                 continue
             if ".git" in path.parts:
-                continue
-            if rel(path) in DENYLIST_EXCLUDED:
                 continue
             try:
                 yield path, path.read_text(encoding="utf-8")
@@ -898,18 +1004,6 @@ def check_denylist():
             for name in names:
                 if name in line:
                     report("J", path, idx, f"removed or non-existent name '{name}' appears here")
-
-
-# ------------------------------------------------------------- K. removed-events
-
-def check_removed_events():
-    for line, name in event_headings():
-        if name not in EVENT_SET:
-            report("K", EVENT_SCHEMAS, line, f"`### {name}` documents an event that no longer exists")
-    _, rows = parse_event_table()
-    for line_no, event, _types in rows:
-        if event not in EVENT_SET:
-            report("K", OVERVIEW, line_no, f"table row documents an event that no longer exists: {event}")
 
 
 # --------------------------------------------------------------- L. version-sync
@@ -956,6 +1050,186 @@ def check_version_sync():
                 )
 
 
+# ------------------------------------------------------------ M. userconfig-fields
+
+OPTION_FIELDS_MARKER = "**Option fields:**"
+
+
+def table_rows_after(lines, start_index):
+    """(line_no, cells) for the markdown table that opens after start_index."""
+    rows = []
+    in_table = False
+    for offset in range(start_index, len(lines)):
+        line = lines[offset]
+        if not line.startswith("|"):
+            if in_table:
+                break
+            continue
+        in_table = True
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if not cells or set(cells[0]) <= set("- :"):
+            continue
+        rows.append((offset + 1, cells))
+    return rows
+
+
+def code_tokens(text):
+    return {token.strip("`") for token in INLINE_CODE_RE.findall(text)}
+
+
+def check_userconfig_fields():
+    lines = read_lines(MANIFEST_REFERENCE)
+    marker = next(
+        (i for i, line in enumerate(lines) if line.startswith(OPTION_FIELDS_MARKER)),
+        None,
+    )
+    if marker is None:
+        report("M", MANIFEST_REFERENCE, 1, f"'{OPTION_FIELDS_MARKER}' table not found")
+        return
+    rows = table_rows_after(lines, marker)
+    # The header row names the columns rather than a field.
+    header = rows[0][1] if rows else []
+    if not rows or not header or header[0].strip("`") != "Field":
+        report("M", MANIFEST_REFERENCE, marker + 1, "option fields table has no Field column")
+        return
+    body = rows[1:]
+
+    documented = {}
+    required_documented = set()
+    for line_no, cells in body:
+        field = cells[0].strip("`")
+        documented[field] = (line_no, cells)
+        if len(cells) > 2 and cells[2].strip().lower() == "yes":
+            required_documented.add(field)
+
+    expected_fields = set(USER_CONFIG["fields"])
+    for field in sorted(expected_fields - set(documented)):
+        report("M", MANIFEST_REFERENCE, marker + 1, f"option fields table has no row for '{field}'")
+    for field in sorted(set(documented) - expected_fields):
+        report(
+            "M", MANIFEST_REFERENCE, documented[field][0],
+            f"option fields table documents '{field}', which the schema does not accept",
+        )
+
+    expected_required = set(USER_CONFIG["required_fields"])
+    for field in sorted(expected_required - required_documented):
+        if field in documented:
+            report(
+                "M", MANIFEST_REFERENCE, documented[field][0],
+                f"'{field}' is required by the schema but the table's Required column does not say Yes",
+            )
+    for field in sorted(required_documented - expected_required):
+        report(
+            "M", MANIFEST_REFERENCE, documented[field][0],
+            f"table marks '{field}' as required, but the schema accepts a manifest without it",
+        )
+
+    expected_types = set(USER_CONFIG["types"])
+    type_row = documented.get("type")
+    if type_row is None:
+        report("M", MANIFEST_REFERENCE, marker + 1, "option fields table has no 'type' row")
+    else:
+        line_no, cells = type_row
+        listed = code_tokens(cells[1]) if len(cells) > 1 else set()
+        for value in sorted(expected_types - listed):
+            report("M", MANIFEST_REFERENCE, line_no, f"'type' row does not list option type '{value}'")
+        for value in sorted(listed - expected_types):
+            report("M", MANIFEST_REFERENCE, line_no, f"'type' row lists unknown option type '{value}'")
+
+    pattern = USER_CONFIG["key_pattern"]
+    if pattern not in Path(MANIFEST_REFERENCE).read_text(encoding="utf-8"):
+        report("M", MANIFEST_REFERENCE, marker + 1, f"option key pattern '{pattern}' is not documented")
+
+    # The overview bullet is the short form of the same schema, so it has to
+    # name every option type a reader will meet in the full table.
+    bullet = next(
+        ((idx, line) for idx, line in enumerate(read_lines(PLUGIN_STRUCTURE_OVERVIEW), start=1)
+         if line.lstrip().startswith("- ") and "`userConfig`" in line),
+        None,
+    )
+    if bullet is None:
+        report("M", PLUGIN_STRUCTURE_OVERVIEW, 1, "no `userConfig` bullet found")
+        return
+    idx, line = bullet
+    listed = code_tokens(line)
+    for value in sorted(expected_types - listed):
+        report("M", PLUGIN_STRUCTURE_OVERVIEW, idx, f"`userConfig` bullet does not name option type '{value}'")
+
+
+# ------------------------------------------------------------------- N. env-vars
+
+ENV_SECTION_HEADING_RE = re.compile(r"^#+\s+Plugin Environment Variables\s*$")
+HOOK_ENV_MARKER = "**Environment variables**"
+# The runtime's own wording for a skipped mcp_tool hook; the docs quote it so a
+# reader can match what they see in the log.
+MCP_SKIP_PHRASE = "no MCP client context"
+
+
+def env_var_names():
+    return list(FACTS["plugin_env_vars"]) + [FACTS["plugin_option_env_prefix"]]
+
+
+def manifest_env_section(lines):
+    """(heading_line_no, section_text) for the Plugin Environment Variables section."""
+    start = next((i for i, line in enumerate(lines) if ENV_SECTION_HEADING_RE.match(line)), None)
+    if start is None:
+        return None
+    end = len(lines)
+    for offset in range(start + 1, len(lines)):
+        if lines[offset].startswith("#"):
+            end = offset
+            break
+    return start + 1, "\n".join(lines[start:end])
+
+
+def hook_env_list(lines):
+    """(marker_line_no, list_text) for the hook overview's env-var list."""
+    start = next((i for i, line in enumerate(lines) if line.startswith(HOOK_ENV_MARKER)), None)
+    if start is None:
+        return None
+    end = len(lines)
+    for offset in range(start + 1, len(lines)):
+        line = lines[offset]
+        # The list runs until the next bold paragraph or heading takes over.
+        if line.startswith("#") or line.startswith("**"):
+            end = offset
+            break
+    return start + 1, "\n".join(lines[start:end])
+
+
+def check_env_vars():
+    manifest_lines = read_lines(MANIFEST_REFERENCE)
+    section = manifest_env_section(manifest_lines)
+    if section is None:
+        report("N", MANIFEST_REFERENCE, 1, "'Plugin Environment Variables' section not found")
+    else:
+        line_no, text = section
+        for name in env_var_names():
+            if name not in text:
+                report(
+                    "N", MANIFEST_REFERENCE, line_no,
+                    f"'Plugin Environment Variables' section does not document {name}",
+                )
+
+    hook_lines = read_lines(OVERVIEW)
+    env_list = hook_env_list(hook_lines)
+    if env_list is None:
+        report("N", OVERVIEW, 1, f"'{HOOK_ENV_MARKER}' list not found")
+    else:
+        line_no, text = env_list
+        for name in env_var_names():
+            if name not in text:
+                report("N", OVERVIEW, line_no, f"environment-variable list does not document {name}")
+
+    if FACTS.get("mcp_tool_skipped_without_mcp_context"):
+        if MCP_SKIP_PHRASE not in "\n".join(hook_lines):
+            report(
+                "N", OVERVIEW, 1,
+                f"mcp_tool hooks are skipped without an MCP client set, but '{MCP_SKIP_PHRASE}' "
+                "— the runtime's wording — appears nowhere here",
+            )
+
+
 # ------------------------------------------------------------------------ driver
 
 CHECKS = {
@@ -969,8 +1243,9 @@ CHECKS = {
     "H": ("manifest-examples-validate", check_manifest_examples_validate),
     "I": ("paths", check_paths),
     "J": ("denylist", check_denylist),
-    "K": ("removed-events", check_removed_events),
     "L": ("version-sync", check_version_sync),
+    "M": ("userconfig-fields", check_userconfig_fields),
+    "N": ("env-vars", check_env_vars),
 }
 
 unknown = ONLY - set(ALL_CHECKS)
@@ -988,6 +1263,15 @@ for check in ALL_CHECKS:
         CHECKS[check][1]()
     except Exception as exc:  # a crashed check is a tooling failure, not a verdict
         errors.append((check, f"{CHECKS[check][0]}: {type(exc).__name__}: {exc}"))
+
+# A run that examined nothing has no verdict to give, so exiting 0 here would
+# report a clean tree it never looked at. --only G/H with --skip-validate is the
+# way to ask for it by accident.
+if not ran:
+    fail_tooling(
+        "no checks left to run: --skip-validate removes G and H, and --only "
+        f"selected {sorted_join(ONLY) or 'nothing else'}"
+    )
 
 # stdout carries DRIFT lines and nothing else: consumers append it to a report
 # file and read every line there as a finding. The findings from the checks

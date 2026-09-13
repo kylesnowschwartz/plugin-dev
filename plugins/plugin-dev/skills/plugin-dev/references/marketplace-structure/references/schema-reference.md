@@ -127,7 +127,7 @@ Plugin marketplaces now support `headersHelper` for minting HTTP headers when ac
 
 ### Component Configuration Fields
 
-These fields override or supplement plugin component paths:
+These fields carry the same per-field behavior they have in `plugin.json`: `commands` and `agents` replace their default directory, `hooks` and `mcpServers` merge with theirs. See the Component Path Fields table in [manifest-reference.md](../../plugin-structure/references/manifest-reference.md) for every field's rule.
 
 | Field        | Type             | Description                                  |
 | ------------ | ---------------- | -------------------------------------------- |
@@ -324,7 +324,7 @@ Advanced plugin entry with all optional fields:
 ### strict: true (Default)
 
 - Plugin directory must contain `.claude-plugin/plugin.json`
-- Marketplace entry fields supplement plugin manifest values
+- Marketplace entry component fields apply per field — replacing, adding, or merging with the plugin manifest's defaults as the Component Path Fields table in [manifest-reference.md](../../plugin-structure/references/manifest-reference.md) sets out
 - Plugin manifest takes precedence for conflicting fields
 
 ### strict: false

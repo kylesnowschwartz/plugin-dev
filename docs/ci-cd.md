@@ -8,7 +8,7 @@ Documentation for GitHub Actions workflows, labels, and templates.
 | -------------------------- | ------------------------------ | --------------------------- |
 | `links.yml`                | `**.md` changed                | Check for broken links      |
 | `component-validation.yml` | Plugin components changed      | Validate plugin components  |
-| `doc-drift.yml`            | Plugin docs, scripts, pipeline, or version files changed | Check docs against the installed CC binary |
+| `doc-drift.yml`            | Plugin docs, scripts, `.github`, or version files changed | Check docs against the installed CC binary |
 | `version-check.yml`        | Version files changed          | Ensure version consistency  |
 | `validate-workflows.yml`   | `.github/workflows/**` changed | Lint GitHub Actions         |
 | `yaml-lint.yml`            | `.github/workflows/**` changed | Lint YAML files             |
@@ -24,11 +24,19 @@ run, extracts ground truth from that binary into `docs/claude-code-facts.json`,
 and writes `.agent-history/drift-report.txt`. The agent reads both artifacts as
 Stage 0 of the sync pipeline. See [Documentation Drift Guard](#documentation-drift-guard).
 
+`.agent-history/` is scratch space for the pipeline — the drift report and the
+change manifest live there and are inputs to the run, not deliverables. The
+directory is git-ignored, and the sync's release step stages with `git add -u`, so
+those artifacts stay out of the pull request.
+
 A run whose changelog range is empty is a drift-only run. It branches as
 `claude/doc-drift-<date>` with the pull request title
 `docs: fix documentation drift (<date>)`. The housekeeping step that closes
 superseded sync pull requests matches `claude/upstream-sync-` only, so drift pull
-requests survive it; the pipeline opens at most one at a time.
+requests survive it. At most one is open at a time: a run that finds an open drift
+pull request checks its branch out, rebases it onto main, adds this run's fixes,
+force-pushes with lease, and comments on the pull request. Only a rebase conflict
+stops the run.
 
 ## Other Workflows
 
@@ -88,14 +96,16 @@ Both feed the upstream sync pipeline in
   the binary they were read from.
 
 `doc-drift.yml` runs the deterministic half on every pull request that touches the
-plugin docs, the facts file, the scripts, the sync pipeline in `.claude/`, or the
-files checks E and L read (`.github/workflows/component-validation.yml`,
-`CLAUDE.md`, `.claude-plugin/marketplace.json`). It installs the latest Claude Code
-CLI the same way `upstream-sync.yml` does, extracts facts into `/tmp/facts.json`,
-and runs `scripts/check-doc-drift.sh --facts /tmp/facts.json`, so the docs are
-judged against the binary users are on and checks G and H run. Both workflows open
-with a preflight step that prints the path of `jq`, `python3`, and `strings` and
-fails when one is missing.
+plugin docs, the facts file, the scripts, the `.github` tree that check J sweeps
+for denylisted names, or the files checks E and L read (`CLAUDE.md`,
+`.claude-plugin/marketplace.json`). It installs the latest Claude Code CLI the same
+way `upstream-sync.yml` does, extracts facts into `/tmp/facts.json`, and runs
+`scripts/check-doc-drift.sh --facts /tmp/facts.json`, so the docs are judged
+against the binary users are on and checks G and H run. Both workflows open with a
+preflight step that walks `jq`, `python3`, and `strings` one at a time and fails
+naming the first tool it cannot find; `upstream-sync.yml` also installs ripgrep,
+which the runner image does not carry and the pipeline's agents sweep the docs
+tree with.
 
 A separate non-fatal step compares `/tmp/facts.json` with the checked-in
 `docs/claude-code-facts.json`, ignoring `claude_code_version`. When they differ it

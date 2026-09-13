@@ -86,11 +86,11 @@ report is incomplete without them.
 `doc-drift.yml` runs the full gate on pull requests: it installs the latest Claude
 Code CLI, extracts facts to `/tmp/facts.json`, and runs
 `scripts/check-doc-drift.sh --facts /tmp/facts.json`, so the docs are judged
-against the binary rather than against the checked-in facts file. It also prints
-the path of `jq`, `python3`, and `strings` first and fails when one is missing, and
-posts a non-fatal step-summary note when `docs/claude-code-facts.json` is behind
-the installed CLI. That note is informational: the next upstream sync refreshes the
-facts file.
+against the binary rather than against the checked-in facts file. It also walks
+`jq`, `python3`, and `strings` one at a time first and fails naming the first tool
+it cannot find, and posts a non-fatal step-summary note when
+`docs/claude-code-facts.json` is behind the installed CLI. That note is
+informational: the next upstream sync refreshes the facts file.
 
 The upstream sync opens a drift-only pull request — one whose changelog range is
 empty — on a `claude/doc-drift-<date>` branch titled

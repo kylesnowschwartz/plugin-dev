@@ -29,3 +29,6 @@ __pycache__/
 
 # Serena
 .serena/
+
+# Agent scratch artifacts (drift reports, change manifests)
+.agent-history/

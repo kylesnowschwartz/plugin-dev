@@ -11,12 +11,11 @@ on:
       - "plugins/plugin-dev/**"
       - "docs/claude-code-facts.json"
       - "scripts/**"
-      - ".github/workflows/component-validation.yml"
-      - ".github/workflows/doc-drift.yml"
+      # Check J sweeps the whole .github tree for denylisted names, and check E
+      # reads .github/workflows/component-validation.yml.
+      - ".github/**"
       - "CLAUDE.md"
       - ".claude-plugin/marketplace.json"
-      - ".claude/agents/**"
-      - ".claude/skills/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
@@ -37,7 +36,11 @@ jobs:
           persist-credentials: false
 
       - name: Check required tools
-        run: command -v jq python3 strings
+        run: |
+          set -euo pipefail
+          for t in jq python3 strings; do
+            command -v "$t" >/dev/null || { echo "missing: $t"; exit 1; }
+          done
 
       - name: Install latest Claude Code CLI
         run: |

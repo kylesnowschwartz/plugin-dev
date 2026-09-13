@@ -54,7 +54,7 @@ WebFetch: https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELO
 
 Extract all version entries **after** the baseline version from Step 0. If the fetched content does not contain the expected version range, **stop and report the error** rather than proceeding with partial data.
 
-An empty range is not an error and not a reason to stop. If no versions follow the baseline but `.agent-history/drift-report.txt` contains lines starting with `DRIFT`, or `git diff -I '"claude_code_version"' docs/claude-code-facts.json` is non-empty, continue and write the manifest with those items.
+An empty range is not an error and not a reason to stop. Continue through the remaining steps and write the manifest with whatever the other sources carry — `DRIFT` lines from `.agent-history/drift-report.txt`, changed keys from `git diff -I '"claude_code_version"' docs/claude-code-facts.json`, or neither.
 
 ### Step 2: Read System Prompts Changelog
 
@@ -133,7 +133,9 @@ For each change found, classify by relevance to plugin-dev:
 
 ## Output
 
-Write the manifest to `.agent-history/upstream-changes.md` in this format:
+Write the manifest to `.agent-history/upstream-changes.md` on every run that reaches this step, even when every source came back empty. Write the header and every section heading, leaving a section with no items empty. The doc drift audit stage appends to this file and cannot append to a file that does not exist.
+
+Use this format:
 
 ```markdown
 # Upstream Change Manifest
