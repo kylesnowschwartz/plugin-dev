@@ -1,6 +1,10 @@
 #!/bin/bash
 # Example PreToolUse hook for validating Bash commands
 # This script demonstrates bash command validation patterns
+#
+# Permission decisions travel on stdout with exit 0. Exit 2 is a blocking error
+# whose stderr is fed to Claude as text, so JSON written there is never parsed --
+# an "ask" decision emitted that way would hard-block instead of prompting.
 
 set -euo pipefail
 
@@ -25,8 +29,8 @@ fi
 if [[ "$command" == *";"* ]] || [[ "$command" == *"|"* ]] ||
   [[ "$command" == *'$('* ]] || [[ "$command" == *'`'* ]] ||
   [[ "$command" == *"&&"* ]] || [[ "$command" == *"||"* ]]; then
-  echo '{"hookSpecificOutput": {"permissionDecision": "ask"}, "systemMessage": "Command chaining detected - requires review"}' >&2
-  exit 2
+  echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "ask", "permissionDecisionReason": "Command chaining detected - requires review"}}'
+  exit 0
 fi
 
 # Check for obviously safe commands (quick approval)
@@ -37,20 +41,20 @@ fi
 
 # Check for destructive operations
 if [[ "$command" == *"rm -rf"* ]] || [[ "$command" == *"rm -fr"* ]]; then
-  echo '{"hookSpecificOutput": {"permissionDecision": "deny"}, "systemMessage": "Dangerous command detected: rm -rf"}' >&2
-  exit 2
+  echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Dangerous command detected: rm -rf"}}'
+  exit 0
 fi
 
 # Check for other dangerous commands
 if [[ "$command" == *"dd if="* ]] || [[ "$command" == *"mkfs"* ]] || [[ "$command" == *"> /dev/"* ]]; then
-  echo '{"hookSpecificOutput": {"permissionDecision": "deny"}, "systemMessage": "Dangerous system operation detected"}' >&2
-  exit 2
+  echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Dangerous system operation detected"}}'
+  exit 0
 fi
 
 # Check for privilege escalation
 if [[ "$command" == sudo* ]] || [[ "$command" == su* ]]; then
-  echo '{"hookSpecificOutput": {"permissionDecision": "ask"}, "systemMessage": "Command requires elevated privileges"}' >&2
-  exit 2
+  echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "ask", "permissionDecisionReason": "Command requires elevated privileges"}}'
+  exit 0
 fi
 
 # Approve the operation

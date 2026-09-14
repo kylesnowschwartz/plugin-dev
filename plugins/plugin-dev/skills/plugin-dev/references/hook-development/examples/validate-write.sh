@@ -1,6 +1,10 @@
 #!/bin/bash
 # Example PreToolUse hook for validating Write/Edit operations
 # This script demonstrates file write validation patterns
+#
+# Permission decisions travel on stdout with exit 0. Exit 2 is a blocking error
+# whose stderr is fed to Claude as text, so JSON written there is never parsed --
+# an "ask" decision emitted that way would hard-block instead of prompting.
 
 set -euo pipefail
 
@@ -26,22 +30,22 @@ fi
 # and comparing against an allowed directory prefix
 if [[ "$file_path" == *".."* ]]; then
   jq -n --arg path "$file_path" \
-    '{"hookSpecificOutput": {"permissionDecision": "deny"}, "systemMessage": "Path traversal detected in: \($path)"}' >&2
-  exit 2
+    '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Path traversal detected in: \($path)"}}'
+  exit 0
 fi
 
 # Check for system directories
 if [[ "$file_path" == /etc/* ]] || [[ "$file_path" == /sys/* ]] || [[ "$file_path" == /usr/* ]]; then
   jq -n --arg path "$file_path" \
-    '{"hookSpecificOutput": {"permissionDecision": "deny"}, "systemMessage": "Cannot write to system directory: \($path)"}' >&2
-  exit 2
+    '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Cannot write to system directory: \($path)"}}'
+  exit 0
 fi
 
 # Check for sensitive files
 if [[ "$file_path" == *.env ]] || [[ "$file_path" == *secret* ]] || [[ "$file_path" == *credentials* ]]; then
   jq -n --arg path "$file_path" \
-    '{"hookSpecificOutput": {"permissionDecision": "ask"}, "systemMessage": "Writing to potentially sensitive file: \($path)"}' >&2
-  exit 2
+    '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "ask", "permissionDecisionReason": "Writing to potentially sensitive file: \($path)"}}'
+  exit 0
 fi
 
 # Approve the operation

@@ -247,7 +247,7 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 ```
 
 **Matchers:** Not supported (matcher field is silently ignored).
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
 ---
 
@@ -292,7 +292,7 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 **Use cases:** Gate which slash commands may run, add repository context to a command before Claude sees it, audit MCP prompt usage.
 
 **Matchers:** Command name (matches on `command_name`)
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
 ---
 
@@ -357,7 +357,7 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 **Deprecated fields:** Top-level `decision: "approve|block"` still works but `hookSpecificOutput.permissionDecision` takes precedence.
 
 **Matchers:** Tool names. Supports regex: `"Write|Edit"`, `"mcp__.*__delete.*"`
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
 ---
 
@@ -426,7 +426,7 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 **Known issues:** `additionalContext` is parsed but silently dropped ([anthropics/claude-code#28035](https://github.com/anthropics/claude-code/issues/28035)) — it works in PreToolUse but not here. Race condition where the dialog may briefly show despite returning "allow" ([#12176](https://github.com/anthropics/claude-code/issues/12176)).
 
 **Matchers:** Tool names (same as PreToolUse)
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
 ---
 
@@ -464,7 +464,7 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 **Difference from PermissionRequest:** PermissionRequest fires when a dialog is about to show; PermissionDenied fires after auto mode has already denied the operation.
 
 **Matchers:** Tool names (same as PreToolUse)
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
 ---
 
@@ -520,7 +520,7 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 ```
 
 **Matchers:** Tool names (same as PreToolUse)
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
 ---
 
@@ -558,7 +558,7 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 ```
 
 **Matchers:** Tool names (same as PreToolUse)
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
 ---
 
@@ -602,7 +602,7 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 **Use cases:** Run a single lint or type-check pass after a batch of edits, summarize a batch of reads into one context injection, halt a runaway loop after a batch fails.
 
 **Matchers:** Not supported
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
 ---
 
@@ -688,7 +688,7 @@ Use `impossible` when the goal is self-contradictory, requires a missing capabil
 **Block cap (CC 2.1.143):** Stop hooks have an 8-block safety cap. Turns end with a warning after 8 consecutive blocks to prevent infinite loops. Override with the `CLAUDE_CODE_STOP_HOOK_BLOCK_CAP` environment variable if needed.
 
 **Matchers:** Not supported.
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
 ---
 
@@ -791,7 +791,7 @@ Same semantics as Stop: blocking causes the subagent to continue working with `r
 **Note:** Stop hooks defined in a subagent context automatically convert to SubagentStop events.
 
 **Matchers:** Agent type names (same as SubagentStart)
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
 ---
 
@@ -823,7 +823,7 @@ Same semantics as Stop: blocking causes the subagent to continue working with `r
 Normal exit (code 0) with no blocking output allows the teammate to go idle.
 
 **Matchers:** Not supported.
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
 ---
 
@@ -853,7 +853,7 @@ Normal exit (code 0) with no blocking output allows the teammate to go idle.
 **Use cases:** Enforce a task-naming or description standard, reject tasks that duplicate existing work, log task creation to an external tracker.
 
 **Matchers:** Not supported.
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
 ---
 
@@ -886,7 +886,7 @@ Normal exit (code 0) with no blocking output allows the teammate to go idle.
 Normal exit allows the task completion to proceed.
 
 **Matchers:** Not supported.
-**Hook types:** Command, HTTP, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
 ---
 

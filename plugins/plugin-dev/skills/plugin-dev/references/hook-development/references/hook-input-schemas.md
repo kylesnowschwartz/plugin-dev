@@ -169,8 +169,8 @@ command=$(echo "$input" | jq -r '.tool_input.command // empty')
 
 # Example: block writes to sensitive paths
 if [[ "$tool_name" == "Write" && "$file_path" == *".env"* ]]; then
-  echo '{"decision": "deny", "reason": "Cannot write to .env files"}' >&2
-  exit 2
+  echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "Cannot write to .env files"}}'
+  exit 0
 fi
 
 # Allow by default

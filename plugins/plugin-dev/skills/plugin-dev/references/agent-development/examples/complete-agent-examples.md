@@ -9,21 +9,21 @@ The skeleton every agent file follows — frontmatter plus system-prompt scaffol
 ```markdown
 ---
 name: agent-identifier
-description: Use this agent when [triggering conditions]. Examples:
+description: |
+  Use this agent when [triggering conditions]. Examples:
 
-<example>
-Context: [Situation description]
-user: "[User request]"
-assistant: "[How assistant should respond and use this agent]"
-<commentary>
-[Why this agent should be triggered]
-</commentary>
-</example>
+  <example>
+  Context: [Situation description]
+  user: "[User request]"
+  assistant: "[How assistant should respond and use this agent]"
+  <commentary>
+  [Why this agent should be triggered]
+  </commentary>
+  </example>
 
-<example>
-[Additional example...]
-</example>
-
+  <example>
+  [Additional example...]
+  </example>
 model: inherit
 color: blue
 tools: Read, Write, Grep
@@ -43,6 +43,8 @@ You are [agent role description]...
 [What to return]
 ```
 
+The `description: |` block scalar is required whenever the description contains `<example>` blocks. A plain scalar ending in `Examples:` followed by unindented XML is not valid YAML — the parser fails on the colon with `mapping values are not allowed here`, and the agent never loads. Indent every line of the description by two spaces and keep `model`, `color`, and `tools` at column 0.
+
 Optional fields beyond this skeleton (`maxTurns`, `memory`, `mcpServers`, `hooks`, `initialPrompt`, `permissionMode`, `disallowedTools`, `skills`) are documented in `../references/advanced-agent-fields.md`.
 
 ## Example 1: Code Review Agent
@@ -52,38 +54,38 @@ Optional fields beyond this skeleton (`maxTurns`, `memory`, `mcpServers`, `hooks
 ```markdown
 ---
 name: code-reviewer
-description: Use this agent when the user has written code and needs quality review, security analysis, or best practices validation. Examples:
+description: |
+  Use this agent when the user has written code and needs quality review, security analysis, or best practices validation. Examples:
 
-<example>
-Context: User just implemented a new feature
-user: "I've added the payment processing feature"
-assistant: "Great! Let me review the implementation."
-<commentary>
-Code written for payment processing (security-critical). Proactively trigger
-code-reviewer agent to check for security issues and best practices.
-</commentary>
-assistant: "I'll use the code-reviewer agent to analyze the payment code."
-</example>
+  <example>
+  Context: User just implemented a new feature
+  user: "I've added the payment processing feature"
+  assistant: "Great! Let me review the implementation."
+  <commentary>
+  Code written for payment processing (security-critical). Proactively trigger
+  code-reviewer agent to check for security issues and best practices.
+  </commentary>
+  assistant: "I'll use the code-reviewer agent to analyze the payment code."
+  </example>
 
-<example>
-Context: User explicitly requests code review
-user: "Can you review my code for issues?"
-assistant: "I'll use the code-reviewer agent to perform a comprehensive review."
-<commentary>
-Explicit code review request triggers the agent.
-</commentary>
-</example>
+  <example>
+  Context: User explicitly requests code review
+  user: "Can you review my code for issues?"
+  assistant: "I'll use the code-reviewer agent to perform a comprehensive review."
+  <commentary>
+  Explicit code review request triggers the agent.
+  </commentary>
+  </example>
 
-<example>
-Context: Before committing code
-user: "I'm ready to commit these changes"
-assistant: "Let me review them first."
-<commentary>
-Before commit, proactively review code quality.
-</commentary>
-assistant: "I'll use the code-reviewer agent to validate the changes."
-</example>
-
+  <example>
+  Context: Before committing code
+  user: "I'm ready to commit these changes"
+  assistant: "Let me review them first."
+  <commentary>
+  Before commit, proactively review code quality.
+  </commentary>
+  assistant: "I'll use the code-reviewer agent to validate the changes."
+  </example>
 model: inherit
 color: blue
 tools: Read, Grep, Glob
@@ -172,27 +174,27 @@ You are an expert code quality reviewer specializing in identifying issues, secu
 ````markdown
 ---
 name: test-generator
-description: Use this agent when the user has written code without tests, explicitly asks for test generation, or needs test coverage improvement. Examples:
+description: |
+  Use this agent when the user has written code without tests, explicitly asks for test generation, or needs test coverage improvement. Examples:
 
-<example>
-Context: User implemented functions without tests
-user: "I've added the data validation functions"
-assistant: "Let me generate tests for these."
-<commentary>
-New code without tests. Proactively trigger test-generator agent.
-</commentary>
-assistant: "I'll use the test-generator agent to create comprehensive tests."
-</example>
+  <example>
+  Context: User implemented functions without tests
+  user: "I've added the data validation functions"
+  assistant: "Let me generate tests for these."
+  <commentary>
+  New code without tests. Proactively trigger test-generator agent.
+  </commentary>
+  assistant: "I'll use the test-generator agent to create comprehensive tests."
+  </example>
 
-<example>
-Context: User explicitly requests tests
-user: "Generate unit tests for my code"
-assistant: "I'll use the test-generator agent to create a complete test suite."
-<commentary>
-Direct test generation request triggers the agent.
-</commentary>
-</example>
-
+  <example>
+  Context: User explicitly requests tests
+  user: "Generate unit tests for my code"
+  assistant: "I'll use the test-generator agent to create a complete test suite."
+  <commentary>
+  Direct test generation request triggers the agent.
+  </commentary>
+  </example>
 model: inherit
 color: green
 tools: Read, Write, Grep, Bash
@@ -274,27 +276,27 @@ describe('[module name]', () => {
 ```markdown
 ---
 name: docs-generator
-description: Use this agent when the user has written code needing documentation, API endpoints requiring docs, or explicitly requests documentation generation. Examples:
+description: |
+  Use this agent when the user has written code needing documentation, API endpoints requiring docs, or explicitly requests documentation generation. Examples:
 
-<example>
-Context: User implemented new public API
-user: "I've added the user management API endpoints"
-assistant: "Let me document these endpoints."
-<commentary>
-New public API needs documentation. Proactively trigger docs-generator.
-</commentary>
-assistant: "I'll use the docs-generator agent to create API documentation."
-</example>
+  <example>
+  Context: User implemented new public API
+  user: "I've added the user management API endpoints"
+  assistant: "Let me document these endpoints."
+  <commentary>
+  New public API needs documentation. Proactively trigger docs-generator.
+  </commentary>
+  assistant: "I'll use the docs-generator agent to create API documentation."
+  </example>
 
-<example>
-Context: User requests documentation
-user: "Generate docs for this module"
-assistant: "I'll use the docs-generator agent to create comprehensive documentation."
-<commentary>
-Explicit documentation request triggers the agent.
-</commentary>
-</example>
-
+  <example>
+  Context: User requests documentation
+  user: "Generate docs for this module"
+  assistant: "I'll use the docs-generator agent to create comprehensive documentation."
+  <commentary>
+  Explicit documentation request triggers the agent.
+  </commentary>
+  </example>
 model: inherit
 color: cyan
 tools: Read, Write, Grep, Glob
@@ -364,27 +366,27 @@ Create documentation in project's standard format:
 ```markdown
 ---
 name: security-analyzer
-description: Use this agent when the user implements security-critical code (auth, payments, data handling), explicitly requests security analysis, or before deploying sensitive changes. Examples:
+description: |
+  Use this agent when the user implements security-critical code (auth, payments, data handling), explicitly requests security analysis, or before deploying sensitive changes. Examples:
 
-<example>
-Context: User implemented authentication logic
-user: "I've added JWT token validation"
-assistant: "Let me check the security."
-<commentary>
-Authentication code is security-critical. Proactively trigger security-analyzer.
-</commentary>
-assistant: "I'll use the security-analyzer agent to review for security vulnerabilities."
-</example>
+  <example>
+  Context: User implemented authentication logic
+  user: "I've added JWT token validation"
+  assistant: "Let me check the security."
+  <commentary>
+  Authentication code is security-critical. Proactively trigger security-analyzer.
+  </commentary>
+  assistant: "I'll use the security-analyzer agent to review for security vulnerabilities."
+  </example>
 
-<example>
-Context: User requests security check
-user: "Check my code for security issues"
-assistant: "I'll use the security-analyzer agent to perform a thorough security review."
-<commentary>
-Explicit security review request triggers the agent.
-</commentary>
-</example>
-
+  <example>
+  Context: User requests security check
+  user: "Check my code for security issues"
+  assistant: "I'll use the security-analyzer agent to perform a thorough security review."
+  <commentary>
+  Explicit security review request triggers the agent.
+  </commentary>
+  </example>
 model: inherit
 color: red
 tools: Read, Grep, Glob

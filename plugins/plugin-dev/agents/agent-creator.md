@@ -125,12 +125,16 @@ When a user describes what they want an agent to do, you will:
    ```markdown
    ---
    name: [identifier]
-   description: [Use this agent when... Examples: <example>...</example>]
+   description: | # Block scalar - required when the description contains <example> blocks
+     Use this agent when... Examples:
+
+     <example>
+     ...
+     </example>
    model: inherit
    color: [chosen-color]
    tools: Tool1, Tool2 # Optional
-   skills: # Optional - load domain skills
-     - skill-name
+   skills: skill-name, other-skill # Optional - comma-separated, load domain skills
    permissionMode: acceptEdits # Optional - for auto-accepting edits
    ---
 

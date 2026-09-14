@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.44.1] - 2026-09-13
+
+Documentation drift fixes. No new Claude Code releases in range — the changelog baseline stays at 2.1.270, the version the ground-truth facts were read from. Nine contradictions found by the `doc-drift-auditor` sweep and confirmed by Stage 2 against `docs/claude-code-facts.json` (CC 2.1.270) and by parsing the affected files.
+
+### Fixed
+
+- **agent-development**: agent frontmatter examples and the `create-agent-skeleton.sh` generator emitted YAML that no parser accepts — a plain-scalar `description:` ending in `Examples:` followed by column-0 `<example>` blocks fails with `mapping values are not allowed here`. All five templates in `complete-agent-examples.md` and the generator's heredoc now use a `description: |` block scalar with indented examples, matching the shipped agents and `standard-plugin.md`
+- **agent-development**: `create-agent-skeleton.sh` told authors `tools` takes an array; it is a comma-separated string, as the frontmatter reference and every worked example state
+- **agent-creator agent**: emitted `skills:` as a YAML sequence against the reference's comma-separated string form, and used an unparseable inline `description:` placeholder
+- **hook-development**: `examples/validate-write.sh` and `examples/validate-bash.sh` wrote their permission decisions to stderr under `exit 2`, where no JSON is parsed — every `"ask"` branch hard-blocked the call instead of showing a dialog. Decisions now go to stdout with `exit 0` and carry `hookEventName`/`permissionDecisionReason` in place of `systemMessage`
+- **hook-development**: twelve snippets across `advanced.md`, `migration.md`, `patterns.md`, and `hook-input-schemas.md` emitted a top-level `{"decision": "deny"}` — a value the top-level `approve|block` enum does not define — on stderr under `exit 2`. Replaced with `hookSpecificOutput.permissionDecision` on stdout with `exit 0`
+- **hook-development**: `event-schemas.md` omitted `mcp_tool` from the "Hook types:" line of all 13 conversation events while listing it for the other 20, contradicting the topic overview. Settled by `docs/claude-code-facts.json`: `hook_types` includes `mcp_tool` with no per-event exclusion, and `http_hook_unsupported_events` names only `SessionStart` and `Setup`
+- **skill-development**: the visibility budget documented two incompatible eviction rules — "longer descriptions are excluded first" against source-priority ordering stated in two other files. Corrected subtractively to the corroborated priority rule (project, then user, then plugin)
+- **skill-development**: `frontmatter-templates.md` described `context` as "extra context injected with the skill"; it takes `fork` and runs the skill in a subagent
+- **skill-reviewer agent**: referred to "the skill-development skill"; it is a reference topic inside the one consolidated `plugin-dev` skill
+
+### Notes
+
+- `AskUserQuestion` availability in headless/`--print` mode remains unresolved. Stage 2 marked the finding **unknown** — `headless-ci-mode.md` calling the tool unavailable and `event-schemas.md` documenting a headless answer-injection pattern are not strictly incompatible, and neither the facts file nor upstream docs settle it. Neither side was edited
+
 ## [0.44.0] - 2026-09-13
 
 Synced with Claude Code v2.1.268-v2.1.270.
@@ -924,7 +944,8 @@ Corrects references that had drifted from Claude Code behaviour, reported in [#6
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.44.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.44.1...HEAD
+[0.44.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.44.0...v0.44.1
 [0.44.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.43.1...v0.44.0
 [0.43.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.43.0...v0.43.1
 [0.43.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.42.0...v0.43.0
