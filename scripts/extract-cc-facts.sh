@@ -188,7 +188,9 @@ def alias_closure(root_name, root_pos):
     names = {root_name}
     for _ in range(8):
         alternation = "|".join(re.escape(n) for n in sorted(names, key=len, reverse=True))
-        forwards = re.compile(r"\b(?:%s)\(\s*[A-Za-z_$][\w$]*\s*\)" % alternation)
+        # Minified names may start with `$`, which `\b` never precedes, so the
+        # identifier boundary is spelled out instead.
+        forwards = re.compile(r"(?<![\w$])(?:%s)\(\s*[A-Za-z_$][\w$]*\s*\)" % alternation)
         discovered = set()
         for decl in DECL.finditer(blob, low, high):
             name = decl.group(1)
@@ -212,7 +214,7 @@ for decl in DECL.finditer(blob):
 executor_call = None
 if in_names or out_names:
     executor_call = re.compile(
-        r"\b(%s)\s*\(" % "|".join(re.escape(n) for n in sorted(in_names | out_names, key=len, reverse=True))
+        r"(?<![\w$])(%s)\s*\(" % "|".join(re.escape(n) for n in sorted(in_names | out_names, key=len, reverse=True))
     )
 
 

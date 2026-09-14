@@ -113,20 +113,24 @@ Both feed the upstream sync pipeline in
 
 `doc-drift.yml` runs the deterministic half on every pull request that touches the
 plugin docs, the facts file, the scripts, or the `.github` tree that check E reads
-and check J sweeps for denylisted names. It installs the latest Claude Code CLI the same
-way `upstream-sync.yml` does, extracts facts into `/tmp/facts.json`, and runs
+and check J sweeps for denylisted names. It installs the Claude Code release that
+`claude_code_version` in `docs/claude-code-facts.json` names, extracts facts from
+that binary into `/tmp/facts.json`, and runs
 `scripts/check-doc-drift.sh --facts /tmp/facts.json`, so the docs are judged
-against the binary users are on and checks G and H run. Both workflows open with a
+against the release they claim to describe and checks G and H run. The gate does
+not install `latest`: that would fail every pull request the moment upstream ships
+a release, until the sync caught up, and finding new releases is the sync's job.
+Both workflows open with a
 preflight step that walks `jq`, `python3`, and `strings` one at a time and fails
 naming the first tool it cannot find; `upstream-sync.yml` also installs ripgrep,
 which the runner image does not carry and the pipeline's agents sweep the docs
 tree with.
 
-A separate non-fatal step compares `/tmp/facts.json` with the checked-in
-`docs/claude-code-facts.json`, ignoring `claude_code_version`. When they differ it
-writes a step-summary note that the facts file is behind the installed CLI and the
-next sync refreshes it. It never fails the job — refreshing the facts file is the
-sync pipeline's work, not a pull request author's.
+A final step compares `/tmp/facts.json` with the checked-in
+`docs/claude-code-facts.json`. Both come from the same release, so any difference
+means the extractor changed without the file being regenerated, or the file was
+hand-edited; the step fails and names the regenerate command. When the pinned
+release was not downloadable and `latest` stood in, the comparison is skipped.
 
 ## Labels
 
