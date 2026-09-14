@@ -40,22 +40,40 @@ jobs:
             command -v "$t" >/dev/null || { echo "missing: $t"; exit 1; }
           done
 
-      - name: Install latest Claude Code CLI
+      - name: Install the Claude Code CLI the facts file names
         run: |
           set -euo pipefail
-          # Checks G and H shell out to `claude plugin validate`, and the facts
-          # are read out of the binary, so the gate needs the current release.
-          for attempt in 1 2 3; do
-            if curl -fsSL https://claude.ai/install.sh | bash -s -- latest; then
-              break
-            fi
-            if [ "$attempt" -eq 3 ]; then
+          # The gate asks one question: do the docs agree with the release they
+          # claim to describe? That release is the one recorded in the facts
+          # file. Installing `latest` instead would fail every pull request the
+          # moment upstream ships, until the sync pipeline catches up; finding
+          # new releases is the sync's job, not a pull request author's.
+          target=$(jq -r '.claude_code_version // empty' docs/claude-code-facts.json)
+          if [ -z "$target" ]; then
+            echo "docs/claude-code-facts.json has no claude_code_version; installing latest"
+            target=latest
+          fi
+          echo "PINNED_CLAUDE_VERSION=$target" >> "$GITHUB_ENV"
+
+          install_cli() {
+            for attempt in 1 2 3; do
+              if curl -fsSL https://claude.ai/install.sh | bash -s -- "$1"; then
+                return 0
+              fi
+              echo "Install of $1, attempt $attempt failed; retrying in $((attempt * 5))s"
+              sleep $((attempt * 5))
+            done
+            return 1
+          }
+
+          if ! install_cli "$target"; then
+            if [ "$target" = latest ]; then
               echo "Claude Code install failed after 3 attempts"
               exit 1
             fi
-            echo "Install attempt $attempt failed; retrying in $((attempt * 5))s"
-            sleep $((attempt * 5))
-          done
+            echo "Version $target is not downloadable; installing latest instead"
+            install_cli latest || { echo "Claude Code install failed after 3 attempts"; exit 1; }
+          fi
 
           executable="$HOME/.local/bin/claude"
           [ -x "$executable" ] || {
@@ -66,8 +84,11 @@ jobs:
           echo "CLAUDE_CODE_EXECUTABLE=$executable" >> "$GITHUB_ENV"
 
           version=$("$executable" --version)
-          echo "## Claude Code CLI" >> "$GITHUB_STEP_SUMMARY"
-          echo "$version" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## Claude Code CLI"
+            echo "Facts file names: $target"
+            echo "Installed: $version"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Check doc drift
         env:
@@ -112,19 +133,32 @@ jobs:
           fi
           echo "No drift found."
 
-      - name: Note a stale facts file
+      - name: Compare the extracted facts with the committed file
         if: always()
+        env:
+          PINNED_CLAUDE_VERSION: ${{ env.PINNED_CLAUDE_VERSION }}
         run: |
           set -euo pipefail
-          # claude_code_version records which binary the facts were read from and
-          # moves with every release, so it is held out of the comparison.
           [ -f /tmp/facts.json ] || exit 0
-          if git diff --no-index --quiet -I '"claude_code_version"' \
-            docs/claude-code-facts.json /tmp/facts.json; then
+          installed=$(jq -r '.claude_code_version' /tmp/facts.json)
+          if [ "$installed" != "$PINNED_CLAUDE_VERSION" ]; then
+            # The pinned release was not downloadable and `latest` stood in, so
+            # differences are upstream changes for the sync to pick up.
+            echo "Installed $installed instead of $PINNED_CLAUDE_VERSION; facts comparison skipped."
             exit 0
           fi
+          if git diff --no-index --quiet docs/claude-code-facts.json /tmp/facts.json; then
+            exit 0
+          fi
+          # Same release, different facts: the extractor changed and the file
+          # was not regenerated, or the file was hand-edited.
           {
             echo "## Facts file"
-            echo "docs/claude-code-facts.json is behind the installed CLI; the next sync refreshes it."
+            echo "docs/claude-code-facts.json differs from a fresh extract of the same release."
+            echo "Regenerate it: scripts/extract-cc-facts.sh --out docs/claude-code-facts.json"
+            echo '```'
+            git diff --no-index docs/claude-code-facts.json /tmp/facts.json || true
+            echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
-          echo "docs/claude-code-facts.json is behind the installed CLI; the next sync refreshes it."
+          echo "docs/claude-code-facts.json differs from a fresh extract of the same release; regenerate it."
+          exit 1
