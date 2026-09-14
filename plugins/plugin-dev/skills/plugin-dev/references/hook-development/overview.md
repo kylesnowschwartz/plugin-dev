@@ -116,10 +116,10 @@ An `mcp_tool` hook is accepted on every event, but it only runs where an MCP cli
 
 | Event               | Category     | Decision control                   | Types         |
 | ------------------- | ------------ | ---------------------------------- | ------------- |
-| SessionStart        | Lifecycle    | continue, env vars                 | Command       |
-| Setup               | Lifecycle    | Context injection                  | Command       |
-| InstructionsLoaded  | Lifecycle    | None (observability)               | Command, HTTP |
-| SessionEnd          | Lifecycle    | None (observability)               | Command, HTTP |
+| SessionStart        | Lifecycle    | continue, env vars                 | Command, MCP tool |
+| Setup               | Lifecycle    | Context injection                  | Command, MCP tool |
+| InstructionsLoaded  | Lifecycle    | None (observability)               | Command, HTTP, MCP tool |
+| SessionEnd          | Lifecycle    | None (observability)               | Command, HTTP, MCP tool |
 | UserPromptSubmit    | Input        | Block prompt                       | All           |
 | UserPromptExpansion | Input        | Block expansion, context injection | All           |
 | PreToolUse          | Tool         | Allow/deny/ask/defer, modify input | All           |
@@ -129,26 +129,26 @@ An `mcp_tool` hook is accepted on every event, but it only runs where an MCP cli
 | PostToolUseFailure  | Tool         | Context injection                  | All           |
 | PostToolBatch       | Tool         | Stop agentic loop (exit 2)         | All           |
 | Stop                | Turn         | Block stop                         | All           |
-| StopFailure         | Turn         | None (observability)               | Command, HTTP |
-| SubagentStart       | Subagent     | Context injection                  | Command, HTTP |
+| StopFailure         | Turn         | None (observability)               | Command, HTTP, MCP tool |
+| SubagentStart       | Subagent     | Context injection                  | Command, HTTP, MCP tool |
 | SubagentStop        | Subagent     | Block stop                         | All           |
 | TeammateIdle        | Teams        | Reject idle (exit 2), stop         | All           |
 | TaskCreated         | Teams        | Reject creation (exit 2)           | All           |
 | TaskCompleted       | Teams        | Reject completion (exit 2)         | All           |
-| PreCompact          | Context      | Block compaction (exit 2)          | Command, HTTP |
-| PostCompact         | Context      | None (observability)               | Command, HTTP |
-| ConfigChange        | Config       | Block (except policy)              | Command, HTTP |
-| CwdChanged          | Environment  | None (env vars, watchPaths)        | Command, HTTP |
-| FileChanged         | Environment  | None (env vars, watchPaths)        | Command, HTTP |
-| WorktreeCreate      | Worktree     | Return path, exit code             | Command, HTTP |
-| WorktreeRemove      | Worktree     | None (cleanup)                     | Command, HTTP |
-| Elicitation         | MCP          | Accept/decline/cancel              | Command, HTTP |
-| ElicitationResult   | MCP          | Override response                  | Command, HTTP |
-| MessageDisplay      | Display      | Display content replacement        | Command, HTTP |
-| Notification        | Notification | None (observability)               | Command, HTTP |
-| DirectoryAdded      | Lifecycle    | None (observability)               | Command, HTTP |
-| PreModelSwitch      | Model        | Block, confirm, annotate           | Command, HTTP |
-| PostModelSwitch     | Model        | None (observability)               | Command, HTTP |
+| PreCompact          | Context      | Block compaction (exit 2)          | Command, HTTP, MCP tool |
+| PostCompact         | Context      | None (observability)               | Command, HTTP, MCP tool |
+| ConfigChange        | Config       | Block (except policy)              | Command, HTTP, MCP tool |
+| CwdChanged          | Environment  | None (env vars, watchPaths)        | Command, HTTP, MCP tool |
+| FileChanged         | Environment  | None (env vars, watchPaths)        | Command, HTTP, MCP tool |
+| WorktreeCreate      | Worktree     | Return path, exit code             | Command, HTTP, MCP tool |
+| WorktreeRemove      | Worktree     | None (cleanup)                     | Command, HTTP, MCP tool |
+| Elicitation         | MCP          | Accept/decline/cancel              | Command, HTTP, MCP tool |
+| ElicitationResult   | MCP          | Override response                  | Command, HTTP, MCP tool |
+| MessageDisplay      | Display      | Display content replacement        | Command, HTTP, MCP tool |
+| Notification        | Notification | None (observability)               | Command, HTTP, MCP tool |
+| DirectoryAdded      | Lifecycle    | None (observability)               | Command, HTTP, MCP tool |
+| PreModelSwitch      | Model        | Block, confirm, annotate           | Command, HTTP, MCP tool |
+| PostModelSwitch     | Model        | None (observability)               | Command, HTTP, MCP tool |
 
 ## Configuration Locations
 

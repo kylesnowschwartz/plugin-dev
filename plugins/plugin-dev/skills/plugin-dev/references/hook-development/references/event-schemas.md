@@ -208,7 +208,7 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 **Use cases:** Install project dependencies on `--init`, refresh generated artifacts or caches on `--maintenance`, report repository state into the session.
 
 **Matchers:** `init`, `maintenance` (matches on `trigger`)
-**Hook types:** Command — HTTP hooks are skipped for this event, and prompt and agent hooks have no conversation context to run in. An `mcp_tool` hook is accepted in config but never runs here: Setup fires before MCP servers are available, so it is always skipped with `no MCP client context`.
+**Hook types:** Command, MCP tool — HTTP hooks are skipped for this event, and prompt and agent hooks have no conversation context to run in. An `mcp_tool` hook is accepted in config but never runs here: Setup fires before MCP servers are available, so it is always skipped with `no MCP client context`.
 
 ---
 

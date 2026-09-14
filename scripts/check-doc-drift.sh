@@ -334,19 +334,36 @@ CONVERSATION_HOOK_TYPES = frozenset({"prompt", "agent"})
 HTTP_HOOK_TYPES = frozenset({"http"})
 UNIVERSAL_HOOK_TYPES = ALL_HOOK_TYPES - CONVERSATION_HOOK_TYPES - HTTP_HOOK_TYPES
 HOOK_TYPES_MODELLED = ALL_HOOK_TYPES == MODELLED_HOOK_TYPES
-TYPES_CELL_TEXT = {
-    (True, True): "All",
-    (True, False): "Command, MCP tool, Prompt, Agent",
-    (False, True): "Command, HTTP",
-    (False, False): "Command",
-}
+# Doc label for each runtime hook type, in the order the docs list them.
+HOOK_TYPE_LABELS = (
+    ("Command", "command"),
+    ("HTTP", "http"),
+    ("MCP tool", "mcp_tool"),
+    ("Prompt", "prompt"),
+    ("Agent", "agent"),
+)
+LABEL_TO_TYPE = {label: t for label, t in HOOK_TYPE_LABELS}
+
+
+def hook_types_label_list(types):
+    return ", ".join(label for label, t in HOOK_TYPE_LABELS if t in types)
+
+
+def types_cell_text(types):
+    """How the docs spell a set of accepted hook types: 'All', or the labels."""
+    if types == ALL_HOOK_TYPES:
+        return "All"
+    return hook_types_label_list(types)
 
 
 def event_capability(event):
     """(Types-cell text, accepted hook types) for an event, from the facts.
 
-    Checks A and D both read this so the table and the validator script can
-    never be judged against different rules.
+    Checks A, B and D all read this so the table, the event sections and the
+    validator script can never be judged against different rules. The set is
+    what the runtime accepts in config; a type it accepts but skips in some
+    situations (mcp_tool before MCP servers exist) still belongs here, and the
+    section prose carries the caveat.
     """
     conversation = DISPATCH.get(event) == "conversation"
     http_ok = event not in HTTP_UNSUPPORTED
@@ -355,7 +372,8 @@ def event_capability(event):
         types |= ALL_HOOK_TYPES & CONVERSATION_HOOK_TYPES
     if http_ok:
         types |= ALL_HOOK_TYPES & HTTP_HOOK_TYPES
-    return TYPES_CELL_TEXT[(conversation, http_ok)], frozenset(types)
+    accepted = frozenset(types)
+    return types_cell_text(accepted), accepted
 
 
 def check_hook_types():
@@ -434,17 +452,62 @@ def check_event_table():
 
 # ------------------------------------------------------------- B. event-sections
 
+HOOK_TYPES_MARKER = "**Hook types:**"
+
+
+def check_section_hook_types(lines, event, start, end):
+    """The `**Hook types:**` line in an event section names exactly the types
+    the runtime accepts for that event. Prose after an em dash is rationale."""
+    for offset in range(start, end):
+        line = lines[offset]
+        if not line.startswith(HOOK_TYPES_MARKER):
+            continue
+        listed_text = line[len(HOOK_TYPES_MARKER):].split(" — ", 1)[0].strip()
+        labels = [part.strip() for part in listed_text.split(",") if part.strip()]
+        unknown = [label for label in labels if label not in LABEL_TO_TYPE]
+        if unknown:
+            report(
+                "B", EVENT_SCHEMAS, offset + 1,
+                f"{event} Hook types line names unknown type(s) {sorted_join(unknown)}; "
+                f"known labels are {sorted_join(LABEL_TO_TYPE)}",
+            )
+            return
+        listed = frozenset(LABEL_TO_TYPE[label] for label in labels)
+        expected = event_capability(event)[1]
+        if listed != expected:
+            report(
+                "B", EVENT_SCHEMAS, offset + 1,
+                f"{event} Hook types line lists '{listed_text}', expected "
+                f"'{hook_types_label_list(expected)}' (dispatch={DISPATCH.get(event)})",
+            )
+        return
+    report(
+        "B", EVENT_SCHEMAS, start + 1,
+        f"{event} section has no `{HOOK_TYPES_MARKER}` line",
+    )
+
+
 def check_event_sections():
     documented = {name: line for line, name in event_headings()}
     for event in EVENTS:
         if event not in documented:
             report("B", EVENT_SCHEMAS, 1, f"no `### {event}` section for event {event}")
+    lines = read_lines(EVENT_SCHEMAS)
     for name, line in documented.items():
         if name not in EVENT_SET:
             report(
                 "B", EVENT_SCHEMAS, line,
                 f"`### {name}` documents an event that no longer exists",
             )
+            continue
+        if not HOOK_TYPES_MODELLED:
+            # The roster changed, so the capability rules cannot say what a
+            # section should list; check A already reports the roster drift.
+            continue
+        bounds = section_bounds(lines, name)
+        if bounds is None:
+            continue
+        check_section_hook_types(lines, name, *bounds)
 
 
 # --------------------------------------------------------------- C. event-counts
