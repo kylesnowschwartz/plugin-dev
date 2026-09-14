@@ -9,3 +9,11 @@ bypass_permissions_disabled
 user_command
 sdk_request
 permissionMode: delegate
+# The top-level hook output `decision` field is approve|block. allow, deny and
+# ask are values of hookSpecificOutput.permissionDecision, not of decision.
+"decision": "deny"
+"decision": "allow"
+"decision": "ask"
+"decision":"deny"
+"decision":"allow"
+"decision":"ask"

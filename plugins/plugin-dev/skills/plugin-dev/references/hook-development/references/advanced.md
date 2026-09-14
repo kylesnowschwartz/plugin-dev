@@ -305,8 +305,8 @@ fi
 test_count=$(cat /tmp/test-count-$$ 2>/dev/null || echo "0")
 
 if [ "$test_count" -eq 0 ]; then
-  echo '{"decision": "block", "reason": "No tests were run"}' >&2
-  exit 2
+  echo '{"decision": "block", "reason": "No tests were run"}'
+  exit 0
 fi
 ```
 
