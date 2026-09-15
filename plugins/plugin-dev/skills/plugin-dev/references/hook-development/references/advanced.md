@@ -702,7 +702,9 @@ hooks:
 
 ### Supported Events
 
-Only a subset of hook events apply in frontmatter scope:
+All 33 hook events are accepted in frontmatter scope — the loader registers every event it finds, with no allowlist. What limits frontmatter hooks is **lifetime**, not the event list: a frontmatter hook is registered when the component becomes active and torn down when it finishes, so an event that fires outside that window never reaches it.
+
+In practice three events do the work:
 
 | Event         | Purpose in Frontmatter                                                                             |
 | ------------- | -------------------------------------------------------------------------------------------------- |
@@ -710,16 +712,16 @@ Only a subset of hook events apply in frontmatter scope:
 | `PostToolUse` | Run checks after tool execution during skill use                                                   |
 | `Stop`        | Verify completion criteria before skill/agent finishes (auto-converted to SubagentStop for agents) |
 
-Session-level events (`SessionStart`, `UserPromptSubmit`, `Notification`, etc.) don't apply — they operate at a different lifecycle scope.
+Session-lifecycle events (`SessionStart`, `SessionEnd`, `UserPromptSubmit`, `Notification`) register without error but usually have no chance to fire, because the session event happens before the skill is dispatched or after the agent has exited. The exception is an agent run as the main session agent via `--agent`, whose lifetime *is* the session's — agent frontmatter hooks fire in that configuration as of CC 2.1.116, so session-level events can reach them there. Declare a session-level hook in `hooks/hooks.json` instead whenever it must fire for the whole session regardless of which component is running.
 
 ### Comparison with hooks.json
 
-| Aspect         | `hooks.json`                               | Frontmatter `hooks`                                 |
-| -------------- | ------------------------------------------ | --------------------------------------------------- |
-| Scope          | Global (always active when plugin enabled) | Component-specific (active only during use)         |
-| Events         | All 33 hook events                         | PreToolUse, PostToolUse, Stop                       |
-| Location       | `hooks/hooks.json` file                    | YAML frontmatter in SKILL.md or agent .md           |
-| Merge behavior | Merges with user/project hooks             | Merges with global hooks during component lifecycle |
+| Aspect         | `hooks.json`                               | Frontmatter `hooks`                                      |
+| -------------- | ------------------------------------------ | -------------------------------------------------------- |
+| Scope          | Global (always active when plugin enabled) | Component-specific (active only during use)              |
+| Events         | All 33 hook events                         | All 33; only ones firing during the component's lifetime |
+| Location       | `hooks/hooks.json` file                    | YAML frontmatter in SKILL.md or agent .md                |
+| Merge behavior | Merges with user/project hooks             | Merges with global hooks during component lifecycle      |
 
 ### Use Cases
 

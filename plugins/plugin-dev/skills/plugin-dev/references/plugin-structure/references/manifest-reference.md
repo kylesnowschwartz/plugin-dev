@@ -541,11 +541,9 @@ Each entry requires `name`, `command`, and `description`. `when` is optional and
 
 **Behavior**: Replaces the default `monitors/monitors.json` auto-load — that file is read only when the field is omitted. If the default file exists but cannot be read, the plugin reports the failure instead of silently skipping it (CC 2.1.268).
 
-**Watches expire — do not assume session-long persistence (CC 2.1.268).** A monitor watch is not guaranteed to stay armed for the whole session. Design monitors accordingly:
+**Host-armed monitors run for the session lifetime.** A manifest monitor's process is kept alive by the host for as long as the session lasts, and the entry takes no timeout field — the schema is exactly `name`, `command`, `description`, and `when`. Do not build re-arm logic into a monitor script on the assumption that the host will let it expire.
 
-- Use **bounded watches** with an explicit stopping condition rather than open-ended ones
-- **Check for an existing monitor** before arming another one, so a re-arm does not duplicate a live watch
-- **Re-arm an expired watch** when the work it covers is still in flight
+This is the opposite of the model-armed **Monitor tool**, whose watches always carry a deadline (CC 2.1.271) and must be re-armed. That distinction matters when porting a watch between the two: see [Monitor tool deadlines](../../agent-development/references/advanced-agent-fields.md#tools-field-version-behaviors) for the tool-side rules.
 
 **Important: Silence is NOT success.** Unlike hooks where no output means success, monitors must actively output events to the Monitor tool. A silent monitor provides no value — design monitors to regularly emit status updates or event notifications.
 
@@ -658,13 +656,30 @@ Declares user-configurable values in `.claude-plugin/plugin.json`. Each key is a
 | `required` | boolean | No | When `true`, validation fails if the field is empty |
 | `default` | string, number, boolean, or string array | No | Value used when the user provides nothing |
 | `multiple` | boolean | No | For `string` type: accept an array of strings |
+| `options` | string array | No | For `string` type: the only values the field takes. `/config` shows the field as a picker over them |
 | `sensitive` | boolean | No | Masks dialog input and stores the value in secure storage instead of `settings.json` |
 | `min` | number | No | Minimum value (`number` type only) |
 | `max` | number | No | Maximum value (`number` type only) |
 
 The option schema is strict: any key outside this table fails validation with `userConfig.<KEY>: Invalid input`. Omitting `type`, `title`, or `description` fails with `userConfig.<KEY>.<field>: Invalid input`.
 
-**No enum or select type.** Constrained choices are not expressible in the schema — declare the option as `string` and have the hook or server that consumes it reject values outside the allowed set, listing them in `description`.
+**Constrained choices use `options`.** A `string` option that should accept only a fixed set of values declares them in `options`, and `/config` renders the field as a picker over that list instead of a free-text box:
+
+```json
+{
+  "userConfig": {
+    "LOG_LEVEL": {
+      "type": "string",
+      "title": "Log level",
+      "description": "Verbosity of the plugin's own logging",
+      "options": ["debug", "info", "warn", "error"],
+      "default": "info"
+    }
+  }
+}
+```
+
+A stored value outside the list counts as **unset** rather than raising a validation error — the plugin sees no `CLAUDE_PLUGIN_OPTION_<KEY>` variable at all, exactly as if the user had never configured it. Pair `options` with `default` so an out-of-list value falls back to something usable, and with `required: true` when the plugin cannot run without a valid choice.
 
 **Accessing configured values:**
 

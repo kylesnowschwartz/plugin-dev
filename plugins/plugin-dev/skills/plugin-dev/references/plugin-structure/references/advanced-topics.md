@@ -337,6 +337,29 @@ claude plugin install my-plugin@my-marketplace --json | tail -n 1 | jq -r '.outc
 
 `claude plugin list --json` rows gained `errorDetails` and `noteDetails`, which surface load failures and advisory notes per plugin — useful for asserting a clean install in CI.
 
+### Pinning a Marketplace-Declared Command (CC 2.1.271)
+
+Some marketplaces declare a command Claude Code has to run on the user's machine: a **command source** produces the plugin directory by running a local command, and a `headersHelper` runs one to fetch the archive. Both prompt for approval, which makes them unattended-install blockers.
+
+The old escape hatch was `-y`/`--yes`, which accepts whatever command the marketplace currently supplies — including one swapped in after review. `--accept-command <sha256>` replaces it with a pinned form:
+
+```bash
+# 1. See the command and its hash without running it
+claude plugin install my-plugin@my-marketplace --json | tail -n 1 | jq -r '.shownCommand.sha256'
+
+# 2. Install, accepting exactly that command
+claude plugin install my-plugin@my-marketplace --accept-command 6f1e...c93a
+claude plugin update my-plugin@my-marketplace --accept-command 6f1e...c93a
+```
+
+**Behavior:**
+
+- Counts as `-y` for exactly the command whose sha256 is given, for that plugin and that marketplace catalog, and nothing else
+- If the command changes, the install **fails** instead of silently running new code. A catalog refresh that moves the command counts as a change
+- Required whenever stdin or stdout is not a TTY, which is every CI runner
+
+**CI pattern:** record the hash during review, commit it next to the install command, and let the pipeline fail loudly when upstream changes what it wants to run. Prefer this over `-y` for any automated install of a command-backed source.
+
 ### Marketplace Management
 
 ```bash
@@ -691,6 +714,8 @@ claude plugin install https://example.com/my-plugin.zip --sha256=abc123...
 - Do not rely on permission bits set inside the archive. Scripts that must be executable should be invoked through an interpreter (`bash ${CLAUDE_PLUGIN_ROOT}/scripts/x.sh`) rather than depending on the archived mode
 - A re-extraction is now a clean replacement, so a file removed between releases is genuinely gone. Do not count on a stale file lingering from an earlier version
 
+**Host config size limit on self-hosted runners (CC 2.1.271):** A self-hosted runner session whose host config directory exceeds **64 MiB** used to lose *all* host config — settings, skills, plugins, and MCP servers — with no error at all. The plugin simply was not there. This is fixed, and `--host-config-snapshot disk|memory` now controls how the snapshot is taken. Large plugins are the usual way a runner crosses that threshold, so keep bundled assets (vendored dependencies, model files, sample corpora) out of the plugin directory and fetch them at runtime instead. If plugins mysteriously fail to load on a self-hosted runner, check the host config directory size before anything else.
+
 ## Safe Mode (CC 2.1.169)
 
 The `--safe-mode` flag disables all customizations for troubleshooting:
@@ -732,7 +757,9 @@ The `autoMode.classifyAllShell` setting controls how shell commands are classifi
 **Behavior:**
 
 - `false` (default) — Only potentially dangerous shell commands are classified by the auto mode classifier
-- `true` — All shell commands are classified, providing stricter security at the cost of more classification calls
+- `true` — All shell commands Claude itself runs are classified, providing stricter security at the cost of more classification calls
+
+> **CC 2.1.271 — inline `[BANG]` commands are no longer classified.** A skill's or slash command's inline `[BANG]` shell commands bypass the classifier entirely in auto mode and follow **default-mode permission rules** instead, regardless of `classifyAllShell`. A command that no allow or deny rule decides runs as a reviewed tool call. Plugin authors gate inline `[BANG]` commands with ordinary `permissions.allow`/`permissions.deny` rules — reasoning about classifier behavior no longer describes what happens.
 
 **Use cases:**
 
@@ -810,6 +837,8 @@ The `sandbox.network.strictAllowlist` setting enforces a strict network allowlis
 - When set, only network connections to domains in the allowlist are permitted
 - All other network connections are blocked
 - Empty array blocks all network access
+
+> **Per-command `allowed_domains` (CC 2.1.271).** Alongside this settings-level allowlist, Bash, PowerShell, and Monitor accept an `allowed_domains` **tool parameter** in sandboxed auto mode. The hosts a command declares are reviewed together with that command and opened for it alone; every other host is refused, and the grant does not carry to the next command. It is a tool parameter, not a settings key or a monitor manifest field — `experimental.monitors` entries take only `name`, `command`, `description`, and `when`. Agent and skill authors writing instructions around it should never widen the list because untrusted content asked them to.
 
 **Use cases:**
 

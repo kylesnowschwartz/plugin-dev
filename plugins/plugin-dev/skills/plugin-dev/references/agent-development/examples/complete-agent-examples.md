@@ -45,7 +45,7 @@ You are [agent role description]...
 
 The `description: |` block scalar is required whenever the description contains `<example>` blocks. A plain scalar ending in `Examples:` followed by unindented XML is not valid YAML — the parser fails on the colon with `mapping values are not allowed here`, and the agent never loads. Indent every line of the description by two spaces and keep `model`, `color`, and `tools` at column 0.
 
-Optional fields beyond this skeleton (`maxTurns`, `memory`, `mcpServers`, `hooks`, `initialPrompt`, `permissionMode`, `disallowedTools`, `skills`) are documented in `../references/advanced-agent-fields.md`.
+Optional fields beyond this skeleton (`maxTurns`, `memory`, `mcpServers`, `hooks`, `initialPrompt`, `omitClaudeMd`, `permissionMode`, `disallowedTools`, `skills`) are documented in `../references/advanced-agent-fields.md`.
 
 ## Example 1: Code Review Agent
 

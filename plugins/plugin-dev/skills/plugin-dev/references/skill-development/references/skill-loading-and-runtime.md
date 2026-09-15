@@ -246,6 +246,8 @@ Recent commits:
 
 **Security note:** Commands execute in the user's environment. Only use trusted commands.
 
+**Permission handling in auto mode (CC 2.1.271):** A skill's or slash command's inline `[BANG]` commands are no longer routed through the auto-mode safety classifier. They follow **default-mode permission rules**: an allow rule runs them, a deny rule blocks them, and a command no rule decides runs as a reviewed tool call. The `autoMode.classifyAllShell` setting does not change this. Gate inline commands with ordinary `permissions.allow` entries — for example `Bash(git status:*)` — rather than relying on the classifier to judge them.
+
 **Disable shell execution (CC 2.1.91):** Organizations can disable inline shell execution in skills, custom slash commands, and plugin commands via the `disableSkillShellExecution` setting. When enabled, `[BANG]`command`` blocks are not executed. Design skills to work gracefully when shell execution is unavailable.
 
 ## Auto-Discovery

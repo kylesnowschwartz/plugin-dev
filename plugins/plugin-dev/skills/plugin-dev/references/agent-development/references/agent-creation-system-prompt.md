@@ -97,17 +97,17 @@ Take the JSON output and create the agent markdown file:
 ```markdown
 ---
 name: pr-quality-reviewer
-description: Use this agent when the user asks to review a pull request, check code quality, or analyze PR changes. Examples:
+description: |
+  Use this agent when the user asks to review a pull request, check code quality, or analyze PR changes. Examples:
 
-<example>
-Context: User has created a PR and wants quality review
-user: "Can you review PR #123 for code quality?"
-assistant: "I'll use the pr-quality-reviewer agent to analyze the PR."
-<commentary>
-PR review request triggers the pr-quality-reviewer agent.
-</commentary>
-</example>
-
+  <example>
+  Context: User has created a PR and wants quality review
+  user: "Can you review PR #123 for code quality?"
+  assistant: "I'll use the pr-quality-reviewer agent to analyze the PR."
+  <commentary>
+  PR review request triggers the pr-quality-reviewer agent.
+  </commentary>
+  </example>
 model: inherit
 color: blue
 ---

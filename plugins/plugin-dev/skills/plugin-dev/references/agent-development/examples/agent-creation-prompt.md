@@ -105,27 +105,27 @@ File: `agents/code-quality-reviewer.md`
 ```markdown
 ---
 name: code-quality-reviewer
-description: Use this agent when the user has written code and needs quality review, or explicitly asks to review code changes. Examples:
+description: |
+  Use this agent when the user has written code and needs quality review, or explicitly asks to review code changes. Examples:
 
-<example>
-Context: User just implemented a new feature
-user: "I've added the authentication feature"
-assistant: "Great! Let me review the code quality."
-<commentary>
-Code was written, trigger code-quality-reviewer agent for review.
-</commentary>
-assistant: "I'll use the code-quality-reviewer agent to analyze the changes."
-</example>
+  <example>
+  Context: User just implemented a new feature
+  user: "I've added the authentication feature"
+  assistant: "Great! Let me review the code quality."
+  <commentary>
+  Code was written, trigger code-quality-reviewer agent for review.
+  </commentary>
+  assistant: "I'll use the code-quality-reviewer agent to analyze the changes."
+  </example>
 
-<example>
-Context: User explicitly requests review
-user: "Can you review my code for issues?"
-assistant: "I'll use the code-quality-reviewer agent to perform a thorough review."
-<commentary>
-Explicit review request triggers the agent.
-</commentary>
-</example>
-
+  <example>
+  Context: User explicitly requests review
+  user: "Can you review my code for issues?"
+  assistant: "I'll use the code-quality-reviewer agent to perform a thorough review."
+  <commentary>
+  Explicit review request triggers the agent.
+  </commentary>
+  </example>
 model: inherit
 color: blue
 tools: Read, Grep, Glob

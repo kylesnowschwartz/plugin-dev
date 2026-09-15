@@ -292,7 +292,7 @@ hooks:
 
 ### Supported Events
 
-Scoped hooks support a subset of hook events:
+All 33 hook events register in frontmatter scope; the loader applies no allowlist. What limits a skill's frontmatter hooks is **lifetime**, not the event list — a hook exists only while the skill is loaded. In practice three events do the work:
 
 | Event         | Purpose                                          |
 | ------------- | ------------------------------------------------ |
@@ -300,16 +300,16 @@ Scoped hooks support a subset of hook events:
 | `PostToolUse` | Run checks after successful tool execution       |
 | `Stop`        | Verify completion criteria before skill finishes |
 
-Other events (`SessionStart`, `UserPromptSubmit`, etc.) are session-level and don't apply to skill scope.
+Session-lifecycle events (`SessionStart`, `UserPromptSubmit`, `Notification`) register without error but usually have no chance to fire, because the session event happens before the skill is dispatched or after it unloads. Declare those in `hooks/hooks.json` instead.
 
 ### Comparison with hooks.json
 
-| Aspect   | `hooks.json`                               | Frontmatter `hooks`                           |
-| -------- | ------------------------------------------ | --------------------------------------------- |
-| Scope    | Global (always active when plugin enabled) | Skill-specific (active only during skill use) |
-| Events   | All 33 hook events                         | PreToolUse, PostToolUse, Stop                 |
-| Location | `hooks/hooks.json` file                    | YAML frontmatter in SKILL.md                  |
-| Use case | Plugin-wide validation, logging            | Skill-specific safety checks                  |
+| Aspect   | `hooks.json`                               | Frontmatter `hooks`                              |
+| -------- | ------------------------------------------ | ------------------------------------------------ |
+| Scope    | Global (always active when plugin enabled) | Skill-specific (active only during skill use)    |
+| Events   | All 33 hook events                         | All 33; only ones firing while loaded are useful |
+| Location | `hooks/hooks.json` file                    | YAML frontmatter in SKILL.md                     |
+| Use case | Plugin-wide validation, logging            | Skill-specific safety checks                     |
 
 ### Use Cases
 

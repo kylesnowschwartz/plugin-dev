@@ -155,6 +155,8 @@ Use bash execution to include dynamic context (git status, environment variables
 
 The `[BANG]` syntax performs **load-time context injection**: commands execute when the command loads, and their output becomes static text in the prompt Claude receives. This differs from Claude choosing to run commands at runtime via the Bash tool. Use `[BANG]` for gathering starting context (git status, environment variables, config files), not for actions Claude should perform during the task.
 
+**Permission handling in auto mode (CC 2.1.271):** Inline `[BANG]` commands in a slash command or skill bypass the auto-mode safety classifier and follow **default-mode permission rules** instead — allow rules run them, deny rules block them, and anything no rule decides runs as a reviewed tool call. `autoMode.classifyAllShell` does not override this. Ship the `permissions.allow` entries your inline commands need rather than assuming the classifier will wave them through.
+
 **Disable shell execution (CC 2.1.91):** Organizations can disable inline shell execution in skills, custom slash commands, and plugin commands via the `disableSkillShellExecution` setting. When enabled, `[BANG]`command`` blocks are not executed. Design commands to work gracefully when shell execution is unavailable.
 
 For advanced bash patterns, environment-specific configs, and `${CLAUDE_PLUGIN_ROOT}` script execution, see `references/plugin-features-reference.md`.
