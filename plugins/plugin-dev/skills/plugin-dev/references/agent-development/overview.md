@@ -24,17 +24,17 @@ Minimal working agent (copy-paste ready):
 ```markdown
 ---
 name: my-reviewer
-description: Use this agent when the user asks to review code. Examples:
+description: |
+  Use this agent when the user asks to review code. Examples:
 
-<example>
-Context: User wrote new code
-user: "Review my changes"
-assistant: "I'll use the my-reviewer agent to analyze the code."
-<commentary>
-Code review request triggers the agent.
-</commentary>
-</example>
-
+  <example>
+  Context: User wrote new code
+  user: "Review my changes"
+  assistant: "I'll use the my-reviewer agent to analyze the code."
+  <commentary>
+  Code review request triggers the agent.
+  </commentary>
+  </example>
 model: inherit
 color: blue
 ---
@@ -83,6 +83,7 @@ The full frontmatter template (all fields, system-prompt scaffold) is shown in `
 | mcpServers      | No       | Server name map             | slack:                   |
 | hooks           | No       | Hook event map              | PreToolUse: [...]        |
 | initialPrompt   | No       | String                      | "Run health check..."    |
+| omitClaudeMd    | No       | Boolean                     | true                     |
 
 **Field notes:**
 
@@ -94,6 +95,7 @@ The full frontmatter template (all fields, system-prompt scaffold) is shown in `
 - **disallowedTools** — denylist complement to `tools`; block specific tools while allowing the rest. Prefer `tools` (allowlist) for tighter security; use one or the other (specifying both is undefined).
 - **skills** — load specific plugin skills into the agent's context; the skill's SKILL.md content loads in. Skills must be from the same plugin.
 - **permissionMode** — `default` (implicit), `acceptEdits`, `dontAsk`, `bypassPermissions`, `plan`, `auto`. Use restrictive modes for untrusted agents; `bypassPermissions` only for fully trusted ones. Full mode details and permission rule syntax are in `references/permission-modes-rules.md`.
+- **omitClaudeMd** (CC 2.1.271) — `true` runs the agent without the user, project, and local CLAUDE.md instruction files; managed policy files still load. Takes effect **only when the agent is spawned as a subagent** — it has no effect on a main session started with `--agent`. Use it for agents that take everything they need from the delegation prompt. Settable in the `--agents` JSON payload too. Full semantics and the silent-invalid-value footgun are in `references/advanced-agent-fields.md`.
 - **maxTurns, memory, mcpServers, hooks, initialPrompt** — turn limits, persistent cross-session memory, agent-scoped MCP servers, lifecycle hooks, and auto-submitted first prompts. All documented in `references/advanced-agent-fields.md`.
 
 ### Fields NOT Available for Agents

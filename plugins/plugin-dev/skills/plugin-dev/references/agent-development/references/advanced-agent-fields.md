@@ -357,6 +357,10 @@ tools: Read, Grep, Agent(code-reviewer), Agent(test-runner)
 
 **Monitor tool (CC 2.1.98):** Add `Monitor` to `tools` for background monitoring — it streams stdout events from long-running scripts as chat notifications. **CC 2.1.195:** The Monitor tool now supports `ws` (WebSocket) as a source type in addition to `stdout`, enabling real-time data streaming from WebSocket connections.
 
+**Monitor watches always have a deadline (CC 2.1.271):** Every model-armed Monitor watch is now time-bounded, and the no-timeout `persistent` option is gone. `timeout_ms` defaults to 300000 (5 minutes) and is capped at 1800000 (30 minutes), dropping to 600000 (10 minutes) in single-prompt `-p` runs. At expiry the agent gets one notice — `[Monitor timed out — re-arm if needed.]` — rather than the watch quietly living on for the session. Agents that watch something spanning a long task must re-arm, so design their instructions around bounded watches: check whether a watch is still live before arming a second one, and re-arm when the work it covers is still in flight.
+
+This deadline applies only to watches the model arms through the Monitor **tool**. Host-armed `experimental.monitors` declared in `plugin.json` are a different mechanism — the host runs them for the session lifetime and their manifest entries take no timeout field. See [`experimental.monitors`](../../plugin-structure/references/manifest-reference.md#experimentalmonitors).
+
 **Agent(type) deny rules enforcement (CC 2.1.186):** Permission deny rules using `Agent(type)` syntax are now correctly enforced. Previously, deny rules like `!Agent(code-reviewer)` could be bypassed. This fix ensures tool restrictions work as expected:
 
 ```json
@@ -394,6 +398,51 @@ initialPrompt: "Scan the codebase for lint errors, test failures, and report a s
 - Agents that should immediately start working without user input
 - Daily standup or health-check agents
 - Automated validation that runs on session start
+
+## omitClaudeMd (CC 2.1.271)
+
+Run a subagent without the ambient CLAUDE.md instruction files:
+
+```yaml
+---
+name: doc-extractor
+description: |
+  Use this agent to pull structured facts out of a file the caller names. Examples:
+
+  <example>
+  Context: Caller needs the exported symbols of one module
+  user: "List what src/api.ts exports"
+  assistant: "I'll use the doc-extractor agent to read it and return the list."
+  <commentary>
+  Narrow, self-contained extraction — repo conventions add nothing.
+  </commentary>
+  </example>
+model: haiku
+color: cyan
+tools: Read, Grep
+omitClaudeMd: true
+---
+```
+
+**Behavior:**
+
+- `true` drops the user (`~/.claude/CLAUDE.md`), project, and local CLAUDE.md files from the agent's context
+- **Managed policy files still load** — this is not an escape hatch from enterprise policy
+- Takes effect **only when the agent is spawned as a subagent**. It has no effect on a main session launched with `--agent`
+- Also settable per-agent in the `--agents` JSON payload, which is how SDK callers reach it
+- Supported in plugin-shipped agent frontmatter, so plugin agents can opt out of the host repo's conventions
+
+**Type and default:** optional boolean. YAML `true`/`false` and the quoted strings `"true"`/`"false"` are all accepted. The default is absent — CLAUDE.md loads normally.
+
+> **Footgun:** unlike `background` and `memory`, an invalid value raises **no** validation error. It silently falls through to undefined, so the agent keeps loading CLAUDE.md while the author believes it was turned off. `claude plugin validate` will not catch a typo here — verify the behavior by running the agent.
+
+**Use cases:**
+
+- Agents whose delegation prompt already carries everything they need, where repo conventions are pure token cost
+- Cheap, high-volume extraction or search subagents (the built-in Explore and WebFetch agents both ship `omitClaudeMd: true`)
+- Agents that must behave identically across every repo they run in, rather than inheriting per-project instructions
+
+Do **not** use it for agents that write code into the host repo — those need the project's conventions to match surrounding style.
 
 ## experimental.cacheTtl (CC 2.1.248)
 
@@ -505,6 +554,8 @@ Claude Code now includes explicit guidance to limit subagent delegation:
 - **Reserved for genuinely parallel or specialized work** — Only delegate when the work benefits from isolation or parallelism
 
 **Implications for plugin agents:** Design agents to complete work directly when possible. Reserve subagent spawning for cases where parallelism or isolation genuinely improves outcomes. Avoid patterns that spawn subagents reflexively.
+
+**Cost-aware delegation (CC 2.1.271):** This guidance moved into a dedicated system prompt and got stronger, while the Agent tool's own brief usage notes were retired in its favor. The bias is now explicitly toward **inline work for small, known-target tasks** — if the agent already knows which file, symbol, or value it needs, looking it up directly beats dispatching. When delegation *is* worthwhile, the brief should be narrow and evidence-focused rather than open-ended. Plugin agents whose instructions tell them to "use a subagent to search" for single-fact lookups should be rewritten to search directly; reserve the dispatch for work that genuinely fans out across many files.
 
 ### Session Resource Limits (CC 2.1.212, updated 2.1.224)
 

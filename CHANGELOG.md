@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.45.0] - 2026-09-15
+
+Sync with Claude Code 2.1.271. Five changelog-driven updates, one ground-truth addition that also cleared the outstanding `DRIFT M` finding, and six Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep.
+
+### Added
+
+- **agent-development**: `omitClaudeMd` agent frontmatter field (CC 2.1.271) — runs a subagent without user, project, and local CLAUDE.md files while managed policy files still load. Documented with the three facts the changelog omits, all read from the 2.1.271 binary: it takes effect **only** when the agent is spawned as a subagent (no effect on `--agent` main sessions), it is an optional boolean accepting `true`/`false` and the quoted string forms, and an invalid value raises **no** validation error — it silently falls through to undefined, unlike `background` and `memory`. Added to the frontmatter table, the field notes, and the optional-field list in `complete-agent-examples.md`
+- **plugin-structure**: `--accept-command <sha256>` on `claude plugin install`/`update` (CC 2.1.271) — pins acceptance to exactly the marketplace-declared command a previous `--json` run reported as `shownCommand.sha256`, replacing `-y`. Covers command sources *and* the `headersHelper` that fetches the archive, is scoped to one plugin and catalog, and is required whenever stdin or stdout is not a TTY. Documented with the record-then-pin CI pattern
+- **plugin-structure**: `userConfig` option field `options` — constrains a `string` option to a fixed list and makes `/config` render it as a picker. A stored value outside the list counts as **unset** rather than raising a validation error, so it pairs with `default`. Added as a table row and a worked example
+- **mcp-integration**: unreadable enterprise `managed-mcp.json` is now fail-closed (CC 2.1.271) — the broken file keeps exclusive MCP control, no plugin-declared MCP servers load, and the session warns at startup. Documented as a troubleshooting path, since the plugin still reports as installed and enabled while supplying zero tools
+- **plugin-structure**: per-command `allowed_domains` (CC 2.1.271), the 64 MiB self-hosted-runner host config limit and `--host-config-snapshot disk|memory`
+- **agent-development**: cost-aware subagent delegation guidance (CC 2.1.271) — the bias toward inline work for small, known-target tasks, replacing the Agent tool's retired usage notes
+
+### Changed
+
+- **agent-development**: Monitor **tool** watches always carry a deadline (CC 2.1.271) — `timeout_ms` defaults to 300000ms, caps at 1800000ms, and drops to 600000ms under `-p`, with one `[Monitor timed out — re-arm if needed.]` notice at expiry. The no-timeout `persistent` option is gone
+- **skill-development**, **command-development**, **plugin-structure**: inline `[BANG]` shell commands in skills and slash commands now follow default-mode permission rules instead of the auto-mode safety classifier (CC 2.1.271). `autoMode.classifyAllShell` no longer describes their handling, so the `classifyAllShell` section carries an explicit carve-out and authors are directed to ordinary `permissions.allow`/`deny` rules
+- **mcp-integration**: `alwaysLoad` mid-conversation usability extended to Foundry and Claude Platform on AWS sessions (CC 2.1.271)
+
+### Fixed
+
+- **hook-development**, **skill-development**: agent and skill frontmatter `hooks:` were documented as accepting only `PreToolUse`, `PostToolUse`, and `Stop`, contradicting the agent topic's "all hook events are supported". Settled against the 2.1.271 binary: frontmatter hook registration iterates the full 33-event list with no allowlist, so the agent topic was right. The real constraint is **lifetime** — a frontmatter hook exists only while its component is active, so session-lifecycle events register without error but usually have no chance to fire. The exception, an agent run as the main session agent via `--agent`, is now stated explicitly. Corrected across four files in both topics — prose and comparison tables in `hook-development/references/advanced.md` and `skill-development/references/advanced-frontmatter.md`, plus the summary lines in each topic's `overview.md`
+- **plugin-structure**: `manifest-reference.md` claimed constrained `userConfig` choices "are not expressible in the schema" and prescribed a manual-validation workaround for a feature the runtime provides. Two further closure sentences enumerated the accepted option keys without `options`, asserting it would fail validation
+- **agent-development**: three templates shipped the exact plain-scalar `description:` form the same skill documents as fatal — including the Quick Start block labelled "copy-paste ready" — so the plugin's own generator and its examples disagreed. `overview.md`, `agent-creation-system-prompt.md`, and `agent-creation-prompt.md` now use `description: |` block scalars
+- **plugin-structure**: Monitor-tool expiry advice ("watches expire", "re-arm an expired watch") was misfiled under the `experimental.monitors` manifest field. Host-armed monitors run for the **session lifetime** and their entries take no timeout field — the schema is exactly `name`, `command`, `description`, `when`. Replaced with the correct behavior and a cross-reference to the tool-side deadline rules
+
+### Notes
+
+- `manifest-reference.md:511` was deliberately left unedited. Stage 1 proposed rewording its "persistent Monitor tasks" description; Stage 2 checked the binary and found it verbatim-correct, so editing it would have *introduced* drift. The line that was actually wrong was :544
+- `AskUserQuestion` availability in headless/`--print` mode remains unresolved, carried forward from v0.44.1
+
 ## [0.44.1] - 2026-09-13
 
 Documentation drift fixes. No new Claude Code releases in range — the changelog baseline stays at 2.1.270, the version the ground-truth facts were read from. Nine contradictions found by the `doc-drift-auditor` sweep and confirmed by Stage 2 against `docs/claude-code-facts.json` (CC 2.1.270) and by parsing the affected files.
@@ -944,7 +975,8 @@ Corrects references that had drifted from Claude Code behaviour, reported in [#6
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.44.1...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.45.0...HEAD
+[0.45.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.44.1...v0.45.0
 [0.44.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.44.0...v0.44.1
 [0.44.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.43.1...v0.44.0
 [0.43.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.43.0...v0.43.1

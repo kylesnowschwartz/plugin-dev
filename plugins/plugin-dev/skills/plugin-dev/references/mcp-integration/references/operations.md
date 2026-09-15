@@ -185,6 +185,17 @@ Organizations can provision HTTP/SSE MCP servers directly via managed settings:
 - Design plugins to detect and use existing enterprise servers when available
 - Document any overlap between plugin-bundled servers and common enterprise provisions
 
+### Unreadable managed-mcp.json Is Fail-Closed (CC 2.1.271)
+
+Enterprise MCP policy lives in a `managed-mcp.json` file. When that file is present but cannot be read or parsed, Claude Code used to ignore it and load user, project, and plugin MCP servers as usual. It is now **fail-closed**: the broken file keeps exclusive MCP control, **no plugin-declared MCP servers load**, and the session warns at startup.
+
+**Plugin author implications:**
+
+- A plugin shipping `mcpServers` can silently provide zero tools in an enterprise environment whose policy file is malformed. Nothing about the plugin is wrong, and the plugin surfaces no error of its own
+- The failure presents as a **startup warning**, not a plugin load failure, so `claude plugin list` shows the plugin installed and enabled while its servers are absent
+- Add this to troubleshooting docs for any plugin whose core value depends on a bundled MCP server: "no tools from this plugin in a managed environment" should send the user to the startup warnings and their admin's `managed-mcp.json`, not to a plugin reinstall
+- Design tool-dependent skills to degrade with a clear message when the expected MCP tools are missing rather than failing obscurely
+
 ## Error Handling
 
 ### Connection Failures
@@ -255,7 +266,7 @@ Use `alwaysLoad: true` to bypass lazy loading and tool-search deferral:
 }
 ```
 
-**Mid-conversation connection (CC 2.1.269):** In first-party sessions with telemetry disabled, an `alwaysLoad` server that finishes connecting after the session has started is usable on the very next turn, without a tool-search round trip first. This narrows an earlier gap where a slow-starting server stayed effectively invisible until a tool search ran.
+**Mid-conversation connection (CC 2.1.269, extended 2.1.271):** In first-party sessions with telemetry disabled, an `alwaysLoad` server that finishes connecting after the session has started is usable on the very next turn, without a tool-search round trip first. This narrows an earlier gap where a slow-starting server stayed effectively invisible until a tool search ran. **CC 2.1.271** extends the same behavior to Foundry and Claude Platform on AWS sessions.
 
 **Use cases:**
 

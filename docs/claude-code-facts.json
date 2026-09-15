@@ -1,5 +1,5 @@
 {
-  "claude_code_version": "2.1.270",
+  "claude_code_version": "2.1.271",
   "directory_added_sources": [
     "slash_command",
     "register_repo_root"
@@ -121,6 +121,7 @@
       "max": "Maximum value (number type only)",
       "min": "Minimum value (number type only)",
       "multiple": "For string type: allow an array of strings",
+      "options": "For string type: the only values the field takes. /config shows the field as a picker over them, and a stored value outside them counts as unset",
       "required": "If true, validation fails when this field is empty",
       "sensitive": "If true, masks dialog input and stores value in secure storage (keychain/credentials file) instead of settings.json",
       "title": "Human-readable label shown in the config dialog",
