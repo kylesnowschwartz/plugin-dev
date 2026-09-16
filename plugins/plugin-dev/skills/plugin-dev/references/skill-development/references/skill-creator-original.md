@@ -84,6 +84,8 @@ Skills use a three-level loading system to manage context efficiently:
 
 \*Unlimited because scripts can be executed without reading into context window.
 
+> **Budget differs for plugin skills.** The `<5k words` figure above is the generic standalone-skill methodology. Plugin skills use a tighter body budget of **<3k words** (target 1,500-2,000). Use the plugin figure when authoring a skill that ships inside a plugin — see the Key Writing Guidelines in `../overview.md`.
+
 ## Skill Creation Process
 
 To create a skill, follow the "Skill Creation Process" in order, skipping steps only if there is a clear reason why they are not applicable.

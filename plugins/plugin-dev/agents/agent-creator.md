@@ -153,7 +153,7 @@ When a user describes what they want an agent to do, you will:
 - Identifier follows naming rules (lowercase, hyphens, 3-50 chars)
 - Description has strong trigger phrases and 2-4 examples
 - Examples show both explicit and proactive triggering
-- System prompt is comprehensive (500-3,000 words)
+- System prompt is comprehensive (500-3,000 characters; hard limit 10,000)
 - System prompt has clear structure (role, responsibilities, process, output)
 - Model choice is appropriate
 - Tool selection follows least privilege

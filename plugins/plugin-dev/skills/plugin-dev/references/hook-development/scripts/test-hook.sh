@@ -33,7 +33,7 @@ create_sample() {
   "session_id": "test-session",
   "transcript_path": "/tmp/transcript.txt",
   "cwd": "/tmp/test-project",
-  "permission_mode": "ask",
+  "permission_mode": "default",
   "hook_event_name": "PreToolUse",
   "tool_name": "Write",
   "tool_input": {
@@ -49,10 +49,14 @@ EOF
   "session_id": "test-session",
   "transcript_path": "/tmp/transcript.txt",
   "cwd": "/tmp/test-project",
-  "permission_mode": "ask",
+  "permission_mode": "default",
   "hook_event_name": "PostToolUse",
   "tool_name": "Bash",
-  "tool_result": "Command executed successfully"
+  "tool_input": {
+    "command": "echo hello"
+  },
+  "tool_response": "Command executed successfully",
+  "tool_use_id": "toolu_test"
 }
 EOF
     ;;
@@ -62,9 +66,10 @@ EOF
   "session_id": "test-session",
   "transcript_path": "/tmp/transcript.txt",
   "cwd": "/tmp/test-project",
-  "permission_mode": "ask",
+  "permission_mode": "default",
   "hook_event_name": "Stop",
-  "reason": "Task appears complete"
+  "stop_hook_active": false,
+  "last_assistant_message": "Task appears complete"
 }
 EOF
     ;;
@@ -74,20 +79,33 @@ EOF
   "session_id": "test-session",
   "transcript_path": "/tmp/transcript.txt",
   "cwd": "/tmp/test-project",
-  "permission_mode": "ask",
+  "permission_mode": "default",
   "hook_event_name": "UserPromptSubmit",
-  "user_prompt": "Test user prompt"
+  "prompt": "Test user prompt"
 }
 EOF
     ;;
-  SessionStart | SessionEnd)
+  SessionStart)
+    # No permission_mode: the field is absent from SessionStart input.
     cat <<'EOF'
 {
   "session_id": "test-session",
   "transcript_path": "/tmp/transcript.txt",
   "cwd": "/tmp/test-project",
-  "permission_mode": "ask",
-  "hook_event_name": "SessionStart"
+  "hook_event_name": "SessionStart",
+  "source": "startup",
+  "model": "claude-opus-5"
+}
+EOF
+    ;;
+  SessionEnd)
+    cat <<'EOF'
+{
+  "session_id": "test-session",
+  "transcript_path": "/tmp/transcript.txt",
+  "cwd": "/tmp/test-project",
+  "hook_event_name": "SessionEnd",
+  "reason": "prompt_input_exit"
 }
 EOF
     ;;

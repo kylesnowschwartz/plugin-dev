@@ -119,7 +119,9 @@ For the generic (non-plugin) skill-creator methodology, including `init_skill.py
 
 ### Visibility Budget
 
-Skill descriptions share a budget of 1% of the context window measured in characters — 8,000 characters for the default 200K-token window — controlled by `SLASH_COMMAND_TOOL_CHAR_BUDGET`. If total skill descriptions exceed this budget, some skills may be excluded from auto-discovery (still invocable via `/skill-name`). Descriptions are added in priority order — project, then user, then plugin — until the budget is exhausted, so lower-priority skills are the ones excluded. Keep descriptions concise but include trigger phrases: shorter descriptions leave room for more items overall. See `references/advanced-frontmatter.md` for optimization strategies.
+Skill descriptions share a budget of 1% of the context window measured in characters — 8,000 characters for the default 200K-token window — controlled by `SLASH_COMMAND_TOOL_CHAR_BUDGET`. If total skill descriptions exceed this budget, some skills may be excluded from auto-discovery (still invocable via `/skill-name`). Descriptions are added in **budget admission order** — project, then user, then plugin — until the budget is exhausted, so plugin skills are the ones excluded first. Keep descriptions concise but include trigger phrases: shorter descriptions leave room for more items overall. See `references/advanced-frontmatter.md` for optimization strategies.
+
+> **Two different orderings, do not conflate them.** Budget admission order (above) decides *which descriptions fit* in the Skill tool's character budget. Name-shadowing precedence (below) decides *which skill wins* when two skills share a name. They rank project and personal skills differently because they answer different questions.
 
 ## Dynamic Content
 
@@ -127,7 +129,7 @@ Skills support `$ARGUMENTS`/`$1` variable substitution, `${CLAUDE_PLUGIN_ROOT}` 
 
 ## Loading, Precedence, and Runtime Behavior
 
-Skill discovery, precedence (Enterprise > Personal > Project > Plugin), nested and directory-scoped skills, the Invoke Skill tool, slash-skill stacking, the `skillOverrides` and `disableBundledSkills` settings, hot-reloading, `/skills` menu display, and behavior across compaction all live in `references/skill-loading-and-runtime.md`. Consult it when a skill won't trigger, when designing for shadowing/collisions, or when a user reports skills disabled by settings.
+Skill discovery, name-shadowing precedence (Enterprise > Personal > Project > Plugin — distinct from the budget admission order above), nested and directory-scoped skills, the Invoke Skill tool, slash-skill stacking, the `skillOverrides` and `disableBundledSkills` settings, hot-reloading, `/skills` menu display, and behavior across compaction all live in `references/skill-loading-and-runtime.md`. Consult it when a skill won't trigger, when designing for shadowing/collisions, or when a user reports skills disabled by settings.
 
 ### Skill Location in Plugins
 

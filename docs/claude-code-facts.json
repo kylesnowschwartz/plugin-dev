@@ -1,5 +1,5 @@
 {
-  "claude_code_version": "2.1.271",
+  "claude_code_version": "2.1.273",
   "directory_added_sources": [
     "slash_command",
     "register_repo_root"

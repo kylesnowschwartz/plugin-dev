@@ -82,7 +82,11 @@ Space before `*` means word boundary: `Bash(ls *)` matches `ls -la` but NOT `lso
 
 **Commands that write files are matched on their destination too (CC 2.1.269).** A `Bash(tee:*)` allow rule no longer covers destinations outside the working directories, and the write-path check plus any `Edit()` deny rule now apply to the file a `tee` command writes. A rule pair like `Bash(tee:*)` allow plus `Edit(//etc/**)` deny behaves as an author would expect: the allow does not smuggle a write past the deny.
 
-**Deny and ask rules survive obfuscation (CC 2.1.268).** A `Read` or `Edit` deny rule applies even when an unanalyzable command such as `env -C` or `eval` shares the command line, so a wrapper cannot be used to slip past a deny rule.
+**Deny rules do NOT cover unanalyzable Bash command lines (reverted in CC 2.1.273).** CC 2.1.268 made a `Read` or `Edit` deny rule apply even when an unanalyzable command such as `env -C` or `eval` shared the command line. CC 2.1.273 reverted that check: commands like `time -p make build` prompt again instead of being denied. Do not rely on a `Read`/`Edit` deny rule to cover a Bash line the permission checker cannot parse — write an explicit `Bash(...)` deny rule for the wrapper forms you need to block.
+
+**Unanalyzable commands no longer skip the prompt under `blockReadsOutsideWorkingDirectories` (CC 2.1.273).** Two gaps in the Bash permission path were closed alongside the revert above. A command the checker cannot fully analyze no longer bypasses the prompt when `permissions.blockReadsOutsideWorkingDirectories` is set, and a subshell can no longer hide a dangerous `rm` in `bypassPermissions` mode.
+
+`permissions.blockReadsOutsideWorkingDirectories` is a boolean setting that makes the file tools refuse paths outside the working directories in **every** permission mode. It is an explicit exception to the mode table above: with it on, recognized file-reading Bash commands prompt even in `auto` and `bypassPermissions` mode. As of CC 2.1.273 it also excludes a memory directory chosen by a repository's settings from the prompt, recall, indexing, and memory extraction.
 
 ### Path Patterns for Edit/Read/Write
 
@@ -98,7 +102,9 @@ Path specifiers follow the gitignore specification:
 | `*`      | Single directory level wildcard              | `Read(src/*)`          |
 | `**`     | Recursive directory wildcard                 | `Edit(src/**)`         |
 
-**Symlinked directories resolve to their real location (CC 2.1.268).** Deny and ask rules on directories that are symlinks — `/etc`, `/tmp`, `/var` on macOS, `/bin` on Linux — apply when a path is supplied by its real location, and Bash commands honor deny rules written using the symlinked spelling. A rule written either way covers both.
+**Symlinked directories resolve to their real location (CC 2.1.268).** Deny and ask rules on directories that are symlinks — `/etc`, `/tmp`, `/var` on macOS, `/bin` on Linux — apply when a path is supplied by its real location, and Bash commands honor deny rules written using the symlinked spelling. A rule written either way covers both. This behavior was **not** affected by the CC 2.1.273 revert described under Bash Patterns.
+
+**False symlink rejections on macOS fixed (CC 2.1.273).** Read no longer refuses a dragged-in screenshot, or any file the system reports under a second path, with `Refusing to read <path>: its symlink resolution changed after permission was checked`. The error still fires on a genuine mid-check resolution change.
 
 ### WebFetch Patterns
 

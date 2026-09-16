@@ -1,11 +1,11 @@
 {
-  "_comment": "Example stdio MCP server configuration for local file system access",
+  "_comment": "Example stdio MCP server configuration for local file system access. Only ${CLAUDE_PLUGIN_ROOT}, ${CLAUDE_PLUGIN_DATA} and user shell variables expand here — ${CLAUDE_PROJECT_DIR} is NOT expanded in MCP server configuration.",
   "filesystem": {
     "command": "npx",
     "args": [
       "-y",
       "@modelcontextprotocol/server-filesystem",
-      "${CLAUDE_PROJECT_DIR}"
+      "${CLAUDE_PLUGIN_ROOT}"
     ],
     "env": {
       "LOG_LEVEL": "info"

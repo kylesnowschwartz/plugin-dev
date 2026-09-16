@@ -374,6 +374,8 @@ This deadline applies only to watches the model arms through the Monitor **tool*
 
 This correctly blocks spawning the `untrusted-agent` type.
 
+**`Agent(...)` and `Task(...)` are aliases.** Both spellings are accepted in `settings.json` permission rules and resolve to the same agent-spawn tool. `Agent` is canonical — the rule parser normalizes `Task` to `Agent` (verified against the CC 2.1.273 binary, which also aliases `KillShell`/`KillBash` to `TaskStop` and `BashOutput`/`AgentOutput` to `TaskOutput`). Existing rules written either way keep working; prefer `Agent(...)`, which is the form the upstream changelog uses. Some plugin-dev references use `Task(...)` — see [permission-modes-rules.md](permission-modes-rules.md) — and those rules are equally valid.
+
 > **Note:** The Config tool was removed in CC 2.1.118. Use the `/config` slash command instead for getting/setting Claude Code settings.
 >
 > **Bash Tool Guidance (CC 2.1.133):** Claude Code now guides agents to prefer dedicated tools (Read, Grep, Glob) over Bash for file operations like `find`, `grep`, and `cat` unless explicitly instructed otherwise. When designing agents, consider whether dedicated tools can replace Bash commands for better user experience and token efficiency.

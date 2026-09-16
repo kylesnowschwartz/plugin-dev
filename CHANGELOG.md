@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.46.0] - 2026-09-16
+
+Sync with Claude Code 2.1.272-2.1.273. Six changelog-driven Must Update items (two promoted from May Update by Stage 2), eight May Update items applied, and twelve Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. CC 2.1.272 was "Bug fixes and reliability improvements" with no itemized entries, so every changelog-driven item comes from 2.1.273. `scripts/check-doc-drift.sh` was clean before and after the run, and the `docs/claude-code-facts.json` diff was `claude_code_version`-only.
+
+### Added
+
+- **mcp-integration**: "Reconnection Is Bounded" section in `server-types.md` — automatic reconnection applies to remote transports only (HTTP, SSE, WebSocket; never stdio) and retries **5 times with exponential backoff** (waits of 1s, 2s, 4s, 8s, doubling to a 30s cap) before marking the server failed. CC 2.1.273 adds a user-facing notification pointing at `/mcp` when reconnection gives up
+- **mcp-integration**: `allowManagedMcpServersOnly` and `disableClaudeAiConnectors` administrator keys, plus the CC 2.1.273 fix that stops these and `deniedMcpServers` from being silently ignored when server-managed settings are also present. Notes `managedSourcesBehavior: "merge"` and warns that enterprise policy validated on a pre-2.1.273 build may not actually have applied
+- **plugin-settings**: `syncClaudeAiSkills` setting and the `CLAUDE_CODE_SYNC_SKILLS` environment variable — a control separate from `syncClaudeAiPlugins`. Previously synced skills move to `~/.claude/skills/.trash` at next launch, the "recoverable trash" of the CC 2.1.273 changelog line
+- **plugin-settings**: `OTEL_LOG_TOOL_DETAILS=1` now carries real agent, skill, plugin and MCP server names on cost and token metrics (CC 2.1.273) — a disclosure fact for enterprise deployment docs
+- **agent-development**: `CLAUDE_AUTO_BACKGROUND_TASKS` and its ~2-minute mid-run backgrounding threshold, with the CC 2.1.273 fixes for SDK/`stream-json` dropping a backgrounded subagent's final report and for agents reported as failed when the final streamed reply omitted token usage or a model id
+- **agent-development**: `permissions.blockReadsOutsideWorkingDirectories` — makes file tools refuse fenced paths in **every** permission mode, an explicit exception to the mode table, including the CC 2.1.273 memory-directory exclusion
+- **agent-development**: "Recently Added Tool Names" recording `FetchInboxMessage` (CC 2.1.273) and `AppifactRepl` (CC 2.1.272), both system-prompts-sourced and flagged as lower confidence
+- **skill-development**: git behavior constrained while a skill runs (CC 2.1.273) — skill-scoped refusal of force, delete, mirror, prune, hook-bypassing, push-option and receive-pack push forms, and the requirement that commit messages and PR bodies be supplied inline
+- **plugin-structure**: `CLAUDE_CODE_AUTO_MODE_SERVER=1` (CC 2.1.273) — auto mode on Bedrock, Vertex and Foundry now uses the local classifier by default. Scoped explicitly to *which* classifier runs, not *which* commands are classified
+
+### Changed
+
+- **agent-development**: `Agent(...)` and `Task(...)` documented as **aliases** for the same agent-spawn tool in `settings.json` permission rules, with `Agent` canonical. Settled against the CC 2.1.273 binary, whose rule parser normalizes `Task` to `Agent` through an alias map (alongside `KillShell`/`KillBash` → `TaskStop` and `BashOutput`/`AgentOutput` → `TaskOutput`), and confirmed empirically: a deny list containing both spellings plus a bogus name warns only about the bogus one. Both existing spellings in the reference docs are valid; neither is unenforced
+- **skill-development**: budget admission order (project → user → plugin) and name-shadowing precedence (Enterprise > Personal > Project > Plugin) labelled as two separate mechanisms in all four places they appear, instead of reading as one fact stated in contradictory orders
+- **skill-development**: `skill-creator-original.md`'s `<5k words` SKILL.md body budget marked as the generic standalone-skill figure, with plugin skills' `<3k words` called out
+- **hook-development**: `permission_mode` no longer claimed as present on every event — it is absent from SessionStart and InstructionsLoaded, and the reference now recommends reading it defensively
+
+### Fixed
+
+- **agent-development**: `permission-modes-rules.md` shipped the CC 2.1.268 "deny and ask rules survive obfuscation" guarantee as current fact. **CC 2.1.273 reverted it** — `Read`/`Edit` deny rules no longer cover Bash lines the permission checker cannot analyze, and commands like `time -p make build` prompt again instead of being denied. Plugin authors relying on the documented guarantee had weaker protection than stated. The adjacent CC 2.1.268 symlink paragraph was not reverted and is preserved, now with an explicit note saying so
+- **hook-development**: PostToolUse's tool-output field is `tool_response`, not `tool_result` — corrected in `hook-input-schemas.md`, the `advanced.md` worked example, and the `test-hook.sh` fixture, where the wrong name silently yielded `null`
+- **hook-development**: all five `test-hook.sh --create-sample` fixtures emitted `"permission_mode": "ask"`, which is not a member of the facts file's `permission_modes`. Replaced with `default`, and dropped from the SessionStart and SessionEnd payloads where the field is absent
+- **hook-development**: the UserPromptSubmit fixture used `user_prompt` instead of `prompt`; the Stop fixture carried SessionEnd's `reason` and omitted `stop_hook_active`, making a Stop hook's loop guard untestable; and `--create-sample SessionEnd` emitted a SessionStart payload with neither `source` nor `reason`. Each fixture now matches its event schema
+- **agent-development**: system-prompt length guidance given in **words** (up to 5,000 for a "comprehensive" agent) against a 10,000-**character** limit that `validate-agent.sh` actually enforces. Converted to character bands in `system-prompt-design.md` and `agent-creator.md`, which had been propagating the word figure into every generated agent
+- **skill-development**: the Skill + Agent comparison table said `context: fork` "inherits parent context" while the same file and the agent-development overview said it does not inherit conversation history. Corrected to separate context with prompt-cache sharing
+- **mcp-integration**: `examples/stdio-server.json` — indexed as a copy-paste config — passed `${CLAUDE_PROJECT_DIR}`, which the manifest reference states is not expanded in MCP server configuration. Switched to `${CLAUDE_PLUGIN_ROOT}` with a comment naming the variables that do expand
+
 ## [0.45.0] - 2026-09-15
 
 Sync with Claude Code 2.1.271. Five changelog-driven updates, one ground-truth addition that also cleared the outstanding `DRIFT M` finding, and six Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep.
@@ -975,7 +1008,8 @@ Corrects references that had drifted from Claude Code behaviour, reported in [#6
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.45.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.46.0...HEAD
+[0.46.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.45.0...v0.46.0
 [0.45.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.44.1...v0.45.0
 [0.44.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.44.0...v0.44.1
 [0.44.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.43.1...v0.44.0

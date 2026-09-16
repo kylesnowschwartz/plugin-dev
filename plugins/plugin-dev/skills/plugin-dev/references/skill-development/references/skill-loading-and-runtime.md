@@ -64,13 +64,17 @@ Users can load multiple skills simultaneously using stacked slash-skill invocati
 - Keep skill contexts focused to avoid context pollution when stacked
 - Test skills in combination with common complementary skills
 
-## Skill Precedence
+## Skill Precedence (Name Shadowing)
 
 Skills follow precedence: Enterprise > Personal (`~/.claude/skills/`) > Project (`.claude/skills/`) > Plugin skills. Higher-priority skills with the same name shadow lower-priority ones. Use distinctive, namespaced names for plugin skills to avoid collisions.
+
+This ordering governs **name collisions only**. It is not the same as the Skill tool's budget admission order (project, then user, then plugin), which governs which descriptions fit inside the 8,000-character visibility budget. The two rank project and personal skills differently because they answer different questions — see the Visibility Budget section in `../overview.md`.
 
 **Qualified names in errors (CC 2.1.269):** When a bare skill name matches exactly one plugin skill, the Skill tool's "Unknown skill" error names the skill in its full `plugin-name:skill-name` form. A user who typed the bare name gets told what to type instead, which makes a shadowed plugin skill much easier to diagnose.
 
 **Reserved-ish prefix: `anthropic-skills:` (CC 2.1.269).** Skills synced from claude.ai into cloud sessions are named `anthropic-skills:<name>`, matching Claude Desktop. The bare name still resolves when nothing else claims it. Do not name a plugin `anthropic-skills` — its skills would collide with the synced namespace.
+
+**Synced skills can be withdrawn by org policy (CC 2.1.273).** A claude.ai-synced skill used to stay available after an organization turned Skills off. It now moves to `~/.claude/skills/.trash` — recoverable, but gone from the session. The same destination applies when a user sets `syncClaudeAiSkills: false`. A skill that resolved yesterday may therefore be absent today for reasons outside the plugin: do not write a plugin skill or agent that hard-depends on a synced skill being present. Plugin-bundled skills are unaffected, since they install with the plugin rather than syncing. See the `syncClaudeAiSkills` section in `../../plugin-settings/overview.md`.
 
 ## Nested Skill Directories (CC 2.1.178)
 
@@ -306,6 +310,17 @@ Skills are listed **alphabetically** and in the `/skills` menu. Name skills with
 After auto-compaction, skill descriptions survive (they're re-injected), but skill body content may be lost. Users can re-invoke the skill to reload it. The `PreCompact` hook can preserve critical state before compaction occurs.
 
 When multiple plugins are installed, their skill descriptions share the same budget. Design descriptions to be distinctive and concise.
+
+## Git Behavior Constrained While a Skill Runs (CC 2.1.273)
+
+Two system-prompt changes restrict what the model will do for the duration of a skill:
+
+- **Skill-scoped git push refusal.** While a skill is running, Claude rejects force, delete, mirror, prune, hook-bypassing, push-option, and receive-pack push forms, and will not substitute an evasive rewrite to achieve the same effect.
+- **Inline commit and PR messages.** Commit messages and PR bodies must be supplied inline, because file and template flags (`-F`, `--file`, `--template`) are refused while these skills run.
+
+A skill that ships a git workflow inherits these refusals. Write such skills to use plain `git push` and inline `-m` messages rather than the refused forms, or the skill will stall partway through.
+
+> Source: the Claude Code system-prompts repository. These changes do not appear in the upstream `CHANGELOG.md`, so treat them as lower-confidence than changelog-sourced facts.
 
 ## Subagent Skill Discovery (CC 2.1.133)
 

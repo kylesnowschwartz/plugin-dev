@@ -139,6 +139,19 @@ Three matcher types: `serverName`, `serverCommand`, `serverUrl`.
 
 These settings are configured by administrators and cannot be overridden by users or plugins.
 
+Two related administrator keys:
+
+| Key | Type | Effect |
+| --- | --- | --- |
+| `allowManagedMcpServersOnly` | boolean | When true **and set in managed settings**, `allowedMcpServers` is read from managed settings only. `deniedMcpServers` still merges from all sources, so users can additionally deny servers for themselves. Users may still add their own MCP servers, but only the admin-defined allowlist applies |
+| `disableClaudeAiConnectors` | boolean | Turns off claude.ai connectors as an MCP source |
+
+Note what `allowManagedMcpServersOnly` does **not** do: it does not restrict loading to servers provisioned via `managedMcpServers`, and it does not categorically refuse plugin-bundled servers. A plugin's MCP server loads if the admin allowlist covers it.
+
+**Precedence against server-managed settings (CC 2.1.273).** `allowManagedMcpServersOnly`, `deniedMcpServers` and `disableClaudeAiConnectors` set via MDM or `managed-settings.json` were **silently ignored** when server-managed settings were also present. CC 2.1.273 fixes this, so these keys now take effect in that configuration.
+
+This matters when validating a plugin against an enterprise policy: on a build before 2.1.273, a policy that appeared to be in force may not actually have been applied, so a plugin-bundled MCP server could load in testing and then be refused on a patched client. Re-test enterprise deployment guidance against CC 2.1.273 or later. Where the two sources both define MCP policy, `managedSourcesBehavior: "merge"` controls whether the managed and server-managed sets combine rather than one replacing the other.
+
 ### Expanded allowedMcpServers Behavior (CC 2.1.259)
 
 The `allowedMcpServers` setting now provides more flexible matching:
