@@ -433,6 +433,12 @@ Settings files should be:
 - Not committed to git
 - Not shared between users
 
+### Component Names in Telemetry (`OTEL_LOG_TOOL_DETAILS`)
+
+`OTEL_LOG_TOOL_DETAILS=1` is an opt-in that adds tool detail to OpenTelemetry output. As of **CC 2.1.273** it also includes real **agent, skill, plugin and MCP server names** on cost and token metrics.
+
+Plugin authors shipping into an enterprise should know that with this opt-in set, the plugin's name, its skills' names, and its MCP servers' names reach the telemetry backend. If any of those names are themselves sensitive — an internal project codename, a customer name — say so in the plugin's deployment documentation so operators can decide whether to enable the flag.
+
 ## Real-World Examples
 
 ### multi-agent-swarm Plugin
@@ -568,6 +574,31 @@ The `syncClaudeAiPlugins` setting controls whether plugins are synchronized from
 - Users may disable Claude.ai plugin sync for security or compliance reasons
 - Plugins distributed via other channels (marketplace, direct URL) are not affected
 - Document alternative installation methods if targeting environments where sync may be disabled
+
+> **CC 2.1.273:** Signing in with a Claude account now also requests access to your claude.ai plugins. This is an OAuth scope change on the sync path; it changes nothing a plugin author authors.
+
+### syncClaudeAiSkills Setting
+
+Skills synced from claude.ai have their **own** control, separate from `syncClaudeAiPlugins`:
+
+```json
+{
+  "syncClaudeAiSkills": false
+}
+```
+
+**Behavior when set to `false`:**
+
+- Turns off syncing of the skills enabled on claude.ai
+- Previously synced skills are moved to `~/.claude/skills/.trash` at the next launch — recoverable, not deleted
+
+A `CLAUDE_CODE_SYNC_SKILLS` environment variable also exists.
+
+> **CC 2.1.273:** Skills synced from claude.ai previously stayed available after an organization turned Skills off. They now move to the same recoverable trash.
+
+**Implications for plugin developers:** skills reaching a user through claude.ai sync can disappear from a session when an org policy changes, independently of anything in the plugin manifest. Do not assume a synced skill your plugin's docs reference will be present. Skills that ship inside a plugin are unaffected — they are installed with the plugin, not synced.
+
+Still undocumented upstream: exactly how an organization turns Skills off, and whether that org toggle is the same control as `syncClaudeAiSkills`.
 
 Plugin settings files (`.local.md`) exist alongside Claude Code's broader memory and rules system. Understanding how CLAUDE.md imports, `.claude/rules/` path-specific rules, and the memory priority hierarchy interact with plugin content helps design plugins that complement rather than conflict with user configurations.
 

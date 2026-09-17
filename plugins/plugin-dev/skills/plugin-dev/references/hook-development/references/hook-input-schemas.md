@@ -11,9 +11,10 @@ Every hook receives these fields:
 | `session_id`      | string | Unique session identifier                                                     |
 | `transcript_path` | string | Path to conversation JSON                                                     |
 | `cwd`             | string | Current working directory                                                     |
-| `permission_mode` | string | Current permission mode                                                       |
 | `hook_event_name` | string | Event that triggered this hook                                                |
 | `effort.level`    | string | Active effort level (CC 2.1.133). Also available as `$CLAUDE_EFFORT` env var. |
+
+`permission_mode` (string, the session's current permission mode) is present on most events but **not all** — it is absent from SessionStart and InstructionsLoaded. Read it defensively (`jq -r '.permission_mode // empty'`) rather than assuming it is there. See [event-schemas.md](event-schemas.md) for the per-event input blocks.
 
 ## Event-Specific Input Fields
 
@@ -23,7 +24,7 @@ Every hook receives these fields:
 | ------------------------ | ------- | ------------------ | --------------------------------------------- |
 | `tool_name`              | string  | All four           | Name of the tool                              |
 | `tool_input`             | object  | All four           | Arguments sent to the tool (see tool schemas) |
-| `tool_result`            | string  | PostToolUse        | Tool execution result                         |
+| `tool_response`          | any     | PostToolUse        | Tool's return value                           |
 | `tool_use_id`            | string  | PostToolUse        | Unique tool use identifier                    |
 | `error`                  | string  | PostToolUseFailure | Error message from the failed tool            |
 | `is_interrupt`           | boolean | PostToolUseFailure | Whether failure was caused by user interrupt  |

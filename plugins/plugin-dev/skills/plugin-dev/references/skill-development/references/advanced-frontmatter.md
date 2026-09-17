@@ -125,7 +125,7 @@ Both approaches delegate work to a sub-agent, but they serve different design ne
 |---|---|---|
 | **Interface** | Declarative YAML + markdown body | Imperative prompt string |
 | **Triggering** | Automatic (description matching) | Manual (caller decides when) |
-| **Context** | Inherits parent context, shares prompt cache | Fresh start, no inherited context |
+| **Context** | Separate context — does not inherit conversation history, but shares the prompt cache | Separate context — does not inherit conversation history, no cache sharing |
 | **Task prompt** | SKILL.md body (static) | Whatever you pass at runtime (dynamic) |
 | **System prompt** | From agent type or agent definition | From `subagent_type` |
 

@@ -119,7 +119,7 @@ The Skill tool has a character budget limiting how many command/skill descriptio
 
 ### How Budget Works
 
-1. Items are sorted by priority (project, then user, then plugin)
+1. Items are sorted by budget admission order (project, then user, then plugin) — this is not the Enterprise > Personal > Project > Plugin name-shadowing precedence, which resolves name collisions instead
 2. Descriptions are added until budget exhausted
 3. Items exceeding budget are not visible to Claude
 4. More concise descriptions = more items visible

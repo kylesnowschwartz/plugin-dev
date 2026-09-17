@@ -761,6 +761,8 @@ The `autoMode.classifyAllShell` setting controls how shell commands are classifi
 
 > **CC 2.1.271 — inline `[BANG]` commands are no longer classified.** A skill's or slash command's inline `[BANG]` shell commands bypass the classifier entirely in auto mode and follow **default-mode permission rules** instead, regardless of `classifyAllShell`. A command that no allow or deny rule decides runs as a reviewed tool call. Plugin authors gate inline `[BANG]` commands with ordinary `permissions.allow`/`permissions.deny` rules — reasoning about classifier behavior no longer describes what happens.
 
+**Which classifier runs (CC 2.1.273).** On Bedrock, Vertex and Foundry, auto mode now uses the **local** classifier by default. Set `CLAUDE_CODE_AUTO_MODE_SERVER=1` to use the platform's server-side classifier instead. This changes *which* classifier renders the verdict, not *which* commands get classified — the `classifyAllShell` and inline `[BANG]` rules above are unaffected. Note that sessions on these platforms are documented to start in `default` (Manual) mode rather than auto mode, which limits how often the difference is observable.
+
 **Use cases:**
 
 - High-security environments requiring review of all shell operations

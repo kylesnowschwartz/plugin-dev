@@ -38,6 +38,12 @@ Foreground agents should only be used when the very next action depends on their
 - Reserve foreground for critical-path dependencies
 - Prefer launching multiple background agents in parallel over sequential foreground calls
 
+**Automatic mid-run backgrounding (`CLAUDE_AUTO_BACKGROUND_TASKS`):** Setting `CLAUDE_AUTO_BACKGROUND_TASKS=1` force-enables automatic backgrounding of long-running agent tasks — a subagent dispatched in the foreground moves to the background after roughly two minutes. Plugin code that consumes agent output through the SDK or `--output-format stream-json` must therefore be prepared for a foreground dispatch to become a background one mid-run.
+
+> **CC 2.1.273:** Fixed the SDK and `--output-format stream-json` dropping a subagent's remaining messages and final report after it was moved to the background mid-run. On builds before 2.1.273 a completed agent could surface with no report under this env var.
+>
+> **CC 2.1.273:** Fixed sub-agents and background agents being reported as failed, with their result never delivered, when the final streamed reply omitted token usage or carried no model id.
+
 ## Sub-Agent Nesting (CC 2.1.172)
 
 Sub-agents can now spawn their own sub-agents, enabling complex orchestration patterns. Previously, sub-agents could not spawn further sub-agents.
@@ -302,3 +308,14 @@ The SendFeedback tool enables drafting feedback reports directly within Claude C
 - Plugin agents inherit access to this tool
 - Can be used in conjunction with other diagnostic tools
 - Useful for agents designed to help users report issues
+
+## Recently Added Tool Names
+
+New built-in tool names appear in Claude Code releases and may show up in an agent's `tools:` allowlist or a command's `allowed-tools`. Recorded here for roster completeness — neither is plugin-authoring surface on its own:
+
+| Tool | Added | What it does |
+| --- | --- | --- |
+| `FetchInboxMessage` | CC 2.1.273 | Reads Remote Control inbox messages, distinguishing verified owner relays from untrusted third-party text |
+| `AppifactRepl` | CC 2.1.272 | JavaScript runner, available only when supplied and directed by Artifact instructions |
+
+> Source: the Claude Code system-prompts repository. Neither tool appears in the upstream `CHANGELOG.md`, so treat these entries as lower-confidence than changelog-sourced facts.

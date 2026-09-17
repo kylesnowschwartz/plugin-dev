@@ -394,9 +394,11 @@ Provide a report.
 
 ## Length Guidelines
 
+Agent system prompts are measured in **characters**, not words: the validation rule is 20-10,000 characters, and [`../scripts/validate-agent.sh`](../scripts/validate-agent.sh) warns above 10,000 characters. The bands below are character counts.
+
 ### Minimum Viable Agent
 
-**~500 words minimum:**
+**~500-1,500 characters:**
 
 - Role description
 - 3 core responsibilities
@@ -405,7 +407,7 @@ Provide a report.
 
 ### Standard Agent
 
-**~1,000-2,000 words:**
+**~1,500-3,000 characters:**
 
 - Detailed role and expertise
 - 5-8 responsibilities
@@ -416,7 +418,7 @@ Provide a report.
 
 ### Comprehensive Agent
 
-**~2,000-5,000 words:**
+**~3,000-8,000 characters:**
 
 - Complete role with background
 - Comprehensive responsibilities
@@ -426,7 +428,7 @@ Provide a report.
 - Many edge cases
 - Examples within system prompt
 
-**Avoid > 10,000 words:** Too long, diminishing returns.
+**Avoid > 10,000 characters:** Exceeds the documented validation limit, and [`../scripts/validate-agent.sh`](../scripts/validate-agent.sh) flags it.
 
 ## Testing System Prompts
 

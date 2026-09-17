@@ -290,7 +290,7 @@ input=$(cat)
 tool_name=$(echo "$input" | jq -r '.tool_name')
 
 if [ "$tool_name" = "Bash" ]; then
-  command=$(echo "$input" | jq -r '.tool_result')
+  command=$(echo "$input" | jq -r '.tool_response')
   if [[ "$command" == *"test"* ]]; then
     count=$(cat /tmp/test-count-$$ 2>/dev/null || echo "0")
     echo $((count + 1)) > /tmp/test-count-$$

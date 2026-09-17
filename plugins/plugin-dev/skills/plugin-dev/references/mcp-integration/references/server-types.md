@@ -145,7 +145,7 @@ Connect to hosted MCP servers via HTTP with server-sent events for streaming. Be
 2. **Handshake**: MCP protocol negotiation
 3. **Streaming**: Server sends events via SSE
 4. **Requests**: Client sends HTTP POST for tool calls
-5. **Reconnection**: Automatic reconnection on disconnect
+5. **Reconnection**: Automatic, but bounded — see [Reconnection is bounded](#reconnection-is-bounded) below
 
 ### Authentication
 
@@ -361,7 +361,7 @@ Connect to MCP servers via WebSocket for real-time bidirectional communication. 
 2. **Connection**: Persistent bidirectional channel
 3. **Messages**: JSON-RPC over WebSocket
 4. **Heartbeat**: Keep-alive messages
-5. **Reconnection**: Automatic on disconnect
+5. **Reconnection**: Automatic, but bounded — see [Reconnection is bounded](#reconnection-is-bounded) below
 
 ### Use Cases
 
@@ -394,18 +394,28 @@ Connect to MCP servers via WebSocket for real-time bidirectional communication. 
 - Handle out-of-order messages
 - Buffer during disconnection
 
+## Reconnection Is Bounded
+
+Automatic reconnection applies to **remote transports only** — HTTP, SSE, and WebSocket. A stdio server is never reconnected.
+
+Reconnection is not unlimited. Claude Code retries **5 times with exponential backoff** — waits of 1s, 2s, 4s and 8s between attempts, doubling up to a 30s cap — after which the server is marked failed and its tools stop being available for the rest of the session.
+
+> **CC 2.1.273:** When an MCP server disconnects mid-session and automatic reconnection gives up, Claude Code now notifies the user and points at `/mcp`. Before this, the give-up was silent.
+
+Design implication for plugin authors: a plugin that bundles a remote MCP server cannot assume its tools stay reachable for the whole session. Make agents and commands that depend on those tools degrade gracefully when the tools disappear, rather than assuming a dropped connection will always heal.
+
 ## Comparison Matrix
 
-| Feature       | stdio           | SSE            | HTTP             | WebSocket     |
-| ------------- | --------------- | -------------- | ---------------- | ------------- |
-| **Transport** | Process         | HTTP/SSE       | HTTP             | WebSocket     |
-| **Direction** | Bidirectional   | Server→Client  | Request/Response | Bidirectional |
-| **State**     | Stateful        | Stateful       | Stateless        | Stateful      |
-| **Auth**      | Env vars        | OAuth/Headers  | Headers          | Headers       |
-| **Use Case**  | Local tools     | Cloud services | REST APIs        | Real-time     |
-| **Latency**   | Lowest          | Medium         | Medium           | Low           |
-| **Setup**     | Easy            | Medium         | Easy             | Medium        |
-| **Reconnect** | Process respawn | Automatic      | N/A              | Automatic     |
+| Feature       | stdio                       | SSE                  | HTTP                 | WebSocket            |
+| ------------- | --------------------------- | -------------------- | -------------------- | -------------------- |
+| **Transport** | Process                     | HTTP/SSE             | HTTP                 | WebSocket            |
+| **Direction** | Bidirectional               | Server→Client        | Request/Response     | Bidirectional        |
+| **State**     | Stateful                    | Stateful             | Stateless            | Stateful             |
+| **Auth**      | Env vars                    | OAuth/Headers        | Headers              | Headers              |
+| **Use Case**  | Local tools                 | Cloud services       | REST APIs            | Real-time            |
+| **Latency**   | Lowest                      | Medium               | Medium               | Low                  |
+| **Setup**     | Easy                        | Medium               | Easy                 | Medium               |
+| **Reconnect** | None (process respawn only) | Bounded (5 attempts) | Bounded (5 attempts) | Bounded (5 attempts) |
 
 ## Choosing the Right Type
 
@@ -421,7 +431,7 @@ Connect to MCP servers via WebSocket for real-time bidirectional communication. 
 - Connecting to hosted services
 - Need OAuth authentication
 - Using official MCP servers (Asana, GitHub)
-- Want automatic reconnection
+- Want automatic reconnection (bounded — see [Reconnection Is Bounded](#reconnection-is-bounded))
 
 **Use HTTP when:**
 
