@@ -6,6 +6,8 @@ This reference covers frontmatter fields that go beyond the core `name` and `des
 
 Plugin skills declared via `"skills": ["./"]` use the skill's frontmatter `name` for invocation instead of the directory basename. Ensure the `name` field in frontmatter matches how users should invoke the skill.
 
+> **Avoid names that collide with built-in `Object` properties (CC 2.1.277).** A skill or legacy command named `constructor`, `toString`, `hasOwnProperty`, and so on used to crash `/plugin` → Installed and `/skills`. CC 2.1.277 fixed the crash, but such a name still reads as a bug to users and breaks on older Claude Code versions — pick a descriptive, domain-specific name instead.
+
 ## Frontmatter Field Case Acceptance (CC 2.1.186)
 
 Skill frontmatter fields accept multiple case conventions: `kebab-case`, `snake_case`, and `camelCase`. The following are all equivalent:
@@ -339,7 +341,7 @@ hooks:
   Stop:
     - hooks:
         - type: prompt
-          prompt: 'Verify that all generated code has tests. Return {"decision": "stop"} if satisfied or {"decision": "continue", "reason": "missing tests for..."} if not.'
+          prompt: 'Verify that all generated code has tests. Return {"decision": "block", "reason": "missing tests for..."} if any generated code lacks tests. Return {} if every file is covered.'
 ```
 
 ## Skill Visibility Budget

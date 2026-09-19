@@ -216,6 +216,7 @@ Each of these fields points at where a component type lives. Setting one changes
 | `outputStyles`          | `output-styles/`       | Replaces the default — the directory is not auto-loaded           |
 | `experimental.themes`   | `themes/`              | Replaces the default — the directory is not auto-loaded           |
 | `experimental.monitors` | `monitors/monitors.json` | Replaces the default — the file is read only when omitted       |
+| `workflows`             | `workflows/`           | Replaces the default — the directory is not auto-loaded           |
 | `hooks`                 | `hooks/hooks.json`     | Merges — every declared source combines with the default          |
 | `mcpServers`            | `.mcp.json`            | Merges — every declared source combines with the default          |
 | `lspServers`            | `.lsp.json`            | Merges — every declared source combines with the default          |
@@ -440,6 +441,32 @@ Output style files are markdown with YAML frontmatter (`name`, `description`, `k
 - Bundling multiple style options for users to choose from
 - Offering specialized output modes for different workflows
 
+#### workflows
+
+**Type**: String or Array of strings
+**Default**: `"./workflows"`
+**Example**: `"./scripts/workflows.js"`
+
+Path to a workflows directory or a `.js` file, relative to the plugin root.
+
+**Directory**:
+
+```json
+{
+  "workflows": "./automation"
+}
+```
+
+**Individual files**:
+
+```json
+{
+  "workflows": ["./workflows/review.js", "./automation/release.js"]
+}
+```
+
+**Behavior**: Replaces the default `workflows/` auto-load — once this field is set, the `workflows/` directory is **not** auto-loaded. List its files here too if you want both.
+
 ### experimental (CC 2.1.129)
 
 **Type**: Object
@@ -558,6 +585,26 @@ This is the opposite of the model-armed **Monitor tool**, whose watches always c
 | Streaming output             | ✅       | ❌      |
 
 **Output format**: Each stdout line from a monitor command is delivered to the model as a task notification.
+
+### types (CC 2.1.277)
+
+**Type**: String
+**Default**: none
+**Example**: `"./types/my-plugin.d.ts"`
+
+Path to the plugin's **type contract**, relative to the plugin root and starting with `./`. The path must end in `.d.ts` and may not contain a `..` segment (`types must stay inside the plugin directory`).
+
+The contract is a **self-contained** `.d.ts` — no `import`, no `export ... from`, no `require`, no `/// <reference>`. It exports the types of the noun the plugin's hooks module adds in `engine.create` at its top level, and declares that noun in a single block:
+
+```ts
+declare module 'claude-code' {
+  interface EngineInterface {
+    myPluginApi: MyPluginApi;
+  }
+}
+```
+
+Nothing else belongs in the file. `claude plugin validate` checks it, and `/plugin-types` copies each enabled plugin's contract to `.claude/types/claude-code-plugins/<plugin>.d.ts`, indexing them in `claude-code-plugins.d.ts` so dependent plugins can type against them. See [The `/plugin-types` command](#the-plugin-types-command-cc-21277) below.
 
 ### defaultEnabled (CC 2.1.154)
 
@@ -748,6 +795,24 @@ When Claude Code loads components, the manifest decides which locations are scan
 3. **Merging fields** (`hooks`, `mcpServers`, `lspServers`): the default file is read and every declared source combines with it.
 
 4. **Registration**: all discovered components register with no overwriting. Name conflicts cause errors.
+
+## The `/plugin-types` command (CC 2.1.277)
+
+`/plugin-types [dir]` is a **local slash command** (not a `claude plugin` subcommand, and it also runs non-interactively). It writes three TypeScript declaration files for typing a hooks module against the current session:
+
+| File | Contents |
+| --- | --- |
+| `claude-code.d.ts` | The plugin API's own TypeScript declarations |
+| `claude-code-plugins.d.ts` | An index over the **enabled** plugins' type contracts |
+| `claude-code-mcp.d.ts` | The inputs of the MCP tools this session had, from each server's `tools/list` `inputSchema` |
+
+Each enabled plugin's contract — the file its manifest names in [`types`](#types-cc-21277) — is copied to `.claude/types/claude-code-plugins/<plugin>.d.ts` and indexed in `claude-code-plugins.d.ts`, so a dependent plugin can type against another plugin's API.
+
+`claude-code-mcp.d.ts` merges into the engine's `ToolCallInput`, so a check on `e.tool === "mcp__<server>__<tool>"` narrows to that tool's input type.
+
+Point the plugin's `tsconfig.json` or `jsconfig.json` at the generated declarations to get type checking on a hooks module. `claude plugin validate` checks the contract file — "validates the plugin as the engine reads it".
+
+> The declarations describe **this session**: `claude-code-plugins.d.ts` covers the plugins that were enabled and `claude-code-mcp.d.ts` the MCP servers that were connected when the command ran. Regenerate after enabling a plugin or adding a server.
 
 ## Validation
 

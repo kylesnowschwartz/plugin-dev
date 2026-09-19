@@ -22,6 +22,14 @@ Memory files are loaded in priority order (highest first):
 
 Higher-priority instructions take precedence when there are conflicts.
 
+### AGENTS.md fallback (CC 2.1.277)
+
+In a project with **no CLAUDE.md**, Claude Code reads `AGENTS.md` as the project instructions instead. It is a fallback, not an addition: a project that has a CLAUDE.md does not also load AGENTS.md. Users change this under **"Project instructions"** in `/config`. Not yet available on Bedrock, Vertex or Foundry.
+
+Claude Code also attaches **nested** instruction files found below the session's working directory, framing them by path; CC 2.1.275 made that reminder cover CLAUDE.md and AGENTS.md alike.
+
+**Implications for plugin developers:** a plugin that inspects, generates, or instructs users to edit "the project's CLAUDE.md" should handle an AGENTS.md-only repository — writing a new CLAUDE.md into such a project silently takes over as the instruction file and stops AGENTS.md from being read at all. Whether the agent frontmatter field `omitClaudeMd` also suppresses AGENTS.md is undocumented; see `../../agent-development/references/advanced-agent-fields.md`.
+
 **Why local is lowest priority:** Unlike typical configuration systems where ".local" means "override", Claude Code's `.local.md` files are for personal, project-specific notes and preferences that shouldn't override team standards. The hierarchy ensures organizational policy (managed) > team standards (project) > personal preferences (user/local).
 
 ### Import Syntax

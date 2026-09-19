@@ -102,6 +102,12 @@ Claude Code supports four transport types. Pick by where the server runs and how
 
 For the full decision guide ("Choosing the Right Type"), per-type configuration, process/connection lifecycle, comparison matrix, migration between types, multiple-server setups, and per-transport security, see `references/server-types.md`. Ready-to-copy configs live in `examples/` (`stdio-server.json`, `sse-server.json`, `http-server.json`, `ws-server.json`).
 
+> **A plugin cannot declare `"type": "sdk"` (CC 2.1.274).** `sdk` names an **in-process** server that only an SDK host application can register. A `"type": "sdk"` entry written into a `.mcp.json`, a settings file, a plugin, or an agent frontmatter `mcpServers` block is **skipped with a warning** — not an error, so the session starts normally and the server's tools simply never appear. If a plugin needs a local server, ship it as `stdio`.
+
+### First-turn startup wait (CC 2.1.274)
+
+`CLAUDE_CODE_MCP_STARTUP_WAIT_MS` bounds how long the **first non-interactive turn** waits for MCP servers that are still connecting; `0` means do not wait. This is the documented lever for a plugin whose MCP server is slow to start under `claude -p` — without it, a slow server either delays the first turn or misses it entirely.
+
 ## Environment Variable Expansion
 
 All MCP configurations support environment variable substitution:
@@ -137,9 +143,20 @@ All MCP configurations support environment variable substitution:
 
 Env vars support fallback values: `${VAR:-default_value}`. Supported in `command`, `args`, `env`, `url`, and `headers` fields.
 
+> **Secrets resolved from `${VAR}` are redacted from output (CC 2.1.274-2.1.275).** MCP connection errors and the MCP login tool description no longer echo values resolved from `${VAR}` placeholders, and tokens embedded in git, ssh and marketplace URLs are stripped from messages, logs and `claude plugin marketplace list`. Keep secrets in `${VAR}` placeholders rather than inlining them — an inlined secret gets none of this protection.
+
 Claude Code also injects runtime variables: MCP server identity variables for `headersHelper` scripts (`CLAUDE_CODE_MCP_SERVER_NAME`, `CLAUDE_CODE_MCP_SERVER_URL`, CC 2.1.85) — see `references/authentication.md` — and per-session variables (`CLAUDE_CODE_SESSION_ID`, `CLAUDECODE=1`) covered in `references/operations.md`.
 
 **Best practice:** Document all required environment variables in plugin README.
+
+## Transport and Protocol Behavior (CC 2.1.274)
+
+- **Per-server `timeout` is honored past the Streamable HTTP cap.** A server's configured `timeout` now applies beyond the ~5-minute default ceiling, so a long-running remote tool can be given the time it needs.
+- **Legacy HTTP+SSE servers connect again.** An `http` server that speaks only the older HTTP+SSE transport is no longer rejected.
+- **Prompts and resources refresh on list-changed notifications** even when the server did not declare `listChanged` in its capabilities.
+- **A 403 `insufficient_scope` names the missing permissions** and points at `/mcp`, instead of being reported as an expired sign-in.
+- **Client and protocol defaults.** Bedrock, Vertex, Foundry and telemetry-disabled installs default to the **v2 MCP client** and **MCP 2026-07-28** negotiation. Opt out with `MCP_SDK_GENERATION=v1` or `MCP_PROTOCOL_NEGOTIATION=legacy` if a plugin's server only works against the older behavior.
+- **Non-interactive startup.** `--strict-mcp-config` with an empty `--mcp-config` no longer holds the first non-interactive turn for `MCP_TIMEOUT`, and `--input-format stream-json` no longer waits 2 seconds for still-connecting servers. Use `CLAUDE_CODE_MCP_STARTUP_WAIT_MS` when a plugin's server genuinely needs the first turn to wait.
 
 ## MCP Connectors vs MCP Servers (CC 2.1.209)
 

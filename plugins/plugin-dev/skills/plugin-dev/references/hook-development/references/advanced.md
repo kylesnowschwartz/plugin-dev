@@ -71,8 +71,10 @@ Hooks support a declarative `if` field using permission rule syntax to filter wh
 }
 ```
 
-This hook fires only for Bash commands starting with `git`. The `if` field uses the same permission rule syntax as `settings.json` allow/deny rules (e.g., `Bash(npm *)`, `Edit(src/**)`, `Write(tests/**)`). Combine with `matcher` for two-level filtering: `matcher` selects the event type, `if` narrows to specific invocations.
+This hook fires only for Bash commands starting with `git`. The `if` field uses the same permission rule syntax as `settings.json` allow/deny rules (e.g., `Bash(npm *)`, `Edit(src/**)`, `Read(docs/**)`). Combine with `matcher` for two-level filtering: `matcher` selects the event type, `if` narrows to specific invocations.
 
+> **Use `Edit(...)`, never `Write(...)`, for a file-writing condition.** The `if` field inherits the same matching rules as `settings.json`: `Edit(path)` covers Edit, Write and NotebookEdit, and `Read(path)` covers Read and Grep. A `Write(path)`, `NotebookEdit(path)` or `Glob(path)` condition is accepted but never matches, so the hook silently never fires.
+>
 > **CC 2.1.88:** Fixed `if` field filtering to properly match compound commands (e.g., `ls && git push`) and commands with environment variable prefixes (e.g., `FOO=bar git push`). Previously, such commands could bypass `if` patterns.
 >
 > **CC 2.1.178:** Added tool parameter matching syntax (e.g., `Agent(model:opus)`) for granular permission control based on tool input parameters using wildcards.
@@ -228,8 +230,9 @@ if [ -f "$cache_file" ]; then
   fi
 fi
 
-# Perform validation
-result='{"decision": "approve"}'
+# Perform validation. PreToolUse approvals use hookSpecificOutput.permissionDecision --
+# the top-level {"decision": "approve"} form is deprecated and silently ignored.
+result='{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}'
 
 # Cache result
 echo "$result" > "$cache_file"
@@ -750,7 +753,7 @@ hooks:
   Stop:
     - hooks:
         - type: prompt
-          prompt: 'Verify all generated code has tests. Return {"decision": "stop"} if satisfied or {"decision": "continue", "reason": "missing tests"} if not.'
+          prompt: 'Verify all generated code has tests. Return {"decision": "block", "reason": "missing tests"} if any generated code lacks tests. Return {} if every file is covered.'
 ```
 
 ## Agent Hook Type

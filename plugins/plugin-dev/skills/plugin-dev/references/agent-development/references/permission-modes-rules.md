@@ -88,16 +88,16 @@ Space before `*` means word boundary: `Bash(ls *)` matches `ls -la` but NOT `lso
 
 `permissions.blockReadsOutsideWorkingDirectories` is a boolean setting that makes the file tools refuse paths outside the working directories in **every** permission mode. It is an explicit exception to the mode table above: with it on, recognized file-reading Bash commands prompt even in `auto` and `bypassPermissions` mode. As of CC 2.1.273 it also excludes a memory directory chosen by a repository's settings from the prompt, recall, indexing, and memory extraction.
 
-### Path Patterns for Edit/Read/Write
+### Path Patterns for Edit/Read
 
-Path specifiers follow the gitignore specification:
+Path specifiers follow the gitignore specification. Use `Edit(...)` for writes and `Read(...)` for reads — see [Tool Specifiers](#tool-specifiers) for why `Write(...)`, `NotebookEdit(...)` and `Glob(...)` path rules match nothing:
 
 | Pattern  | Meaning                                      | Example                |
 | -------- | -------------------------------------------- | ---------------------- |
 | `//path` | Absolute from filesystem root                | `Edit(//etc/config)`   |
 | `~/path` | Relative to home directory                   | `Read(~/Documents/**)` |
 | `/path`  | Relative to settings file location           | `Edit(/src/**)`        |
-| `./path` | Relative to current directory                | `Write(./output/*)`    |
+| `./path` | Relative to current directory                | `Edit(./output/*)`     |
 | `path`   | Relative to current directory (same as `./`) | `Edit(src/**)`         |
 | `*`      | Single directory level wildcard              | `Read(src/*)`          |
 | `**`     | Recursive directory wildcard                 | `Edit(src/**)`         |
@@ -190,13 +190,22 @@ Rules are specified in `settings.json` under `permissions`:
 
 ### Tool Specifiers
 
-| Pattern              | Matches                         | Example                              |
-| -------------------- | ------------------------------- | ------------------------------------ |
-| `ToolName`           | Any use of that tool            | `Read` — all file reads              |
-| `ToolName(argument)` | Tool with specific argument     | `Bash(npm test)` — only this command |
-| `ToolName(pattern*)` | Tool with wildcard argument     | `Bash(npm *)` — any npm command      |
-| `Edit(path)`         | Edit with gitignore-style path  | `Edit(src/**)` — edits in src/       |
-| `Write(path)`        | Write with gitignore-style path | `Write(tests/**)` — writes in tests/ |
+| Pattern              | Matches                                                    | Example                               |
+| -------------------- | ---------------------------------------------------------- | ------------------------------------- |
+| `ToolName`           | Any use of that tool                                       | `Read` — all file reads               |
+| `ToolName(argument)` | Tool with specific argument                                | `Bash(npm test)` — only this command  |
+| `ToolName(pattern*)` | Tool with wildcard argument                                | `Bash(npm *)` — any npm command       |
+| `Edit(path)`         | Edit, Write **and** NotebookEdit with gitignore-style path | `Edit(src/**)` — any write under src/ |
+| `Read(path)`         | Read **and** Grep with gitignore-style path                | `Read(~/Documents/**)` — reads there  |
+
+**Write only file-permission rules that Claude Code actually matches (CC 2.1.275).** File permission checks recognize exactly two path-rule prefixes:
+
+- `Edit(path)` covers **every file-writing tool** — Edit, Write and NotebookEdit.
+- `Read(path)` covers **reads** — Read and Grep.
+
+`Write(path)`, `NotebookEdit(path)` and `Glob(path)` are **accepted but never consulted**. A rule written in one of those forms parses, warns at startup, and then silently never fires — so a `deny` written as `Write(secrets/**)` grants no protection at all. Always write the file-writing rule as `Edit(...)`. The one documented exception is `Glob(path)`, which does take effect when passed via `--allowedTools`. See [Claude Code errors — is not matched by file permission checks](https://code.claude.com/docs/en/errors#is-not-matched-by-file-permission-checks).
+
+CC 2.1.275 fixed `/update-config` writing the unmatchable `Write(path)` form; the rule-matching behavior itself is long-standing, not new in that release.
 
 ### MCP Tool Patterns
 

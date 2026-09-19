@@ -93,6 +93,8 @@ Inside a subagent, `agent_id` and `agent_type` are also present. Event-specific 
 - `$CLAUDE_EFFORT` — current effort level (CC 2.1.133); also in hook input JSON as `effort.level`.
 - `$TMPDIR` — sandbox-writable temp directory. **CC 2.1.154:** set to the same sandbox-writable directory for both sandboxed and unsandboxed Bash commands, so scripts can rely on it regardless of sandbox mode.
 
+**Sandboxed writes to `hooks/` and `config/` (CC 2.1.275):** sandboxed Bash commands used to be refused when writing into a project directory named `hooks/` or `config/`. Since `hooks/` is a standard plugin directory name, this hit plugin authors specifically — a hook or setup script that generated files under the plugin's own `hooks/` directory failed under the sandbox. Both directory names now work.
+
 **Windows PowerShell (CC 2.1.126):** When the PowerShell tool is enabled on Windows, Claude treats PowerShell as the primary shell, so Bash-specific hook scripts may not run — consider cross-platform implementations.
 
 ## Matchers
@@ -162,6 +164,15 @@ An `mcp_tool` hook is accepted on every event, but it only runs where an MCP cli
 
 Plugin hooks merge with user hooks and run in parallel. Duplicates are deduplicated (command hooks by command string, HTTP hooks by URL). `disableAllHooks` cannot disable managed policy hooks.
 
+**A top-level `$schema` key is allowed in `hooks/hooks.json` (CC 2.1.274).** Point it at whatever JSON Schema your editor should validate against — Claude Code accepts the key and **ignores it at load time**. Earlier versions showed an "unknown key" notice for it. (Claude Code does not publish a hooks schema; supply your own, or one your editor tooling provides.)
+
+```json
+{
+  "$schema": "./hooks.schema.json",
+  "hooks": {}
+}
+```
+
 ## Performance
 
 All matching hooks run **in parallel** — they don't see each other's output and ordering is non-deterministic, so design them to be independent. Use command hooks for quick checks, prompt hooks for complex reasoning, cache results in temp files, `async: true` for logging, and `once: true` for one-time setup. See `references/advanced.md` for caching, hook-chaining-via-state, and parallel-optimization patterns.
@@ -195,7 +206,7 @@ This applies to function-hook plugins (those using the JSX runtime or direct Jav
 
 ## Critical Gotchas
 
-1. **`Setup` is not a session-lifecycle event.** It fires only for repository setup runs — the hidden CLI flags `--init` and `--init-only` fire it with `trigger: "init"`, and `--maintenance` fires it with `trigger: "maintenance"`. A normal `claude` launch never fires it, so per-session initialization belongs on `SessionStart` with matcher `startup`. `Setup` accepts command hooks only (HTTP hooks are skipped; prompt and agent hooks have no conversation context to run in).
+1. **`Setup` is not a session-lifecycle event.** It fires only for repository setup runs — the hidden CLI flags `--init` and `--init-only` fire it with `trigger: "init"`, and `--maintenance` fires it with `trigger: "maintenance"`. A normal `claude` launch never fires it, so per-session initialization belongs on `SessionStart` with matcher `startup`. `Setup` accepts **command and `mcp_tool`** hooks in config (HTTP hooks are skipped; prompt and agent hooks have no conversation context to run in). Note the `mcp_tool` nuance: a `Setup` `mcp_tool` hook is valid configuration but is *always* skipped at run time, because Setup fires before MCP servers are available — see the note above the Hook Events Reference table.
 2. **Shell profile noise breaks JSON parsing.** If `.bashrc`/`.zshrc` prints to stdout it contaminates output — redirect profile output to stderr.
 3. **SessionEnd hooks share a 1.5 second budget.** It is a total across all SessionEnd hooks, not per hook. A longer per-hook `timeout` raises the budget to match, up to 60 seconds (CC 2.1.268); `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` also extends hooks that declare no `timeout`.
 4. **Duplicate hooks are deduplicated.** Command hooks by command string, HTTP hooks by URL.

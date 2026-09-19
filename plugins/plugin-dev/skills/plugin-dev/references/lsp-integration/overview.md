@@ -323,6 +323,8 @@ Servers terminate when:
 - `shutdownTimeout` still governs how long Claude Code waits for a graceful exit before forcing termination
 - On CC versions before 2.1.269, document the leak for servers known to reject `shutdown`
 
+**A crashing LSP server no longer ends a background session (CC 2.1.277).** A background session (`claude --bg`) used to exit when a plugin's LSP server exited or closed its stdin — one flaky language server took the whole unattended run down with it. The session now survives. A plugin shipping an LSP server can therefore be used in `--bg` and CI runs without the server's stability becoming the session's stability, though the server's own features stop working until it restarts.
+
 ## Best Practices
 
 ### Performance

@@ -549,7 +549,7 @@ Settings follow precedence: Managed > CLI flags > Local (`.claude/settings.local
 
 ### syncClaudeAiPlugins Setting (CC 2.1.246)
 
-The `syncClaudeAiPlugins` setting controls whether plugins are synchronized from Claude.ai:
+The `syncClaudeAiPlugins` setting controls whether plugins are synchronized from Claude.ai. **Sync is ON by default (CC 2.1.275)** — for a terminal session signed in to a claude.ai account, the plugins enabled on that account sync into the session automatically. This setting is the **opt-out**:
 
 ```json
 {
@@ -579,7 +579,7 @@ The `syncClaudeAiPlugins` setting controls whether plugins are synchronized from
 
 ### syncClaudeAiSkills Setting
 
-Skills synced from claude.ai have their **own** control, separate from `syncClaudeAiPlugins`:
+Skills synced from claude.ai have their **own** control, separate from `syncClaudeAiPlugins`. Like plugin sync, skill sync is **ON by default (CC 2.1.275)** for a terminal session signed in to a claude.ai account, and this setting is the opt-out:
 
 ```json
 {
@@ -598,29 +598,30 @@ A `CLAUDE_CODE_SYNC_SKILLS` environment variable also exists.
 
 **Implications for plugin developers:** skills reaching a user through claude.ai sync can disappear from a session when an org policy changes, independently of anything in the plugin manifest. Do not assume a synced skill your plugin's docs reference will be present. Skills that ship inside a plugin are unaffected — they are installed with the plugin, not synced.
 
+Because sync defaults to on, the reverse also matters: an ordinary terminal session may already carry account-synced skills and plugins your plugin never installed. A synced skill can **shadow or collide with** a plugin skill of the same name, so pick distinctive skill names and do not assume your plugin's skill is the only one answering a given trigger.
+
 Still undocumented upstream: exactly how an organization turns Skills off, and whether that org toggle is the same control as `syncClaudeAiSkills`.
 
 Plugin settings files (`.local.md`) exist alongside Claude Code's broader memory and rules system. Understanding how CLAUDE.md imports, `.claude/rules/` path-specific rules, and the memory priority hierarchy interact with plugin content helps design plugins that complement rather than conflict with user configurations.
 
 See `references/memory-rules-system.md` for the full priority hierarchy, import syntax, and design implications.
 
-### Bash and Task Output Character Limits (CC 2.1.261)
+### Bash Output Character Limit (CC 2.1.261)
 
-Two new settings control the maximum output size for Bash commands and Task tool results:
+This setting controls the maximum output size for Bash commands:
 
 ```json
 {
-  "bashOutputMaxChars": 65536,
-  "taskOutputMaxChars": 65536
+  "bashOutputMaxChars": 65536
 }
 ```
 
 **Settings:**
 
 - **`bashOutputMaxChars`** — Maximum characters returned from Bash tool output (up to 128K)
-- **`taskOutputMaxChars`** — Maximum characters returned from Task tool/subagent output (up to 128K)
+- **`taskOutputMaxChars`** — **Deprecated (CC 2.1.277): no longer has any effect.** CC 2.1.277 removed the `TaskOutput` tool; Claude now reads a background task's output file with the `Read` tool instead, so neither this setting nor the `TASK_MAX_OUTPUT_LENGTH` environment variable changes anything. The key is still accepted so existing settings keep working — remove it rather than tuning it.
 
-**Default behavior:** Without these settings, output is truncated at 30K characters.
+**Default behavior:** Without this setting, output is truncated at 30K characters.
 
 **Use cases:**
 

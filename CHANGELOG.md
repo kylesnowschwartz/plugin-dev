@@ -7,6 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.47.0] - 2026-09-19
+
+Sync with Claude Code 2.1.274-2.1.278. Eighteen changelog-driven Must Update items (one promoted from May Update by Stage 2), five May Update items applied, and nine Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. `scripts/check-doc-drift.sh` was clean before and after the run, and the `docs/claude-code-facts.json` diff was `claude_code_version`-only.
+
+### Added
+
+- **plugin-structure**: `types` manifest field — the path to a plugin's TypeScript **type contract**, a self-contained `.d.ts` (no `import`, `export ... from`, `require` or `/// <reference>`) that declares the plugin's noun in a `declare module 'claude-code' { interface EngineInterface { ... } }` block. Must start with `./`, end in `.d.ts`, and contain no `..` segment; `claude plugin validate` checks it
+- **plugin-structure**: `/plugin-types` local slash command (CC 2.1.277) — writes `claude-code.d.ts`, `claude-code-plugins.d.ts` and `claude-code-mcp.d.ts`, copies each enabled plugin's contract to `.claude/types/claude-code-plugins/<plugin>.d.ts`, and merges MCP tool inputs into the engine's `ToolCallInput` so `e.tool === "mcp__<server>__<tool>"` narrows to that tool's input
+- **plugin-structure**: `workflows` manifest component-path field — previously named only in the resolution-order prose and missing from the field table, the per-field reference, and the replace/add/merge classification. Default `workflows/`, **replace** semantics
+- **hook-development**: `mcp_server` hook input field (CC 2.1.274) — an **object** (`name`, `source`) on exactly five events (PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest, PermissionDenied), with the verbatim trust rule that trust keys on `source`, never on the server name or the tool-name prefix, and the warning that `source` is an open set. Distinct from the existing `mcp_server_name` string on Elicitation/ElicitationResult, which is unchanged
+- **hook-development**: top-level `$schema` accepted and ignored in a plugin's `hooks/hooks.json` (CC 2.1.274)
+- **mcp-integration**: `CLAUDE_CODE_MCP_STARTUP_WAIT_MS` (CC 2.1.274), and a "Transport and Protocol Behavior" section — per-server `timeout` honored past the ~5-minute Streamable HTTP cap, legacy HTTP+SSE reconnection, list-changed refresh without a declared `listChanged`, scope-naming 403s, and the v2-client/MCP-2026-07-28 defaults with `MCP_SDK_GENERATION=v1` / `MCP_PROTOCOL_NEGOTIATION=legacy` opt-outs
+- **mcp-integration**: `"type": "sdk"` entries are skipped with a warning in `.mcp.json`, settings, plugins and agent files (CC 2.1.274) — only an SDK host can register an in-process server
+- **plugin-settings**: AGENTS.md fallback (CC 2.1.277) — read as project instructions in a project with **no** CLAUDE.md, changeable under "Project instructions" in `/config`, not yet on Bedrock/Vertex/Foundry
+- **agent-development**: "Subagent Results Are Delivered Under a Marked Header" (CC 2.1.277) — a subagent's report arrives indented under a header marking it as subagent output, so returned text cannot pass as the session's own instructions
+- **agent-development**: `SuggestPluginInstall` in the Recently Added Tool Names roster (CC 2.1.277)
+- **plugin-structure**: npm-source plugins are fetched with `npm pack --ignore-scripts` (CC 2.1.275) — `prepare`/`postinstall` never run, so a plugin cannot build or fetch at install time
+- **lsp-integration**: a background session (`claude --bg`) no longer exits when a plugin's LSP server exits or closes stdin (CC 2.1.277)
+
+### Changed
+
+- **agent-development**: **`Write(path)` permission rules match nothing.** `Edit(path)` covers every file-writing tool (Edit, Write, NotebookEdit) and `Read(path)` covers reads (Read, Grep); `Write(path)`, `NotebookEdit(path)` and `Glob(path)` are accepted, warn at startup, and are never consulted. plugin-dev had shipped `Write(path)` as a working rule form with a worked example, so a `deny` written that way granted no protection. Corrected in the tool-specifier table, the path-pattern example, and the hook `if`-field example. `Glob(path)` via `--allowedTools` is the one documented exception
+- **plugin-structure**: auto mode defaults to the **server-side** classifier (CC 2.1.278), which does not charge for classifier overhead; `CLAUDE_CODE_AUTO_MODE_SERVER=0` is now the opt-**out**. Both the default and the variable's polarity are the reverse of the CC 2.1.273 fact plugin-dev shipped one audit ago
+- **plugin-settings**: `taskOutputMaxChars` marked deprecated — CC 2.1.277 removed the `TaskOutput` tool, so neither it nor `TASK_MAX_OUTPUT_LENGTH` has any effect. `bashOutputMaxChars` is unaffected and stays
+- **agent-development**: the permission alias map re-verified against the 2.1.278 binary — `Task`→`Agent`, `KillShell`/`KillBash`→`TaskStop`, `ListPeers`→`ListAgents`, `Brief`→`SendUserMessage`. The `BashOutput`/`AgentOutput`→`TaskOutput` alias documented through CC 2.1.273 is gone
+- **marketplace-structure**: `skipLfs` has **no effect** (CC 2.1.274) — plugin and marketplace clones always leave Git LFS files as pointers. The key still parses, so both schema rows were rewritten rather than removed; plugins shipping LFS assets need `git lfs pull`
+- **plugin-settings** / **skill-development**: claude.ai skill and plugin sync is **ON by default** for terminal sessions signed in to a claude.ai account (CC 2.1.275). Both settings had been documented only in their `false` form with no stated default; an account-synced skill can shadow a plugin skill of the same bare name
+- **plugin-structure**: `--marketplace <source>` documented as **slash-command-only**. `/plugin install <plugin> --marketplace <source>` (CC 2.1.275) offers to add the marketplace first; the `claude plugin install` CLI has no such flag and takes `<plugin>@<marketplace>`
+- **hook-development**: Stop prompt hooks send a 500-character condition label on repeat blocks rather than the whole prompt (CC 2.1.274); `SubagentStop` with a specific `matcher` no longer fires for a subagent whose agent type is empty (CC 2.1.275); sandboxed Bash can write to project directories named `hooks/` or `config/` (CC 2.1.275)
+- **marketplace-structure**: one malformed `strictKnownMarketplaces` or `blockedMarketplaces` entry no longer disables the whole enterprise marketplace policy (CC 2.1.277) — the old behavior was fail-open, and plugin-dev already shipped the wildcard examples it attaches to
+- **skill-development**: naming guidance against skill and command names that collide with built-in `Object` properties (`constructor`, `toString`), which crashed `/plugin` → Installed before CC 2.1.277
+- **mcp-integration**: secrets resolved from `${VAR}` placeholders are redacted from MCP errors, the login tool description, logs and `claude plugin marketplace list` (CC 2.1.274-2.1.275)
+
+### Fixed
+
+Nine Stage 2-confirmed `doc-drift-auditor` findings — eight below; the ninth, the `workflows` field-table gap, is under **Added**:
+
+- **plugin-validator agent**: restricted hook `type` to `command` or `prompt`, so the shipped validator reported valid `http`, `agent` and `mcp_tool` hooks as errors — settled by `docs/claude-code-facts.json`, whose `hook_types` lists all five. Also required `allowed-tools` to be an array, rejecting the canonical comma-separated spelling
+- **hook-development** / **skill-development**: two prompt-hook examples told the model to return `{"decision": "stop"}` / `{"decision": "continue"}` on a `Stop` hook. Neither value exists — the contract is `{"decision": "block", "reason": …}`, and `continue` is a separate top-level boolean. A hook copied from either example failed open silently
+- **hook-development**: a PreToolUse caching example emitted `{"decision": "approve"}`, the exact field the same topic's overview lists as deprecated; rewritten to `hookSpecificOutput.permissionDecision`
+- **plugin-structure**: `headless-ci-mode.md` (twice) and `github-actions.md` attributed context loading and headless usability to `user-invocable: false`. The field only controls `/`-menu visibility — model invocation and auto-discovery are on in both rows of the visibility table, so the advice hid a skill from users for no headless benefit
+- **hook-development**: the flag-file pattern demanded a Claude Code restart after touching the flag file, contradicting its own script, which tests for the file on every invocation
+- **command-development**: `allowed-tools` typed "Comma-separated string" in the frontmatter reference against "String/Array" in the overview. Settled against the 2.1.278 binary — both forms parse, and the **overview** was the correct side; a YAML-list example was added to match the adjacent `disallowed-tools` entry
+- **hook-development**: the Critical Gotchas entry said `Setup` accepts command hooks only, two sections after the same file documents Command + MCP tool
+
+### Notes
+
+- `AskUserQuestion` headless availability remains **unresolved** for a fourth consecutive audit — Stage 2 marked it unknown (nothing in `docs/claude-code-facts.json` or the 2.1.278 binary settles it) and both cited locations were left unedited
+- Whether `omitClaudeMd` suppresses **AGENTS.md** is undocumented; the field's own description names CLAUDE.md only. Labelled explicitly unresolved rather than extending the guarantee either way
+- `AppifactRepl` was reclassified by Stage 2: the system-prompts "REMOVED" entry retired the *prompt text*, but the 2.1.278 binary still ships the tool behind `isAppifactReplToolEnabled()`. The roster row was kept and annotated rather than deleted
+- Stage 1 caught a WebFetch summarization of the upstream changelog hallucinating two nonexistent version headings (`2.1.279`, `2.1.280`) whose bodies duplicated 2.1.278 and 2.1.277; Stage 2 independently re-fetched the raw file and confirmed the range ends at 2.1.278
+- `sandbox.excludedCommands` was demoted to No Action — 0 hits across the shipped plugin, so there was no claim to correct
+
 ## [0.46.0] - 2026-09-16
 
 Sync with Claude Code 2.1.272-2.1.273. Six changelog-driven Must Update items (two promoted from May Update by Stage 2), eight May Update items applied, and twelve Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. CC 2.1.272 was "Bug fixes and reliability improvements" with no itemized entries, so every changelog-driven item comes from 2.1.273. `scripts/check-doc-drift.sh` was clean before and after the run, and the `docs/claude-code-facts.json` diff was `claude_code_version`-only.

@@ -292,6 +292,8 @@ claude plugin install plugin-name@marketplace --scope local    # Personal projec
 claude plugin install plugin-name@marketplace --config API_ENDPOINT=https://api.example.com --config MAX_RESULTS=50
 ```
 
+**`--marketplace` is a slash-command flag, not a CLI flag (CC 2.1.275).** The `/plugin install` slash command accepts `/plugin install <plugin> --marketplace <source>`, which **offers to add the marketplace before installing** — useful when the marketplace is not yet registered. It also accepts the `<plugin>@<marketplace>` form; supplying both at once is an error ("Name the marketplace once"). The `claude plugin install` **CLI has no `--marketplace` flag** — use `<plugin>@<marketplace>` there, as every example above does. Its options are `--accept-command`, `--config`, `--json`, `--registry`, `-s`/`--scope`, and `-y`/`--yes`.
+
 Installing a plugin that declares `userConfig` does not prompt for the values. The install succeeds and prints `<N> userConfig option(s) not yet set — run /plugin configure <plugin> in Claude Code, or pass --config KEY=VALUE.`, and until they are set the session has no `CLAUDE_PLUGIN_OPTION_*` variables. `--config` is the unattended path; `/plugin configure <plugin>` is the interactive one.
 
 ### Management
@@ -761,7 +763,9 @@ The `autoMode.classifyAllShell` setting controls how shell commands are classifi
 
 > **CC 2.1.271 — inline `[BANG]` commands are no longer classified.** A skill's or slash command's inline `[BANG]` shell commands bypass the classifier entirely in auto mode and follow **default-mode permission rules** instead, regardless of `classifyAllShell`. A command that no allow or deny rule decides runs as a reviewed tool call. Plugin authors gate inline `[BANG]` commands with ordinary `permissions.allow`/`permissions.deny` rules — reasoning about classifier behavior no longer describes what happens.
 
-**Which classifier runs (CC 2.1.273).** On Bedrock, Vertex and Foundry, auto mode now uses the **local** classifier by default. Set `CLAUDE_CODE_AUTO_MODE_SERVER=1` to use the platform's server-side classifier instead. This changes *which* classifier renders the verdict, not *which* commands get classified — the `classifyAllShell` and inline `[BANG]` rules above are unaffected. Note that sessions on these platforms are documented to start in `default` (Manual) mode rather than auto mode, which limits how often the difference is observable.
+**Which classifier runs (CC 2.1.278).** Auto mode defaults to the **server-side** classifier for Claude API and Enterprise users, and on Bedrock, Vertex, Foundry and gateways. The server-side classifier **does not charge for classifier overhead**, and Claude Code warns when a session falls back to a billed classifier. Set `CLAUDE_CODE_AUTO_MODE_SERVER=0` to opt **out** on Bedrock, Vertex, Foundry and gateways. The `Auto mode server` row in `/status` shows which classifier the current session uses. This changes *which* classifier renders the verdict, not *which* commands get classified — the `classifyAllShell` and inline `[BANG]` rules above are unaffected. See [auto-mode classifier billing](https://code.claude.com/docs/en/auto-mode-classifier-billing).
+
+> This reverses the CC 2.1.273 behavior, where Bedrock/Vertex/Foundry defaulted to the **local** classifier and `CLAUDE_CODE_AUTO_MODE_SERVER=1` opted in to the server-side one. Both the default and the variable's polarity flipped in CC 2.1.278.
 
 **Use cases:**
 
@@ -967,6 +971,8 @@ CC 2.1.221 covered installation. CC 2.1.268 extends the same behavior to enable 
 claude plugin install npm-package-name
 claude plugin install pip-package-name
 ```
+
+**npm-source plugins run no install scripts (CC 2.1.275).** A plugin installed from an npm source is fetched with `npm pack --ignore-scripts` and integrity-verified. A package's `prepare`, `postinstall`, and other lifecycle scripts **never execute**, so a plugin distributed this way cannot build itself, fetch dependencies, or generate files at install time. Ship the plugin ready to run: commit built artifacts to the published package rather than producing them in a lifecycle script.
 
 ## Path Traversal Security (CC 2.1.251)
 

@@ -76,6 +76,8 @@ This ordering governs **name collisions only**. It is not the same as the Skill 
 
 **Synced skills can be withdrawn by org policy (CC 2.1.273).** A claude.ai-synced skill used to stay available after an organization turned Skills off. It now moves to `~/.claude/skills/.trash` — recoverable, but gone from the session. The same destination applies when a user sets `syncClaudeAiSkills: false`. A skill that resolved yesterday may therefore be absent today for reasons outside the plugin: do not write a plugin skill or agent that hard-depends on a synced skill being present. Plugin-bundled skills are unaffected, since they install with the plugin rather than syncing. See the `syncClaudeAiSkills` section in `../../plugin-settings/overview.md`.
 
+**Syncing into terminal sessions is on by default (CC 2.1.275).** The skills and plugins enabled on a user's claude.ai account sync into any terminal session signed in with it, unless the user sets `syncClaudeAiSkills: false` or `syncClaudeAiPlugins: false`. Account-synced skills are therefore present in ordinary local sessions, not just cloud ones — they participate in the name-collision ordering above and can shadow a plugin skill of the same bare name. Choose distinctive plugin skill names.
+
 ## Nested Skill Directories (CC 2.1.178)
 
 Skills can be organized in nested directories within `.claude/skills/`. When working on files in a nested directory, skills from that directory's `.claude/skills/` are loaded automatically.

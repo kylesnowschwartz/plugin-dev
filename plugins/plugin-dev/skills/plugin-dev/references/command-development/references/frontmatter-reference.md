@@ -65,7 +65,7 @@ description: Generate API documentation
 
 ### allowed-tools
 
-**Type:** Comma-separated string
+**Type:** Comma-separated string or YAML list
 **Required:** No
 **Default:** Inherits from conversation permissions
 
@@ -84,6 +84,19 @@ allowed-tools: Read
 ```yaml
 allowed-tools: Read, Write, Edit
 ```
+
+**Or as a YAML list:**
+
+```yaml
+allowed-tools:
+  - Read
+  - Write
+  - Bash(git *)
+```
+
+Both forms parse — the loader accepts a string or an array, exactly as it does for [`disallowed-tools`](#disallowed-tools).
+
+**With a Bash argument pattern:**
 
 ```yaml
 allowed-tools: Read, Write, Bash(git *)

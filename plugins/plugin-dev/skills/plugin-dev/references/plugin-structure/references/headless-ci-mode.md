@@ -16,7 +16,7 @@ claude -p "Analyze this codebase for security issues" --allowedTools "Read,Grep,
 - **MCP servers:** Start and connect as usual. Tools are available.
 - **CLAUDE.md:** Project and user memory files load normally.
 - **Agents:** Can be spawned via Task tool during execution.
-- **Skills (as context):** Skill content with `user-invocable: false` loads into context and is available for Claude to use.
+- **Skills (as context):** Skill content loads into context and is available for Claude to use, through the Skill tool and auto-discovery, regardless of the `user-invocable` setting.
 
 ### What Does NOT Work in Headless Mode
 
@@ -36,7 +36,7 @@ claude -p "/review"
 claude -p "Review the codebase for code quality issues"
 ```
 
-If the skill has `user-invocable: false` and is loaded via plugin, Claude can still use its knowledge automatically.
+Any skill loaded via a plugin can be used automatically this way. `user-invocable` is **not** the lever here: it only controls whether users see the skill in the `/` menu, and it changes nothing about model invocation or auto-discovery — both stay on either way. Setting `user-invocable: false` for headless use hides the skill from interactive users for no headless benefit.
 
 ## Permission Control
 

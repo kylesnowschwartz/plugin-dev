@@ -92,7 +92,7 @@ Whether a custom path replaces or adds to the default directory depends on the f
 }
 ```
 
-- **Replace the default directory** — `commands`, `agents`, `outputStyles`, `experimental.themes`, `experimental.monitors`. Once the field is set, the matching default directory is not auto-loaded; list its files here too when you want both.
+- **Replace the default directory** — `commands`, `agents`, `outputStyles`, `workflows`, `experimental.themes`, `experimental.monitors`. Once the field is set, the matching default directory is not auto-loaded; list its files here too when you want both.
 - **Add to the default directory** — `skills`. The `skills/` directory is always scanned, and the declared paths load alongside it.
 - **Merge with the default file** — `hooks`, `mcpServers`, `lspServers`. Every declared source combines with the default.
 

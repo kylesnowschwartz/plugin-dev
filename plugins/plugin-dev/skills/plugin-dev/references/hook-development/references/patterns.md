@@ -299,7 +299,7 @@ rm .enable-security-scan
 - Project-specific validation that's opt-in
 - Performance-intensive checks only when needed
 
-**Note:** Must restart Claude Code after creating/removing flag files for hooks to recognize changes.
+**Note:** No restart needed. The script tests for the flag file on every invocation, so `touch` and `rm` take effect on the very next tool call. Only hook *registration* is load-time — and for plugin hooks even that refreshes in the running session via `/reload-plugins`.
 
 ## Pattern 10: Configuration-Driven Hooks
 

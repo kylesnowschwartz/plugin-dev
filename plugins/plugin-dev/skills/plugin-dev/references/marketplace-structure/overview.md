@@ -268,6 +268,8 @@ The `strictKnownMarketplaces` and `blockedMarketplaces` managed settings now sup
 - **Block all plugins from an untrusted source:** Add `"blocked-org/*"` to `blockedMarketplaces`
 - **Enterprise policy enforcement:** Restrict users to only approved plugin sources at the owner level
 
+> **One malformed entry no longer disables the whole policy (CC 2.1.277).** Before CC 2.1.277, a single malformed entry in `strictKnownMarketplaces` or `blockedMarketplaces` silently disabled the **entire** enterprise marketplace policy — an admin who mistyped one wildcard got no marketplace restrictions at all, with no signal that the policy had stopped applying. That fail-open behavior is fixed: the remaining entries still apply. On Claude Code before 2.1.277, verify every entry parses, because a typo means no enforcement rather than one missing rule.
+
 **Implications for plugin developers:**
 
 - Organizations can now allow or block entire plugin catalogs by owner name

@@ -32,6 +32,26 @@ When running inside a subagent, these additional fields are present:
 }
 ```
 
+### mcp_server (tool-lifecycle events, CC 2.1.274)
+
+Tool-lifecycle events carry an optional `mcp_server` object naming the MCP server behind an `mcp__*` tool. It appears on exactly five events — **PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest, PermissionDenied** (plus the SDK `can_use_tool` subtype) — and is **absent for non-MCP tools**.
+
+```json
+{
+  "mcp_server": {
+    "name": "string (the server's config key)",
+    "source": "sdk|plugin|user|project|local|dynamic|managed|enterprise|claudeai|agent"
+  }
+}
+```
+
+- **`name`** — the server's configuration key, the same value `mcp_status` and `system/init` report. For `source: "sdk"` it is exactly the name the SDK host registered in `sdkMcpServers`/`mcp_set_servers`; otherwise it is the key as authored in that configuration. **Untrusted text — escape it before displaying it.**
+- **`source`** — where the server definition came from: `sdk` (an in-process server the SDK host runs — only a host can register one, so a configured server of the same name never reads `sdk`), `plugin` (a server a plugin ships or registers at runtime), or a config scope: `user`, `project`, `local`, `dynamic` (for `--mcp-config` and `mcp_set_servers` process servers), `managed`, `enterprise`, `claudeai`, `agent`.
+
+> **Trust rule.** Key trust on `source`, never on the server's name or the tool-name prefix — both are attacker-controllable in a hostile config. `source` is an **open set**: treat an unrecognized value as an unknown *configured* source, never as `sdk`.
+
+`mcp_server` is unrelated to `mcp_server_name`, a plain string that appears only on the Elicitation and ElicitationResult events.
+
 ### Base Output (all events)
 
 All fields are optional. Omitted fields use defaults.
@@ -323,11 +343,15 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
     "query": "string (WebSearch)",
     "prompt": "string (Agent)"
   },
-  "tool_use_id": "string"
+  "tool_use_id": "string",
+  "mcp_server": {
+    "name": "string (mcp__* tools only)",
+    "source": "string (mcp__* tools only)"
+  }
 }
 ```
 
-`tool_input` fields vary by tool. The above shows common fields; MCP tools have server-defined inputs.
+`tool_input` fields vary by tool. The above shows common fields; MCP tools have server-defined inputs. `mcp_server` is present only for `mcp__*` tools — see [mcp_server](#mcp_server-tool-lifecycle-events-cc-21274).
 
 > **CC 2.1.88:** The `file_path` field for Write, Edit, and Read tools now provides **absolute paths**.
 
@@ -376,6 +400,10 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
   "hook_event_name": "PermissionRequest",
   "tool_name": "string",
   "tool_input": {},
+  "mcp_server": {
+    "name": "string (mcp__* tools only)",
+    "source": "string (mcp__* tools only)"
+  },
   "permission_suggestions": [
     {
       "type": "addRules|replaceRules|removeRules|setMode|addDirectories|removeDirectories",
@@ -444,9 +472,15 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
   "permission_mode": "string",
   "hook_event_name": "PermissionDenied",
   "tool_name": "string",
-  "tool_input": {}
+  "tool_input": {},
+  "mcp_server": {
+    "name": "string (mcp__* tools only)",
+    "source": "string (mcp__* tools only)"
+  }
 }
 ```
+
+`mcp_server` is present only for `mcp__*` tools — see [mcp_server](#mcp_server-tool-lifecycle-events-cc-21274).
 
 **Output:**
 
@@ -485,9 +519,15 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
   "tool_input": {},
   "tool_response": "any (tool's return value)",
   "tool_use_id": "string",
-  "duration_ms": "number (CC 2.1.119, how long the tool execution took)"
+  "duration_ms": "number (CC 2.1.119, how long the tool execution took)",
+  "mcp_server": {
+    "name": "string (mcp__* tools only)",
+    "source": "string (mcp__* tools only)"
+  }
 }
 ```
+
+`mcp_server` is present only for `mcp__*` tools — see [mcp_server](#mcp_server-tool-lifecycle-events-cc-21274).
 
 > **CC 2.1.119:** PostToolUse and PostToolUseFailure hooks now include a `duration_ms` field in the input, showing how long the tool execution took. Useful for performance monitoring hooks.
 
@@ -542,9 +582,15 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
   "tool_use_id": "string",
   "error": "string (error message)",
   "is_interrupt": false,
-  "duration_ms": "number (CC 2.1.119, how long the tool ran before failing)"
+  "duration_ms": "number (CC 2.1.119, how long the tool ran before failing)",
+  "mcp_server": {
+    "name": "string (mcp__* tools only)",
+    "source": "string (mcp__* tools only)"
+  }
 }
 ```
+
+`mcp_server` is present only for `mcp__*` tools — see [mcp_server](#mcp_server-tool-lifecycle-events-cc-21274).
 
 **Output:**
 
@@ -661,6 +707,8 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 ```
 
 When `decision` is `"block"`, Claude receives `reason` as feedback and attempts another turn.
+
+**Repeat blocks from a prompt hook send a condition label, not the prompt (CC 2.1.274).** A `prompt`-type Stop hook sends its full prompt on the **first** block in a conversation. Every later block in that same conversation instead names the condition in a label capped at **500 characters**. Write the prompt so its blocking condition is stateable in 500 characters — a prompt whose instructions only make sense in full will behave differently on the second block than on the first.
 
 **Additional context return (CC 2.1.163):** Stop and SubagentStop hooks can return `hookSpecificOutput.additionalContext` to inject context into Claude's next turn without blocking:
 
@@ -789,6 +837,8 @@ Use `impossible` when the goal is self-contradictory, requires a missing capabil
 Same semantics as Stop: blocking causes the subagent to continue working with `reason` as feedback.
 
 **Note:** Stop hooks defined in a subagent context automatically convert to SubagentStop events.
+
+**A specific matcher no longer fires for an empty agent type (CC 2.1.275).** A subagent whose `agent_type` is empty used to match **every** specific `matcher`, so a hook scoped to one agent type fired for unrelated subagents. It now matches only a subagent whose agent type actually equals the matcher. To run on every stopping subagent, omit the matcher rather than naming a type.
 
 **Matchers:** Agent type names (same as SubagentStart)
 **Hook types:** Command, HTTP, MCP tool, Prompt, Agent

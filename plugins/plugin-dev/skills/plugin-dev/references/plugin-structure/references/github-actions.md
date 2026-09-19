@@ -93,7 +93,7 @@ Reference plugin skills in the workflow's `prompt` parameter:
     claude_args: "--max-turns 15"
 ```
 
-Since slash commands don't work in headless mode, describe the task instead. If the skill has `user-invocable: false`, Claude will use it automatically based on context.
+Since slash commands don't work in headless mode, describe the task instead — Claude picks the skill up from context through auto-discovery. This does not depend on `user-invocable`, which only controls `/`-menu visibility.
 
 ## Configuration Options
 

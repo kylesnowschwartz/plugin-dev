@@ -64,6 +64,18 @@ Sub-agents can now spawn their own sub-agents, enabling complex orchestration pa
 - Top-level orchestrators handle coordination; leaf agents do the work
 - Avoid recursive patterns that could hit the depth limit
 
+## Subagent Results Are Delivered Under a Marked Header (CC 2.1.277)
+
+A subagent's final report no longer reaches the calling agent as bare text. It arrives under a header marking it as subagent output, with the result itself **indented**, so that text inside a subagent's result cannot pass as the session's own instructions.
+
+**Why it matters for plugin agents:** a subagent's report is now framed as *data the caller reads*, not as a directive the caller obeys. Instructions embedded in returned text — whether written by the agent author or injected by a file the agent read — do not carry the caller's authority.
+
+**Design guidance:**
+
+- Write orchestrator prompts to **interpret** a worker's report rather than to follow it. "Use the returned findings to decide X" survives the framing; "do whatever the worker's report says" does not.
+- Do not depend on byte-exact report text in the caller. Have workers return a structured shape (JSON, a fixed table) the orchestrator parses, rather than prose the orchestrator pattern-matches on.
+- Treat a worker report as untrusted when the worker read untrusted input. The header is a safety boundary; keep it one in the prompt logic too.
+
 ## SendUserFile Tool (CC 2.1.142)
 
 The SendUserFile tool surfaces generated deliverable files to users with enhanced visibility. When agents create reports, exports, or other artifact files, use SendUserFile instead of just writing them silently:
@@ -316,6 +328,7 @@ New built-in tool names appear in Claude Code releases and may show up in an age
 | Tool | Added | What it does |
 | --- | --- | --- |
 | `FetchInboxMessage` | CC 2.1.273 | Reads Remote Control inbox messages, distinguishing verified owner relays from untrusted third-party text |
-| `AppifactRepl` | CC 2.1.272 | JavaScript runner, available only when supplied and directed by Artifact instructions |
+| `AppifactRepl` | CC 2.1.272 | JavaScript runner, available only when supplied and directed by Artifact instructions. Feature-gated; its default system-prompt and tool-description guidance was retired in CC 2.1.275/2.1.277, but the tool itself still ships |
+| `SuggestPluginInstall` | CC 2.1.277 | Renders an inline card suggesting catalog plugins that could take over the current task, drawn from a plugin search and skipped when nothing relevant comes back |
 
-> Source: the Claude Code system-prompts repository. Neither tool appears in the upstream `CHANGELOG.md`, so treat these entries as lower-confidence than changelog-sourced facts.
+> Source: the Claude Code system-prompts repository. None of these tools appear in the upstream `CHANGELOG.md`, so treat these entries as lower-confidence than changelog-sourced facts.

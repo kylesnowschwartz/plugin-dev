@@ -192,7 +192,7 @@ A bare-name source (no `./` prefix) resolves under `metadata.pluginRoot`, e.g. `
 | `repo`    | string  | Yes      | GitHub repository in `owner/repo` format      |
 | `ref`     | string  | No       | Branch, tag, or commit reference              |
 | `sha`     | string  | No       | Exact commit SHA for integrity pinning        |
-| `skipLfs` | boolean | No       | Skip Git LFS downloads during clone/update (CC 2.1.153) |
+| `skipLfs` | boolean | No       | **No effect (CC 2.1.274)** — accepted so existing settings keep working; LFS files are always checked out as pointers |
 
 ### Git URL (Object)
 
@@ -215,7 +215,9 @@ For GitLab, Bitbucket, or self-hosted git repositories:
 | `url`     | string  | Yes      | Full git clone URL                            |
 | `ref`     | string  | No       | Branch or tag reference                       |
 | `sha`     | string  | No       | Exact commit SHA for integrity                |
-| `skipLfs` | boolean | No       | Skip Git LFS downloads during clone/update (CC 2.1.153) |
+| `skipLfs` | boolean | No       | **No effect (CC 2.1.274)** — accepted so existing settings keep working; LFS files are always checked out as pointers |
+
+> **Git LFS content is never downloaded (CC 2.1.274).** Plugin and marketplace clones leave Git LFS-tracked files as **pointer files**, whether or not `skipLfs` is set. Claude Code's own git never fetches LFS content. A plugin that ships LFS-tracked assets must run `git lfs pull` in the checkout — do not assume the asset bytes are present at load time. `skipLfs` still parses, so existing marketplace files remain valid; it simply no longer changes anything.
 
 ### Host Pattern (Object)
 

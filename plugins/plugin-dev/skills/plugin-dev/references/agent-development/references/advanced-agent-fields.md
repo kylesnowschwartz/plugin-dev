@@ -374,7 +374,7 @@ This deadline applies only to watches the model arms through the Monitor **tool*
 
 This correctly blocks spawning the `untrusted-agent` type.
 
-**`Agent(...)` and `Task(...)` are aliases.** Both spellings are accepted in `settings.json` permission rules and resolve to the same agent-spawn tool. `Agent` is canonical — the rule parser normalizes `Task` to `Agent` (verified against the CC 2.1.273 binary, which also aliases `KillShell`/`KillBash` to `TaskStop` and `BashOutput`/`AgentOutput` to `TaskOutput`). Existing rules written either way keep working; prefer `Agent(...)`, which is the form the upstream changelog uses. Some plugin-dev references use `Task(...)` — see [permission-modes-rules.md](permission-modes-rules.md) — and those rules are equally valid.
+**`Agent(...)` and `Task(...)` are aliases.** Both spellings are accepted in `settings.json` permission rules and resolve to the same agent-spawn tool. `Agent` is canonical — the rule parser normalizes `Task` to `Agent` (verified against the CC 2.1.278 binary, whose alias map is `Task`→`Agent`, `KillShell`/`KillBash`→`TaskStop`, `ListPeers`→`ListAgents`, `Brief`→`SendUserMessage`, and the three MCP-resource spellings). The `BashOutput`/`AgentOutput`→`TaskOutput` alias documented through CC 2.1.273 is **gone in CC 2.1.277**, which removed the `TaskOutput` tool — a rule naming any of those three no longer resolves to a live tool. Existing rules written either way keep working; prefer `Agent(...)`, which is the form the upstream changelog uses. Some plugin-dev references use `Task(...)` — see [permission-modes-rules.md](permission-modes-rules.md) — and those rules are equally valid.
 
 > **Note:** The Config tool was removed in CC 2.1.118. Use the `/config` slash command instead for getting/setting Claude Code settings.
 >
@@ -436,6 +436,8 @@ omitClaudeMd: true
 
 **Type and default:** optional boolean. YAML `true`/`false` and the quoted strings `"true"`/`"false"` are all accepted. The default is absent — CLAUDE.md loads normally.
 
+> **Unresolved: AGENTS.md.** CC 2.1.277 made Claude Code read `AGENTS.md` as project instructions **in a project with no CLAUDE.md**. Whether `omitClaudeMd: true` also suppresses `AGENTS.md` is not documented — the field's own description names CLAUDE.md only and is silent on AGENTS.md. If a subagent must not inherit project instructions in a repo that uses AGENTS.md, verify the behavior by running it rather than assuming either answer.
+>
 > **Footgun:** unlike `background` and `memory`, an invalid value raises **no** validation error. It silently falls through to undefined, so the agent keeps loading CLAUDE.md while the author believes it was turned off. `claude plugin validate` will not catch a typo here — verify the behavior by running the agent.
 
 **Use cases:**

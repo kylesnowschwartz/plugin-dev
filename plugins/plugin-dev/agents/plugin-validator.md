@@ -98,7 +98,7 @@ First, determine what type of validation is needed:
      - Check YAML frontmatter present (starts with `---`)
      - Verify `description` field exists
      - Check `argument-hint` format if present
-     - Validate `allowed-tools` is array if present
+     - Validate `allowed-tools` if present — a comma-separated string **or** a YAML list is valid; do not require an array
      - Ensure markdown content exists
    - Check for naming conflicts
 
@@ -129,7 +129,7 @@ First, determine what type of validation is needed:
      - Valid JSON syntax
      - Valid event names (PreToolUse, PostToolUse, Stop, etc.)
      - Each hook has `matcher` and `hooks` array
-     - Hook type is `command` or `prompt`
+     - Hook type is one of `command`, `prompt`, `http`, `agent`, or `mcp_tool` (all five are valid — do not report `http`, `agent`, or `mcp_tool` as an error)
      - Commands reference existing scripts with ${CLAUDE_PLUGIN_ROOT}
 
 8. **Validate MCP Configuration** (if `.mcp.json` or `mcpServers` in manifest):
