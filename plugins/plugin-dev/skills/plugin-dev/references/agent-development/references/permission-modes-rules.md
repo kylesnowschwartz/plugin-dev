@@ -12,14 +12,14 @@ permissionMode: acceptEdits
 
 ### All Permission Modes
 
-| Mode                | Behavior                                                     | Use Case                                            |
-| ------------------- | ------------------------------------------------------------ | --------------------------------------------------- |
-| `default`           | Standard permission model — prompts user for each action     | General-purpose agents, untrusted contexts          |
-| `acceptEdits`       | Auto-accept file edit operations (Write, Edit, NotebookEdit) | Code generation agents that need to write files     |
-| `dontAsk`           | No prompts; anything that would have prompted is denied     | Agents whose allowed actions are fully covered by allow rules |
-| `bypassPermissions` | Full bypass of all permission checks                         | Fully trusted agents only                           |
-| `plan`              | Planning mode — propose changes without executing            | Architecture/design agents, review agents           |
-| `auto`              | Claude classifies each tool call and runs the lower-risk ones | Agents that should proceed without prompts but keep a safety check |
+| Mode                | Behavior                                                                   | Use Case                                                           |
+| ------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `default`           | Standard permission model — prompts user for each action                   | General-purpose agents, untrusted contexts                         |
+| `acceptEdits`       | Auto-accept file edit operations (Write, Edit, NotebookEdit)               | Code generation agents that need to write files                    |
+| `dontAsk`           | No prompts; anything that would have prompted is denied                    | Agents whose allowed actions are fully covered by allow rules      |
+| `bypassPermissions` | Skips permission prompts; a few protections still apply (see Mode Details) | Fully trusted agents only                                          |
+| `plan`              | Planning mode — propose changes without executing                          | Architecture/design agents, review agents                          |
+| `auto`              | Claude classifies each tool call and runs the lower-risk ones              | Agents that should proceed without prompts but keep a safety check |
 
 ### Mode Details
 
@@ -45,7 +45,7 @@ No permission dialogs are shown. Any action that would have prompted for permiss
 
 #### bypassPermissions
 
-Full permission bypass with no restrictions. More permissive than `dontAsk` as it bypasses even system-level restrictions.
+Runs actions without asking for permission, which makes it the most permissive mode. It is not a bypass of every check, though. The security monitor still blocks the categories listed under [Blocked Categories](#blocked-categories), and `permissions.blockReadsOutsideWorkingDirectories` still makes recognized file-reading commands prompt (see Bash Patterns). As of CC 2.1.273, a subshell can no longer hide a dangerous `rm` in this mode.
 
 **When to use:** Only for fully trusted agents in controlled environments. Never for plugins distributed to unknown users.
 
@@ -88,7 +88,7 @@ Space before `*` means word boundary: `Bash(ls *)` matches `ls -la` but NOT `lso
 
 `permissions.blockReadsOutsideWorkingDirectories` is a boolean setting that makes the file tools refuse paths outside the working directories in **every** permission mode. It is an explicit exception to the mode table above: with it on, recognized file-reading Bash commands prompt even in `auto` and `bypassPermissions` mode. As of CC 2.1.273 it also excludes a memory directory chosen by a repository's settings from the prompt, recall, indexing, and memory extraction.
 
-### Path Patterns for Edit/Read/Write
+### Path Patterns for Edit/Read
 
 Path specifiers follow the gitignore specification:
 
@@ -97,10 +97,12 @@ Path specifiers follow the gitignore specification:
 | `//path` | Absolute from filesystem root                | `Edit(//etc/config)`   |
 | `~/path` | Relative to home directory                   | `Read(~/Documents/**)` |
 | `/path`  | Relative to settings file location           | `Edit(/src/**)`        |
-| `./path` | Relative to current directory                | `Write(./output/*)`    |
+| `./path` | Relative to current directory                | `Edit(./output/*)`     |
 | `path`   | Relative to current directory (same as `./`) | `Edit(src/**)`         |
 | `*`      | Single directory level wildcard              | `Read(src/*)`          |
 | `**`     | Recursive directory wildcard                 | `Edit(src/**)`         |
+
+**Write path rules with `Edit(path)` or `Read(path)` only.** File permission checks match `Edit(path)` for every file-writing tool (Write, Edit, NotebookEdit) and `Read(path)` for reads. A `Write(path)`, `NotebookEdit(path)`, or `Glob(path)` path rule is never matched, so it silently allows or denies nothing. CC 2.1.275 fixed `/update-config`, which had been writing `Write(path)` rules. Settings a plugin's README tells users to add, or rules generated with an older `/update-config`, may contain such rules and should be rewritten as `Edit(path)`. Bare tool names (`Write`), `Tool(param:value)` rules, and hook `if` conditions still use each tool's own name.
 
 **Symlinked directories resolve to their real location (CC 2.1.268).** Deny and ask rules on directories that are symlinks — `/etc`, `/tmp`, `/var` on macOS, `/bin` on Linux — apply when a path is supplied by its real location, and Bash commands honor deny rules written using the symlinked spelling. A rule written either way covers both. This behavior was **not** affected by the CC 2.1.273 revert described under Bash Patterns.
 
@@ -159,7 +161,7 @@ Rules are evaluated in a strict order — first match wins within each tier:
 
 Claude Code's security monitor blocks certain categories of operations regardless of permission mode. These require explicit user approval:
 
-- **Production Reads (CC 2.1.85):** Reading inside running production systems via remote shell, dumping environment variables or configs from production, and direct production database queries. Agent developers building ops-focused or deployment agents should be aware that these operations will prompt the user even in `dontAsk` mode.
+- **Production Reads (CC 2.1.85):** Reading inside running production systems via remote shell, dumping environment variables or configs from production, and direct production database queries. Agent developers building ops-focused or deployment agents should be aware that no allow rule or permission mode pre-approves these operations. In interactive modes they prompt the user. In `dontAsk` mode, where nothing prompts, they are denied.
 
 ### Default Permission Tiers
 
@@ -190,13 +192,15 @@ Rules are specified in `settings.json` under `permissions`:
 
 ### Tool Specifiers
 
-| Pattern              | Matches                         | Example                              |
-| -------------------- | ------------------------------- | ------------------------------------ |
-| `ToolName`           | Any use of that tool            | `Read` — all file reads              |
-| `ToolName(argument)` | Tool with specific argument     | `Bash(npm test)` — only this command |
-| `ToolName(pattern*)` | Tool with wildcard argument     | `Bash(npm *)` — any npm command      |
-| `Edit(path)`         | Edit with gitignore-style path  | `Edit(src/**)` — edits in src/       |
-| `Write(path)`        | Write with gitignore-style path | `Write(tests/**)` — writes in tests/ |
+| Pattern              | Matches                                                                 | Example                              |
+| -------------------- | ----------------------------------------------------------------------- | ------------------------------------ |
+| `ToolName`           | Any use of that tool                                                    | `Read` — all file reads              |
+| `ToolName(argument)` | Tool with specific argument                                             | `Bash(npm test)` — only this command |
+| `ToolName(pattern*)` | Tool with wildcard argument                                             | `Bash(npm *)` — any npm command      |
+| `Edit(path)`         | Any file write (Write, Edit, NotebookEdit) under a gitignore-style path | `Edit(tests/**)` — writes in tests/  |
+| `Read(path)`         | File reads under a gitignore-style path                                 | `Read(docs/**)` — reads in docs/     |
+
+`Write(path)` is not a working path rule: file permission checks never match it (see Path Patterns above).
 
 ### MCP Tool Patterns
 
@@ -255,4 +259,4 @@ This plugin's agents need:
 
 **Configure agent permissions:** Use `permissionMode` in agent frontmatter for broad access control. For fine-grained restrictions, document the settings users should configure.
 
-**Principle of least privilege:** Request only the permissions your agent actually needs. Use `acceptEdits` over `dontAsk` when only file writes are needed.
+**Principle of least privilege:** Request only the permissions your agent actually needs. `dontAsk` is the tighter mode for unattended agents: it runs only what allow rules pre-approve and denies everything else. `acceptEdits` auto-approves every file write and still prompts for other actions, so use it only when a user is present and blanket write approval is acceptable.

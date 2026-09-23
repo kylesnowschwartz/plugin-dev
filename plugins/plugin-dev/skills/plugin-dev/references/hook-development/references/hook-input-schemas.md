@@ -20,15 +20,23 @@ Every hook receives these fields:
 
 ### PreToolUse / PostToolUse / PostToolUseFailure / PermissionRequest
 
-| Field                    | Type    | Events             | Description                                   |
-| ------------------------ | ------- | ------------------ | --------------------------------------------- |
-| `tool_name`              | string  | All four           | Name of the tool                              |
-| `tool_input`             | object  | All four           | Arguments sent to the tool (see tool schemas) |
-| `tool_response`          | any     | PostToolUse        | Tool's return value                           |
-| `tool_use_id`            | string  | PostToolUse        | Unique tool use identifier                    |
-| `error`                  | string  | PostToolUseFailure | Error message from the failed tool            |
-| `is_interrupt`           | boolean | PostToolUseFailure | Whether failure was caused by user interrupt  |
-| `permission_suggestions` | array   | PermissionRequest  | Suggested permission decisions                |
+| Field                    | Type    | Events             | Description                                       |
+| ------------------------ | ------- | ------------------ | ------------------------------------------------- |
+| `tool_name`              | string  | All four           | Name of the tool                                  |
+| `tool_input`             | object  | All four           | Arguments sent to the tool (see tool schemas)     |
+| `tool_response`          | any     | PostToolUse        | Tool's return value                               |
+| `tool_use_id`            | string  | PostToolUse        | Unique tool use identifier                        |
+| `error`                  | string  | PostToolUseFailure | Error message from the failed tool                |
+| `is_interrupt`           | boolean | PostToolUseFailure | Whether failure was caused by user interrupt      |
+| `permission_suggestions` | array   | PermissionRequest  | Suggested permission decisions                    |
+| `mcp_server`             | object  | All four           | The MCP server behind an `mcp__*` tool (optional) |
+
+`mcp_server` (CC 2.1.274) is present only when the tool is an MCP tool. PermissionDenied carries it too. It is an object with two strings:
+
+- `name`: the server's config key as authored. This is untrusted text, so escape it before display.
+- `source`: where the server's definition came from. Values include `sdk`, `plugin`, `user`, `project`, `local`, `dynamic`, `managed`, `enterprise`, `claudeai`, and `agent`. The set is open, so treat an unknown value as an unrecognized configured source, never as `sdk`.
+
+A hook that trusts or blocks an MCP tool should key the decision on `source`, never on `name` or the `mcp__<server>__` prefix of `tool_name`, because any configuration can pick any server name. The field and its semantics were read from the CC 2.1.280 binary's hook input schemas.
 
 ### PostToolBatch
 

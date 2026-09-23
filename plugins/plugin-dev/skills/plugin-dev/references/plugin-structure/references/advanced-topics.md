@@ -217,7 +217,7 @@ The `agent` hook type spawns a full subagent for complex verification workflows.
 
 For comprehensive coverage including configuration, behavior, supported events, when to use agent hooks, and detailed examples, see the hook-development topic (`../../hook-development/references/advanced.md`). The per-event Types column in `../../hook-development/overview.md` (Hook Events Reference) is the authoritative list of which hook types each event accepts.
 
-**Quick summary:** Agent hooks spawn a subagent with full tool access (Read, Bash, Grep, etc.) for multi-step verification. They're significantly slower (30-120 seconds) but more capable than command or prompt hooks. They are unavailable on `SessionStart`, `Setup`, `SubagentStart`, `WorktreeCreate`, and `WorktreeRemove` (see the Types column linked above for what those events accept); they are most useful on decision-control events such as `Stop` and `SubagentStop`.
+**Quick summary:** Agent hooks spawn a subagent with full tool access (Read, Bash, Grep, etc.) for multi-step verification. They're significantly slower (30-120 seconds) but more capable than command or prompt hooks. Like prompt hooks, they need a live conversation, so the 20 events dispatched without one reject them. That covers every lifecycle, context, config, environment, worktree, MCP, display, notification, and model-switch event, plus `SubagentStart` and `StopFailure`. Of the 13 conversation events, `PermissionRequest` also refuses them at run time (CC 2.1.280), because an agent hook cannot return an allow or deny decision. The Types column linked above is the per-event list. Agent hooks are most useful on decision-control events such as `Stop` and `SubagentStop`.
 
 ## Auto-Update Behavior
 
@@ -967,6 +967,12 @@ CC 2.1.221 covered installation. CC 2.1.268 extends the same behavior to enable 
 claude plugin install npm-package-name
 claude plugin install pip-package-name
 ```
+
+**npm sources do not run install scripts (CC 2.1.275).** A plugin from an npm source is fetched with `npm pack --ignore-scripts` and integrity-verified, so `preinstall`, `install`, `postinstall`, and `prepare` scripts never run. Publish the plugin with everything it needs already in the package, such as built JavaScript and bundled binaries. Do not build or download files at install time. For work that must happen on the user's machine, use a `SessionStart` hook that writes into `${CLAUDE_PLUGIN_DATA}`.
+
+**Git LFS content is not downloaded (CC 2.1.274).** Plugin and marketplace clones leave Git LFS files as pointer files. Keep anything a plugin needs at runtime out of LFS, or tell users to run `git lfs pull` in the checkout.
+
+**Version comes only from the plugin's own repository (CC 2.1.274).** A plugin or marketplace directory with no git repository of its own no longer takes its version from an enclosing git repository, such as a git-managed `~/.claude`. Set `version` in `plugin.json` for plugins distributed as plain directories.
 
 ## Path Traversal Security (CC 2.1.251)
 

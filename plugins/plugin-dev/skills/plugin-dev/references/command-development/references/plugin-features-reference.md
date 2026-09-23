@@ -29,29 +29,31 @@ plugin-name/
 - Commands are discovered at plugin load time
 - No manual registration required
 - Commands appear in `/help` with "(plugin:plugin-name)" label
-- Subdirectories create namespaces
+- Only `.md` files directly in `commands/` are discovered; subdirectories are not searched
 
-### Namespaced Plugin Commands
+### Grouping Plugin Commands in Subdirectories
 
-Organize commands in subdirectories for logical grouping:
+A plugin's default `commands/` directory is not searched recursively. A file such as `commands/review/security.md` does not load on its own. To group commands in subdirectories, list each directory in the `commands` field of `plugin.json`:
 
 ```
 plugin-name/
+├── .claude-plugin/plugin.json   # "commands": ["./commands", "./commands/review", "./commands/deploy"]
 └── commands/
+    ├── help.md
     ├── review/
-    │   ├── security.md    # /security (plugin:plugin-name:review)
-    │   └── style.md       # /style (plugin:plugin-name:review)
+    │   ├── security.md
+    │   └── style.md
     └── deploy/
-        ├── staging.md     # /staging (plugin:plugin-name:deploy)
-        └── prod.md        # /prod (plugin:plugin-name:deploy)
+        ├── staging.md
+        └── prod.md
 ```
 
-**Namespace behavior:**
+**Behavior (checked against CC 2.1.280 with `claude plugin details`):**
 
-- Subdirectory name becomes namespace
-- Shown as "(plugin:plugin-name:namespace)" in `/help`
-- Helps organize related commands
-- Use when plugin has 5+ commands
+- Setting `commands` replaces the default directory, so list `./commands` too if it still holds commands
+- A listed subdirectory's commands load under their file names (`security`, `staging`), with no subdirectory namespace
+- Because there is no namespace, the same file name in two listed directories yields two commands with the same name, so keep file names distinct
+- See `../../plugin-structure/references/component-patterns.md` for the same pattern
 
 ### Command Naming Conventions
 

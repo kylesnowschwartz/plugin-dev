@@ -17,7 +17,9 @@ Validates `hooks.json` configuration files for correct structure and common issu
 - Valid JSON syntax
 - Required fields present
 - Valid hook event names
-- Proper hook types (command/prompt)
+- Proper hook types (`command`, `prompt`, `agent`, `http`, `mcp_tool`)
+- A top-level `$schema` key alongside the plugin `hooks` wrapper (ignored at load)
+- Agent hooks on PermissionRequest (they fail at run time since CC 2.1.280)
 - Timeout values in valid ranges
 - Hardcoded path detection
 - Prompt hook event compatibility

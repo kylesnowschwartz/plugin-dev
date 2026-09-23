@@ -339,8 +339,10 @@ hooks:
   Stop:
     - hooks:
         - type: prompt
-          prompt: 'Verify that all generated code has tests. Return {"decision": "stop"} if satisfied or {"decision": "continue", "reason": "missing tests for..."} if not.'
+          prompt: 'Verify that all generated code has tests. Answer ok if it does; if not, answer not ok with the missing tests as the reason.'
 ```
+
+A prompt hook's reply is validated against `{"ok": boolean, "reason"?: string}`, not the standard hook output, so do not ask for `decision` values in the prompt. See `../../hook-development/references/advanced.md` (Context-Aware Prompt Hooks).
 
 ## Skill Visibility Budget
 

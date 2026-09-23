@@ -40,11 +40,13 @@ fi
 echo "✅ Valid JSON"
 
 # Check 2: Detect format. Plugin hooks/hooks.json wraps the event map in a
-# "hooks" object with an optional "description" string; settings files put
-# event names at the top level. Unwrap the plugin format before validating.
+# "hooks" object with an optional "description" string and an optional
+# "$schema" key, which Claude Code ignores at load (no notice since CC 2.1.274);
+# settings files put event names at the top level. Unwrap the plugin format
+# before validating.
 echo ""
 echo "Checking format..."
-if jq -e '(.hooks | type) == "object" and ((keys - ["description", "hooks"]) | length == 0)' "$HOOKS_FILE" >/dev/null 2>&1; then
+if jq -e '(.hooks | type) == "object" and ((keys - ["$schema", "description", "hooks"]) | length == 0)' "$HOOKS_FILE" >/dev/null 2>&1; then
   echo "✅ Plugin wrapper format (description + hooks)"
   UNWRAPPED=$(mktemp)
   trap 'rm -f "$UNWRAPPED"' EXIT
@@ -206,6 +208,14 @@ for event in $(jq -r 'keys[]' "$HOOKS_FILE"); do
         esac
         ;;
       esac
+
+      # PermissionRequest accepts every type in config, but since CC 2.1.280 an
+      # agent hook fails there at run time: it answers ok / not ok and cannot
+      # return the allow / deny decision a permission request needs.
+      if [ "$event" = "PermissionRequest" ] && [ "$hook_type" = "agent" ]; then
+        echo "❌ ${event}[$i].hooks[$j]: agent hooks do not run on PermissionRequest (CC 2.1.280); use a 'command' or 'http' hook for permission decisions"
+        error_count=$((error_count + 1))
+      fi
 
       # Check timeout
       timeout=$(jq -r ".\"$event\"[$i].hooks[$j].timeout // empty" "$HOOKS_FILE")

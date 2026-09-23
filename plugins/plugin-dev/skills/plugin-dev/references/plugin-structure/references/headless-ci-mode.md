@@ -13,7 +13,7 @@ claude -p "Analyze this codebase for security issues" --allowedTools "Read,Grep,
 ### What Works in Headless Mode
 
 - **Hooks:** Command hooks execute normally. Prompt hooks work for supported events.
-- **MCP servers:** Start and connect as usual. Tools are available.
+- **MCP servers:** Start and connect as usual. Tools are available once a server has connected. `CLAUDE_CODE_MCP_STARTUP_WAIT_MS` (CC 2.1.274) bounds how long the first turn waits for connecting servers (`0` = don't wait). A server that is still connecting after that joins on a later turn, so keep plugin server startup fast or raise the wait in CI.
 - **CLAUDE.md:** Project and user memory files load normally.
 - **Agents:** Can be spawned via Task tool during execution.
 - **Skills (as context):** Skill content with `user-invocable: false` loads into context and is available for Claude to use.
@@ -23,6 +23,10 @@ claude -p "Analyze this codebase for security issues" --allowedTools "Read,Grep,
 - **Skill slash commands:** `/skill-name` invocation requires an interactive session. Skills cannot be invoked via slash commands in `-p` mode. This is scoped to skills — some built-in slash commands do run headless, including `claude -p "/reload-plugins"` (CC 2.1.260).
 - **Interactive prompts:** `AskUserQuestion` tool is not available — there's no user to answer.
 - **Skill tool (manual):** Users can't type `/` to invoke skills. Instead, describe the task and let Claude use the skill content if loaded.
+
+### Internal Errors Exit Non-Zero (CC 2.1.277)
+
+A `claude -p` or Agent SDK session that hits an internal error now reports the error and exits with code 1. Before CC 2.1.277 it could hang with no result. CI steps can rely on the exit code to fail the job, but a job timeout is still worth keeping for older pinned versions.
 
 ### Workaround for Skills
 
@@ -264,6 +268,7 @@ claude -p "Run analysis with subagents" \
 - Only applies to `--output-format stream-json` mode
 - Forwards text output from background subagents to the main output stream
 - Enables real-time visibility into subagent progress in CI pipelines
+- Includes subagents spawned by a `context: fork` skill, and forked skills invoked by a subagent or another forked skill (CC 2.1.275; earlier versions dropped their messages)
 
 **Use cases:**
 

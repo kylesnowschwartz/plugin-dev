@@ -138,11 +138,14 @@ else
   echo "✅ model: $MODEL"
 
   case "$MODEL" in
-    inherit|sonnet|opus|haiku)
-      # Valid model
+    inherit|sonnet|opus|haiku|fable)
+      # Valid model alias
+      ;;
+    claude-*)
+      # Full model ID (e.g. claude-opus-5-5); accepted as-is
       ;;
     *)
-      echo "⚠️  Unknown model: $MODEL (valid: inherit, sonnet, opus, haiku)"
+      echo "⚠️  Unknown model: $MODEL (valid: inherit, sonnet, opus, haiku, fable, or a full claude-* model ID)"
       ((warning_count++))
       ;;
   esac

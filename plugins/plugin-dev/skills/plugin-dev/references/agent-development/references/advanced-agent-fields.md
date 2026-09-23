@@ -103,6 +103,8 @@ mcpServers:
 
 **`--strict-mcp-config` behavior change (CC 2.1.153):** `--strict-mcp-config` no longer strips inline `mcpServers` from explicitly-passed agent definitions. This allows agents passed via CLI to retain their MCP server configurations while still enforcing strict policies on dynamically-discovered servers.
 
+**`"type": "sdk"` entries are skipped (CC 2.1.274):** An inline `mcpServers` entry with `"type": "sdk"` is skipped with a warning, as it is in `.mcp.json`, settings, and plugins. Only an SDK host application can register an in-process server. An agent file cannot declare one, so use a stdio, HTTP, SSE, or WebSocket server instead.
+
 ## hooks
 
 Define lifecycle hooks scoped to the agent. These hooks activate when the agent starts and deactivate when it finishes.
@@ -147,8 +149,8 @@ All hook events are supported in agent frontmatter. Key behavior difference:
 
 ### Background vs Foreground
 
-- **Foreground** (default): Blocks the main conversation until the agent completes. User can interact if the agent requests permission.
-- **Background**: Runs concurrently with the main conversation. All permissions must be pre-approved at spawn time since the user cannot be prompted.
+- **Background** (default since CC 2.1.198): Runs concurrently with the main conversation. All permissions must be pre-approved at spawn time since the user cannot be prompted.
+- **Foreground** (`run_in_background: false` on the Agent tool call): Blocks the main conversation until the agent completes. User can interact if the agent requests permission.
 
 Background agents that encounter an unapproved permission request will fail. Design tool restrictions (`tools`, `permissionMode`) accordingly when agents may run in background.
 
@@ -272,7 +274,7 @@ Team leads coordinate work across multiple teammates. Key design considerations:
 - **System prompt focus**: Task decomposition, work assignment, progress monitoring, quality review
 - **Tools**: Team leads automatically get access to `TeamCreate`, `TaskCreate`, `TaskUpdate`, `TaskList`, `SendMessage`, and `Task` (for spawning)
 
-**Task-tracking tools are model-gated (CC 2.1.268).** `TaskCreate`, `TaskGet`, `TaskUpdate`, `TaskList`, and `TodoWrite` are offered only on Claude 3.x, Opus 4.0–4.7, Sonnet 4.0–4.6, and Haiku 4.5. On newer models — including Opus 5, the current default — they are absent unless `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` is set. An agent whose `tools` list names them, or whose system prompt instructs it to track work with them, silently loses that capability on a default-model session. Design agents to report progress in their output rather than depending on task-tracking tools being present.
+**Task-tracking tools are model-gated (CC 2.1.268).** `TaskCreate`, `TaskGet`, `TaskUpdate`, `TaskList`, and `TodoWrite` are offered only on Claude 3.x, Opus 4.0–4.7, Sonnet 4.0–4.6, and Haiku 4.5. On newer models, including Opus 5 and Opus 5.5 (the default Opus model since CC 2.1.280), they are absent unless `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` is set. An agent whose `tools` list names them, or whose system prompt instructs it to track work with them, silently loses that capability on a default-model session. Design agents to report progress in their output rather than depending on task-tracking tools being present.
 
 ### Permission Inheritance
 
@@ -374,7 +376,9 @@ This deadline applies only to watches the model arms through the Monitor **tool*
 
 This correctly blocks spawning the `untrusted-agent` type.
 
-**`Agent(...)` and `Task(...)` are aliases.** Both spellings are accepted in `settings.json` permission rules and resolve to the same agent-spawn tool. `Agent` is canonical — the rule parser normalizes `Task` to `Agent` (verified against the CC 2.1.273 binary, which also aliases `KillShell`/`KillBash` to `TaskStop` and `BashOutput`/`AgentOutput` to `TaskOutput`). Existing rules written either way keep working; prefer `Agent(...)`, which is the form the upstream changelog uses. Some plugin-dev references use `Task(...)` — see [permission-modes-rules.md](permission-modes-rules.md) — and those rules are equally valid.
+**`Agent(...)` and `Task(...)` are aliases.** Both spellings are accepted in `settings.json` permission rules and resolve to the same agent-spawn tool. `Agent` is canonical — the rule parser normalizes `Task` to `Agent` (verified against the CC 2.1.273 binary, which also aliases `KillShell`/`KillBash` to `TaskStop`, still the case in CC 2.1.280). Existing rules written either way keep working; prefer `Agent(...)`, which is the form the upstream changelog uses. Some plugin-dev references use `Task(...)` — see [permission-modes-rules.md](permission-modes-rules.md) — and those rules are equally valid.
+
+The CC 2.1.273 binary also aliased `BashOutput`/`AgentOutput` to `TaskOutput`, but **CC 2.1.277 removed the TaskOutput tool**. Claude now reads a background task's output file with Read. The CC 2.1.280 binary lists `TaskOutput`, `BashOutput`, and `AgentOutput` among tools it no longer offers, so drop them from `tools` lists and permission rules.
 
 > **Note:** The Config tool was removed in CC 2.1.118. Use the `/config` slash command instead for getting/setting Claude Code settings.
 >
@@ -606,6 +610,10 @@ The Agent tool now defaults to `run_in_background: true`. Claude keeps working w
 
 Subagents now inherit the session's extended thinking configuration. Agent type definitions supply model, reasoning effort, and tool access, while the call-level `model` parameter overrides only the model at launch. This means subagents automatically benefit from extended thinking when enabled in the parent session.
 
+### Subagent Results Arrive Framed as Subagent Output (CC 2.1.277)
+
+A subagent's result reaches the main agent under a header marking it as subagent output, with the result text indented. This keeps text in a subagent's result from passing as the session's own instructions. Plugin agents should write their final report as data for the caller to act on, such as findings, file paths, and status. Do not phrase it as directives to the main agent, because the framing presents it as a subagent's report and not as instructions.
+
 ### Non-Fork Subagent Delegation (CC 2.1.235)
 
 Claude Code provides unified, capability-aware delegation guidance that adapts based on whether general-purpose agents are available. This supersedes the previous separate foreground/background delegation examples (CC 2.1.211).
@@ -689,7 +697,7 @@ isolation: "remote"
 
 | Mode | Environment | Execution | Use Case |
 |------|-------------|-----------|----------|
-| (none) | Local, shared | Foreground | Standard subagent work |
+| (none) | Local, shared | Background by default; foreground with `run_in_background: false` | Standard subagent work |
 | `worktree` | Local, git worktree | Background | Parallel git branches |
 | `remote` | Remote CCR sandbox | Background | Full isolation |
 
