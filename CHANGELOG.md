@@ -44,7 +44,6 @@ Sync with Claude Code 2.1.272-2.1.273. Six changelog-driven Must Update items (t
 - **skill-development**: the Skill + Agent comparison table said `context: fork` "inherits parent context" while the same file and the agent-development overview said it does not inherit conversation history. Corrected to separate context with prompt-cache sharing
 - **mcp-integration**: `examples/stdio-server.json` — indexed as a copy-paste config — passed `${CLAUDE_PROJECT_DIR}`, which the manifest reference states is not expanded in MCP server configuration. Switched to `${CLAUDE_PLUGIN_ROOT}` with a comment naming the variables that do expand
 
-||||||| parent of 184096c (fix: run the upstream sync's apply stage in its own agent so the orchestrator stays under the turn cap)
 ## [0.45.0] - 2026-09-15
 
 Sync with Claude Code 2.1.271. Five changelog-driven updates, one ground-truth addition that also cleared the outstanding `DRIFT M` finding, and six Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep.
