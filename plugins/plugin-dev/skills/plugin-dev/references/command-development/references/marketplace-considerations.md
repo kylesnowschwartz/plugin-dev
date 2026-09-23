@@ -78,6 +78,19 @@ When the PowerShell tool is enabled on Windows, Claude treats PowerShell as the 
 - Document Windows-specific alternatives in command descriptions
 - Consider providing separate commands for Bash and PowerShell workflows
 
+### Executables and claude.ai Organization Distribution
+
+A plugin's top-level `bin/` directory is added to the Bash tool's `PATH` while the plugin is enabled, but claude.ai rejects any plugin that has one when the plugin is distributed through organization settings:
+
+- **Marketplace sync**: organization sync rejects that plugin and syncs the rest of the marketplace
+- **Direct upload**: an upload under **Organization settings > Plugins** fails with the same error
+
+The error message starts with `Plugin contains a top-level bin/ directory`. The check runs on claude.ai, not in the Claude Code client, which has no such check; the official docs describe the restriction only for the claude.ai organization channel. For plugins that may reach users through claude.ai organization settings:
+
+- Keep executables in another directory, such as `scripts/`
+- Reference them by full path from commands, skills, hooks, and MCP server configs: `${CLAUDE_PLUGIN_ROOT}/scripts/<name>`
+- Do not rely on bare command names, since `scripts/` is not added to `PATH`
+
 ### Minimal Dependencies
 
 **Check for required tools:**

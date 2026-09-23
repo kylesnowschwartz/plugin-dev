@@ -7,8 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **plugin-structure**, **command-development**: how a plugin's `bin/` directory reaches the shell — appended to the Bash tool's `PATH` behind existing entries, Bash tool only (hooks and MCP servers reference `${CLAUDE_PLUGIN_ROOT}/bin/<name>` explicitly), paths with shell metacharacters left off — and the claude.ai organization-settings rejection of plugins with a top-level `bin/`, with the `scripts/` workaround
+- **mcp-integration**: credential variables that are read as empty toward a remote server's `url` and `headers` (Claude Code's own keys, cloud tokens, proxy and registry variables, `OTEL_*`), the warning text, and subprocess environment scrubbing
+
+### Changed
+
+- **skill-development**, **command-development**: `disable-model-invocation: true` skills are left out of the model-facing skill listing and refused by the Skill tool; the Auto-Discovery column says so
+- **mcp-integration**, **lsp-integration**, **plugin-structure**: variable expansion in plugin MCP and LSP config covers `command`, each `args` entry, `env` values, remote `url` and `headers`, and LSP `workspaceFolder`, and includes `${CLAUDE_PROJECT_DIR}`; only the braced `${VAR}` form expands
+- **lsp-integration**: `workspaceFolder` examples use `${CLAUDE_PROJECT_DIR}`; the editor-style `${workspaceFolder}` placeholder does not exist and logs a missing-variable error
+- **hook-development**: prompt and agent hook examples use the real reply shape `{ok, reason?, impossible?}` and the one real placeholder `$ARGUMENTS`; `$TOOL_INPUT`, `$TOOL_NAME`, and `$USER_PROMPT` do not exist. The permission-confirmation pattern is a command hook returning `permissionDecision: "ask"`, since a prompt hook cannot open the permission dialog
+- **agent-development**: `TeamCreate` and `TeamDelete` listed with the removed tools
+
 ### Fixed
 
+- **scripts**: `validate-agent.sh`, `test-agent-trigger.sh`, `check-frontmatter.sh`, `validate-command.sh`, and `hook-linter.sh` report every warning instead of exiting at the first one (`((count++))` returns nonzero at zero under `set -e`), and `validate-agent.sh` and `test-agent-trigger.sh` finish when an optional frontmatter field is absent
 - **upstream sync**: the apply stage now runs in its own `update-applier` agent, so the orchestrator no longer spends one turn per documentation edit and a large release range no longer hits the 150-turn limit (the 2026-09-22 run stopped mid-apply on a 55-item manifest)
 
 ## [0.47.0] - 2026-09-23

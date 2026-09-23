@@ -14,11 +14,11 @@ This tool is how Claude programmatically loads skills — plugin developers don'
 
 ## Model Invocation vs. Explicit Invocation
 
-Model invocation is the **default**. Claude Code builds a model-facing skill listing from every discovered skill's `name` and `description`, and Claude calls the Skill tool when a task matches one. Users can also invoke a skill explicitly by typing `/skillname`. Both paths are live at once.
+Model invocation is the **default**. Claude Code builds a model-facing skill listing from the `name` and `description` of every discovered skill that allows model invocation, and Claude calls the Skill tool when a task matches one. Users can also invoke a skill explicitly by typing `/skillname`. Both paths are live at once.
 
 - **Auto-discovery is the default path** — A skill with a well-written `description` is invoked by Claude without the user typing anything
 - **Explicit invocation always works** — `/skillname` loads the skill regardless of what Claude infers
-- **Opt out per skill** — Set `disable-model-invocation: true` in frontmatter to make a skill user-invocable only. The opt-out exists precisely because model invocation is the default
+- **Opt out per skill** — Set `disable-model-invocation: true` in frontmatter to make a skill user-invocable only. The skill is left out of the model-facing listing and the Skill tool refuses it, so it runs only when the user types `/skillname`. The opt-out exists precisely because model invocation is the default
 - **CC 2.1.215 narrowed auto-execution, not auto-invocation** — Some built-in skills stopped firing on weak signals. That tightened the matching bar; it did not remove the Skill tool or the model-facing listing
 
 **Implications for plugin developers:**

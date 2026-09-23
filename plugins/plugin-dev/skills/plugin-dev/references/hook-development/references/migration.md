@@ -67,7 +67,7 @@ fi
       "hooks": [
         {
           "type": "prompt",
-          "prompt": "Command: $TOOL_INPUT.command. Analyze for: 1) Destructive operations (rm -rf, dd, mkfs, etc) 2) Privilege escalation (sudo) 3) Network operations without user consent. Return 'approve' or 'deny' with explanation.",
+          "prompt": "Tool input: $ARGUMENTS. Analyze the command for: 1) Destructive operations (rm -rf, dd, mkfs, etc) 2) Privilege escalation (sudo) 3) Network operations without user consent. Answer ok only if none apply; otherwise give the reason.",
           "timeout": 15
         }
       ]
@@ -84,6 +84,8 @@ fi
 - Easy to extend with new criteria
 - Context-aware decisions
 - Natural language explanation in denial
+
+The model replies `{"ok": true}` or `{"ok": false, "reason": "..."}`. A not-ok verdict blocks the command and passes the reason to Claude. Any other reply shape fails with `Schema validation failed`.
 
 ## Migration Example: File Write Validation
 
@@ -153,7 +155,7 @@ fi
       "hooks": [
         {
           "type": "prompt",
-          "prompt": "File path: $TOOL_INPUT.file_path. Content preview: $TOOL_INPUT.content (first 200 chars). Verify: 1) Not system directories (/etc, /sys, /usr) 2) Not credentials (.env, tokens, secrets) 3) No path traversal 4) Content doesn't expose secrets. Return 'approve' or 'deny'."
+          "prompt": "Tool input: $ARGUMENTS. Check the file_path and content: 1) Not system directories (/etc, /sys, /usr) 2) Not credentials (.env, tokens, secrets) 3) No path traversal 4) Content doesn't expose secrets. Answer ok only if all four hold; otherwise give the reason."
         }
       ]
     }
@@ -236,7 +238,7 @@ Combine both for multi-stage validation:
         },
         {
           "type": "prompt",
-          "prompt": "Deep analysis of bash command: $TOOL_INPUT",
+          "prompt": "Deep analysis of the bash command in this tool input: $ARGUMENTS",
           "timeout": 15
         }
       ]
@@ -384,7 +386,7 @@ fi
 **After:**
 
 ```
-"Check: 1) condition1 2) condition2 3) condition3. Deny if any fail."
+"Check: 1) condition1 2) condition2 3) condition3. Answer ok only if all pass; otherwise give the reason."
 ```
 
 ## Conclusion

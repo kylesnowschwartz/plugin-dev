@@ -35,7 +35,7 @@ if [ "$FIRST_LINE" != "---" ]; then
 fi
 
 # Extract agent name
-NAME=$(sed -n '/^---$/,/^---$/p' "$AGENT_FILE" | grep '^name:' | sed 's/name: *//' | sed 's/^"\(.*\)"$/\1/' | head -1)
+NAME=$(sed -n '/^---$/,/^---$/p' "$AGENT_FILE" | grep '^name:' | sed 's/name: *//' | sed 's/^"\(.*\)"$/\1/' | head -1 || true)
 
 if [ -z "$NAME" ]; then
   echo "❌ Could not extract agent name"
@@ -71,6 +71,7 @@ fi
 
 # Count example blocks
 EXAMPLE_COUNT=$(echo "$DESCRIPTION" | grep -c '<example>' 2>/dev/null || echo 0)
+EXAMPLE_COUNT=$(echo "$EXAMPLE_COUNT" | tr -d '[:space:]')
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "📊 EXAMPLE ANALYSIS"
@@ -133,7 +134,7 @@ if [ -z "$USER_PHRASES" ]; then
   echo "⚠️  Could not extract user phrases from examples"
   echo ""
   echo "Make sure examples include 'user: \"phrase\"' format"
-  ((warning_count++))
+  warning_count=$((warning_count + 1))
 else
   echo "Use these phrases to test agent triggering:"
   echo ""
@@ -151,7 +152,7 @@ echo ""
 # Check for "Use this agent when" pattern
 if ! echo "$DESCRIPTION" | grep -qi 'use this agent when'; then
   echo "⚠️  Description should start with 'Use this agent when...'"
-  ((warning_count++))
+  warning_count=$((warning_count + 1))
 else
   echo "✅ Has 'Use this agent when' pattern"
 fi
@@ -159,10 +160,10 @@ fi
 # Check example count
 if [ "$EXAMPLE_COUNT" -lt 2 ]; then
   echo "⚠️  Only $EXAMPLE_COUNT example(s) - recommend 2-4 examples"
-  ((warning_count++))
+  warning_count=$((warning_count + 1))
 elif [ "$EXAMPLE_COUNT" -gt 4 ]; then
   echo "⚠️  $EXAMPLE_COUNT examples - consider trimming to 2-4"
-  ((warning_count++))
+  warning_count=$((warning_count + 1))
 else
   echo "✅ Good number of examples ($EXAMPLE_COUNT)"
 fi
@@ -172,7 +173,7 @@ COMMENTARY_COUNT=$(echo "$DESCRIPTION" | grep -c '<commentary>' 2>/dev/null || e
 COMMENTARY_COUNT=$(echo "$COMMENTARY_COUNT" | tr -d '[:space:]')
 if [ "$COMMENTARY_COUNT" -lt "$EXAMPLE_COUNT" ]; then
   echo "⚠️  Some examples missing <commentary> blocks"
-  ((warning_count++))
+  warning_count=$((warning_count + 1))
 else
   echo "✅ All examples have commentary"
 fi
@@ -182,7 +183,7 @@ CONTEXT_COUNT=$(echo "$DESCRIPTION" | grep -ci 'context:' 2>/dev/null || echo 0)
 CONTEXT_COUNT=$(echo "$CONTEXT_COUNT" | tr -d '[:space:]')
 if [ "$CONTEXT_COUNT" -lt "$EXAMPLE_COUNT" ]; then
   echo "⚠️  Some examples missing Context: lines"
-  ((warning_count++))
+  warning_count=$((warning_count + 1))
 else
   echo "✅ All examples have context"
 fi
@@ -192,7 +193,7 @@ ASSISTANT_COUNT=$(echo "$DESCRIPTION" | grep -c 'assistant:' 2>/dev/null || echo
 ASSISTANT_COUNT=$(echo "$ASSISTANT_COUNT" | tr -d '[:space:]')
 if [ "$ASSISTANT_COUNT" -lt "$EXAMPLE_COUNT" ]; then
   echo "⚠️  Some examples missing assistant: responses"
-  ((warning_count++))
+  warning_count=$((warning_count + 1))
 else
   echo "✅ All examples have assistant responses"
 fi

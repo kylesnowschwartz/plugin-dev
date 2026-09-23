@@ -84,7 +84,7 @@ Hooks receive JSON via stdin with these common fields. `permission_mode` is the 
 }
 ```
 
-Inside a subagent, `agent_id` and `agent_type` are also present. Event-specific fields vary — per-event and per-tool input fields are in `references/hook-input-schemas.md`; complete schemas in `references/event-schemas.md`. Prompt hooks access input via `$TOOL_INPUT`, `$TOOL_NAME`, `$USER_PROMPT`, etc.
+Inside a subagent, `agent_id` and `agent_type` are also present. Event-specific fields vary — per-event and per-tool input fields are in `references/hook-input-schemas.md`; complete schemas in `references/event-schemas.md`. Prompt and agent hooks have one placeholder, `$ARGUMENTS`, which receives the whole hook input JSON. The prompt should name the field it wants, for example `file_path` or `command`. A prompt with no `$ARGUMENTS` gets the input JSON appended after an `ARGUMENTS:` label.
 
 **Environment variables** in command hooks. A hook shipped in a plugin receives `CLAUDE_PLUGIN_ROOT`, `CLAUDE_PLUGIN_DATA`, and `CLAUDE_PROJECT_DIR`. A hook declared in skill or agent frontmatter receives `CLAUDE_PROJECT_DIR` and a loader-bound `CLAUDE_PLUGIN_ROOT`, but not `CLAUDE_PLUGIN_DATA`. Full descriptions, including `CLAUDE_PLUGIN_OPTION_<KEY>`: `../plugin-structure/references/manifest-reference.md` (Plugin Environment Variables).
 

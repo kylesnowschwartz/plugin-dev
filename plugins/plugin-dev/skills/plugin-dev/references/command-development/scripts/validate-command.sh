@@ -41,7 +41,7 @@ validate_command() {
   # Check 2: .md extension
   if [[ ! "$COMMAND_FILE" =~ \.md$ ]]; then
     echo "❌ Error: File must have .md extension"
-    ((error_count++))
+    error_count=$((error_count + 1))
   else
     echo "✅ Has .md extension"
   fi
@@ -49,7 +49,7 @@ validate_command() {
   # Check 3: Non-empty file
   if [ ! -s "$COMMAND_FILE" ]; then
     echo "❌ Error: File is empty"
-    ((error_count++))
+    error_count=$((error_count + 1))
   else
     echo "✅ File is not empty"
   fi
@@ -63,10 +63,10 @@ validate_command() {
     MARKERS=$(head -n 50 "$COMMAND_FILE" | grep -c "^---" || true)
     if [ "$MARKERS" -lt 2 ]; then
       echo "❌ Error: Invalid YAML frontmatter (need exactly 2 '---' markers, found $MARKERS)"
-      ((error_count++))
+      error_count=$((error_count + 1))
     elif [ "$MARKERS" -gt 2 ]; then
       echo "⚠️  Warning: Multiple frontmatter markers detected ($MARKERS). Only first pair is used."
-      ((warning_count++))
+      warning_count=$((warning_count + 1))
     else
       echo "✅ YAML frontmatter delimiters valid"
     fi
@@ -83,13 +83,13 @@ validate_command() {
       # Check for tabs (YAML prefers spaces)
       if echo "$frontmatter" | grep -q $'\t'; then
         echo "⚠️  Warning: Frontmatter contains tabs (YAML prefers spaces)"
-        ((warning_count++))
+        warning_count=$((warning_count + 1))
       fi
 
       # Check for common YAML errors - key without value
       if echo "$frontmatter" | grep -qE "^[a-z-]+:$"; then
         echo "⚠️  Warning: Frontmatter has keys without values"
-        ((warning_count++))
+        warning_count=$((warning_count + 1))
       fi
     fi
   else
@@ -104,7 +104,7 @@ validate_command() {
     echo "✅ File in expected commands directory"
   else
     echo "⚠️  Warning: File not in .claude/commands/ or plugin commands/ directory"
-    ((warning_count++))
+    warning_count=$((warning_count + 1))
   fi
 
   # Check 6: Filename conventions
@@ -115,10 +115,10 @@ validate_command() {
 
   if [[ "$filename" =~ [A-Z] ]]; then
     echo "⚠️  Warning: Filename contains uppercase letters (recommend lowercase)"
-    ((warning_count++))
+    warning_count=$((warning_count + 1))
   elif [[ "$filename" =~ [[:space:]] ]]; then
     echo "⚠️  Warning: Filename contains spaces (use hyphens instead)"
-    ((warning_count++))
+    warning_count=$((warning_count + 1))
   else
     echo "✅ Filename follows conventions"
   fi

@@ -707,13 +707,13 @@ claude plugin install my-plugin@my-marketplace \
 
 ### Plugin Environment Variables
 
-Claude Code sets these variables for plugin hooks. Of the variables in this table, plugin MCP/LSP server configuration (`command`, `args`, `env`, `url`, `headers`) expands only `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA`. The same fields also expand the user's own environment variables (`${MY_API_KEY}`, with `${VAR:-default}` fallbacks) and non-sensitive `${user_config.KEY}` values. See `../../mcp-integration/overview.md` (Environment Variable Expansion).
+Claude Code sets these variables for plugin hooks. Of the variables in this table, plugin MCP/LSP server configuration expands `CLAUDE_PLUGIN_ROOT`, `CLAUDE_PLUGIN_DATA`, and `CLAUDE_PROJECT_DIR` in `command`, each `args` entry, and `env` values, plus `url` and `headers` values for remote MCP servers and `workspaceFolder` for LSP servers. The same fields also expand the user's own environment variables (`${MY_API_KEY}`, with `${VAR:-default}` fallbacks; only the braced form expands, a bare `$VAR` stays literal) and non-sensitive `${user_config.KEY}` values. See `../../mcp-integration/overview.md` (Environment Variable Expansion).
 
 | Variable | Value |
 | --- | --- |
 | `CLAUDE_PLUGIN_ROOT` | The plugin's own directory — use it for every intra-plugin path |
 | `CLAUDE_PLUGIN_DATA` | `~/.claude/plugins/data/<plugin>-<marketplace>`, a per-plugin state directory |
-| `CLAUDE_PROJECT_DIR` | The project root the session runs in. Set for plugin hooks; not expanded in MCP/LSP server configuration |
+| `CLAUDE_PROJECT_DIR` | The project root the session runs in. Set for plugin hooks; expanded in plugin MCP/LSP server configuration |
 | `CLAUDE_PLUGIN_OPTION_<KEY>` | One variable per `userConfig` option, holding its configured value. Absent until the option is set |
 
 `CLAUDE_PLUGIN_DATA` is where a plugin keeps state that must survive across sessions — caches, databases, logs, counters. The directory is created when the plugin is installed and removed when it is uninstalled, so nothing inside it survives a reinstall. It is plugin-only: hooks declared in skill frontmatter receive `${CLAUDE_PLUGIN_ROOT}` but not `${CLAUDE_PLUGIN_DATA}`.

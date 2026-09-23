@@ -19,7 +19,7 @@ Combine command and prompt hooks for layered validation:
         },
         {
           "type": "prompt",
-          "prompt": "Deep analysis of bash command: $TOOL_INPUT",
+          "prompt": "Deep analysis of the bash command in this tool input: $ARGUMENTS",
           "timeout": 15
         }
       ]
