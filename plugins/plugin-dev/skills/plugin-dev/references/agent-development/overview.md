@@ -68,28 +68,28 @@ The full frontmatter template (all fields, system-prompt scaffold) is shown in `
 
 ## Frontmatter Fields
 
-| Field           | Required | Format                      | Example                  |
-| --------------- | -------- | --------------------------- | ------------------------ |
-| name            | Yes      | lowercase-hyphens           | code-reviewer            |
-| description     | Yes      | Text + examples             | Use when... <example>... |
-| model           | Yes      | inherit/sonnet/opus/haiku   | inherit                  |
-| color           | Yes      | Color name                  | blue                     |
-| tools           | No       | Comma-separated tool names  | Read, Grep               |
-| disallowedTools | No       | Comma-separated tool names  | Bash, Write              |
-| skills          | No       | Comma-separated skill names | testing, security        |
-| permissionMode  | No       | Permission mode string      | acceptEdits              |
-| maxTurns        | No       | Integer                     | 50                       |
-| memory          | No       | Scope string                | user                     |
-| mcpServers      | No       | Server name map             | slack:                   |
-| hooks           | No       | Hook event map              | PreToolUse: [...]        |
-| initialPrompt   | No       | String                      | "Run health check..."    |
-| omitClaudeMd    | No       | Boolean                     | true                     |
+| Field           | Required | Format                                        | Example                  |
+| --------------- | -------- | --------------------------------------------- | ------------------------ |
+| name            | Yes      | lowercase-hyphens                             | code-reviewer            |
+| description     | Yes      | Text + examples                               | Use when... <example>... |
+| model           | Yes      | inherit/sonnet/opus/haiku/fable or a model ID | inherit                  |
+| color           | Yes      | Color name                                    | blue                     |
+| tools           | No       | Comma-separated tool names                    | Read, Grep               |
+| disallowedTools | No       | Comma-separated tool names                    | Bash, Write              |
+| skills          | No       | Comma-separated skill names                   | testing, security        |
+| permissionMode  | No       | Permission mode string                        | acceptEdits              |
+| maxTurns        | No       | Integer                                       | 50                       |
+| memory          | No       | Scope string                                  | user                     |
+| mcpServers      | No       | Server name map                               | slack:                   |
+| hooks           | No       | Hook event map                                | PreToolUse: [...]        |
+| initialPrompt   | No       | String                                        | "Run health check..."    |
+| omitClaudeMd    | No       | Boolean                                       | true                     |
 
 **Field notes:**
 
 - **name** — lowercase letters, numbers, hyphens only; 3-50 chars; must start and end with alphanumeric. **CC 2.1.216 (breaking):** Agent names cannot contain colons (`:`) — this is now a validation error. Colons are reserved for scoped naming conventions (e.g., `apps/web:reviewer`). See Validation Rules below.
 - **description** — the most critical field. Must state triggering conditions ("Use this agent when...") plus 2-4 `<example>` blocks (Context, user, assistant, `<commentary>`). Anatomy, example types, templates, and debugging live in `references/triggering-examples.md`.
-- **model** — `inherit` (recommended default), `sonnet`, `opus`, or `haiku`. Use `haiku` for fast/cost-sensitive work, `opus` for complex reasoning. **As of CC 2.1.219, `opus` resolves to Claude Opus 5 (native 1M-token context, $10/$50 per Mtok) and is the default model in Claude Code.** Omitting `thinking` in API calls runs adaptive thinking on Opus 5; the API rejects an explicit request to disable thinking unless the effort is `high` (a `thinking: {type: "disabled"}` request at `xhigh` or `max` effort returns a 400 error). Separately, CC 2.1.219 adds `xhigh` as an effort value in the Claude Code UI/settings. If your agents rely on specific model behavior, note that `opus` now resolves to Opus 5 and `sonnet` resolves to Sonnet 5.
+- **model** — `inherit` (recommended default), `sonnet`, `opus`, `haiku`, or `fable`, or a full model ID such as `claude-opus-5-5`. Use `haiku` for fast/cost-sensitive work, `opus` for complex reasoning. **As of CC 2.1.280, `opus` resolves to Claude Opus 5.5 (`claude-opus-5-5`, 1M-token context, $4/$20 per Mtok with $0.20/Mtok cache reads), the default Opus model.** CC 2.1.219 made Claude Opus 5 the `opus` target and the default model. Omitting `thinking` in API calls runs adaptive thinking on Opus 5; the API rejects an explicit request to disable thinking unless the effort is `high` (a `thinking: {type: "disabled"}` request at `xhigh` or `max` effort returns a 400 error). Separately, CC 2.1.219 adds `xhigh` as an effort value in the Claude Code UI/settings. If your agents rely on specific model behavior, note that `opus` now resolves to Opus 5.5 and `sonnet` resolves to Sonnet 5. Pin a full model ID when an agent must stay on one model across releases.
 - **color** — `blue`, `cyan`, `green`, `yellow`, `magenta`, `red`. Choose distinct colors per plugin; color→purpose conventions are in `examples/complete-agent-examples.md`.
 - **tools** — allowlist of comma-separated tool names; omit for full access. Follow least privilege. Common sets: read-only analysis `Read, Grep, Glob`; code generation `Read, Write, Grep`; testing `Read, Bash, Grep`; background monitoring `Monitor`. Version-specific behaviors (multiple `Agent(...)` types, `Monitor`, `Agent(type)` deny rules and the `Task(...)` alias, Config-tool removal, Bash guidance) are in `references/advanced-agent-fields.md`.
 - **disallowedTools** — denylist complement to `tools`; block specific tools while allowing the rest. Prefer `tools` (allowlist) for tighter security; use one or the other (specifying both is undefined).

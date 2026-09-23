@@ -100,6 +100,8 @@ Claude Code supports four transport types. Pick by where the server runs and how
 - **HTTP** connects to a RESTful MCP endpoint with token authentication for stateless request/response interactions.
 - **ws** connects over WebSocket for real-time bidirectional streaming and push notifications.
 
+**No `"type": "sdk"` servers in plugins (CC 2.1.274).** The official MCP docs also list `sdk`, an in-process server, but only an SDK host application can register one. An `sdk` entry in `.mcp.json`, `plugin.json` `mcpServers`, settings, or an agent file's `mcpServers` is skipped with a warning, so the plugin loads without that server. Ship the server as stdio, HTTP, SSE, or WebSocket instead.
+
 For the full decision guide ("Choosing the Right Type"), per-type configuration, process/connection lifecycle, comparison matrix, migration between types, multiple-server setups, and per-transport security, see `references/server-types.md`. Ready-to-copy configs live in `examples/` (`stdio-server.json`, `sse-server.json`, `http-server.json`, `ws-server.json`).
 
 ## Environment Variable Expansion

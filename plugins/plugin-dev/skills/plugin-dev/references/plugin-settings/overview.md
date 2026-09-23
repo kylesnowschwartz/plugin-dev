@@ -606,19 +606,18 @@ See `references/memory-rules-system.md` for the full priority hierarchy, import 
 
 ### Bash and Task Output Character Limits (CC 2.1.261)
 
-Two new settings control the maximum output size for Bash commands and Task tool results:
+CC 2.1.261 added two settings for the maximum output size of Bash commands and Task tool results. Only `bashOutputMaxChars` still has an effect:
 
 ```json
 {
-  "bashOutputMaxChars": 65536,
-  "taskOutputMaxChars": 65536
+  "bashOutputMaxChars": 65536
 }
 ```
 
 **Settings:**
 
 - **`bashOutputMaxChars`** — Maximum characters returned from Bash tool output (up to 128K)
-- **`taskOutputMaxChars`** — Maximum characters returned from Task tool/subagent output (up to 128K)
+- **`taskOutputMaxChars`** — **No effect since CC 2.1.277.** It capped output read back through the TaskOutput tool, which CC 2.1.277 removed. Claude now reads a background task's output file with the Read tool. The setting is still accepted so existing files keep loading, and the `TASK_MAX_OUTPUT_LENGTH` environment variable is likewise inert. Remove both from plugin setup instructions.
 
 **Default behavior:** Without these settings, output is truncated at 30K characters.
 

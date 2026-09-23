@@ -21,6 +21,8 @@ Operating MCP servers at runtime: lifecycle, resources, tool search, limits, err
 **Viewing servers:**
 Use `/mcp` command to see all servers including plugin-provided ones.
 
+**Non-interactive startup wait (CC 2.1.274):** In non-interactive runs (`claude -p`, SDK), the first turn can wait for MCP servers that are still connecting. `CLAUDE_CODE_MCP_STARTUP_WAIT_MS` bounds that wait, and `0` means don't wait. A server that connects later becomes available on a later turn, so a slow-starting plugin server may miss the first turn of a headless run. In `--input-format stream-json` sessions, the first turn also no longer waits up to 2s for still-connecting servers whose tools tool search defers. Those tools arrive on a later turn.
+
 ## MCP Server Session Variables
 
 **MCP server session variables (CC 2.1.154):** MCP servers automatically receive two environment variables:
@@ -372,7 +374,9 @@ Design plugin MCP tools to return concise results. Paginate or summarize large o
 
 ## MCP Description Limits
 
-Tool descriptions and server instructions are capped at **2KB each**. This prevents OpenAPI-generated servers with verbose schemas from bloating the context window. Keep tool descriptions concise and focused on usage rather than exhaustive parameter documentation.
+Tool descriptions and server instructions are capped at **2,048 characters each**. This prevents OpenAPI-generated servers with verbose schemas from bloating the context window. Keep tool descriptions concise and focused on usage rather than exhaustive parameter documentation.
+
+**`CLAUDE_CODE_MAX_MCP_DESCRIPTION_LENGTH` (CC 2.1.280)** changes that cap. It applies to every MCP server in the session, not only one plugin's. It is a user-side setting, so a plugin cannot rely on a raised cap. Write descriptions that are useful when cut at 2,048 characters, with the essential usage guidance first.
 
 ## Tool Use Display Metadata (CC 2.1.181)
 

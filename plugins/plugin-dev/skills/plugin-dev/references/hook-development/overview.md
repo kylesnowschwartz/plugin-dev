@@ -19,11 +19,15 @@ Five hook types are available. Not all events support all types (see the [event 
 | `mcp_tool` | Validation via MCP tools without agent overhead (CC 2.1.118)   | `server` + `tool`; accepted on every event that accepts command hooks               |
 | `http`     | External service integration, logging, webhooks                | Posts event data to `url`; non-2xx treated as non-blocking                          |
 
-**Event support:** Command and `mcp_tool` hooks work on all 33 events. HTTP hooks work on all but SessionStart and Setup, which skip them. Prompt and agent hooks need a live conversation to run in, and 20 events are dispatched without one: ConfigChange, CwdChanged, DirectoryAdded, Elicitation, ElicitationResult, FileChanged, InstructionsLoaded, MessageDisplay, Notification, PostCompact, PreCompact, PreModelSwitch, PostModelSwitch, SessionEnd, SessionStart, Setup, StopFailure, SubagentStart, WorktreeCreate, and WorktreeRemove. The other 13 accept all five types: PreToolUse, PostToolUse, PostToolUseFailure, PostToolBatch, PermissionRequest, PermissionDenied, UserPromptSubmit, UserPromptExpansion, Stop, SubagentStop, TeammateIdle, TaskCreated, and TaskCompleted. The official hooks reference (<https://code.claude.com/docs/en/hooks>) presents all five hook types as available on every event; the runtime rejects prompt and agent hooks on the 20 events above with `hook_type_unsupported`, so treat the narrower list as the one that governs. Prompt and agent hooks return the standard hook output JSON, adding `hookSpecificOutput` for event-specific behavior (PreToolUse, PermissionRequest, Elicitation).
+**Event support:** Command and `mcp_tool` hooks are accepted on all 33 events, but an `mcp_tool` hook runs only where MCP servers are available: Setup always skips it, and SessionStart skips it at launch (details under the [Hook Events Reference](#hook-events-reference)). HTTP hooks work on all but SessionStart and Setup, which skip them. Prompt and agent hooks need a live conversation to run in, and 20 events are dispatched without one: ConfigChange, CwdChanged, DirectoryAdded, Elicitation, ElicitationResult, FileChanged, InstructionsLoaded, MessageDisplay, Notification, PostCompact, PreCompact, PreModelSwitch, PostModelSwitch, SessionEnd, SessionStart, Setup, StopFailure, SubagentStart, WorktreeCreate, and WorktreeRemove. The other 13 accept all five types in config: PreToolUse, PostToolUse, PostToolUseFailure, PostToolBatch, PermissionRequest, PermissionDenied, UserPromptSubmit, UserPromptExpansion, Stop, SubagentStop, TeammateIdle, TaskCreated, and TaskCompleted. The official hooks reference (<https://code.claude.com/docs/en/hooks>) presents all five hook types as available on every event; the runtime rejects prompt and agent hooks on the 20 events above with `hook_type_unsupported`, so treat the narrower list as the one that governs.
+
+**PermissionRequest does not run agent hooks (CC 2.1.280).** An agent hook answers ok or not ok, so it can never return the allow or deny decision a permission request needs. Claude Code still accepts one in config, but at run time it fails with `agent-type hooks are not supported for PermissionRequest events ... Use a command- or http-type hook instead.` Write PermissionRequest decisions as command or HTTP hooks.
+
+**Prompt and agent hooks do not return the standard hook output JSON.** Their model's reply must be `{"ok": true}` or `{"ok": false, "reason": "..."}`, and a Stop evaluator may add `"impossible": true` (`references/event-schemas.md`, Stop). A reply of any other shape, such as `{"decision": "block"}`, fails with `Schema validation failed`. Claude Code, not the hook, turns the verdict into the event's outcome. The standard output below, with `hookSpecificOutput` for event-specific behavior (PreToolUse, PermissionRequest, Elicitation), is what command, HTTP, and `mcp_tool` hooks return.
 
 ## Configuration Formats
 
-**Plugin hooks** in `hooks/hooks.json` use a required `hooks` wrapper: `{"description": "...(optional)", "hooks": {"PreToolUse": [...], "Stop": [...]}}`.
+**Plugin hooks** in `hooks/hooks.json` use a required `hooks` wrapper: `{"description": "...(optional)", "hooks": {"PreToolUse": [...], "Stop": [...]}}`. A top-level `$schema` key, for editor validation, is ignored at load. Before CC 2.1.274 it raised an "unknown key" notice.
 
 **User settings** in `.claude/settings.json` place events directly inside the settings `"hooks"` key with no wrapper.
 
@@ -68,7 +72,7 @@ Async command hooks (`"async": true`) cannot block (exit 2 ignored) or return de
 
 ## Hook Input
 
-All hooks receive JSON via stdin with common fields:
+Hooks receive JSON via stdin with these common fields. `permission_mode` is the exception: it is absent from SessionStart and InstructionsLoaded, so read it defensively (`jq -r '.permission_mode // empty'`).
 
 ```json
 {
@@ -82,7 +86,7 @@ All hooks receive JSON via stdin with common fields:
 
 Inside a subagent, `agent_id` and `agent_type` are also present. Event-specific fields vary — per-event and per-tool input fields are in `references/hook-input-schemas.md`; complete schemas in `references/event-schemas.md`. Prompt hooks access input via `$TOOL_INPUT`, `$TOOL_NAME`, `$USER_PROMPT`, etc.
 
-**Environment variables** in command hooks. A hook shipped in a plugin receives `CLAUDE_PLUGIN_ROOT`, `CLAUDE_PLUGIN_DATA`, and `CLAUDE_PROJECT_DIR`; a hook declared in skill frontmatter receives `CLAUDE_PLUGIN_ROOT` only. Full descriptions, including `CLAUDE_PLUGIN_OPTION_<KEY>`: `../plugin-structure/references/manifest-reference.md` (Plugin Environment Variables).
+**Environment variables** in command hooks. A hook shipped in a plugin receives `CLAUDE_PLUGIN_ROOT`, `CLAUDE_PLUGIN_DATA`, and `CLAUDE_PROJECT_DIR`. A hook declared in skill or agent frontmatter receives `CLAUDE_PROJECT_DIR` and a loader-bound `CLAUDE_PLUGIN_ROOT`, but not `CLAUDE_PLUGIN_DATA`. Full descriptions, including `CLAUDE_PLUGIN_OPTION_<KEY>`: `../plugin-structure/references/manifest-reference.md` (Plugin Environment Variables).
 
 - `$CLAUDE_PROJECT_DIR` — project root path.
 - `$CLAUDE_PLUGIN_ROOT` — plugin directory; use for portable paths. Loader-bound in frontmatter hooks (see the Scoped hooks caveat above).
@@ -110,7 +114,7 @@ Other events match on source/category values, agent type names, MCP server name,
 
 Category, decision control, and hook types for all 33 events. "All" = Command, HTTP, MCP tool, Prompt, Agent. Full schemas and per-event matcher values: `references/event-schemas.md`; matcher syntax: `references/advanced.md` (Event-Specific Matchers).
 
-A Types cell naming Command always admits `mcp_tool` too. Which events restrict prompt, agent, and HTTP hooks, and why, is set out under Hook Types above.
+A Types cell naming Command always admits `mcp_tool` too. Which events restrict prompt, agent, and HTTP hooks, and why, is set out under Hook Types above. The Types column records what config accepts. PermissionRequest reads All, but its agent hooks fail at run time (CC 2.1.280, see Hook Types).
 
 An `mcp_tool` hook is accepted on every event, but it only runs where an MCP client set exists. Setup fires before MCP servers are available, so its `mcp_tool` hooks are always skipped. SessionStart fires before servers are available at launch, including `--continue` and `--resume`, so its `mcp_tool` hooks are skipped there; after `/clear` or compaction the servers are up and they run. A skipped hook is not an error — it logs `mcp_tool hooks are not available for the '<event>' hook event (no MCP client context)` and returns no decision.
 

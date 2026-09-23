@@ -155,6 +155,23 @@ For GitLab, Bitbucket, or self-hosted git:
 }
 ```
 
+### npm Packages
+
+```json
+{
+  "name": "npm-plugin",
+  "source": {
+    "source": "npm",
+    "package": "@acme/claude-plugin",
+    "version": "^1.4.0"
+  }
+}
+```
+
+`version` takes a version or range, and `registry` sets a custom registry URL. **Since CC 2.1.275, npm plugins are fetched with `npm pack --ignore-scripts` and integrity-verified, so the package's install scripts (`preinstall`, `install`, `postinstall`, `prepare`) never run.** Publish the plugin already built. Anything generated on the user's machine belongs in a `SessionStart` hook that writes to `${CLAUDE_PLUGIN_DATA}`.
+
+**Git LFS (CC 2.1.274):** GitHub and git URL sources, and the marketplace repository itself, are cloned with Git LFS files left as pointer files. Keep runtime files out of LFS. A user who needs the content runs `git lfs pull` in the checkout.
+
 ### Pinning to Specific Versions
 
 Lock plugins to exact versions for reproducibility:
@@ -286,7 +303,15 @@ See `references/distribution-patterns.md` for detailed authentication setup.
 
 ### Reserved Marketplace Names
 
-Anthropic reserves certain marketplace names. Avoid using names that could conflict with official marketplaces.
+Anthropic reserves certain marketplace names. **Since CC 2.1.280, a marketplace whose name imitates a reserved name is refused when added, and one that was already added stops loading.** Existing users of such a marketplace lose its plugins on upgrade, so rename before publishing.
+
+Names the CC 2.1.280 binary treats as reserved or impersonating:
+
+- **Official names**, usable only by Anthropic's own repositories. Examples are `claude-plugins-official`, `claude-plugins-community`, `claude-community`, `anthropic-plugins`, `anthropic-marketplace`, `claude-code-plugins`, `claude-code-marketplace`, `agent-skills`, and `claude-plugin-directory`.
+- **Imitations**: names that pair `official` with `anthropic` or `claude` in either order, and names that start with `anthropic` or `claude` followed by `marketplace`, `plugins`, or `official`, whatever the separator. Names containing non-ASCII characters are also refused.
+- **Source names** Claude Code uses for its own plugin sources: `inline`, `builtin`, `skills-dir`, `synced`, `claude-plugin-test`, `npm`, `pip`, `uv`, `cargo`, `github`, and `gh`.
+
+Give a marketplace a name built on your organization or project, for example `acme-tools`.
 
 ### URL-Based Marketplace Limitations
 
@@ -331,6 +356,8 @@ The Discover tab considers the current working directory when suggesting plugins
 - **GitHub hosting** - Simplest distribution via `/plugin marketplace add owner/repo`
 - **Team settings** - Configure `extraKnownMarketplaces` in `.claude/settings.json`
 - **Local testing** - Add with `/plugin marketplace add ./path` during development
+
+**Install with the marketplace source (CC 2.1.275):** `/plugin install <plugin> --marketplace <source>` offers to add the marketplace before installing the plugin. A README can give one command that works for users who have not added the marketplace yet, for example `/plugin install my-plugin --marketplace owner/repo`.
 
 **Catalog Refresh on Install (CC 2.1.221):** `/plugin install` now automatically refreshes a stale marketplace catalog before reporting "not found." This improves the installation experience when users try to install recently-added plugins that aren't yet in their local cache.
 

@@ -178,7 +178,7 @@ Commands and skills are both invoked via the same **Skill tool**. The difference
 
 ## Command Organization
 
-Use a flat structure for small sets (5-15 commands, no clear categories). For 15+ commands with clear categories, group them in subdirectories -- the subdirectory name becomes a namespace shown in `/help` (e.g. `commands/git/commit.md` → `/commit (project:git)`). Plugin commands follow the same auto-discovery and namespacing rules; see `references/plugin-features-reference.md`.
+Use a flat structure for small sets (5-15 commands, no clear categories). For 15+ commands with clear categories, project commands can be grouped in subdirectories -- the subdirectory name becomes a namespace shown in `/help` (e.g. `.claude/commands/git/commit.md` → `/commit (project:git)`). **Plugin commands differ:** a plugin's default `commands/` directory is not searched recursively, so `commands/git/commit.md` does not load unless `plugin.json` lists `./commands/git` in `commands`, and it then loads as `commit` with no subdirectory namespace. See `references/plugin-features-reference.md`.
 
 Commands also integrate with other plugin components -- launch agents, trigger skills, coordinate with hooks -- and should validate inputs and resources before processing. See `references/plugin-integration.md` for integration and validation patterns.
 

@@ -52,7 +52,7 @@ jobs:
 
 ### CLAUDE.md Integration
 
-The most direct way plugins interact with CI is through CLAUDE.md. Project-level instructions (`.claude/CLAUDE.md`) load automatically in CI runs, providing:
+The most direct way plugins interact with CI is through CLAUDE.md. Project-level instructions (`.claude/CLAUDE.md`) load automatically in CI runs. In a repository with no CLAUDE.md, `AGENTS.md` loads in its place (CC 2.1.277; not yet on Bedrock, Vertex, or Foundry). These instructions provide:
 
 - Code style requirements
 - Review criteria

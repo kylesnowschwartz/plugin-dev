@@ -323,6 +323,9 @@ Before adding external plugins to your marketplace:
 # Install from specific marketplace
 /plugin install plugin-name@marketplace-name
 
+# Offer to add the marketplace first, then install (CC 2.1.275)
+/plugin install plugin-name --marketplace owner/repo
+
 # Browse available plugins
 /plugin
 ```

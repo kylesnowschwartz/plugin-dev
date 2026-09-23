@@ -19,7 +19,7 @@ Complete input and output JSON schemas for all 33 Claude Code hook events.
 }
 ```
 
-`permission_mode` carries the session's current permission mode: `default` (prompt for permission), `acceptEdits`, `bypassPermissions`, `plan` (no tool execution), `dontAsk` (deny anything not pre-approved), or `auto` (a model classifier approves or denies prompts). The field is typed as an optional string rather than a closed enum, and it is present on most events but not all — notably absent from SessionStart and InstructionsLoaded.
+`permission_mode` carries the session's current permission mode: `default` (prompt for permission), `acceptEdits`, `bypassPermissions`, `plan` (read-only exploration: read tools run, edits and commands are proposed rather than executed), `dontAsk` (deny anything not pre-approved), or `auto` (a model classifier approves or denies prompts). The field is typed as an optional string rather than a closed enum, and it is present on most events but not all — notably absent from SessionStart and InstructionsLoaded.
 
 > **CC 2.1.133:** Hooks now receive the active effort level via the `effort.level` JSON input field and `$CLAUDE_EFFORT` environment variable. Enables hooks to adapt behavior based on effort settings.
 
@@ -425,8 +425,10 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 
 **Known issues:** `additionalContext` is parsed but silently dropped ([anthropics/claude-code#28035](https://github.com/anthropics/claude-code/issues/28035)) — it works in PreToolUse but not here. Race condition where the dialog may briefly show despite returning "allow" ([#12176](https://github.com/anthropics/claude-code/issues/12176)).
 
+**Agent hooks do not run here (CC 2.1.280).** An agent hook answers ok or not ok and cannot return the `allow`/`deny` decision above, so Claude Code refuses to run one on this event. It fails with `agent-type hooks are not supported for PermissionRequest events (an agent hook answers ok or not ok, and cannot return the allow / deny decision a permission request needs). Use a command- or http-type hook instead.` The changelog does not say whether prompt hooks are affected.
+
 **Matchers:** Tool names (same as PreToolUse)
-**Hook types:** Command, HTTP, MCP tool, Prompt, Agent
+**Hook types:** Command, HTTP, MCP tool, Prompt, Agent — an agent hook is accepted in config but fails at run time (CC 2.1.280, see above); use a command or HTTP hook for permission decisions.
 
 ---
 
@@ -789,6 +791,8 @@ Use `impossible` when the goal is self-contradictory, requires a missing capabil
 Same semantics as Stop: blocking causes the subagent to continue working with `reason` as feedback.
 
 **Note:** Stop hooks defined in a subagent context automatically convert to SubagentStop events.
+
+**Empty agent type (CC 2.1.275):** A SubagentStop hook with a specific `matcher` fires only for subagents whose `agent_type` matches it. Before CC 2.1.275, such a hook also fired for every stopping subagent whose agent type was empty. To handle those subagents, register the hook with no matcher (or `*`) and branch on `agent_type` in the script.
 
 **Matchers:** Agent type names (same as SubagentStart)
 **Hook types:** Command, HTTP, MCP tool, Prompt, Agent

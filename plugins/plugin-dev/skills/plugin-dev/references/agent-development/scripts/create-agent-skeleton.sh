@@ -162,7 +162,7 @@ echo "   - Write 2-4 triggering examples (keep them indented under 'description:
 echo "   - Develop detailed system prompt"
 echo ""
 echo "2. Choose appropriate settings:"
-echo "   - model: inherit (default), sonnet, opus, or haiku"
+echo "   - model: inherit (default), sonnet, opus, haiku, fable, or a full model ID"
 echo "   - color: blue (default), cyan, green, yellow, magenta, or red"
 echo "   - tools: Comma-separated tool names if restricting tools, e.g. Read, Grep (optional)"
 echo ""

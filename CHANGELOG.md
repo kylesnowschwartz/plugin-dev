@@ -11,6 +11,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **upstream sync**: the apply stage now runs in its own `update-applier` agent, so the orchestrator no longer spends one turn per documentation edit and a large release range no longer hits the 150-turn limit (the 2026-09-22 run stopped mid-apply on a 55-item manifest)
 
+## [0.47.0] - 2026-09-23
+
+Sync with Claude Code 2.1.274-2.1.280 (the upstream changelog has no 2.1.279 entry). This release covers eighteen changelog-driven Must Update items, three May Update items, and thirteen Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. Where the manifest left the correct side open, the CC 2.1.280 binary or an empirical run settled it. `scripts/check-doc-drift.sh` was clean before and after, and the `docs/claude-code-facts.json` diff was `claude_code_version`-only.
+
+### Added
+
+- **hook-development**: `mcp_server` tool-event input field (CC 2.1.274). It is `{name, source}` on PreToolUse, PostToolUse, PostToolUseFailure, PermissionRequest and PermissionDenied for `mcp__*` tools. Trust decisions should key on `source`, never on the server name or tool-name prefix. Shape read from the 2.1.280 binary
+- **hook-development**: top-level `$schema` in `hooks/hooks.json` is ignored at load (CC 2.1.274), and `validate-hook-schema.sh` now accepts it in the plugin wrapper
+- **hook-development**: SubagentStop hooks with a specific matcher no longer fire for subagents with an empty agent type (CC 2.1.275)
+- **mcp-integration**: `"type": "sdk"` entries are skipped with a warning in `.mcp.json`, plugins, settings and agent files (CC 2.1.274), because only an SDK host can register in-process servers
+- **mcp-integration**: `CLAUDE_CODE_MAX_MCP_DESCRIPTION_LENGTH` (CC 2.1.280), with the cap stated exactly as 2,048 characters, and `CLAUDE_CODE_MCP_STARTUP_WAIT_MS` (CC 2.1.274) for the first non-interactive turn's MCP wait. The wait is also noted in `headless-ci-mode.md`
+- **marketplace-structure**: npm plugin source section. npm sources are fetched with `npm pack --ignore-scripts` and integrity-verified (CC 2.1.275), so install scripts never run. The caveat is also in `advanced-topics.md` beside `claude plugin install npm-package-name`
+- **marketplace-structure**: `/plugin install <plugin> --marketplace <source>` (CC 2.1.275)
+- **marketplace-structure**: reserved marketplace names are refused on add and stop loading if already added (CC 2.1.280). The section now lists the official names, the imitation patterns and the reserved source names read from the binary, replacing the old one-line stub
+- **plugin-settings**: AGENTS.md is read in a project with no CLAUDE.md (CC 2.1.277). Also noted in `github-actions.md`
+- **agent-development**: subagent results reach the main agent framed as subagent output (CC 2.1.277), with guidance to write final reports as data, not directives
+- **lsp-integration**: background subagents can use the LSP tool (CC 2.1.280), and `claude --bg` no longer exits when a plugin's LSP server exits (CC 2.1.277)
+- **plugin-structure**: `claude -p` and SDK sessions exit with code 1 after an internal error instead of hanging (CC 2.1.277). `--forward-subagent-text` now includes `context: fork` skill subagents (CC 2.1.275)
+
+### Changed
+
+- **hook-development**: PermissionRequest no longer runs agent hooks (CC 2.1.280) and shows an error pointing to command or HTTP hooks. The change is documented in the overview, `event-schemas.md`, `advanced.md` and `advanced-topics.md`, and `validate-hook-schema.sh` reports it as an error. The Types cell stays `All` because config still accepts the hook
+- **agent-development**: `opus` resolves to Claude Opus 5.5 (`claude-opus-5-5`, CC 2.1.280). `fable` and full model IDs are documented as valid `model` values, and `validate-agent.sh` and `create-agent-skeleton.sh` now accept them, matching the 2.1.280 agent schema
+- **agent-development / plugin-settings**: CC 2.1.277 removed the TaskOutput tool. `taskOutputMaxChars` and `TASK_MAX_OUTPUT_LENGTH` are marked as having no effect. The `BashOutput`/`AgentOutput` alias sentence was rechecked against the 2.1.280 binary, which lists all three names among tools it no longer offers
+- **marketplace-structure / plugin-structure**: Git LFS files are left as pointers in plugin and marketplace clones (CC 2.1.274). Per the binary, `skipLfs` now "has no effect" and was dropped from the source examples
+- **plugin-structure**: a plugin or marketplace directory without its own git repository no longer takes its version from an enclosing repository (CC 2.1.274)
+
+### Fixed
+
+- **agent-development**: `Write(path)` permission rules are never matched by file permission checks (CC 2.1.275). `Edit(path)` covers Write, Edit and NotebookEdit, so the `Write(./output/*)` and `Write(tests/**)` rule examples were rewritten. The binary's guidance says hook `if` conditions still use each tool's own name, so the `if` example in `advanced.md` stays and now carries that distinction
+- **hook-development / skill-development**: prompt and agent hook replies are validated against `{ok, reason?, impossible?}` and fail with `Schema validation failed` otherwise, per the 2.1.280 binary. The overview's "standard hook output" claim and the `{"decision": "stop"|"continue"}` examples in `advanced.md` and `advanced-frontmatter.md` were corrected
+- **agent-development**: background is the Agent tool's default execution mode. The "Foreground (default)" line and the isolation-mode table contradicted the CC 2.1.198 note and the binary
+- **agent-development**: `dontAsk` never prompts. Blocked Categories now say those operations are denied there, and the least-privilege tip no longer treats `dontAsk` as the looser mode
+- **agent-development**: `bypassPermissions` is no longer described as bypassing every check. The same file lists the security monitor, `blockReadsOutsideWorkingDirectories` and the subshell-`rm` guard as exceptions
+- **plugin-structure**: the agent-hook summary listed 5 blocked events. The authoritative count is the 20 non-conversation events, plus PermissionRequest at run time
+- **command-development**: plugin commands in subdirectories were documented as auto-discovered and namespaced. A CC 2.1.280 `claude plugin details` run showed that default discovery is not recursive, that listed subdirectories load without a namespace, and that setting `commands` replaces the default, which matches `component-patterns.md`
+- **plugin-structure**: plugin MCP/LSP config was said to expand "`CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA` only". That claim is now scoped to the plugin variables in its table, and user env vars, `${user_config.KEY}` and `headers` are named
+- **hook-development**: frontmatter hooks were said to receive `CLAUDE_PLUGIN_ROOT` "only" while the same topic recommended `${CLAUDE_PROJECT_DIR}` there. They receive both, but not `CLAUDE_PLUGIN_DATA`
+- **hook-development**: PermissionRequest `updatedPermissions` in `advanced.md` was an object and is now the array of rule objects from `event-schemas.md`. `mcp_tool` hooks are described as "accepted on" all 33 events, with the Setup and SessionStart skips stated. The overview no longer lists `permission_mode` as a field every hook receives. `plan` mode is described as read-only exploration, not "no tool execution"
+- **hook-development**: `scripts/README.md` named two hook types while the validator accepts five
+
 ## [0.46.0] - 2026-09-16
 
 Sync with Claude Code 2.1.272-2.1.273. Six changelog-driven Must Update items (two promoted from May Update by Stage 2), eight May Update items applied, and twelve Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. CC 2.1.272 was "Bug fixes and reliability improvements" with no itemized entries, so every changelog-driven item comes from 2.1.273. `scripts/check-doc-drift.sh` was clean before and after the run, and the `docs/claude-code-facts.json` diff was `claude_code_version`-only.

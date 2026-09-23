@@ -73,6 +73,8 @@ Hooks support a declarative `if` field using permission rule syntax to filter wh
 
 This hook fires only for Bash commands starting with `git`. The `if` field uses the same permission rule syntax as `settings.json` allow/deny rules (e.g., `Bash(npm *)`, `Edit(src/**)`, `Write(tests/**)`). Combine with `matcher` for two-level filtering: `matcher` selects the event type, `if` narrows to specific invocations.
 
+An `if` condition names each tool by its own name, so `Write(tests/**)` matches Write calls under `tests/`. That is not true of `permissions` path rules in `settings.json`. There, `Edit(path)` covers every file-writing tool, and `Write(path)` rules are never matched (see `../../agent-development/references/permission-modes-rules.md`).
+
 > **CC 2.1.88:** Fixed `if` field filtering to properly match compound commands (e.g., `ls && git push`) and commands with environment variable prefixes (e.g., `FOO=bar git push`). Previously, such commands could bypass `if` patterns.
 >
 > **CC 2.1.178:** Added tool parameter matching syntax (e.g., `Agent(model:opus)`) for granular permission control based on tool input parameters using wildcards.
@@ -190,7 +192,7 @@ Use transcript and session context for intelligent decisions:
       "hooks": [
         {
           "type": "prompt",
-          "prompt": "Review the full transcript at $TRANSCRIPT_PATH. Check: 1) Were tests run after code changes? 2) Did the build succeed? 3) Were all user questions answered? 4) Is there any unfinished work? Return 'approve' only if everything is complete."
+          "prompt": "Review the full transcript at $TRANSCRIPT_PATH. Check: 1) Were tests run after code changes? 2) Did the build succeed? 3) Were all user questions answered? 4) Is there any unfinished work? Answer ok only if everything is complete; otherwise give the reason."
         }
       ]
     }
@@ -200,11 +202,13 @@ Use transcript and session context for intelligent decisions:
 
 The LLM can read the transcript file and make context-aware decisions.
 
-**Response format:** Agent hooks use the same response schema as prompt hooks:
+**Response format:** Prompt and agent hooks share one response schema, and it is not the standard hook output:
 
 ```json
-{ "ok": true, "reason": "Explanation of decision" }
+{ "ok": false, "reason": "Explanation of why the condition was not met" }
 ```
+
+`ok` (boolean) is required. `reason` is optional and explains a not-ok verdict. `impossible` (boolean, meaningful only with `ok: false`) is what a Stop evaluator returns for a condition that can never be satisfied. Claude Code validates the reply against this schema and reports `Schema validation failed` for anything else, including `{"decision": ...}` shapes. Write prompts that ask for a verdict and a reason, not for a particular JSON shape.
 
 Agent hooks can also use tool access for multi-turn verification (up to 50 turns). Default timeout: 60 seconds.
 
@@ -750,7 +754,7 @@ hooks:
   Stop:
     - hooks:
         - type: prompt
-          prompt: 'Verify all generated code has tests. Return {"decision": "stop"} if satisfied or {"decision": "continue", "reason": "missing tests"} if not.'
+          prompt: 'Verify all generated code has tests. Answer ok if it does; if not, answer not ok with the missing tests as the reason.'
 ```
 
 ## Agent Hook Type
@@ -780,6 +784,8 @@ Agent hooks — like prompt hooks — need a live conversation to run in, and 20
 
 depending on which dispatcher the event uses. Which events those are, and what they accept instead, is in `../overview.md` (Hook Types and the Hook Events Reference table), which is authoritative.
 
+PermissionRequest is the one conversation event that refuses agent hooks (CC 2.1.280). An agent hook answers ok or not ok, and a permission request needs an allow or deny decision, so the hook fails with `agent-type hooks are not supported for PermissionRequest events ... Use a command- or http-type hook instead.`
+
 Among the events that do accept them, agent hooks are most useful on decision-control events like **Stop** and **SubagentStop**. Their multi-turn latency makes them a poor fit for hot-path events like PreToolUse.
 
 ### When to Use Agent Hooks
@@ -807,7 +813,7 @@ Use agent hooks when:
       "hooks": [
         {
           "type": "agent",
-          "prompt": "Before approving task completion, verify: 1) All modified files have corresponding tests, 2) Tests pass (run them), 3) No linting errors exist. Report findings and return approve/block decision.",
+          "prompt": "Before approving task completion, verify: 1) All modified files have corresponding tests, 2) Tests pass (run them), 3) No linting errors exist. Answer ok if all three hold; otherwise answer not ok with the findings as the reason.",
           "timeout": 120
         }
       ]
@@ -912,7 +918,13 @@ Different hook events support different output formats for controlling Claude's 
     "decision": {
       "behavior": "allow|deny",
       "updatedInput": {},
-      "updatedPermissions": {},
+      "updatedPermissions": [
+        {
+          "type": "addRules|replaceRules",
+          "rules": [],
+          "destination": "session|localSettings|projectSettings|userSettings"
+        }
+      ],
       "message": "Reason for denial",
       "interrupt": false
     }

@@ -69,6 +69,8 @@ Semantic versioning guidelines:
 - `"1.2.3"` - Patch update to 1.2
 - `"2.0.0"` - Major version with breaking changes
 
+**No version from an enclosing repository (CC 2.1.274):** A plugin or marketplace directory that is not itself a git repository no longer picks up a version from a git repository that encloses it, such as a git-managed `~/.claude`. Set `version` explicitly for plugins shipped as plain directories.
+
 #### description
 
 **Type**: String
@@ -705,7 +707,7 @@ claude plugin install my-plugin@my-marketplace \
 
 ### Plugin Environment Variables
 
-Claude Code sets these variables for plugin hooks. Plugin MCP/LSP server configuration (`command`, `args`, `env`, `url`) expands `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA` only:
+Claude Code sets these variables for plugin hooks. Of the variables in this table, plugin MCP/LSP server configuration (`command`, `args`, `env`, `url`, `headers`) expands only `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA`. The same fields also expand the user's own environment variables (`${MY_API_KEY}`, with `${VAR:-default}` fallbacks) and non-sensitive `${user_config.KEY}` values. See `../../mcp-integration/overview.md` (Environment Variable Expansion).
 
 | Variable | Value |
 | --- | --- |

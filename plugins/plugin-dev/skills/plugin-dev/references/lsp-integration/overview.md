@@ -323,6 +323,11 @@ Servers terminate when:
 - `shutdownTimeout` still governs how long Claude Code waits for a graceful exit before forcing termination
 - On CC versions before 2.1.269, document the leak for servers known to reject `shutdown`
 
+### Background Sessions and Subagents
+
+- **Background subagents can use the LSP tool (CC 2.1.280).** Before CC 2.1.280, a background subagent could not use the LSP tool even with an LSP plugin active, which covers most subagents now that the Agent tool runs them in the background by default. On older versions, agents that depend on LSP navigation should run in the foreground.
+- **A server exit no longer ends `claude --bg` (CC 2.1.277).** Background sessions used to exit when a plugin's LSP server exited or closed its stdin. A crashing or short-lived server now only loses LSP features. It still deserves a fix, but it no longer kills the session.
+
 ## Best Practices
 
 ### Performance

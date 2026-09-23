@@ -180,8 +180,7 @@ A bare-name source (no `./` prefix) resolves under `metadata.pluginRoot`, e.g. `
     "source": "github",
     "repo": "owner/repo-name",
     "ref": "v1.0",
-    "sha": "abc123...",
-    "skipLfs": true
+    "sha": "abc123..."
   }
 }
 ```
@@ -192,7 +191,7 @@ A bare-name source (no `./` prefix) resolves under `metadata.pluginRoot`, e.g. `
 | `repo`    | string  | Yes      | GitHub repository in `owner/repo` format      |
 | `ref`     | string  | No       | Branch, tag, or commit reference              |
 | `sha`     | string  | No       | Exact commit SHA for integrity pinning        |
-| `skipLfs` | boolean | No       | Skip Git LFS downloads during clone/update (CC 2.1.153) |
+| `skipLfs` | boolean | No       | **No effect since CC 2.1.274**; still accepted so existing entries load. Added in CC 2.1.153 to skip Git LFS downloads, but clones now always leave LFS files as pointers (`git lfs pull` in the checkout fetches them) |
 
 ### Git URL (Object)
 
@@ -203,8 +202,7 @@ For GitLab, Bitbucket, or self-hosted git repositories:
   "source": {
     "source": "url",
     "url": "https://gitlab.com/team/plugin.git",
-    "ref": "main",
-    "skipLfs": true
+    "ref": "main"
   }
 }
 ```
@@ -215,7 +213,7 @@ For GitLab, Bitbucket, or self-hosted git repositories:
 | `url`     | string  | Yes      | Full git clone URL                            |
 | `ref`     | string  | No       | Branch or tag reference                       |
 | `sha`     | string  | No       | Exact commit SHA for integrity                |
-| `skipLfs` | boolean | No       | Skip Git LFS downloads during clone/update (CC 2.1.153) |
+| `skipLfs` | boolean | No       | **No effect since CC 2.1.274**; still accepted so existing entries load. Added in CC 2.1.153 to skip Git LFS downloads, but clones now always leave LFS files as pointers (`git lfs pull` in the checkout fetches them) |
 
 ### Host Pattern (Object)
 
