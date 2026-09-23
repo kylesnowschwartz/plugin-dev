@@ -307,7 +307,7 @@ user-invocable: false
 | -------------------------------- | ---------- | ---------- | -------------- |
 | `user-invocable: true` (default) | Visible    | Allowed    | Yes            |
 | `user-invocable: false`          | Hidden     | Allowed    | Yes            |
-| `disable-model-invocation: true` | Visible    | Blocked    | Yes            |
+| `disable-model-invocation: true` | Visible    | Blocked    | No             |
 
 The `user-invocable` field only controls whether users see the skill in the `/` menu. It does NOT prevent Claude from using the skill via the Skill tool or auto-discovery.
 

@@ -94,7 +94,7 @@ check_frontmatter() {
 
   if [ -z "$frontmatter" ]; then
     echo "⚠️  Warning: Empty frontmatter block"
-    ((warning_count++))
+    warning_count=$((warning_count + 1))
     total_warnings=$((total_warnings + warning_count))
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "⚠️  $COMMAND_FILE: Passed with $warning_count warning(s)"
@@ -118,7 +118,7 @@ check_frontmatter() {
     else
       echo "❌ Error: Invalid model '$model'"
       echo "   Valid: sonnet, opus, haiku, or full model ID (e.g., claude-sonnet-4-5-20250929)"
-      ((error_count++))
+      error_count=$((error_count + 1))
     fi
   fi
 
@@ -130,13 +130,13 @@ check_frontmatter() {
 
     if [ "$length" -eq 0 ]; then
       echo "⚠️  Warning: Empty description"
-      ((warning_count++))
+      warning_count=$((warning_count + 1))
     elif [ "$length" -gt 80 ]; then
       echo "⚠️  Warning: Description too long ($length chars, recommend < 60)"
-      ((warning_count++))
+      warning_count=$((warning_count + 1))
     elif [ "$length" -gt 60 ]; then
       echo "⚠️  Warning: Description length $length (recommend < 60 chars)"
-      ((warning_count++))
+      warning_count=$((warning_count + 1))
     else
       echo "✅ description: $length chars"
     fi
@@ -151,7 +151,7 @@ check_frontmatter() {
     result=$(check_tool_list_field "allowed-tools" "$tools" "Empty allowed-tools field" "grants all tools (consider restricting)")
     echo "$result"
     if [[ "$result" == ⚠️* ]]; then
-      ((warning_count++))
+      warning_count=$((warning_count + 1))
     fi
   fi
 
@@ -164,7 +164,7 @@ check_frontmatter() {
     disallowed_result=$(check_tool_list_field "disallowed-tools" "$disallowed_tools" "Empty disallowed-tools field" "blocks all tools (consider restricting)")
     echo "$disallowed_result"
     if [[ "$disallowed_result" == ⚠️* ]]; then
-      ((warning_count++))
+      warning_count=$((warning_count + 1))
     fi
   fi
 
@@ -175,12 +175,12 @@ check_frontmatter() {
 
     if [ -z "$hint" ]; then
       echo "⚠️  Warning: Empty argument-hint field"
-      ((warning_count++))
+      warning_count=$((warning_count + 1))
     else
       # Check for bracket convention
       if [[ ! "$hint" =~ \[.*\] ]]; then
         echo "⚠️  Warning: argument-hint missing bracket convention (e.g., [arg-name])"
-        ((warning_count++))
+        warning_count=$((warning_count + 1))
       else
         echo "✅ argument-hint: $hint"
       fi
@@ -196,7 +196,7 @@ check_frontmatter() {
       echo "✅ disable-model-invocation: $value"
     else
       echo "❌ Error: disable-model-invocation must be true or false (got '$value')"
-      ((error_count++))
+      error_count=$((error_count + 1))
     fi
   fi
 
@@ -224,7 +224,7 @@ check_frontmatter() {
 
       if [ "$known" = false ]; then
         echo "⚠️  Warning: Unknown field '$field'"
-        ((warning_count++))
+        warning_count=$((warning_count + 1))
         unknown_found=true
       fi
     fi

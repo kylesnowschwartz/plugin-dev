@@ -1,5 +1,5 @@
 {
-  "_comment": "Example stdio MCP server configuration for local file system access. Only ${CLAUDE_PLUGIN_ROOT}, ${CLAUDE_PLUGIN_DATA} and user shell variables expand here — ${CLAUDE_PROJECT_DIR} is NOT expanded in MCP server configuration.",
+  "_comment": "Example stdio MCP server configuration for local file system access. ${CLAUDE_PLUGIN_ROOT}, ${CLAUDE_PLUGIN_DATA}, ${CLAUDE_PROJECT_DIR} and user shell variables expand in command, each args entry, and env values. Use the braced ${VAR} form; a bare $VAR is not expanded.",
   "filesystem": {
     "command": "npx",
     "args": [

@@ -118,7 +118,7 @@ Set `lspServers` in `plugin.json` to add further configuration sources alongside
 
 **settings** (optional): Settings passed via `workspace/didChangeConfiguration`
 
-**workspaceFolder** (optional): Workspace folder path for the server
+**workspaceFolder** (optional): Workspace folder path for the server, sent as its root folder when the server initializes. Defaults to the session's current working directory. `${CLAUDE_PROJECT_DIR}` sets it to the project root; there is no editor-style `${workspaceFolder}` placeholder, so that string is treated as an unset environment variable and logs a "Missing environment variables in plugin LSP config" error
 
 **startupTimeout** (optional): Maximum time to wait for server startup in milliseconds
 
@@ -237,7 +237,7 @@ Use `${CLAUDE_PLUGIN_ROOT}` for the command path:
 }
 ```
 
-`${CLAUDE_PLUGIN_DATA}` expands in LSP server config too. It points at `~/.claude/plugins/data/<plugin>-<marketplace>`, a per-plugin directory created on install and removed on uninstall — use it for server caches and index files rather than writing inside the plugin directory.
+`${CLAUDE_PLUGIN_DATA}`, `${CLAUDE_PROJECT_DIR}`, and the user's own `${VAR}` / `${VAR:-default}` environment variables expand in LSP server config too, in `command`, each `args` entry, `env` values, and `workspaceFolder`. A bare `$VAR` is not expanded. `${CLAUDE_PLUGIN_DATA}` points at `~/.claude/plugins/data/<plugin>-<marketplace>`, a per-plugin directory created on install and removed on uninstall — use it for server caches and index files rather than writing inside the plugin directory.
 
 ### Step 4: Document Requirements
 
@@ -420,7 +420,7 @@ Look for:
       "settings": {
         "language": { "lint": { "enabled": true } }
       },
-      "workspaceFolder": "${workspaceFolder}",
+      "workspaceFolder": "${CLAUDE_PROJECT_DIR}",
       "startupTimeout": 30000,
       "shutdownTimeout": 5000,
       "restartOnCrash": true,

@@ -272,7 +272,7 @@ Team leads coordinate work across multiple teammates. Key design considerations:
 
 - **Restrict the lead's tools** with `tools` so it holds only coordination tools (spawn, message, shut down teammates, manage tasks) and cannot implement tasks directly. There is no dedicated permission mode for this.
 - **System prompt focus**: Task decomposition, work assignment, progress monitoring, quality review
-- **Tools**: Team leads automatically get access to `TeamCreate`, `TaskCreate`, `TaskUpdate`, `TaskList`, `SendMessage`, and `Task` (for spawning)
+- **Tools**: Team leads automatically get access to `TaskCreate`, `TaskUpdate`, `TaskList`, `SendMessage`, and `Task` (for spawning). `TeamCreate` and `TeamDelete` are not offered (see [Removed Team Tools](#removed-team-tools-cc-21178)).
 
 **Task-tracking tools are model-gated (CC 2.1.268).** `TaskCreate`, `TaskGet`, `TaskUpdate`, `TaskList`, and `TodoWrite` are offered only on Claude 3.x, Opus 4.0–4.7, Sonnet 4.0–4.6, and Haiku 4.5. On newer models, including Opus 5 and Opus 5.5 (the default Opus model since CC 2.1.280), they are absent unless `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` is set. An agent whose `tools` list names them, or whose system prompt instructs it to track work with them, silently loses that capability on a default-model session. Design agents to report progress in their output rather than depending on task-tracking tools being present.
 
@@ -344,6 +344,8 @@ This pattern is useful for complex tasks where the lead wants to review approach
 ### Removed Team Tools (CC 2.1.178)
 
 The `TeamDelete` tool (for deleting completed team directories) and `TeammateTool` (for team creation, agent-type selection, task ownership, and message delivery) have been removed. If your plugin documentation or agents reference these tools, update accordingly. Team coordination now uses different mechanisms — consult the official agent teams documentation for current APIs.
+
+`TeamCreate` and `TeamDelete` are both on Claude Code's removed-tool list (CC 2.1.280), alongside `TaskOutput`, `BashOutput`, and `AgentOutput`. Drop them from `tools` lists and permission rules.
 
 For complete documentation, see the [official agent teams guide](https://code.claude.com/docs/en/agent-teams).
 

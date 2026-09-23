@@ -196,7 +196,7 @@ Use for skills that should only be manually invoked by users, such as:
 | -------------------------------- | ---------- | ---------- | -------------- |
 | `user-invocable: true` (default) | Visible    | Allowed    | Yes            |
 | `user-invocable: false`          | Hidden     | Allowed    | Yes            |
-| `disable-model-invocation: true` | Visible    | Blocked    | Yes            |
+| `disable-model-invocation: true` | Visible    | Blocked    | No             |
 
 ## paths
 

@@ -14,13 +14,15 @@ Block dangerous file writes using prompt-based hooks:
       "hooks": [
         {
           "type": "prompt",
-          "prompt": "File path: $TOOL_INPUT.file_path. Verify: 1) Not in /etc or system directories 2) Not .env or credentials 3) Path doesn't contain '..' traversal. Return 'approve' or 'deny'."
+          "prompt": "Tool input: $ARGUMENTS. Check the file_path: 1) Not in /etc or system directories 2) Not .env or credentials 3) Path doesn't contain '..' traversal. Answer ok only if all three hold; otherwise give the reason."
         }
       ]
     }
   ]
 }
 ```
+
+The model replies `{"ok": true}` or `{"ok": false, "reason": "..."}`. A not-ok verdict blocks the write and passes the reason to Claude.
 
 **Use for:** Preventing writes to sensitive files or system directories.
 
@@ -118,7 +120,7 @@ Monitor and validate MCP tool usage:
       "hooks": [
         {
           "type": "prompt",
-          "prompt": "Deletion operation detected. Verify: Is this deletion intentional? Can it be undone? Are there backups? Return 'approve' only if safe."
+          "prompt": "Deletion operation detected. Verify: Is this deletion intentional? Can it be undone? Are there backups? Answer ok only if the deletion is safe; otherwise give the reason."
         }
       ]
     }
@@ -152,7 +154,7 @@ Ensure project builds after code changes:
 
 ## Pattern 7: Permission Confirmation
 
-Ask user before dangerous operations:
+Ask user before dangerous operations. A prompt hook can only answer ok or not ok, so it cannot open the permission dialog; use a command hook that returns `permissionDecision: "ask"`:
 
 ```json
 {
@@ -161,13 +163,28 @@ Ask user before dangerous operations:
       "matcher": "Bash",
       "hooks": [
         {
-          "type": "prompt",
-          "prompt": "Command: $TOOL_INPUT.command. If command contains 'rm', 'delete', 'drop', or other destructive operations, return 'ask' to confirm with user. Otherwise 'approve'."
+          "type": "command",
+          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/confirm-destructive.sh"
         }
       ]
     }
   ]
 }
+```
+
+**Example script (confirm-destructive.sh):**
+
+```bash
+#!/bin/bash
+command=$(jq -r '.tool_input.command')
+# rm, dd, or mkfs[.fs] as the first word of the command or of a ;, &&, ||, or | segment
+destructive='(^|[;&|])[[:space:]]*(rm|dd|mkfs(\.[[:alnum:]]+)?)([[:space:]]|$)'
+
+shopt -s nocasematch
+if [[ "$command" =~ $destructive ]] || [[ "$command" == *"drop "* ]]; then
+  echo '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "ask", "permissionDecisionReason": "Destructive command"}}'
+fi
+exit 0
 ```
 
 **Use for:** User confirmation on potentially destructive commands.

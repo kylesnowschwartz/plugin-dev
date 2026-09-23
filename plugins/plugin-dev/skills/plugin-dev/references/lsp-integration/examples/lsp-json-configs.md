@@ -200,7 +200,7 @@ All options together:
         }
       }
     },
-    "workspaceFolder": "${workspaceFolder}",
+    "workspaceFolder": "${CLAUDE_PROJECT_DIR}",
     "startupTimeout": 30000,
     "shutdownTimeout": 5000,
     "restartOnCrash": true,

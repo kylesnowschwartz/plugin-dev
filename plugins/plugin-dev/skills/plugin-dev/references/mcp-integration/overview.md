@@ -137,7 +137,15 @@ All MCP configurations support environment variable substitution:
 }
 ```
 
-Env vars support fallback values: `${VAR:-default_value}`. Supported in `command`, `args`, `env`, `url`, and `headers` fields.
+Env vars support fallback values: `${VAR:-default_value}`. Only the braced forms expand; a bare `$VAR` stays literal text. Expansion applies to `command`, each `args` entry, `env` values, `url`, and `headers` values. Plugin MCP configs also expand `${CLAUDE_PROJECT_DIR}` to the session's project root.
+
+Some variables are read as an empty string instead of their value, and the `:-default` fallback does not apply to them:
+
+- **Every field:** Claude Code's own credentials and telemetry settings are always blanked, including `CLAUDE_CODE_OAUTH_TOKEN`, the `CLAUDE_CODE_*_FILE_DESCRIPTOR` token variables, `CLAUDE_CODE_ARTIFACTS_API_TOKEN`, `CLAUDE_CODE_MEMORY_API_TOKEN`, `CLAUDE_CODE_ARTIFACT*_BASE_URL`, and every `OTEL_*` variable. This applies to stdio `command`, `args`, and `env` too, with no warning.
+- **Remote `url` and `headers`:** a further set never expands toward a remote server, including Anthropic keys (`ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`), `ANTHROPIC_*_BASE_URL` values that embed credentials, cloud credentials (`AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`, `GOOGLE_APPLICATION_CREDENTIALS`, `AZURE_CLIENT_SECRET`), proxy variables (`HTTPS_PROXY`, `HTTP_PROXY`, `ALL_PROXY`), and package registry tokens (`NPM_TOKEN`, `CARGO_REGISTRY_TOKEN`, `PIP_INDEX_URL`, `UV_INDEX_URL`). Claude Code logs `MCP server config references credential variable(s) that are never expanded toward a remote server: <names> (read as empty)`.
+- **Subprocess environment scrubbing:** when scrubbing is on (`CLAUDE_CODE_SUBPROCESS_ENV_SCRUB` set, or Claude Code running as `local-agent`), every secret-shaped variable name (containing TOKEN, SECRET, PASSWORD, KEY, AUTH, and the like) is blanked in every field, not only remote ones.
+
+Give a plugin's own credentials distinct names, such as `MYPLUGIN_API_TOKEN`, and pass those rather than reusing Claude Code's variables.
 
 Claude Code also injects runtime variables: MCP server identity variables for `headersHelper` scripts (`CLAUDE_CODE_MCP_SERVER_NAME`, `CLAUDE_CODE_MCP_SERVER_URL`, CC 2.1.85) — see `references/authentication.md` — and per-session variables (`CLAUDE_CODE_SESSION_ID`, `CLAUDECODE=1`) covered in `references/operations.md`.
 
