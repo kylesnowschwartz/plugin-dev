@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **upstream sync**: the apply stage now runs in its own `update-applier` agent, so the orchestrator no longer spends one turn per documentation edit and a large release range no longer hits the 150-turn limit (the 2026-09-22 run stopped mid-apply on a 55-item manifest)
+
 ## [0.46.0] - 2026-09-16
 
 Sync with Claude Code 2.1.272-2.1.273. Six changelog-driven Must Update items (two promoted from May Update by Stage 2), eight May Update items applied, and twelve Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. CC 2.1.272 was "Bug fixes and reliability improvements" with no itemized entries, so every changelog-driven item comes from 2.1.273. `scripts/check-doc-drift.sh` was clean before and after the run, and the `docs/claude-code-facts.json` diff was `claude_code_version`-only.
@@ -40,6 +44,7 @@ Sync with Claude Code 2.1.272-2.1.273. Six changelog-driven Must Update items (t
 - **skill-development**: the Skill + Agent comparison table said `context: fork` "inherits parent context" while the same file and the agent-development overview said it does not inherit conversation history. Corrected to separate context with prompt-cache sharing
 - **mcp-integration**: `examples/stdio-server.json` — indexed as a copy-paste config — passed `${CLAUDE_PROJECT_DIR}`, which the manifest reference states is not expanded in MCP server configuration. Switched to `${CLAUDE_PLUGIN_ROOT}` with a comment naming the variables that do expand
 
+||||||| parent of 184096c (fix: run the upstream sync's apply stage in its own agent so the orchestrator stays under the turn cap)
 ## [0.45.0] - 2026-09-15
 
 Sync with Claude Code 2.1.271. Five changelog-driven updates, one ground-truth addition that also cleared the outstanding `DRIFT M` finding, and six Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep.

@@ -43,7 +43,10 @@ run and branches as `claude/doc-drift-<date>` with the pull request title
 branch name so two runs on the same day never collide on one branch.
 
 The job's time limit is 120 minutes. A full sync with a changelog range runs the
-five agent stages in sequence and takes about an hour.
+five agent stages in sequence and takes about an hour. The orchestrator's turn
+limit is 150 of its own assistant messages; subagent turns do not count. Every
+stage after Stage 0 runs in a subagent, so the count stays flat regardless of
+how many manifest items a release range produces.
 
 The housekeeping step runs last and treats those two prefixes as separate buckets,
 keeping the newest open pull request in each and closing the older ones in the same

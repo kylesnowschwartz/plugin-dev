@@ -4,7 +4,7 @@ description: |
   Use this agent to verify that documentation updates were applied correctly after the update-from-upstream skill's Stage 3 (Apply). Checks completeness, accuracy, lint, version sync, regressions, and style. This agent is dispatched by the update-from-upstream skill as Stage 4 of the update pipeline. Examples:
 
   <example>
-  Context: Orchestrator has applied doc updates and needs verification before committing
+  Context: The update-applier agent has applied doc updates and the orchestrator needs verification before committing
   user: "Review the applied updates against the manifest at .agent-history/upstream-changes.md"
   assistant: "I'll use the update-reviewer agent to verify all changes were applied correctly."
   <commentary>
@@ -164,4 +164,4 @@ Verify new content matches existing conventions:
 - Run markdownlint even if you think the files look fine. Catch what humans miss.
 - Run the deterministic gate on every review, including reviews where the manifest was short. It is the cheapest check and the one that catches silent drift.
 - If lint fails, include the specific errors and file locations.
-- On PASS, the orchestrator will commit. On FAIL, the orchestrator applies your fixes and re-dispatches you for a second check (max one retry).
+- On PASS, the orchestrator will commit. On FAIL, the orchestrator hands your fix list to the `update-applier` agent and re-dispatches you for a second check (max one retry).

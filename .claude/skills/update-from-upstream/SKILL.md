@@ -31,12 +31,12 @@ Stage 0:  Ground truth    → extract-cc-facts.sh + check-doc-drift.sh (you, inl
 Stage 1:  Discover        → changelog-differ agent
 Stage 1b: Doc drift audit → doc-drift-auditor agent
 Stage 2:  Verify plan     → update-manifest-verifier agent
-Stage 3:  Apply           → orchestrator (you, inline)
+Stage 3:  Apply           → update-applier agent
 Stage 4:  Verify work     → update-reviewer agent
 Release: Commit, bump version, update compatibility log
 ```
 
-Each stage produces a structured artifact consumed by the next. Stages 2 and 4 are verification gates run by agents with independent context.
+Each stage produces a structured artifact consumed by the next. Every stage after Stage 0 runs in its own agent, so the orchestrator spends about one turn per stage regardless of how many items a release range produces. Stages 2 and 4 are verification gates run by agents with independent context.
 
 ## Stage 0: Ground Truth
 
@@ -165,57 +165,32 @@ Follow your agent instructions exactly.
 
 **Wait for the agent to complete before proceeding.**
 
-Read the updated manifest after Stage 2 completes. The verified manifest is your source of truth for Stage 3.
+Read the updated manifest after Stage 2 completes. You need only its summary: the item counts, whether the changelog range is empty, and the newest version in the range. Those fill the Stage 3 dispatch prompt and the pull request body later. The `update-applier` agent reads the full manifest itself.
 
 ## Stage 3: Apply
 
-You execute this stage directly. Work through the verified manifest:
+Dispatch the `update-applier` agent with this prompt:
 
-### For each "Must Update" item
+```text
+Apply the verified change manifest at .agent-history/upstream-changes.md to
+plugin-dev's shipped documentation and release metadata.
 
-1. Read the target reference doc at `plugins/plugin-dev/skills/plugin-dev/references/<topic>/overview.md` (or its sub-references)
-2. Determine the edit type:
-   - **Add** — new capability, event, field: add a new section or bullet in the appropriate place
-   - **Modify** — changed behavior: update existing description
-   - **Deprecate** — removed feature: mark as deprecated with the CC version it was removed
-3. Apply the edit. Match the existing patterns in the file:
-   - Same heading levels as sibling sections
-   - Same formatting (code blocks, tables, bullet styles)
-   - Same tone (third-person, imperative)
-4. If a change spans multiple skills, update all affected files
+Changelog range: <empty (drift-only run)> | <vX.Y.Z–vA.B.C, newest vA.B.C>
 
-### For each "May Update" item
+Apply every "Must Update" item. Use judgment on "May Update" items and record
+each skip with a reason. Then update docs/claude-code-compatibility.md, bump the
+version in all three locations, and add the CHANGELOG.md entry, following the
+compatibility header and version scope rules in your instructions. Do not
+commit.
 
-Use judgment. If the change materially affects examples or references that users rely on, update them. Otherwise skip.
+Follow your agent instructions exactly.
+```
 
-### After all edits, update metadata
+**Wait for the agent to complete before proceeding.**
 
-**Compatibility file** (`docs/claude-code-compatibility.md`):
+Read the applier's report. It lists the files changed, the items applied and skipped, and anything unresolved. Carry unresolved items into the Stage 4 prompt and the pull request body. **Do not commit yet** — Stage 4 verifies first.
 
-- `Last audited:` moves only when the changelog range is non-empty. Set it to the newest CC version in that range. On a drift-only run — no versions after the baseline — leave the header exactly as it is. The baseline is a claim about which changelog entries have been read, and a drift-only run reads none, so advancing it would silently mark unaudited entries as audited.
-- Never write the installed binary's version into `Last audited:`. The binary is whatever CI installed, not a point the changelog was audited to.
-- Update `Plugin-dev version:` to the new version
-- Append a row to the audit log table. The "CC version range" column takes the changelog range, or `none (drift)` on a drift-only run. When the binary version matters to the row, name it in the Notes column.
-
-**Version bump** — determine scope. The same rule covers drift fixes and changelog-driven edits:
-
-- **Patch** (e.g., 0.7.1 → 0.7.2): doc corrections, minor additions to existing sections, including a drift-only run that fixes real `DRIFT` findings or Stage 2-confirmed auditor items
-- **Minor** (e.g., 0.7.1 → 0.8.0): new sections, new capabilities documented, structural changes
-- **No release**: a drift-only run whose only changes are the facts file's `claude_code_version` key, or auditor items marked "unknown", produces no version bump, no changelog entry, and no pull request
-
-**Bump version in all three locations:**
-
-- `plugins/plugin-dev/.claude-plugin/plugin.json` — `"version"` field
-- `.claude-plugin/marketplace.json` — both `metadata.version` and the plugin entry `version`
-- `CLAUDE.md` (root) — version line, component counts if changed
-
-**Update CHANGELOG.md:**
-
-- Add a new version entry following Keep a Changelog format
-- Organize changes into Added/Changed/Fixed sections
-- Reference the CC version range in the entry
-
-**Do not commit yet** — Stage 4 verifies first.
+If the applier reports that no release is warranted (no version bump, no changelog entry), the run ends here: skip Stage 4, do not commit, and do not open a pull request. Report the outcome instead.
 
 ## Stage 4: Verify Work
 
@@ -276,7 +251,7 @@ The prefixes are load-bearing: housekeeping treats them as two independent bucke
 ### On FAIL
 
 1. Read the reviewer's specific fix instructions
-2. Apply each fix as a targeted edit
+2. Re-dispatch the `update-applier` agent with the reviewer's fix instructions quoted verbatim, prefaced with "Apply exactly these fixes and nothing else." Do not make the edits yourself
 3. Re-dispatch the `update-reviewer` agent for a second check
 4. If the second check still fails, **stop and report** the unresolved items to the user. Do not commit broken changes.
 

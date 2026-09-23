@@ -178,7 +178,7 @@ jobs:
             `.claude/skills/update-from-upstream/SKILL.md` and follow every stage
             of the pipeline exactly as documented. The pipeline's agents
             (`changelog-differ`, `doc-drift-auditor`, `update-manifest-verifier`,
-            `update-reviewer`) are repo-scoped subagents in `.claude/agents/` and
+            `update-applier`, `update-reviewer`) are repo-scoped subagents in `.claude/agents/` and
             are dispatched via the Agent tool — no plugin install is required.
 
             ## CI Overrides
@@ -244,6 +244,11 @@ jobs:
             its own is not a reason to stop — drift fixes and ground truth changes are a
             valid sync on their own.
 
+            An `update-applier` report of "no release warranted" (no version bump, no
+            changelog entry) ends the run the same way as the four empty signals: skip
+            Stage 4, do not commit, do not open a PR, and write "Already up to date" in
+            the step summary.
+
             **Auditor severity floor**: a `doc-drift-auditor` finding counts as signal 4
             only once Stage 2 confirms it — both cited locations read and the
             contradiction verified, or `docs/claude-code-facts.json` settles which side is
@@ -264,6 +269,10 @@ jobs:
             - Do NOT skip any pipeline stages
             - Do NOT skip the verification agents (Stages 2 and 4)
             - If any stage fails, report the failure clearly and stop
+          # --max-turns counts only the orchestrator's own assistant messages;
+          # subagent turns are not counted. Every stage after Stage 0 runs in a
+          # subagent, so a run needs a few dozen orchestrator turns regardless
+          # of manifest size.
           claude_args: |
             --model opus
             --max-turns 150
