@@ -200,8 +200,18 @@ jobs:
           fi
 
           tool="${FAILED_TOOL:-the ground-truth step}"
-          errors=.agent-history/extract-errors.txt
-          if [ "$tool" = check-doc-drift.sh ]; then errors=.agent-history/drift-errors.txt; fi
+          # Without a named tool the step failed elsewhere, and neither errors
+          # file explains why.
+          errors=/dev/null
+          fix="Read the run log for the command that failed"
+          case "$tool" in
+            extract-cc-facts.sh)
+              errors=.agent-history/extract-errors.txt
+              fix="Fix the failing lookup in \`scripts/extract-cc-facts.sh\`" ;;
+            check-doc-drift.sh)
+              errors=.agent-history/drift-errors.txt
+              fix="Fix the tooling error the ERROR lines name for \`scripts/check-doc-drift.sh\`" ;;
+          esac
           version=$(claude --version 2>/dev/null || echo unknown)
           body="$RUNNER_TEMP/ground-truth-issue.md"
           {
@@ -214,7 +224,7 @@ jobs:
             grep -E '^(ERROR |extract-cc-facts: |check-doc-drift: )' "$errors" 2>/dev/null || echo "No error lines were captured; see the run log."
             echo '```'
             echo
-            echo "Fix the failing lookup in \`scripts/extract-cc-facts.sh\`, then run \`scripts/extract-cc-facts.sh --out docs/claude-code-facts.json\` and \`scripts/check-doc-drift.sh\` until both pass. The next successful run closes this issue."
+            echo "$fix, then run \`scripts/extract-cc-facts.sh --out docs/claude-code-facts.json\` and \`scripts/check-doc-drift.sh\` until both pass. The next successful run closes this issue."
           } > "$body"
 
           if [ -n "$issue" ]; then
