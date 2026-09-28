@@ -410,7 +410,7 @@ else:
 
 session_start_sources = sole_literal("session_start_sources", 4, ["startup", "compact", "fork"])
 session_end_reasons = sole_literal("session_end_reasons", 4, ["prompt_input_exit", "logout"])
-directory_added_sources = sole_literal("directory_added_sources", 2, ["register_repo_root"])
+directory_added_sources = sole_literal("directory_added_sources", 2, ["slash_command", "register_repo_root"])
 
 
 # --- plugin environment ----------------------------------------------------
