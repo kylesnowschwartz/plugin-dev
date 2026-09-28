@@ -9,7 +9,7 @@
 #       "hooks": [
 #         {
 #           "type": "command",
-#           "command": "bash ${CLAUDE_PLUGIN_ROOT}/examples/stop-failure-alert.sh"
+#           "command": "bash \"${CLAUDE_PLUGIN_ROOT}/examples/stop-failure-alert.sh\""
 #         }
 #       ]
 #     }

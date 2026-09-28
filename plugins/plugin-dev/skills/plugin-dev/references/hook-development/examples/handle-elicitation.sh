@@ -9,7 +9,7 @@
 #       "hooks": [
 #         {
 #           "type": "command",
-#           "command": "bash ${CLAUDE_PLUGIN_ROOT}/examples/handle-elicitation.sh"
+#           "command": "bash \"${CLAUDE_PLUGIN_ROOT}/examples/handle-elicitation.sh\""
 #         }
 #       ]
 #     }

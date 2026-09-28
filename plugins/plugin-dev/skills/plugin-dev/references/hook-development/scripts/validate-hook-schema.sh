@@ -155,6 +155,25 @@ for event in $(jq -r 'keys[]' "$HOOKS_FILE"); do
             echo "⚠️  ${event}[$i].hooks[$j]: Hardcoded absolute path detected. Consider using \${CLAUDE_PLUGIN_ROOT}"
             warning_count=$((warning_count + 1))
           fi
+          # Shell-form commands (no 'args') must quote the placeholder: an
+          # unquoted ${CLAUDE_PLUGIN_ROOT} splits on paths with spaces, and
+          # `claude plugin validate` warns about it (CC 2.1.281). An occurrence
+          # counts as quoted when an odd number of double quotes precede it.
+          has_args=$(jq -r ".\"$event\"[$i].hooks[$j] | has(\"args\")" "$HOOKS_FILE")
+          if [ "$has_args" != "true" ]; then
+            unquoted=$(printf '%s' "$command" | awk '{
+              s = $0; pre = ""; tok = "${CLAUDE_PLUGIN_ROOT}"
+              while ((p = index(s, tok)) > 0) {
+                pre = pre substr(s, 1, p - 1)
+                if (gsub(/"/, "\"", pre) % 2 == 0) { print "yes"; exit }
+                pre = pre tok; s = substr(s, p + length(tok))
+              }
+            }')
+            if [ "$unquoted" = "yes" ]; then
+              echo "⚠️  ${event}[$i].hooks[$j]: Shell command uses \${CLAUDE_PLUGIN_ROOT} without quotes. Wrap it in double quotes or use exec form ('args')"
+              warning_count=$((warning_count + 1))
+            fi
+          fi
         fi
         ;;
       prompt | agent)

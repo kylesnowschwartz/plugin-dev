@@ -59,6 +59,8 @@ Set `lspServers` in `plugin.json` to add further configuration sources alongside
 }
 ```
 
+**Path must exist inside the plugin (CC 2.1.283):** `claude plugin validate` fails a plugin whose `lspServers` path is missing or points outside the plugin directory. Earlier versions passed it.
+
 ### Configuration Fields
 
 **command** (required): The LSP server executable

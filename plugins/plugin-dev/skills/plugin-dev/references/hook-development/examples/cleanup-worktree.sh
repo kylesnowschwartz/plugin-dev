@@ -10,7 +10,7 @@
 #       "hooks": [
 #         {
 #           "type": "command",
-#           "command": "bash ${CLAUDE_PLUGIN_ROOT}/examples/cleanup-worktree.sh"
+#           "command": "bash \"${CLAUDE_PLUGIN_ROOT}/examples/cleanup-worktree.sh\""
 #         }
 #       ]
 #     }

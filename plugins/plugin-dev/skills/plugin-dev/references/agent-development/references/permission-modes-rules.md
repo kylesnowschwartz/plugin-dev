@@ -31,6 +31,8 @@ The standard interactive permission model. Claude asks the user before performin
 
 **Manual Default Permission Mode (CC 2.1.200):** The default permission mode across all Claude Code interfaces is now "Manual" (equivalent to `default` above). This is a more conservative default that requires explicit user approval for each action, and it affects both the CLI and programmatic interfaces.
 
+**Exception — auto mode on third-party providers (CC 2.1.283):** interactive sessions on third-party providers (Bedrock, Vertex, Foundry), or with telemetry off, now start in auto mode when no permission mode is configured. An agent that relies on the session's mode, rather than setting `permissionMode`, can therefore run under auto mode's classifier on those setups. Set `permissionMode` explicitly when an agent needs a specific mode.
+
 #### acceptEdits
 
 Auto-accepts file writing operations (Write, Edit, NotebookEdit) without prompting. Other operations (Bash, etc.) still require user permission.

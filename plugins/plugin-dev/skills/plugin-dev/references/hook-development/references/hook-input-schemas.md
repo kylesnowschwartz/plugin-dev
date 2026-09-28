@@ -20,16 +20,16 @@ Every hook receives these fields:
 
 ### PreToolUse / PostToolUse / PostToolUseFailure / PermissionRequest
 
-| Field                    | Type    | Events             | Description                                       |
-| ------------------------ | ------- | ------------------ | ------------------------------------------------- |
-| `tool_name`              | string  | All four           | Name of the tool                                  |
-| `tool_input`             | object  | All four           | Arguments sent to the tool (see tool schemas)     |
-| `tool_response`          | any     | PostToolUse        | Tool's return value                               |
-| `tool_use_id`            | string  | PostToolUse        | Unique tool use identifier                        |
-| `error`                  | string  | PostToolUseFailure | Error message from the failed tool                |
-| `is_interrupt`           | boolean | PostToolUseFailure | Whether failure was caused by user interrupt      |
-| `permission_suggestions` | array   | PermissionRequest  | Suggested permission decisions                    |
-| `mcp_server`             | object  | All four           | The MCP server behind an `mcp__*` tool (optional) |
+| Field                    | Type    | Events                                      | Description                                                                                                    |
+| ------------------------ | ------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `tool_name`              | string  | All four                                    | Name of the tool                                                                                               |
+| `tool_input`             | object  | All four                                    | Arguments sent to the tool (see tool schemas)                                                                  |
+| `tool_response`          | any     | PostToolUse                                 | Tool's return value                                                                                            |
+| `tool_use_id`            | string  | PreToolUse, PostToolUse, PostToolUseFailure | Unique tool use identifier; the same value in the Pre and Post events of one call, so hooks can correlate them |
+| `error`                  | string  | PostToolUseFailure                          | Error message from the failed tool                                                                             |
+| `is_interrupt`           | boolean | PostToolUseFailure                          | Whether failure was caused by user interrupt                                                                   |
+| `permission_suggestions` | array   | PermissionRequest                           | Suggested permission decisions                                                                                 |
+| `mcp_server`             | object  | All four                                    | The MCP server behind an `mcp__*` tool (optional)                                                              |
 
 `mcp_server` (CC 2.1.274) is present only when the tool is an MCP tool. PermissionDenied carries it too. It is an object with two strings:
 
@@ -109,11 +109,11 @@ A hook that trusts or blocks an MCP tool should key the decision on `source`, ne
 
 ### Notification
 
-| Field               | Type   | Description                                                              |
-| ------------------- | ------ | ------------------------------------------------------------------------ |
-| `message`           | string | Notification text                                                        |
-| `title`             | string | Notification title (optional)                                            |
-| `notification_type` | string | `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog` |
+| Field               | Type   | Description                                                                                                                                |
+| ------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `message`           | string | Notification text                                                                                                                          |
+| `title`             | string | Notification title (optional)                                                                                                              |
+| `notification_type` | string | `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog`, `agent_needs_input` (CC 2.1.198), `agent_completed` (CC 2.1.198) |
 
 ### TeammateIdle
 

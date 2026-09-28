@@ -516,7 +516,7 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 ```json
 {
   "type": "command",
-  "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/check-style.sh",
+  "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/check-style.sh\"",
   "continueOnBlock": true
 }
 ```

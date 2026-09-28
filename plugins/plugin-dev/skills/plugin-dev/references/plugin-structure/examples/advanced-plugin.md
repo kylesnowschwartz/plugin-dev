@@ -649,7 +649,7 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/kubernetes-ops/scripts/validate-manifest.sh de
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/security/scan-secrets.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/security/scan-secrets.sh\"",
             "timeout": 30
           }
         ]
@@ -671,7 +671,7 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/kubernetes-ops/scripts/validate-manifest.sh de
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/workflow/update-status.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/workflow/update-status.sh\"",
             "timeout": 15
           }
         ]
@@ -683,12 +683,12 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/kubernetes-ops/scripts/validate-manifest.sh de
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/quality/check-config.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/quality/check-config.sh\"",
             "timeout": 45
           },
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/workflow/notify-team.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/workflow/notify-team.sh\"",
             "timeout": 30
           }
         ]
@@ -700,7 +700,7 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/kubernetes-ops/scripts/validate-manifest.sh de
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/security/validate-permissions.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/security/validate-permissions.sh\"",
             "timeout": 20
           }
         ]

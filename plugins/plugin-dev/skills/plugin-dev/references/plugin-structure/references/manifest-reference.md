@@ -6,7 +6,9 @@ Complete reference for `plugin.json` configuration.
 
 **Required path**: `.claude-plugin/plugin.json`
 
-The manifest MUST be in the `.claude-plugin/` directory at the plugin root. Claude Code will not recognize plugins without this file in the correct location.
+The manifest MUST be in the `.claude-plugin/` directory at the plugin root. A plugin that ships a `plugin.json` anywhere else is not recognized.
+
+**Exception — non-strict marketplace entries:** a plugin listed in a marketplace with `"strict": false` may omit `plugin.json` entirely. The marketplace entry then serves as the whole manifest. See `../../marketplace-structure/overview.md` (Strict vs. Non-Strict Mode). Outside that mode, give every plugin a `.claude-plugin/plugin.json`.
 
 ## Complete Field Reference
 
@@ -70,6 +72,8 @@ Semantic versioning guidelines:
 - `"2.0.0"` - Major version with breaking changes
 
 **No version from an enclosing repository (CC 2.1.274):** A plugin or marketplace directory that is not itself a git repository no longer picks up a version from a git repository that encloses it, such as a git-managed `~/.claude`. Set `version` explicitly for plugins shipped as plain directories.
+
+**No-version plugins restore at the installed commit (CC 2.1.283):** when a plugin without `version` has missing cached files, Claude Code restores the commit that was installed rather than the source's newest commit. See `advanced-topics.md` (Plugin Caching).
 
 #### description
 
@@ -206,6 +210,30 @@ Tags for plugin discovery and categorization.
 - Workflows: `ci-cd`, `code-review`, `git-workflow`
 - Domains: `web-development`, `data-science`, `devops`
 
+#### Listing metadata fields (CC 2.1.281)
+
+`plugin.json` also accepts listing metadata keys used for directory and marketplace listings. Before CC 2.1.281, `claude plugin validate` reported them as unknown fields. The CC 2.1.283 binary accepts these keys:
+
+| Topic | Accepted keys |
+| --- | --- |
+| Listing visuals | `icon`, `screenshots` |
+| Classification | `classification` |
+| Privacy policy | `privacyPolicyUrl`, `privacy_policy`, `privacyPolicy` |
+| Support | `supportUrl`, `support`, `bugs` |
+| Terms of service | `termsOfServiceUrl`, `terms_of_service` |
+| Documentation | `documentationUrl`, `docs` |
+
+```json
+{
+  "name": "my-plugin",
+  "privacyPolicyUrl": "https://example.com/privacy",
+  "supportUrl": "https://example.com/support",
+  "documentationUrl": "https://docs.example.com/my-plugin"
+}
+```
+
+Validators older than CC 2.1.281 report these keys as unknown fields.
+
 ### Component Path Fields
 
 Each of these fields points at where a component type lives. Setting one changes whether the component's default directory is still scanned, and the answer differs per field:
@@ -323,7 +351,7 @@ Hook configuration location or inline definition.
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh\"",
             "timeout": 30
           }
         ]
@@ -530,7 +558,7 @@ Background watch scripts the host arms as persistent Monitor tasks. They run uns
     "monitors": [
       {
         "name": "build-watch",
-        "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/watch-build.sh",
+        "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/watch-build.sh\"",
         "description": "Reports build failures as they happen",
         "when": "always"
       }
@@ -775,6 +803,20 @@ Claude Code validates the manifest on plugin load:
 - Referenced paths exist
 - Hook and MCP configurations are valid
 - No circular dependencies
+
+### `claude plugin validate` Checks (CC 2.1.281-2.1.283)
+
+`claude plugin validate <plugin-dir>` runs these checks before any session loads the plugin:
+
+- **Component paths stay inside the plugin (CC 2.1.283).** Validation fails when an `outputStyles`, `themes`, `monitors`, or `lspServers` path (including `experimental.themes` and `experimental.monitors`) is missing or points outside the plugin directory. Earlier versions passed such plugins.
+- **MCP server checks (CC 2.1.281).** For `.mcp.json` and inline `mcpServers`:
+  - Errors: an entry Claude Code would silently drop when it loads the plugin; a `${user_config.KEY}` reference to an option the manifest's `userConfig` does not declare; a remote `url` that is not a valid absolute URL.
+  - Warnings: an `http://` or `ws://` URL to a non-loopback host; a header value that looks like a literal credential. Move credentials into `userConfig` with `sensitive: true` or into an environment variable.
+- **Unquoted `${CLAUDE_PLUGIN_ROOT}` in shell-form hooks (CC 2.1.281).** A hook `command` with no `args` runs through a shell, and an unquoted placeholder splits into several words when the plugin path contains a space. The validator warns: `Shell command uses ${CLAUDE_PLUGIN_ROOT} without quotes`. Wrap the placeholder in double quotes, `"command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh\""`, or use exec form, `{"command": "bash", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh"]}`.
+- **Listing metadata keys (CC 2.1.281).** The keys under "Listing metadata fields" above are accepted rather than reported as unknown.
+- **Hook failures name the plugin (CC 2.1.281).** Not a validator check, but related: at run time, plugin hook-failure errors now name the offending plugin.
+
+Marketplace-level checks (plugin and marketplace names Claude Code cannot install, CC 2.1.283) are covered in `../../marketplace-structure/overview.md` (Validation).
 
 ### Common Validation Errors
 

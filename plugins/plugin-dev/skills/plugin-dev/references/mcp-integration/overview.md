@@ -30,6 +30,8 @@ Plugin-bundled MCP servers auto-start and interact with user/project MCP configs
 
 The server name `workspace` is reserved by Claude Code. Do not use `"workspace"` as an MCP server name in plugin configurations — it will conflict with Claude Code's internal workspace server.
 
+**`anthropic-skills` lists no skills or prompts (CC 2.1.282).** An MCP server configured under the name `anthropic-skills` still exposes its tools, but Claude Code lists none of its skills or prompts. Rename the server to list them again. CC 2.1.282 applied the same rule to `claude-ai`, and CC 2.1.283 reverted that, so a `claude-ai` server lists its skills and prompts normally.
+
 ## MCP Server Configuration Methods
 
 Plugins can bundle MCP servers in two ways:
@@ -237,6 +239,10 @@ Pre-allow only necessary MCP tools — specific names, not wildcards:
 ❌ allowed-tools: mcp__plugin_api_server__*
 ```
 
+### URL-Mode Elicitation (CC 2.1.281)
+
+On connections using the 2026-07-28 MCP protocol, a server can use URL-mode elicitation to ask Claude Code to open a browser-based flow. When the server has no way to confirm the flow completed, Claude Code does not leave a waiting dialog on screen. URL mode is not available on connections using older protocol versions, so a server that needs to support them should keep a fallback.
+
 Full authentication patterns (OAuth 2.0 with PKCE, bearer tokens, API keys, custom/dynamic headers, mTLS, JWT, HMAC, multi-tenancy) live in `references/authentication.md`. Organization-level `allowedMcpServers`/`deniedMcpServers` governance controls are documented in `references/operations.md`.
 
 ## Configuration Checklist
@@ -247,6 +253,16 @@ Full authentication patterns (OAuth 2.0 with PKCE, bearer tokens, API keys, cust
 - [ ] Environment variables documented
 - [ ] HTTPS/WSS used (not HTTP/WS)
 - [ ] ${CLAUDE_PLUGIN_ROOT} used for paths
+- [ ] `claude plugin validate` passes with no MCP errors
+
+### Validating MCP Configuration (CC 2.1.281)
+
+`claude plugin validate <plugin-dir>` checks `.mcp.json` and inline `mcpServers`:
+
+- **Errors:** an entry Claude Code would silently drop when it loads the plugin; a `${user_config.KEY}` reference to an option the manifest's `userConfig` does not declare; a remote `url` that is not a valid absolute URL.
+- **Warnings:** an `http://` or `ws://` URL to a non-loopback host; a header value that looks like a literal credential. Move secrets into `userConfig` (`sensitive: true`) or environment variables.
+
+Validators before CC 2.1.281 skip these checks, so a dropped entry showed up only as a missing server at run time.
 
 ## Best Practices
 

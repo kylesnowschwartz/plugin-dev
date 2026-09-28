@@ -373,7 +373,14 @@ jq . .claude-plugin/marketplace.json
 
 # Verify required fields
 jq 'has("name") and has("owner") and has("plugins")' .claude-plugin/marketplace.json
+
+# Validate with Claude Code itself, from the marketplace root
+claude plugin validate .
 ```
+
+**Uninstallable names fail validation (CC 2.1.283).** `claude plugin validate` used to accept some plugin or marketplace names in `marketplace.json` that Claude Code could not actually install. Such names now fail validation. A marketplace that passed on an older version can fail on CC 2.1.283, so re-run validation after upgrading and rename any entry it reports. The reserved and imitation names above are a separate check, applied when the marketplace is added.
+
+**Testing locally (CC 2.1.281):** `--plugin-dir` on a folder of plugins, whose direct child folders each hold a `.claude-plugin/plugin.json`, now loads those plugins even when the folder also has its own `.claude-plugin/marketplace.json`. Earlier versions loaded such a folder as one empty plugin. Plugins nested deeper, such as `plugins/<name>/`, are not direct children: point `--plugin-dir` at the folder that holds them, or at each plugin directory.
 
 Use the `plugin-validator` agent with marketplace support for comprehensive validation.
 

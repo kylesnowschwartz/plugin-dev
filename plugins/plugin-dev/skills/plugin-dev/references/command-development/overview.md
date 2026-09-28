@@ -180,6 +180,8 @@ Commands and skills are both invoked via the same **Skill tool**. The difference
 
 Use a flat structure for small sets (5-15 commands, no clear categories). For 15+ commands with clear categories, project commands can be grouped in subdirectories -- the subdirectory name becomes a namespace shown in `/help` (e.g. `.claude/commands/git/commit.md` → `/commit (project:git)`). **Plugin commands differ:** a plugin's default `commands/` directory is not searched recursively, so `commands/git/commit.md` does not load unless `plugin.json` lists `./commands/git` in `commands`, and it then loads as `commit` with no subdirectory namespace. See `references/plugin-features-reference.md`.
 
+**Reserved namespace (CC 2.1.282):** command files and workflow commands in the `anthropic-skills` namespace no longer load, because it is reserved for skills synced from claude.ai. A plugin so named still loads but its commands tie by name with the synced skills. The `claude-ai` namespace, briefly reserved in CC 2.1.282, loads normally again since CC 2.1.283. Details: `../skill-development/references/skill-loading-and-runtime.md` (Skill Precedence).
+
 Commands also integrate with other plugin components -- launch agents, trigger skills, coordinate with hooks -- and should validate inputs and resources before processing. See `references/plugin-integration.md` for integration and validation patterns.
 
 ## Reference Map
@@ -214,3 +216,5 @@ Utility scripts for validating commands (execute without loading into context):
 ./scripts/validate-command.sh commands/*.md
 ./scripts/check-frontmatter.sh commands/*.md
 ```
+
+For prompt quality rather than structure, run `/doctor prompt-audit` (CC 2.1.283, also `/checkup prompt-audit`) in a session where the commands are loaded. It flags prompting patterns written for older models, stale paths, and stale commands.
