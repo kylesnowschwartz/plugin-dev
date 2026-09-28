@@ -103,6 +103,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Extract ground truth and check doc drift
+        id: ground-truth
         env:
           CLAUDE_CODE_EXECUTABLE: ${{ env.CLAUDE_CODE_EXECUTABLE }}
         run: |
@@ -113,11 +114,14 @@ jobs:
           set +e
           scripts/extract-cc-facts.sh \
             --binary "$CLAUDE_CODE_EXECUTABLE" \
-            --out docs/claude-code-facts.json
+            --out docs/claude-code-facts.json \
+            2> .agent-history/extract-errors.txt
           extract_status=$?
           set -e
+          cat .agent-history/extract-errors.txt >&2
           if [ "$extract_status" -ne 0 ]; then
             echo "extract-cc-facts.sh failed with exit $extract_status"
+            printf 'failed_tool=extract-cc-facts.sh\nexit_code=%s\n' "$extract_status" >> "$GITHUB_OUTPUT"
             exit 1
           fi
 
@@ -159,7 +163,66 @@ jobs:
           # a false pass. The ERROR lines naming the failed checks are on stderr.
           if [ "$drift_status" -eq 2 ]; then
             echo "check-doc-drift.sh reported a tooling error; see the ERROR lines above."
+            printf 'failed_tool=check-doc-drift.sh\nexit_code=%s\n' "$drift_status" >> "$GITHUB_OUTPUT"
             exit 1
+          fi
+
+      # Runs whenever the ground-truth step itself ran, pass or fail, and never
+      # changes the job's conclusion: a reporting failure is only a warning.
+      - name: Report the ground-truth step in an issue
+        if: always() && (steps.ground-truth.outcome == 'success' || steps.ground-truth.outcome == 'failure')
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OUTCOME: ${{ steps.ground-truth.outcome }}
+          FAILED_TOOL: ${{ steps.ground-truth.outputs.failed_tool }}
+          EXIT_CODE: ${{ steps.ground-truth.outputs.exit_code }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          # Not errtrace: inside a command substitution the trap's exit 0 would
+          # turn a failed gh call into an empty success.
+          trap 'echo "::warning title=Ground-truth issue not updated::Reporting the ground-truth step ($OUTCOME) to its tracking issue failed; see this step log."; exit 0' ERR
+          # One open issue, found by its fixed title, tracks a failing
+          # ground-truth step: a failure rewrites its body and comments, and a
+          # success closes it.
+          title="Upstream sync: ground-truth step failing"
+          issue=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 100 \
+            --search "\"$title\" in:title" --json number,title \
+            --jq "[.[] | select(.title == \"$title\") | .number] | first // empty")
+
+          if [ "$OUTCOME" = success ]; then
+            if [ -n "$issue" ]; then
+              gh issue close "$issue" --repo "$GITHUB_REPOSITORY" \
+                --comment "The ground-truth step succeeded in $RUN_URL."
+            fi
+            exit 0
+          fi
+
+          tool="${FAILED_TOOL:-the ground-truth step}"
+          errors=.agent-history/extract-errors.txt
+          if [ "$tool" = check-doc-drift.sh ]; then errors=.agent-history/drift-errors.txt; fi
+          version=$(claude --version 2>/dev/null || echo unknown)
+          body="$RUNNER_TEMP/ground-truth-issue.md"
+          {
+            echo "The upstream sync stopped because \`$tool\` failed${EXIT_CODE:+ with exit $EXIT_CODE}, so no docs sync ran."
+            echo
+            echo "- Claude Code CLI: $version"
+            echo "- Run: $RUN_URL"
+            echo
+            echo '```'
+            grep -E '^(ERROR |extract-cc-facts: |check-doc-drift: )' "$errors" 2>/dev/null || echo "No error lines were captured; see the run log."
+            echo '```'
+            echo
+            echo "Fix the failing lookup in \`scripts/extract-cc-facts.sh\`, then run \`scripts/extract-cc-facts.sh --out docs/claude-code-facts.json\` and \`scripts/check-doc-drift.sh\` until both pass. The next successful run closes this issue."
+          } > "$body"
+
+          if [ -n "$issue" ]; then
+            gh issue edit "$issue" --repo "$GITHUB_REPOSITORY" --body-file "$body"
+            gh issue comment "$issue" --repo "$GITHUB_REPOSITORY" \
+              --body "Still failing in $RUN_URL: \`$tool\`${EXIT_CODE:+ exited $EXIT_CODE}."
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file "$body"
           fi
 
       - name: Run upstream sync

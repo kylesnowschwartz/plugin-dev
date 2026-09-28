@@ -96,6 +96,14 @@ capture that stderr to a file — `.agent-history/drift-errors.txt` in
 summary and the job log, and fail the job on exit 2, so a check that silently
 stopped running cannot pass as a clean report.
 
+When the ground-truth step in `upstream-sync.yml` fails, the next step opens one
+GitHub issue titled "Upstream sync: ground-truth step failing", or rewrites its
+body and adds a comment if it is already open. The issue names the tool that
+failed and its exit code, the CLI version, the run link, and the error lines from
+`.agent-history/extract-errors.txt` or `.agent-history/drift-errors.txt`. The next
+run whose ground-truth step succeeds closes it. The reporting step never changes
+the job's result; if it cannot reach GitHub it posts a warning instead.
+
 Both feed the upstream sync pipeline in
 `.claude/skills/update-from-upstream/SKILL.md`:
 
