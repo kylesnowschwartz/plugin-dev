@@ -111,6 +111,8 @@ allowed-tools: Bash(docker *)        # Only docker commands
 allowed-tools: "*"
 ```
 
+**Managed `allowManagedPermissionRulesOnly` (CC 2.1.282):** under this managed setting, repository, user, and `--add-dir` commands (and skills, and skills-directory plugin manifests) no longer pre-approve their own tools through `allowed-tools`; their calls follow the managed permission rules.
+
 **When to use:**
 
 1. **Security:** Restrict command to safe operations
@@ -170,7 +172,7 @@ model: haiku # Fast, efficient for simple tasks
 ```
 
 ```yaml
-model: sonnet # Balanced performance (default)
+model: sonnet # Balanced performance
 ```
 
 ```yaml

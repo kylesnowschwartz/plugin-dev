@@ -14,7 +14,7 @@ Combine command and prompt hooks for layered validation:
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/quick-check.sh",
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/quick-check.sh\"",
           "timeout": 5
         },
         {
@@ -62,7 +62,7 @@ Hooks support a declarative `if` field using permission rule syntax to filter wh
       "hooks": [
         {
           "type": "command",
-          "command": "${CLAUDE_PLUGIN_ROOT}/scripts/validate-git.sh",
+          "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/validate-git.sh\"",
           "if": "Bash(git *)"
         }
       ]
@@ -856,7 +856,7 @@ For the `if` field, see the [Declarative `if` Field](#declarative-if-field-cc-21
 ```json
 {
   "type": "command",
-  "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/init.sh",
+  "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/init.sh\"",
   "once": true
 }
 ```
@@ -868,7 +868,7 @@ When `true`, the hook runs only once per session and is then auto-removed. Usefu
 ```json
 {
   "type": "command",
-  "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh",
+  "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh\"",
   "statusMessage": "Validating file write..."
 }
 ```
@@ -1026,7 +1026,7 @@ Fires when a teammate is about to go idle (stop processing). Use to keep teammat
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/check-teammate.sh"
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/check-teammate.sh\""
         }
       ]
     }
@@ -1061,7 +1061,7 @@ Fires when a task is marked complete. Use to verify task quality before acceptin
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/verify-task.sh"
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/verify-task.sh\""
         }
       ]
     }
@@ -1076,7 +1076,7 @@ Command hooks can run asynchronously in the background without blocking the main
 ```json
 {
   "type": "command",
-  "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/log-event.sh",
+  "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/log-event.sh\"",
   "async": true
 }
 ```

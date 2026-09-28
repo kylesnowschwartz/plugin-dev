@@ -2,60 +2,81 @@
 
 This reference covers specialized topics that plugin developers may encounter in advanced use cases. Each section is self-contained.
 
-## Function-Hook Plugins (CC 2.1.260-2.1.261, expanded 2.1.267)
+## Function-Hook Plugins (CC 2.1.260-2.1.261, expanded 2.1.267, reworked 2.1.283)
 
-Function-hook plugins are a new pattern for plugins that need direct control over hook execution, UI rendering, or require the JSX runtime. This is an advanced plugin tier that goes beyond declarative hooks.json configuration.
+Function-hook plugins, which Claude Code's bundled guidance calls **mods**, are plugins whose hooks are TypeScript/JavaScript functions instead of shell commands. A mod can draw a live pane, a band above the prompt, a status line entry, or a toast, and can block, rewrite, or react to tool calls and prompts. It hot-reloads in the running session. This is an advanced tier beyond declarative `hooks.json` command hooks.
 
-### Overview
+The layout, module shape, and hot-reload consent below follow the bundled "Plugin authoring" skill in CC 2.1.283. That skill supersedes the earlier descriptions in this section, which said constructors were imported from a JSX package and that the manifest declared an `experimental` function-hook field.
 
-Function-hook plugins provide:
+### Layout
 
-- **Direct hook function execution** — hooks defined as JavaScript/TypeScript functions rather than external commands
-- **JSX runtime access** — primitives for rendering custom UI elements
-- **Hot reload support** — plugins can be reloaded without session restart
-- **Simplified authoring guidance** (CC 2.1.261) — streamlined patterns for common use cases
-- **Settings and environment access** (CC 2.1.267) — engine interface provides access to settings and environment variables
-- **Inbound session deliveries** (CC 2.1.267) — hook events now include inbound session delivery notifications
+A mod is an ordinary plugin folder with three files:
 
-### JSX Runtime Primitives (CC 2.1.257, expanded 2.1.259, clarified 2.1.267)
-
-The JSX runtime provides primitives for UI rendering in render hooks:
-
-**Core primitives:**
-
-- `Box` — container element with flexbox-like layout
-- `Text` — text rendering with formatting options
-- `Svg` — SVG element rendering (CC 2.1.259)
-
-**Constructor destructuring requirement (CC 2.1.267):** Surface element constructors (`Box`, `Text`, `Svg`) must be destructured into JSX tags rather than assumed global. Import them explicitly from the JSX runtime module:
-
-```typescript
-// Correct: destructure constructors
-import { Box, Text, Svg } from '@anthropic/claude-code-jsx';
-
-// Incorrect: assuming global availability
-// Box, Text, Svg are NOT global
+```text
+<mod-name>/
+├── .claude-plugin/plugin.json   # { "name": "<mod-name>", "version": "0.1.0", "description": "..." }
+├── hooks/hooks.json             # { "modules": ["./register.tsx"] } — path relative to this file
+└── hooks/register.tsx           # the hooks module (.ts also works)
 ```
 
-**Keyed box hover styles (CC 2.1.267):** Keyed boxes (`<Box key="...">`) scope hover styles to their subtree. This enables isolated hover effects within complex layouts.
+`hooks/hooks.json` holds a `modules` array naming the hooks module instead of the event-keyed `hooks` object that command hooks use. No `experimental` flag and no JSX runtime dependency is declared in `plugin.json`.
 
-**Surface-specific limitations and mobile rendering (CC 2.1.268):** A render hook's output is drawn on whichever surface the session is running on, and surfaces do not all support the same elements. Mobile surfaces in particular render in a narrow viewport with a reduced element set.
+**State contract.** A mod that keeps values in `$.state` adds a fourth file, `types/index.d.ts`. It declares each value in `interface PluginState` under the mod's name, and `plugin.json` names it with `"types": "./types/index.d.ts"`. The module imports its value types from `'../types'`, and `claude plugin validate` checks every `$.state` key the module uses against that contract.
 
-- Do not assume every primitive is available on every surface — design the tree so the essential information survives when an element is unsupported
-- Keep layouts narrow enough to remain legible on a mobile-width surface; do not rely on wide fixed-width boxes
-- An invalid or unsupported tree falls back to a simpler rendering rather than failing the hook. Run with `claude --debug` to see why a tree was rejected
+**Type declarations.** `/plugin-types` writes the running build's API declarations, plus the enabled plugins' contracts, into `.claude/types` so an editor and `tsc` can type-check the mod. `/plugin-types [dir]` writes them into another directory.
 
-**Usage context:**
+### Module Shape
 
-- Only available within function-hook render contexts
-- Plugins must declare JSX runtime dependency in manifest
-- Hot reload preserves state when possible
+The hooks module exports `register(on, options)`:
+
+- `on(event, matcher?, hook)` adds a hook. Every hook has the signature `($, e, next)`.
+- `$` is the engine interface. Calls are spelled noun then method: `$.ui.open(...)`, `$.ui.status(text)`, `$.ui.toast(text)`, `$.command.register(...)`, and `$.clock`, `$.tool`, `$.agent`, `$.model`, `$.fs`, `$.process` for timers, model-callable tools, subagent types, model calls, files, and processes.
+- `e` is the event's input, a plain frozen value.
+- `next(e)` runs the plugins beneath and then Claude Code's own behavior, resolving to the event's result. A hook that returns without calling `next` answers for itself; `next({ ...e, x })` rewrites what the rest of the chain sees.
+
+Examples of event wiring: `on('tool.call', { tool }, hook)` returns `{ deny }`, calls `next({ ...e, ... })`, or awaits `next(e)` and acts on the result; `on('prompt.submit', hook)` rewrites a prompt with `next({ ...e, text })`; a slash command is registered with `$.command.register({ name, description })` in `session.start` and answered by a `command.run` hook returning `{ text }`.
+
+**No DOM and no Node.** The module runs in an environment of its own; `$` is its only way to reach anything outside it.
+
+### Rendering (`ui.render`)
+
+JSX compiles against the global `h`. Element constructors are not imported from a package and are not globals: they come from the drawing surface's own table, resolved per event:
+
+```typescript
+const { Box, Text, Button } = $.ui.resolve(e);
+```
+
+`e.surface` is `terminal`, `desktop`, `vscode`, or `mobile`.
+
+- **Pane** — `$.ui.open({ id, title })`, drawn by a `ui.render` hook on `{ component: 'Pane', requestId: id }`. Opened by a user action (a typed command, a pressed Button) it seats at any width; opened unasked (from `session.start`, a timer) it seats from 144 terminal columns and waits below that.
+- **Band above the prompt** — a `ui.render` hook on `{ component: 'AbovePrompt' }` returning a tree, or `next(e)` when there is nothing to show.
+- **Shared values** — `atom(ref, initial)`, `read($, atom)` while drawing, `update($, atom, fn)` from a handler or another event; a write redraws the readers. Each value is declared in the state contract.
+
+**Keyed box hover styles (CC 2.1.267):** Keyed boxes (`<Box key="...">`) scope hover styles to their subtree.
+
+**Surface differences (CC 2.1.268):** Surfaces do not all support the same elements, and mobile renders in a narrow viewport with a reduced element set. Design the tree so the essential information survives when an element is unsupported, and keep layouts narrow. A tree that does not validate falls back to Claude Code's own rendering; the debug log carries a line beginning `ui.render (<Component>): a hook returned a tree that does not validate`, followed by the reason.
+
+### Hot Reload and Per-Session Consent (CC 2.1.283)
+
+Hot reload needs the user's consent once per session:
+
+1. When the bundled "Plugin authoring" skill loads, Claude Code starts watching `${CLAUDE_DEV_MODS_DIR}`; each mod goes in its own child folder, `${CLAUDE_DEV_MODS_DIR}/<mod-name>/`.
+2. The first file written there makes Claude Code ask the user, once: "Enable mod hot-reloading for this session?" (`Not now` / `Enable for this session`). The turn keeps going while the question is open.
+3. **Only the user can answer it.** No permission mode, permission rule, or hook answers the question. Under `claude -p` nobody can be asked, so hot reload is off; an organization policy or an untrusted workspace also turns it off.
+4. On `Enable for this session`, the folder joins the session's plugin folders, and the mod loads when the turn ends. Each later edit reloads it when the turn that made the edit ends.
+5. If the user declines, the files are still written; load them with `claude --plugin-dir <folder>`.
+
+A process that restarts (an app relaunch, a resume) loads an enabled folder again by itself.
+
+**A reload is a fresh load.** `register` runs again and `session.start` fires again. Values in `$.state` (per session) and `$.store` (across sessions) are held by Claude Code and persist; the module's own variables start over. Keep anything that must survive a reload in `$.state` or `$.store`.
+
+A mod developed outside `${CLAUDE_DEV_MODS_DIR}` loads like any other plugin with `claude --plugin-dir`, and `/reload-plugins` refreshes it.
 
 ### When to Use Function-Hook Plugins
 
 **Consider function-hooks when:**
 
-- Your plugin needs custom UI rendering beyond text output
+- Your plugin needs custom UI rendering (panes, bands, status line entries, toasts) beyond text output
 - Hook logic is complex enough that shell commands become unwieldy
 - You need direct access to session state beyond what env vars provide
 - Hot reload during development is valuable
@@ -67,40 +88,24 @@ import { Box, Text, Svg } from '@anthropic/claude-code-jsx';
 - You prefer not to write JavaScript/TypeScript
 - Maximum portability across environments
 
-### Development Workflow
+### Validation and Error Reporting (CC 2.1.267, updated 2.1.283)
 
-1. **Declare function-hook support** in plugin.json experimental field
-2. **Define hook functions** in TypeScript/JavaScript modules
-3. **Use hot reload** during development: `/reload-plugins` refreshes without restart
-4. **Test render output** — function hooks have different output constraints than command hooks
+`claude plugin validate <mod folder>` reads the manifest and the module source the way Claude Code will. It reports what the module hooks and calls, plus everything Claude Code would refuse, before any session loads it. When a state contract exists, it also checks `$.state` keys against it.
 
-### Plugin Authoring Simplification (CC 2.1.261)
+Claude Code reports failures in three places:
 
-The CC 2.1.261 release simplified function-hook plugin authoring:
-
-- Reduced boilerplate for common patterns
-- Clearer separation between render and logic hooks
-- Better error messages for JSX runtime issues
-- Documentation consolidation in official guides
-
-### Hook-Failure Handlers (CC 2.1.267)
-
-Function-hook plugins now have improved error handling and debugging capabilities:
-
-**`.catch` handlers:** Hook functions can use `.catch()` handlers to gracefully handle failures without crashing the plugin.
-
-**One-time transcript notices:** When a hook fails or a module fails to load, a one-time notice appears in the transcript. This prevents log spam while ensuring failures are visible.
-
-**Debug logging:** Every hook failure occurrence is logged when running in debug mode (`claude --debug`). This helps track intermittent failures and diagnose issues during development.
+- **Session notice** — the outcome of the hot-reload question and of the load, shown at the start of Claude's next turn.
+- **Transcript** — one dim line naming the plugin, the event, and the reason when a hook fails (the hook is skipped and the chain continues) or a module does not load. Hook functions can use `.catch()` handlers to handle failures themselves.
+- **Debug log** (`claude --debug`) — a line for every failure occurrence and every result Claude Code refused, including rejected render trees.
 
 ### Limitations
 
-- Function-hook plugins require Node.js runtime
-- JSX rendering only works in environments that support it (not all TUI modes)
+- The module has no DOM and no Node APIs; everything outside it goes through `$`
+- Surfaces support different element sets (see Rendering above)
 - More complex to debug than command hooks
-- Official documentation still evolving
+- Hot reload requires the user's per-session consent and is unavailable under `claude -p`
 
-**Claude no longer carries the plugin-authoring reference in-prompt (CC 2.1.269).** The embedded plugin-development skill covering function hooks, rendering surfaces, dispatch lifetimes, validation, and registered tools was removed from Claude Code's bundled system prompts. The **feature is unaffected** — the JSX runtime and function hooks are still present in the CC 2.1.270 binary. What changed is that Claude cannot answer function-hook questions from built-in knowledge, so an author working on one should point Claude at this reference (or the official docs) explicitly rather than assuming it already knows the API.
+**Plugin-authoring guidance is bundled again (CC 2.1.283).** CC 2.1.269 removed the embedded plugin-development skill from Claude Code's system prompts. CC 2.1.283 ships a bundled "Plugin authoring" skill for mods, and when loaded it writes the running build's full API declaration file for Claude to read. Claude still has no function-hook API knowledge until that skill loads, so an author should load it (or point Claude at this reference) before writing a hooks module.
 
 **Note:** This is an advanced feature. Most plugins work well with declarative `hooks.json` configuration. Consider function-hooks only when the simpler approach doesn't meet your requirements.
 
@@ -273,6 +278,8 @@ rm -rf ~/.claude/plugins/cache
 
 This forces re-caching on next session start.
 
+**No-version plugins are restored at the installed commit (CC 2.1.283).** When a plugin that declares no `version` has missing cached files, Claude Code restores it at the commit that was installed. Before CC 2.1.283 it silently restored the source's newest commit instead. Declaring `version` is still the reliable way to pin what users run.
+
 ## Plugin CLI Management Commands
 
 Users manage plugins through CLI commands (or the `/plugin` interactive interface):
@@ -433,6 +440,8 @@ Managed settings can also restrict hook and permission rule sources:
 | --------------------------------- | --------------------------------------------------------------- |
 | `allowManagedPermissionRulesOnly` | Only managed permission rules apply; user/project rules ignored |
 | `allowManagedHooksOnly`           | Only managed hooks execute; plugin/user hooks disabled          |
+
+**`allowed-tools` does not pre-approve under `allowManagedPermissionRulesOnly` (CC 2.1.282).** With this managed setting on, repository, user, and `--add-dir` skills and commands, and skills-directory plugin manifests, no longer pre-approve their own tools through `allowed-tools`. Before CC 2.1.282 they still did. Their tool calls go through the managed permission rules like any other call.
 
 **Plugin developer implications:**
 
@@ -642,7 +651,9 @@ claude --plugin-dir /path/to/plugins-folder/
 #     └── .claude-plugin/plugin.json
 ```
 
-This simplifies loading multiple plugins during development without specifying each one individually.
+This simplifies loading multiple plugins during development without specifying each one individually. Each child folder that holds a `.claude-plugin/plugin.json` is loaded.
+
+**Folders that also hold a marketplace manifest (CC 2.1.281):** A folder of plugins that also has a `.claude-plugin/marketplace.json` now loads the plugins in it. Before CC 2.1.281 it loaded as one empty plugin instead. On older versions, point `--plugin-dir` at each plugin directory. Only direct child folders count, so a marketplace that keeps plugins under `plugins/<name>/` is loaded by pointing the flag at `plugins/`, not at the repository root.
 
 **ZIP archive (CC 2.1.128):**
 
@@ -711,7 +722,7 @@ claude plugin install https://example.com/my-plugin.zip --sha256=abc123...
 
 **Extraction hardening (CC 2.1.269):** Archives extracted for a session are no longer readable by other local users, extracted files no longer keep world-writable permission bits carried in the archive, and stale files no longer survive a re-extraction. Two consequences for plugin authors publishing archives:
 
-- Do not rely on permission bits set inside the archive. Scripts that must be executable should be invoked through an interpreter (`bash ${CLAUDE_PLUGIN_ROOT}/scripts/x.sh`) rather than depending on the archived mode
+- Do not rely on permission bits set inside the archive. Scripts that must be executable should be invoked through an interpreter (`bash "${CLAUDE_PLUGIN_ROOT}/scripts/x.sh"`) rather than depending on the archived mode
 - A re-extraction is now a clean replacement, so a file removed between releases is genuinely gone. Do not count on a stale file lingering from an earlier version
 
 **Host config size limit on self-hosted runners (CC 2.1.271):** A self-hosted runner session whose host config directory exceeds **64 MiB** used to lose *all* host config — settings, skills, plugins, and MCP servers — with no error at all. The plugin simply was not there. This is fixed, and `--host-config-snapshot disk|memory` now controls how the snapshot is taken. Large plugins are the usual way a runner crosses that threshold, so keep bundled assets (vendored dependencies, model files, sample corpora) out of the plugin directory and fetch them at runtime instead. If plugins mysteriously fail to load on a self-hosted runner, check the host config directory size before anything else.
@@ -761,7 +772,9 @@ The `autoMode.classifyAllShell` setting controls how shell commands are classifi
 
 > **CC 2.1.271 — inline `[BANG]` commands are no longer classified.** A skill's or slash command's inline `[BANG]` shell commands bypass the classifier entirely in auto mode and follow **default-mode permission rules** instead, regardless of `classifyAllShell`. A command that no allow or deny rule decides runs as a reviewed tool call. Plugin authors gate inline `[BANG]` commands with ordinary `permissions.allow`/`permissions.deny` rules — reasoning about classifier behavior no longer describes what happens.
 
-**Which classifier runs (CC 2.1.273).** On Bedrock, Vertex and Foundry, auto mode now uses the **local** classifier by default. Set `CLAUDE_CODE_AUTO_MODE_SERVER=1` to use the platform's server-side classifier instead. This changes *which* classifier renders the verdict, not *which* commands get classified — the `classifyAllShell` and inline `[BANG]` rules above are unaffected. Note that sessions on these platforms are documented to start in `default` (Manual) mode rather than auto mode, which limits how often the difference is observable.
+**Which classifier runs (CC 2.1.273).** On Bedrock, Vertex and Foundry, auto mode now uses the **local** classifier by default. Set `CLAUDE_CODE_AUTO_MODE_SERVER=1` to use the platform's server-side classifier instead. This changes *which* classifier renders the verdict, not *which* commands get classified — the `classifyAllShell` and inline `[BANG]` rules above are unaffected.
+
+**Auto mode is the default on third-party providers (CC 2.1.283).** Interactive sessions on third-party providers, or with telemetry off, now start in auto mode when no permission mode is configured. Before CC 2.1.283 they started in `default` (Manual) mode, so the classifier choice above rarely came into play; it now governs interactive Bedrock, Vertex and Foundry sessions that leave the mode unset. A configured permission mode still takes precedence.
 
 **Use cases:**
 

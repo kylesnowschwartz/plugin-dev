@@ -129,7 +129,7 @@ To create a task:
 
 ### Agent Configuration
 
-Agents can use MCP tools autonomously without pre-allowing them:
+Agents can see and call MCP tools without listing them in frontmatter, but seeing a tool is not the same as being approved to call it. Each call still goes through the permission system. Agents run in the background by default (CC 2.1.198), and a background agent that hits an unapproved permission request fails, because the user cannot be prompted. Pre-approve the MCP tools such an agent calls with permission allow rules (for example `mcp__plugin_asana_asana__asana_search_tasks`), or run it in the foreground. See `../../agent-development/references/advanced-agent-fields.md` (Background vs Foreground).
 
 ```markdown
 ---
@@ -152,16 +152,16 @@ Autonomous agent for generating Asana project status reports.
 
 ## Available Tools
 
-The agent has access to all Asana MCP tools without pre-approval.
+The agent can see all Asana MCP tools. The search and comment tools above must be allowed by permission rules when it runs in the background.
 ```
 
 ### Agent Tool Access
 
-Agents have broader tool access than commands:
+Agents have broader tool visibility than commands:
 
-- Can use any tool Claude determines is necessary
-- Don't need pre-allowed lists
-- Should document which tools they typically use
+- Can see any tool Claude determines is necessary, unless `tools` restricts the list
+- Still need permission for each call: background agents (the default) fail on an unapproved permission request, so pre-approve the MCP tools they call
+- Should document which tools they typically use, so users know which allow rules to add
 
 ## Tool Call Patterns
 

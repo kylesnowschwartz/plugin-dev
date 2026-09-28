@@ -60,7 +60,7 @@ Load project-specific context at session start:
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/load-context.sh"
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/load-context.sh\""
         }
       ]
     }
@@ -98,7 +98,7 @@ Log all notifications for audit or analysis:
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/log-notification.sh"
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/log-notification.sh\""
         }
       ]
     }
@@ -164,7 +164,7 @@ Ask user before dangerous operations. A prompt hook can only answer ok or not ok
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/confirm-destructive.sh"
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/confirm-destructive.sh\""
         }
       ]
     }
@@ -201,7 +201,7 @@ Run linters or formatters on file edits:
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/check-quality.sh"
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/check-quality.sh\""
         }
       ]
     }
@@ -267,7 +267,7 @@ Combine multiple patterns for comprehensive protection:
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/load-context.sh"
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/load-context.sh\""
         }
       ]
     }
@@ -380,7 +380,7 @@ Send alerts when Claude encounters API errors:
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/alert-api-error.sh"
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/alert-api-error.sh\""
         }
       ]
     }
@@ -422,7 +422,7 @@ Verify task deliverables before marking complete:
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/validate-task.sh"
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/validate-task.sh\""
         }
       ]
     }
@@ -483,7 +483,7 @@ Manage worktrees with custom setup and cleanup:
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/create-worktree.sh"
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/create-worktree.sh\""
         }
       ]
     }
@@ -493,7 +493,7 @@ Manage worktrees with custom setup and cleanup:
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/cleanup-worktree.sh"
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/cleanup-worktree.sh\""
         }
       ]
     }
@@ -556,7 +556,7 @@ Monitor and validate configuration changes for security:
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/audit-config-change.sh"
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/audit-config-change.sh\""
         }
       ]
     }
@@ -601,7 +601,7 @@ Auto-respond to known MCP server prompts:
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/handle-auth-elicitation.sh"
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/handle-auth-elicitation.sh\""
         }
       ]
     }
@@ -655,7 +655,7 @@ Track what happens during context compaction:
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/log-compact.sh pre"
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/log-compact.sh\" pre"
         }
       ]
     }
@@ -666,7 +666,7 @@ Track what happens during context compaction:
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/log-compact.sh post"
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/log-compact.sh\" post"
         }
       ]
     }
@@ -707,7 +707,7 @@ Track which instruction files Claude loads and when:
       "hooks": [
         {
           "type": "command",
-          "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/log-instructions.sh",
+          "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/log-instructions.sh\"",
           "async": true
         }
       ]

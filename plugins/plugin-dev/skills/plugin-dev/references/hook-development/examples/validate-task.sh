@@ -8,7 +8,7 @@
 #       "hooks": [
 #         {
 #           "type": "command",
-#           "command": "bash ${CLAUDE_PLUGIN_ROOT}/examples/validate-task.sh"
+#           "command": "bash \"${CLAUDE_PLUGIN_ROOT}/examples/validate-task.sh\""
 #         }
 #       ]
 #     }

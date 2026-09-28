@@ -8,7 +8,7 @@
 #       "hooks": [
 #         {
 #           "type": "command",
-#           "command": "bash ${CLAUDE_PLUGIN_ROOT}/examples/teammate-quality-gate.sh"
+#           "command": "bash \"${CLAUDE_PLUGIN_ROOT}/examples/teammate-quality-gate.sh\""
 #         }
 #       ]
 #     }

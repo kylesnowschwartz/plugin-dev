@@ -11,7 +11,7 @@
 #       "hooks": [
 #         {
 #           "type": "command",
-#           "command": "bash ${CLAUDE_PLUGIN_ROOT}/examples/log-observability.sh",
+#           "command": "bash \"${CLAUDE_PLUGIN_ROOT}/examples/log-observability.sh\"",
 #           "async": true
 #         }
 #       ]
@@ -22,7 +22,7 @@
 #       "hooks": [
 #         {
 #           "type": "command",
-#           "command": "bash ${CLAUDE_PLUGIN_ROOT}/examples/log-observability.sh",
+#           "command": "bash \"${CLAUDE_PLUGIN_ROOT}/examples/log-observability.sh\"",
 #           "async": true
 #         }
 #       ]
@@ -33,7 +33,7 @@
 #       "hooks": [
 #         {
 #           "type": "command",
-#           "command": "bash ${CLAUDE_PLUGIN_ROOT}/examples/log-observability.sh",
+#           "command": "bash \"${CLAUDE_PLUGIN_ROOT}/examples/log-observability.sh\"",
 #           "async": true
 #         }
 #       ]
@@ -44,7 +44,7 @@
 #       "hooks": [
 #         {
 #           "type": "command",
-#           "command": "bash ${CLAUDE_PLUGIN_ROOT}/examples/log-observability.sh",
+#           "command": "bash \"${CLAUDE_PLUGIN_ROOT}/examples/log-observability.sh\"",
 #           "async": true
 #         }
 #       ]

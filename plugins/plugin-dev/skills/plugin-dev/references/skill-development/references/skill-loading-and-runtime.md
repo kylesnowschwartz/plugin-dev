@@ -72,7 +72,16 @@ This ordering governs **name collisions only**. It is not the same as the Skill 
 
 **Qualified names in errors (CC 2.1.269):** When a bare skill name matches exactly one plugin skill, the Skill tool's "Unknown skill" error names the skill in its full `plugin-name:skill-name` form. A user who typed the bare name gets told what to type instead, which makes a shadowed plugin skill much easier to diagnose.
 
-**Reserved-ish prefix: `anthropic-skills:` (CC 2.1.269).** Skills synced from claude.ai into cloud sessions are named `anthropic-skills:<name>`, matching Claude Desktop. The bare name still resolves when nothing else claims it. Do not name a plugin `anthropic-skills` — its skills would collide with the synced namespace.
+**Reserved namespace: `anthropic-skills` (CC 2.1.269, reserved 2.1.282).** Skills synced from claude.ai into cloud sessions are named `anthropic-skills:<name>`, matching Claude Desktop. The bare name still resolves when nothing else claims it. Since CC 2.1.282 the namespace is reserved for those synced skills:
+
+- Skill folders, command files, and workflow commands in the `anthropic-skills` namespace no longer load.
+- A plugin named `anthropic-skills` still loads, but its skills tie by name with the synced skills. Do not use that plugin name.
+- MCP servers configured under the name `anthropic-skills` list no skills or prompts, though their tools still work.
+- `Skill(anthropic-skills:*)` allow rules cover only skills synced from claude.ai, not plugins or other skills that merely use the name. Since CC 2.1.283, a `Skill(anthropic-skills:<name>)` deny rule also blocks that skill when Claude Desktop delivers it as a plugin.
+
+CC 2.1.282 reserved `claude-ai` the same way; CC 2.1.283 reverted that. Skills, commands, workflows, and MCP servers named `claude-ai` load normally again, and `Skill(claude-ai:*)` rules are ordinary prefix rules. The CC 2.1.283 binary's reserved list is `anthropic-skills` alone.
+
+**`Skill(skill:<name>)` deny rules match aliases (CC 2.1.283).** A deny rule of the form `Skill(skill:<name>)` now also matches the skill's alias and display name, not only its canonical name. A deny written against any of those names blocks the skill.
 
 **Synced skills can be withdrawn by org policy (CC 2.1.273).** A claude.ai-synced skill used to stay available after an organization turned Skills off. It now moves to `~/.claude/skills/.trash` — recoverable, but gone from the session. The same destination applies when a user sets `syncClaudeAiSkills: false`. A skill that resolved yesterday may therefore be absent today for reasons outside the plugin: do not write a plugin skill or agent that hard-depends on a synced skill being present. Plugin-bundled skills are unaffected, since they install with the plugin rather than syncing. See the `syncClaudeAiSkills` section in `../../plugin-settings/overview.md`.
 
@@ -361,6 +370,15 @@ The `/skill-doctor` command diagnoses skill issues and identifies unused skills 
 
 **History:** `/skill-doctor` was in early access (CC 2.1.233-2.1.235), briefly removed from bundled prompts (CC 2.1.251), and restored as generally available in CC 2.1.261.
 
+## Prompt Audit (`/doctor prompt-audit`) (CC 2.1.283)
+
+`/doctor prompt-audit` (also `/checkup prompt-audit`) audits the CLAUDE.md files, skills, agents, and commands loaded in the current project for prompting patterns written for older models. Where `/skill-doctor` focuses on triggering and context cost, prompt-audit reviews the instructions themselves.
+
+- **Scope:** only the Claude Code configuration loaded in the project. It skips settings files and secrets, and treats the audited files as data, not as instructions to follow.
+- **Report order:** stale paths, stale commands, and contradicting instruction files lead the report. Thinking keywords that Claude Code documents are kept, not flagged.
+
+Run it over a plugin's skills, agents, and commands before publishing, alongside `claude plugin validate` (structure) and `claude plugin eval` (behavior).
+
 ## Plugin Eval (`claude plugin eval`) — Generally Available (CC 2.1.269)
 
 `claude plugin eval` runs a plugin's eval suite against Claude Code and reports scored, reproducible results. It became generally available in CC 2.1.269; no enablement environment variable is needed (the former `CLAUDE_CODE_WALNUT_SPIRE=1` gate is gone).
@@ -417,6 +435,8 @@ Graders also accept `weight` (relative contribution to the score) and `arm` (whi
 **MCP mocks.** `--mocks record` (the default) reads stand-ins from `<eval dir>/mocks/`. A plugin MCP server with no mock is **not** started, and its tools are unavailable for that run — add `mocks/<server>/` to cover it. `--mocks off` disables mocking.
 
 **Reports.** Results land in `<eval dir>/results/`. `--json [path]` prints the full machine-readable result; a self-contained HTML report (scores, prompts, grader verdicts) can be written to a path of your choosing.
+
+**Git 2.31 or later (CC 2.1.283).** When git is installed, `claude plugin eval` requires git 2.31 or later. Older git ignores `GIT_CONFIG_COUNT`, so before CC 2.1.283 an eval could stop before running any case; a run on older git is now refused with a message naming the version. Upgrade git on CI runners that pin an old distribution package.
 
 **Trust.** `claude plugin eval` loads the plugin and runs its suite on your machine as you. A plugin directory must be trusted before the first run; a piloted run started from a non-interactive session cannot stop to ask, so it writes cases without running them.
 

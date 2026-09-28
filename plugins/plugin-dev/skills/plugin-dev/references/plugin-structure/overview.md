@@ -116,7 +116,7 @@ Each component type has a default location and auto-discovers on plugin enable. 
         {
           "matcher": "Write|Edit",
           "hooks": [
-            { "type": "command", "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/validate.sh", "timeout": 30 }
+            { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/validate.sh\"", "timeout": 30 }
           ]
         }
       ]
@@ -151,8 +151,10 @@ Each component type has a default location and auto-discovers on plugin enable. 
 Use the `${CLAUDE_PLUGIN_ROOT}` environment variable for all intra-plugin path references:
 
 ```json
-{ "command": "bash ${CLAUDE_PLUGIN_ROOT}/scripts/run.sh" }
+{ "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/run.sh\"" }
 ```
+
+In a shell-form hook command (no `args`), wrap the placeholder in double quotes as shown. An unquoted `${CLAUDE_PLUGIN_ROOT}` breaks on plugin paths with spaces, and `claude plugin validate` warns about it (CC 2.1.281).
 
 It matters because plugins install in different locations depending on installation method, OS conventions, and user preferences. Use it in hook command paths, MCP server arguments, script execution references, and resource file paths. It works in manifest JSON fields, in component markdown (commands, agents, skills), and as an environment variable inside executed scripts (`source "${CLAUDE_PLUGIN_ROOT}/lib/common.sh"`).
 
@@ -176,7 +178,7 @@ Claude Code automatically discovers and loads components:
 6. **MCP servers**: loads from `.mcp.json` or manifest
 7. **LSP servers**: loads from `.lsp.json` or manifest
 
-**Discovery timing:** components register at installation and become available on enable; no restart is required — changes take effect on the next Claude Code session. These default scans apply when the manifest leaves the matching component path field unset; see "Component Path Configuration" above for which fields replace a default directory and which add to it.
+**Discovery timing:** components register at installation and become available on enable, with no restart required. Plugins activate immediately when safe (CC 2.1.221), and installing, enabling, or disabling through the `/plugin` menu takes effect when the menu closes (CC 2.1.268); see `references/advanced-topics.md` ("Plugin Immediate Activation"). Edits to an already-loaded plugin's files need `/reload-plugins`. These default scans apply when the manifest leaves the matching component path field unset; see "Component Path Configuration" above for which fields replace a default directory and which add to it.
 
 **Unreadable defaults are reported, not skipped (CC 2.1.268).** If a default `monitors/monitors.json` or a root-level `SKILL.md` exists but cannot be checked — a permissions problem, a dangling symlink — the plugin surfaces the failure instead of quietly loading without it. A plugin that appears to be missing a component should be checked for file-permission problems rather than assumed misconfigured.
 
@@ -202,7 +204,9 @@ claude --plugin-dir /path/to/plugin
 claude --plugin-dir /path/to/plugins-folder/
 ```
 
-The `--plugin-dir` flag supports both individual plugin directories and folders containing multiple plugins (CC 2.1.265). When pointing to a folder, all valid plugins within are auto-loaded.
+The `--plugin-dir` flag supports both individual plugin directories and folders containing multiple plugins (CC 2.1.265). When pointing to a folder, each child folder holding a `.claude-plugin/plugin.json` is loaded. Since CC 2.1.281 this also works when the folder has its own `.claude-plugin/marketplace.json`; earlier versions loaded such a folder as one empty plugin. Only direct child folders are loaded, so for a marketplace repository that keeps plugins under `plugins/<name>/`, point the flag at `plugins/` or at each plugin.
+
+**Checking load failures headlessly (CC 2.1.283):** in `--output-format stream-json`, the `system/init` message's `plugin_errors` field lists plugins that failed to load or loaded only partially, and `--plugin-dir` failures carry a `path` naming the directory that did not load. Remote Control workers always omit the key, so its absence is not proof of a clean load. See `references/headless-ci-mode.md`.
 
 Additional loading options (ZIP archives, remote URLs), safe mode, caching internals, auto-update, install scopes, and CLI management commands are covered in `references/advanced-topics.md`.
 
@@ -220,6 +224,10 @@ claude --verbose          # Additional debugging
 ```
 
 **Validation Warnings (CC 2.1.221):** `claude plugin validate` now shows warnings for marketplace/plugin names that would be rejected by Claude Desktop's sync. This helps ensure plugins are compatible with Claude Desktop before publishing. If you see naming warnings, adjust your plugin or marketplace name to meet Claude Desktop's requirements.
+
+**Newer checks (CC 2.1.281-2.1.283):** `claude plugin validate` also fails `outputStyles`, `themes`, `monitors`, and `lspServers` paths that are missing or leave the plugin directory (CC 2.1.283). It reports `.mcp.json` entries that would be dropped at load, undeclared `${user_config.*}` references, and insecure MCP URLs (CC 2.1.281). It warns on shell-form hooks that leave `${CLAUDE_PLUGIN_ROOT}` unquoted (CC 2.1.281). It no longer flags listing metadata keys such as `privacyPolicyUrl` and `supportUrl` as unknown (CC 2.1.281). In `marketplace.json`, it fails plugin or marketplace names Claude Code cannot install (CC 2.1.283). Full list: `references/manifest-reference.md` ("`claude plugin validate` Checks").
+
+**Prompt audit (CC 2.1.283):** `/doctor prompt-audit` (also `/checkup prompt-audit`) audits the CLAUDE.md files, skills, agents, and commands loaded in the project for prompting patterns written for older models. Stale paths, stale commands, and contradicting instruction files lead the report. It is a useful pass over a plugin's prose components before publishing; `claude plugin validate` checks structure, not prompt quality.
 
 Use `/plugin` in the TUI to view installed plugins and their status. Discovery tools (`SearchPlugins`, `SearchSkills`, CC 2.1.199), scaffolding (`claude plugin init`, CC 2.1.157), pruning (`claude plugin prune`, CC 2.1.121), install improvements (CC 2.1.117), and additional source types are documented in `references/advanced-topics.md`.
 

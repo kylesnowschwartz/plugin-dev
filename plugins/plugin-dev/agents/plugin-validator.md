@@ -81,7 +81,9 @@ First, determine what type of validation is needed:
      - `description`: Non-empty string
      - `author`: Valid structure
      - `mcpServers`: Valid server configurations
-   - Check for unknown fields (warn but don't fail)
+     - `outputStyles`, `experimental.themes`, `experimental.monitors`, `lspServers` paths: each must exist and stay inside the plugin directory (`claude plugin validate` fails otherwise since CC 2.1.283)
+   - Check for unknown fields (warn but don't fail). Listing metadata keys (`icon`, `screenshots`, `classification`, `privacyPolicyUrl`, `supportUrl`, `termsOfServiceUrl`, `documentationUrl`, and their alternate spellings) are accepted since CC 2.1.281 and are not unknown
+   - If the `claude` CLI is available, run `claude plugin validate <plugin-dir>` and include its errors and warnings
 
 3. **Validate Directory Structure**:
    - Use Glob to find component directories
@@ -131,6 +133,7 @@ First, determine what type of validation is needed:
      - Each hook has `matcher` and `hooks` array
      - Hook type is `command` or `prompt`
      - Commands reference existing scripts with ${CLAUDE_PLUGIN_ROOT}
+     - Shell-form commands (no `args`) wrap `${CLAUDE_PLUGIN_ROOT}` in double quotes, e.g. `bash \"${CLAUDE_PLUGIN_ROOT}/scripts/x.sh\"` in JSON; an unquoted placeholder breaks on paths with spaces and `claude plugin validate` warns about it (CC 2.1.281)
 
 8. **Validate MCP Configuration** (if `.mcp.json` or `mcpServers` in manifest):
    - Check JSON syntax
@@ -139,6 +142,8 @@ First, determine what type of validation is needed:
      - sse/http/ws: has `url` field
      - Type-specific fields present
    - Check ${CLAUDE_PLUGIN_ROOT} usage for portability
+   - Every `${user_config.KEY}` reference names an option declared in the manifest's `userConfig` (error in `claude plugin validate` since CC 2.1.281)
+   - Remote `url` values are valid absolute URLs; `http://`/`ws://` to non-loopback hosts and literal credentials in header values are warnings (CC 2.1.281)
 
 9. **Validate LSP Configuration** (if `lspServers` in manifest):
    - Check each LSP server configuration:
@@ -193,6 +198,7 @@ When `.claude-plugin/marketplace.json` is detected, perform marketplace-specific
 3. **Check for Duplicate Names**:
    - No duplicate plugin names in `plugins` array
    - Report all duplicates if found
+   - If the `claude` CLI is available, run `claude plugin validate <marketplace-root>`: since CC 2.1.283 it fails plugin or marketplace names that Claude Code cannot install
 
 4. **Validate Relative Source Paths**:
    - For plugins with relative path sources:

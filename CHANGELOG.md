@@ -7,13 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.48.0] - 2026-09-28
+
+Sync with Claude Code 2.1.281-2.1.283. This release covers nineteen changelog-driven Must Update items (two promoted by Stage 2), one May Update item, and eight Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. It also ships the fixes that were pending under Unreleased. `scripts/check-doc-drift.sh` was clean before, and the `docs/claude-code-facts.json` diff was `claude_code_version`-only.
+
 ### Added
 
+- **plugin-structure**: `claude plugin validate` checks section in `manifest-reference.md`. It covers component paths for `outputStyles`, `themes`, `monitors`, and `lspServers` that must exist and stay inside the plugin (CC 2.1.283); MCP errors and warnings (CC 2.1.281); the unquoted `${CLAUDE_PLUGIN_ROOT}` shell-form hook warning (CC 2.1.281); and hook-failure errors that name the plugin (CC 2.1.281). A summary is in the overview, and the `plugin-validator` agent checks the same things
+- **plugin-structure**: listing metadata keys accepted in `plugin.json` since CC 2.1.281 (`icon`, `screenshots`, `classification`, `privacyPolicyUrl`, `supportUrl`, `termsOfServiceUrl`, `documentationUrl`, and alternate spellings), read from the 2.1.283 binary
+- **plugin-structure**: `plugin_errors` in the stream-json `system/init` message, with the `path` field for `--plugin-dir` failures (CC 2.1.283), the entry shape from the binary, a jq load check, and the Remote Control caveat that a missing key is not a clean load
+- **plugin-structure / marketplace-structure**: `--plugin-dir` on a folder of plugins that also has `.claude-plugin/marketplace.json` loads its plugins (CC 2.1.281). Only direct child folders load, so a `plugins/<name>/` layout needs the flag pointed at `plugins/`
+- **plugin-structure**: plugins without `version` are restored at the installed commit when cached files are missing (CC 2.1.283)
+- **marketplace-structure**: `claude plugin validate` fails plugin or marketplace names Claude Code cannot install (CC 2.1.283)
+- **mcp-integration**: MCP validation checks (CC 2.1.281), URL-mode elicitation on 2026-07-28 protocol connections (CC 2.1.281), and `anthropic-skills` servers listing no skills or prompts (CC 2.1.282)
+- **skill-development / command-development / agent-development**: `/doctor prompt-audit` (also `/checkup prompt-audit`, CC 2.1.283)
+- **skill-development**: `claude plugin eval` requires git 2.31 or later when git is installed (CC 2.1.283); `Skill(skill:<name>)` deny rules match aliases and display names (CC 2.1.283)
+- **hook-development**: `mcp_tool` hooks on blocking events wait for their server to connect, up to the MCP connect timeout (CC 2.1.281)
+- **agent-development**: `--agents` accepts inline JSON and, with `-p`, a JSON file path, and allows an empty `prompt` (CC 2.1.281)
+- **hook-development**: `validate-hook-schema.sh` warns on shell-form commands that leave `${CLAUDE_PLUGIN_ROOT}` unquoted
 - **plugin-structure**, **command-development**: how a plugin's `bin/` directory reaches the shell — appended to the Bash tool's `PATH` behind existing entries, Bash tool only (hooks and MCP servers reference `${CLAUDE_PLUGIN_ROOT}/bin/<name>` explicitly), paths with shell metacharacters left off — and the claude.ai organization-settings rejection of plugins with a top-level `bin/`, with the `scripts/` workaround
 - **mcp-integration**: credential variables that are read as empty toward a remote server's `url` and `headers` (Claude Code's own keys, cloud tokens, proxy and registry variables, `OTEL_*`), the warning text, and subprocess environment scrubbing
 
 ### Changed
 
+- **plugin-structure / hook-development**: function-hook plugins ("mods") rewritten from the CC 2.1.283 bundled "Plugin authoring" skill. Element constructors come from `$.ui.resolve(e)`, not a JSX package import. The layout is `hooks/hooks.json` `{ "modules": [...] }` with `register(on, options)` and `($, e, next)` hooks, and no `experimental` manifest flag. The module has no DOM and no Node. Hot reload needs a once-per-session consent that only the user can answer, `$.state` and `$.store` persist across reloads, and the `types/index.d.ts` state contract is checked by `claude plugin validate`
+- **skill-development / command-development / mcp-integration**: the `anthropic-skills` namespace is reserved since CC 2.1.282. Skill folders, command files, and workflow commands in it no longer load, and `Skill(anthropic-skills:*)` allow rules cover only claude.ai-synced skills. The CC 2.1.282 `claude-ai` reservation was reverted in CC 2.1.283; the binary's list is `anthropic-skills` alone
+- **skill-development / command-development / plugin-structure**: under managed `allowManagedPermissionRulesOnly`, repository, user, and `--add-dir` skills and commands, and skills-directory plugin manifests, no longer pre-approve tools through `allowed-tools` (CC 2.1.282)
+- **plugin-structure / agent-development**: interactive sessions on third-party providers or with telemetry off start in auto mode when no permission mode is configured (CC 2.1.283). This replaces the "start in `default` (Manual) mode" statement and qualifies the Manual-default note
+- **agent-development**: the `/agents` wizard is gone; typing `/agents` only explains where it went (CC 2.1.281)
+- **plugin-settings / plugin-structure**: the AGENTS.md fallback works on Bedrock, Vertex, Foundry, gateways, and telemetry-off sessions since CC 2.1.281. It was documented as not yet available there
 - **skill-development**, **command-development**: `disable-model-invocation: true` skills are left out of the model-facing skill listing and refused by the Skill tool; the Auto-Discovery column says so
 - **mcp-integration**, **lsp-integration**, **plugin-structure**: variable expansion in plugin MCP and LSP config covers `command`, each `args` entry, `env` values, remote `url` and `headers`, and LSP `workspaceFolder`, and includes `${CLAUDE_PROJECT_DIR}`; only the braced `${VAR}` form expands
 - **lsp-integration**: `workspaceFolder` examples use `${CLAUDE_PROJECT_DIR}`; the editor-style `${workspaceFolder}` placeholder does not exist and logs a missing-variable error
@@ -22,6 +44,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **plugin**: the shipped `hooks/hooks.json` quotes `${CLAUDE_PLUGIN_ROOT}`, clearing the `claude plugin validate` warning it raised on CC 2.1.281 and later. The other 45 hook and monitor `command` examples across plugin-structure, hook-development, and marketplace-structure are quoted the same way
+- **mcp-integration**: `tool-usage.md` no longer says agents can call MCP tools without pre-approval. Background agents, the default, fail on unapproved permission requests
+- **plugin-structure**: the overview's "changes take effect on the next Claude Code session" now matches immediate activation (CC 2.1.221) and apply-on-menu-close (CC 2.1.268)
+- **plugin-structure**: `manifest-reference.md` no longer says a plugin without `.claude-plugin/plugin.json` is never recognized; `strict: false` marketplace entries can stand in for it
+- **hook-development**: `hook-input-schemas.md` lists `tool_use_id` on PreToolUse and PostToolUseFailure as well as PostToolUse, and adds the `agent_needs_input` and `agent_completed` notification types (CC 2.1.198)
+- **hook-development**: the `Setup` gotcha says only command hooks run there, rather than that it accepts only command hooks
+- **command-development**: the `model: sonnet` example no longer calls `sonnet` the default; an omitted `model` inherits the conversation model
+- **plugin-structure**: `github-actions.md` scopes the "slash commands don't work headless" statement to skill slash commands
 - **scripts**: `validate-agent.sh`, `test-agent-trigger.sh`, `check-frontmatter.sh`, `validate-command.sh`, and `hook-linter.sh` report every warning instead of exiting at the first one (`((count++))` returns nonzero at zero under `set -e`), and `validate-agent.sh` and `test-agent-trigger.sh` finish when an optional frontmatter field is absent
 - **upstream sync**: the apply stage now runs in its own `update-applier` agent, so the orchestrator no longer spends one turn per documentation edit and a large release range no longer hits the 150-turn limit (the 2026-09-22 run stopped mid-apply on a 55-item manifest)
 
@@ -1067,7 +1097,9 @@ Corrects references that had drifted from Claude Code behaviour, reported in [#6
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.46.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.48.0...HEAD
+[0.48.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.47.0...v0.48.0
+[0.47.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.46.0...v0.47.0
 [0.46.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.45.0...v0.46.0
 [0.45.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.44.1...v0.45.0
 [0.44.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.44.0...v0.44.1

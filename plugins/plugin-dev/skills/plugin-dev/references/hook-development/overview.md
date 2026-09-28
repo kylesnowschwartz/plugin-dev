@@ -118,6 +118,8 @@ A Types cell naming Command always admits `mcp_tool` too. Which events restrict 
 
 An `mcp_tool` hook is accepted on every event, but it only runs where an MCP client set exists. Setup fires before MCP servers are available, so its `mcp_tool` hooks are always skipped. SessionStart fires before servers are available at launch, including `--continue` and `--resume`, so its `mcp_tool` hooks are skipped there; after `/clear` or compaction the servers are up and they run. A skipped hook is not an error — it logs `mcp_tool hooks are not available for the '<event>' hook event (no MCP client context)` and returns no decision.
 
+**Blocking events wait for the server (CC 2.1.281).** On blocking events such as PreToolUse, an `mcp_tool` hook whose server is still connecting now waits for it, up to the MCP connect timeout. Before CC 2.1.281 the hook was skipped while the server connected, so an early tool call could pass a guard that never ran.
+
 | Event               | Category     | Decision control                   | Types         |
 | ------------------- | ------------ | ---------------------------------- | ------------- |
 | SessionStart        | Lifecycle    | continue, env vars                 | Command, MCP tool |
@@ -174,6 +176,8 @@ All matching hooks run **in parallel** — they don't see each other's output an
 
 **Shell-injection prevention (CC 2.1.207):** `${user_config.*}` interpolation in shell-form hook commands is now rejected to prevent injection when user-configurable plugin options contain malicious input. Fix by using exec form (`args` array) or reading values inside the script via `$CLAUDE_PLUGIN_OPTION_<KEY>`; the same restriction applies to monitors and headersHelper. Full migration guidance: `references/advanced.md` (Security Patterns).
 
+**Quote `${CLAUDE_PLUGIN_ROOT}` in shell-form commands (CC 2.1.281):** a `command` without `args` runs through a shell, so an unquoted placeholder splits into several words when the plugin path contains a space. `claude plugin validate` warns about it. Write `"command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/check.sh\""`, or use exec form: `"command": "bash", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/check.sh"]`. Plugin hook-failure errors also name the offending plugin since CC 2.1.281.
+
 Other essentials: validate inputs, block path traversal (`..`) and sensitive files (`.env`), quote every variable, set appropriate timeouts. Examples: `examples/validate-write.sh`, `examples/validate-bash.sh`.
 
 ## Lifecycle, Limitations, and Debugging
@@ -195,11 +199,11 @@ Function-hook plugins (JavaScript/TypeScript hooks) now have improved error hand
 - **One-time transcript notices:** When a hook fails or a module fails to load, a one-time notice appears in the transcript. This prevents log spam while ensuring failures are visible to users
 - **Debug logging:** Every hook failure occurrence is logged when running in debug mode (`claude --debug`). This helps track intermittent failures during development
 
-This applies to function-hook plugins (those using the JSX runtime or direct JavaScript hook functions), not command hooks which already had exit-code-based error handling.
+This applies to function-hook plugins ("mods": a `hooks/hooks.json` holding `{ "modules": [...] }` and a TypeScript/JavaScript module exporting `register(on, options)`), not command hooks which already had exit-code-based error handling. The transcript line names the plugin, the event, and the reason. Layout, hot-reload consent (CC 2.1.283), and rendering: `../plugin-structure/references/advanced-topics.md` (Function-Hook Plugins).
 
 ## Critical Gotchas
 
-1. **`Setup` is not a session-lifecycle event.** It fires only for repository setup runs — the hidden CLI flags `--init` and `--init-only` fire it with `trigger: "init"`, and `--maintenance` fires it with `trigger: "maintenance"`. A normal `claude` launch never fires it, so per-session initialization belongs on `SessionStart` with matcher `startup`. `Setup` accepts command hooks only (HTTP hooks are skipped; prompt and agent hooks have no conversation context to run in).
+1. **`Setup` is not a session-lifecycle event.** It fires only for repository setup runs — the hidden CLI flags `--init` and `--init-only` fire it with `trigger: "init"`, and `--maintenance` fires it with `trigger: "maintenance"`. A normal `claude` launch never fires it, so per-session initialization belongs on `SessionStart` with matcher `startup`. Only command hooks run on `Setup`: config also accepts `mcp_tool` hooks there, but they are always skipped because MCP servers are not yet available; HTTP hooks are skipped; prompt and agent hooks have no conversation context to run in.
 2. **Shell profile noise breaks JSON parsing.** If `.bashrc`/`.zshrc` prints to stdout it contaminates output — redirect profile output to stderr.
 3. **SessionEnd hooks share a 1.5 second budget.** It is a total across all SessionEnd hooks, not per hook. A longer per-hook `timeout` raises the budget to match, up to 60 seconds (CC 2.1.268); `CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS` also extends hooks that declare no `timeout`.
 4. **Duplicate hooks are deduplicated.** Command hooks by command string, HTTP hooks by URL.

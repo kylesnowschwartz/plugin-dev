@@ -313,7 +313,7 @@ Advanced plugin entry with all optional fields:
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh\""
           }
         ]
       }

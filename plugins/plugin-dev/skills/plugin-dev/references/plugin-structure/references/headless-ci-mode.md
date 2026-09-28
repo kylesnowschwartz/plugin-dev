@@ -289,6 +289,19 @@ claude -p "run the plugin task" --output-format stream-json \
   | jq -s '.[] | select(.type == "result") | .permission_denials'
 ```
 
+### `plugin_errors` in stream-json `system/init` (CC 2.1.283)
+
+The `system/init` message at the start of a `--output-format stream-json` run carries a `plugin_errors` field. It lists plugins that failed to load or loaded only partially. Each entry has `plugin`, `type` (a failure kind such as `hook-load-failed`; treat an unrecognized value as a generic failure), and `message` (display text). Since CC 2.1.283, an entry for a `--plugin-dir` directory (or an SDK `plugins` entry) that did not load at all also carries `path`, naming that directory. The key is omitted when there are no errors.
+
+Use it as a load check in plugin CI, failing when the array is non-empty:
+
+```bash
+claude -p "say ok" --plugin-dir ./plugins/my-plugin --output-format stream-json --verbose \
+  | jq -s -e '[.[] | select(.type == "system" and .subtype == "init") | .plugin_errors // [] | length] | add == 0'
+```
+
+**Absence is not proof of a clean load.** Remote Control workers always omit the key. Treat a missing `plugin_errors` as "not reported", and confirm the plugin's components are present by other means (for example, the init message's `plugins` list, or a prompt that exercises a component).
+
 ## Remote Control Subagent Tool Call Streaming (CC 2.1.251)
 
 Remote Control-connected clients now receive live streaming of subagent tool calls, extending the `--forward-subagent-text` capability to the Remote Control API:

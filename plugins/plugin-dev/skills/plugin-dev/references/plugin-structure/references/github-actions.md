@@ -52,7 +52,7 @@ jobs:
 
 ### CLAUDE.md Integration
 
-The most direct way plugins interact with CI is through CLAUDE.md. Project-level instructions (`.claude/CLAUDE.md`) load automatically in CI runs. In a repository with no CLAUDE.md, `AGENTS.md` loads in its place (CC 2.1.277; not yet on Bedrock, Vertex, or Foundry). These instructions provide:
+The most direct way plugins interact with CI is through CLAUDE.md. Project-level instructions (`.claude/CLAUDE.md`) load automatically in CI runs. In a repository with no CLAUDE.md, `AGENTS.md` loads in its place (CC 2.1.277; on Bedrock, Vertex, Foundry, and gateways since CC 2.1.281). These instructions provide:
 
 - Code style requirements
 - Review criteria
@@ -93,7 +93,7 @@ Reference plugin skills in the workflow's `prompt` parameter:
     claude_args: "--max-turns 15"
 ```
 
-Since slash commands don't work in headless mode, describe the task instead. If the skill has `user-invocable: false`, Claude will use it automatically based on context.
+Since skill slash commands (`/skill-name`) don't work in headless mode, describe the task instead. Some built-in slash commands, such as `/reload-plugins`, do run headless (see `headless-ci-mode.md`). If the skill has `user-invocable: false`, Claude will use it automatically based on context.
 
 ## Configuration Options
 
