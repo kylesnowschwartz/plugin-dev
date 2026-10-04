@@ -136,7 +136,7 @@ Use strict TypeScript patterns:
 Rules load automatically based on file context:
 
 - Global rules (no `paths` frontmatter): Always loaded
-- Path-specific rules: Loaded when Claude accesses matching files
+- Path-specific rules: Loaded when Claude accesses matching files. Since CC 2.1.288 that includes Write or Edit creating or changing a file in scope, not only Read; nested CLAUDE.md files load the same way
 - Rules in subdirectories: Organized by topic, all discovered automatically
 
 ### User-Level Rules

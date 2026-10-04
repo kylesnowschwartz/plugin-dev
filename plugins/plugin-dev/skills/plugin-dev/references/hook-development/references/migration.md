@@ -300,39 +300,43 @@ my-plugin/
 
 ```json
 {
-  "PreToolUse": [
-    {
-      "matcher": "Bash",
-      "hooks": [
-        {
-          "type": "prompt",
-          "prompt": "Validate bash command safety: destructive ops, privilege escalation, network access"
-        }
-      ]
-    },
-    {
-      "matcher": "Write|Edit",
-      "hooks": [
-        {
-          "type": "prompt",
-          "prompt": "Validate file write safety: system paths, credentials, path traversal, content secrets"
-        }
-      ]
-    }
-  ],
-  "Stop": [
-    {
-      "matcher": "*",
-      "hooks": [
-        {
-          "type": "prompt",
-          "prompt": "Verify tests were run if code was modified"
-        }
-      ]
-    }
-  ]
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Validate bash command safety: destructive ops, privilege escalation, network access"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Validate file write safety: system paths, credentials, path traversal, content secrets"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Verify tests were run if code was modified"
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
+
+Plugin `hooks/hooks.json` files need the top-level `hooks` wrapper shown here; the event names go directly at the top level only in a settings file's `"hooks"` key.
 
 **Result:** Simpler, more maintainable, more powerful.
 

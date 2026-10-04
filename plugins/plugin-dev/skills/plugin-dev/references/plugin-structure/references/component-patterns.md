@@ -354,13 +354,15 @@ hooks/
 
 ```json
 {
-  "PreToolUse": ${file:./pre-tool-use.json},
-  "PostToolUse": ${file:./post-tool-use.json},
-  "Stop": ${file:./stop.json}
+  "hooks": {
+    "PreToolUse": ${file:./pre-tool-use.json},
+    "PostToolUse": ${file:./post-tool-use.json},
+    "Stop": ${file:./stop.json}
+  }
 }
 ```
 
-**Note**: Use build script to combine files, Claude Code doesn't support file references.
+**Note**: Use build script to combine files, Claude Code doesn't support file references. The combined plugin `hooks.json` must keep the required top-level `hooks` wrapper around the event map.
 
 **When to use**:
 

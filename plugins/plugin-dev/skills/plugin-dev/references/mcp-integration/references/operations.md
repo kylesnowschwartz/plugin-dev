@@ -229,6 +229,8 @@ Handle MCP server unavailability:
 
 **Secrets in MCP diagnostics (CC 2.1.268):** `/mcp`, the `/plugin` server details view, `claude mcp list`, `claude mcp get`, and MCP login errors no longer print secrets resolved from `${VAR}` placeholders in MCP configs. Keep using `${VAR}` placeholders rather than literal credentials — the placeholder form is what keeps values out of these surfaces.
 
+**`claude mcp get` hides plugin stdio details (CC 2.1.285):** For a stdio server provided by a plugin, `claude mcp get` prints `Command: stdio`, an empty `Args:` line, and each environment variable as `NAME=[REDACTED]`. Variable names are still shown, but the command, arguments, and values are not. To check what a plugin server actually runs, read the plugin's `.mcp.json` or `plugin.json` instead.
+
 **Connection failure system reminder (CC 2.1.205):** When configured MCP servers fail to connect, Claude Code displays a system reminder informing the agent that:
 
 - The server's tools should be treated as unavailable due to connection failure (not missing capability)
@@ -282,6 +284,19 @@ Use `alwaysLoad: true` to bypass lazy loading and tool-search deferral:
 ```
 
 **Mid-conversation connection (CC 2.1.269, extended 2.1.271):** In first-party sessions with telemetry disabled, an `alwaysLoad` server that finishes connecting after the session has started is usable on the very next turn, without a tool-search round trip first. This narrows an earlier gap where a slow-starting server stayed effectively invisible until a tool search ran. **CC 2.1.271** extends the same behavior to Foundry and Claude Platform on AWS sessions.
+
+**`alwaysLoad: false` defers every tool (CC 2.1.287).** Setting the server's `alwaysLoad` to `false` puts all of that server's tools behind tool search. In cloud sessions, a new conversation's first turn no longer waits for a stdio server configured this way (CC 2.1.288).
+
+**Per-tool override (CC 2.1.285).** A tool can set its own `_meta['anthropic/alwaysLoad']` to `false` in its tool definition. That tool stays deferred even when its server (a `--mcp-config`, Agent SDK, or plugin server) is set to `alwaysLoad: true`. Use it to keep rarely used tools out of the initial tool list while the rest of the server loads up front:
+
+```json
+{
+  "name": "export_archive",
+  "description": "Export the full archive",
+  "inputSchema": { "type": "object" },
+  "_meta": { "anthropic/alwaysLoad": false }
+}
+```
 
 **Use cases:**
 

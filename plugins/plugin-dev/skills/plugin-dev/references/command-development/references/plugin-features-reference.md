@@ -332,19 +332,19 @@ Commands that manage plugin-specific data:
 
 ```markdown
 ---
-description: Save analysis results to plugin cache
+description: Save analysis results to plugin data
 allowed-tools: Bash(*), Read, Write
 ---
 
-Cache directory: ${CLAUDE_PLUGIN_ROOT}/cache/
+Data directory: ${CLAUDE_PLUGIN_DATA}/
 
-Analyze @$1 and save results to cache:
-[BANG]`mkdir -p ${CLAUDE_PLUGIN_ROOT}/cache && date > ${CLAUDE_PLUGIN_ROOT}/cache/last-run.txt`
+Analyze @$1 and save results to the data directory:
+[BANG]`mkdir -p "${CLAUDE_PLUGIN_DATA}" && date > "${CLAUDE_PLUGIN_DATA}/last-run.txt"`
 
 Store analysis for future reference and comparison.
 ```
 
-**When to use:** Commands that need persistent data storage
+**When to use:** Commands that need persistent data storage. Write to `${CLAUDE_PLUGIN_DATA}`, the only writable location a plugin owns. Do not write under `${CLAUDE_PLUGIN_ROOT}`: the plugin directory is a cache copy, so files written there do not persist across updates or re-caching.
 
 ## Integration with Plugin Components
 
@@ -635,5 +635,5 @@ If processing failed:
 
 ---
 
-For general command development, see main SKILL.md.
+For general command development, see the command-development topic overview (`../overview.md`).
 For command examples, see examples/ directory.

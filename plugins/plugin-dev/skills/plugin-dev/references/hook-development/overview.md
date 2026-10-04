@@ -35,7 +35,7 @@ Each event holds matcher groups; each group holds hook entries. An entry has a `
 
 - `args`: exec-form spawning (CC 2.1.139) — the command runs without shell interpolation and `command` becomes the executable path.
 - `if`: conditional execution using permission rule syntax, e.g. `Bash(git *)` fires only for git commands (CC 2.1.85). Combines with `matcher` (matcher selects the event, `if` filters within it). See `references/advanced.md` for compound-command handling (CC 2.1.88) and tool-parameter matching like `Agent(model:opus)` (CC 2.1.178).
-- `timeout` (defaults: command/http/mcp_tool 600s, prompt 30s, agent 60s; UserPromptSubmit and MessageDisplay lower the 600s types to 30s/10s), `statusMessage` (UI text while running), `once` (run once per session), `async` (fire-and-forget, command hooks only). Full entry schema: `references/advanced.md` (Handler Configuration Fields).
+- `timeout` (defaults: command/http/mcp_tool 600s, prompt 30s, agent 60s; UserPromptSubmit and MessageDisplay lower the 600s types to 30s/10s), `statusMessage` (UI text while running), `once` (run once per session), `async` (fire-and-forget, command hooks only), `asyncRewake` (runs in the background like `async` and wakes Claude when the hook exits 2). Full entry schema: `references/advanced.md` (Handler Configuration Fields).
 
 **Scoped hooks in frontmatter:** Skills and agents can declare `hooks:` in YAML frontmatter — all 33 events register, but they are lifecycle-bound to run only while the skill/agent is active, so in practice `PreToolUse`, `PostToolUse`, and `Stop` are the ones that fire. **Caveat:** `${CLAUDE_PLUGIN_ROOT}` resolves only under plugin discovery; agents loaded via the `--agent` CLI flag see it unbound — use `${CLAUDE_PROJECT_DIR}` with a project-relative path. Full diagnostic and related issues: `references/advanced.md` (Scoped Hooks section).
 
@@ -68,7 +68,9 @@ Exit codes:
 | 2     | Blocking error. stderr fed to Claude/user      |
 | Other | Non-blocking. Shown in verbose/debug mode only |
 
-Async command hooks (`"async": true`) cannot block (exit 2 ignored) or return decisions — useful for logging, metrics, and notifications. See `references/advanced.md`.
+Async command hooks (`"async": true`) cannot block (exit 2 ignored) or return decisions — useful for logging, metrics, and notifications. `"asyncRewake": true` is the exception for exit 2: the hook still runs in the background, but exit 2 wakes Claude with the hook's output. See `references/advanced.md`.
+
+**Auto mode and `updatedInput` (CC 2.1.287).** Auto mode is now the default starting mode for most sessions with no configured permission mode (CC 2.1.284-2.1.285). Under it, a PreToolUse hook that rewrites a tool's input leaves the classifier with no verdict, and after one retry Claude stops and asks the user to turn the hook off or leave auto mode. See `references/advanced.md` (PreToolUse Decision Control).
 
 ## Hook Input
 

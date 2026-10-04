@@ -1,6 +1,6 @@
 ---
 name: plugin-dev
-description: MUST use this skill when the user mentions plugins, hooks, skills, commands, agents, MCP servers, LSP servers, marketplaces, plugin.json, SKILL.md, .mcp.json, .local.md, allowed-tools, frontmatter, PreToolUse, PostToolUse, SessionStart, event schemas, prompt-based hooks, plugin settings, output styles, headless mode, CI mode, CLAUDE_PLUGIN_ROOT, auto-discovery, or any aspect of extending Claude Code. Use INSTEAD OF answering from general knowledge. Also use when writing hooks for settings.json, configuring MCP servers outside plugins, or comparing skills vs commands, since this skill contains the authoritative reference for these Claude Code extension mechanisms.
+description: MUST use this skill when the user mentions plugins, hooks, skills, commands, agents, MCP servers, LSP servers, marketplaces, plugin.json, SKILL.md, .mcp.json, .local.md, allowed-tools, frontmatter, PreToolUse, PostToolUse, SessionStart, event schemas, prompt-based hooks, function hooks, Claude Mods, mods, plugin settings, output styles, headless mode, CI mode, CLAUDE_PLUGIN_ROOT, auto-discovery, or any aspect of extending Claude Code. Use INSTEAD OF answering from general knowledge. Also use when writing hooks for settings.json, configuring MCP servers outside plugins, or comparing skills vs commands, since this skill contains the authoritative reference for these Claude Code extension mechanisms.
 ---
 
 # Claude Code Plugin Development

@@ -842,7 +842,8 @@ Each hook entry in a matcher group supports these fields:
   "timeout": 600,
   "statusMessage": "Validating...",
   "once": false,
-  "async": false
+  "async": false,
+  "asyncRewake": false
 }
 ```
 
@@ -908,6 +909,9 @@ Different hook events support different output formats for controlling Claude's 
 - `ask` depends on the session being interactive: an interactive session shows `Hook PreToolUse:<Tool> requires confirmation ... [plugin:<name>]`, while headless runs (`claude -p`) have no one to prompt and treat the same `ask` as a block, surfacing the reason to the model.
 - `updatedInput`: Optionally modify tool parameters before execution
 - `additionalContext`: Injected into Claude's context
+- A failure to match the hook against a call, or tool input that cannot be serialized to JSON, blocks the call (CC 2.1.288). Before CC 2.1.288 the hook was skipped and the call ran. PermissionRequest behaves the same way
+
+**`updatedInput` under auto mode (CC 2.1.287).** Auto mode is the default starting mode, when no permission mode is configured, since CC 2.1.284 for interactive terminal and VS Code sessions, and since CC 2.1.285 for `claude -p` and Python Agent SDK sessions on third-party providers or with telemetry off. Its classifier reviews the tool input the model wrote. When a PreToolUse hook (or a mod's `tool.call` hook) changes that input, the review covers different input from what would run, so the classifier gives no verdict. Claude retries the call once. If it is denied again, Claude stops trying and tells the user that a hook rewrites the call, that auto mode could not evaluate the rewritten call, and that they can turn the hook off or leave auto mode. In practice, an `updatedInput` hook can block its own tool in a default session. Prefer `deny` with a `permissionDecisionReason` that tells Claude how to fix the call, and keep `updatedInput` for sessions that run in another permission mode or for cases where blocking is acceptable.
 
 ### PermissionRequest Decision Control
 
@@ -1088,6 +1092,22 @@ Command hooks can run asynchronously in the background without blocking the main
 - Response fields (`decision`, `hookSpecificOutput`) have no effect
 - Useful for logging, metrics collection, and fire-and-forget notifications
 - Uses the same `timeout` field (default: 600 seconds)
+
+### asyncRewake
+
+```json
+{
+  "type": "command",
+  "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/background-check.sh\"",
+  "asyncRewake": true
+}
+```
+
+`asyncRewake: true` runs the hook in the background like `async`, which it implies, but wakes Claude when the hook exits with code 2 (a blocking error). The hook's output is passed to Claude as "found issues" feedback. Use it for slow checks whose failures Claude should act on without holding up the turn. Since CC 2.1.287, a hook whose script file is missing is reported once as broken instead of waking Claude over and over with "found issues" notifications.
+
+### Synchronous Hooks and Background Processes (CC 2.1.285)
+
+A synchronous hook that starts a background process (for example `some-daemon &`) used to hang Claude Code for as long as that process kept the hook's output open. Since CC 2.1.285 the hook finishes shortly after its own process exits. On older versions, redirect the background process's output (`some-daemon >/dev/null 2>&1 &`) so the hook does not wait on it.
 
 ## Conclusion
 

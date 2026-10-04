@@ -168,7 +168,7 @@ For GitLab, Bitbucket, or self-hosted git:
 }
 ```
 
-`version` takes a version or range, and `registry` sets a custom registry URL. **Since CC 2.1.275, npm plugins are fetched with `npm pack --ignore-scripts` and integrity-verified, so the package's install scripts (`preinstall`, `install`, `postinstall`, `prepare`) never run.** Publish the plugin already built. Anything generated on the user's machine belongs in a `SessionStart` hook that writes to `${CLAUDE_PLUGIN_DATA}`.
+`version` takes a version or range, and `registry` sets a custom registry URL. **Since CC 2.1.275, npm plugins are fetched with `npm pack --ignore-scripts` and integrity-verified, so the package's install scripts (`preinstall`, `install`, `postinstall`, `prepare`) never run.** Publish the plugin already built. Anything generated on the user's machine belongs in a `SessionStart` hook that writes to `${CLAUDE_PLUGIN_DATA}`. **Since CC 2.1.286, installs refuse npm sources that are git repositories or folders, and install plugin dependencies only from registry packages.** An npm source must name a package published to a registry; use a `github`, `url`, or archive source for anything that is not.
 
 **Git LFS (CC 2.1.274):** GitHub and git URL sources, and the marketplace repository itself, are cloned with Git LFS files left as pointer files. Keep runtime files out of LFS. A user who needs the content runs `git lfs pull` in the checkout.
 
@@ -379,6 +379,8 @@ claude plugin validate .
 ```
 
 **Uninstallable names fail validation (CC 2.1.283).** `claude plugin validate` used to accept some plugin or marketplace names in `marketplace.json` that Claude Code could not actually install. Such names now fail validation. A marketplace that passed on an older version can fail on CC 2.1.283, so re-run validation after upgrading and rename any entry it reports. The reserved and imitation names above are a separate check, applied when the marketplace is added.
+
+**A folder with both manifests validates both (CC 2.1.289).** When the directory holds both `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json`, `claude plugin validate` checks the marketplace and also the plugin's manifest and component files. Earlier versions skipped the plugin in that case, so on older versions run `claude plugin validate` on the plugin separately.
 
 **Testing locally (CC 2.1.281):** `--plugin-dir` on a folder of plugins, whose direct child folders each hold a `.claude-plugin/plugin.json`, now loads those plugins even when the folder also has its own `.claude-plugin/marketplace.json`. Earlier versions loaded such a folder as one empty plugin. Plugins nested deeper, such as `plugins/<name>/`, are not direct children: point `--plugin-dir` at the folder that holds them, or at each plugin directory.
 

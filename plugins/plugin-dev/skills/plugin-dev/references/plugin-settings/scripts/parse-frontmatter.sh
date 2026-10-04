@@ -2,9 +2,10 @@
 # Frontmatter Parser Utility
 # Extracts YAML frontmatter from .local.md files
 #
-# Note: This script assumes the settings file is stable (not being written to).
-# Settings changes require a Claude Code restart to take effect, so there's no
-# need for file locking in normal usage.
+# Note: Settings files are read fresh on every hook run, so they can change
+# during a session (including from the plugin's own hooks). This script does no
+# locking; writers should replace the file atomically (temp file + mv) so a
+# reader never sees a partial write.
 
 set -euo pipefail
 

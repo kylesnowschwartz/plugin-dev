@@ -29,9 +29,7 @@ The standard interactive permission model. Claude asks the user before performin
 
 **When to use:** General-purpose agents, agents handling sensitive operations, agents in untrusted contexts.
 
-**Manual Default Permission Mode (CC 2.1.200):** The default permission mode across all Claude Code interfaces is now "Manual" (equivalent to `default` above). This is a more conservative default that requires explicit user approval for each action, and it affects both the CLI and programmatic interfaces.
-
-**Exception — auto mode on third-party providers (CC 2.1.283):** interactive sessions on third-party providers (Bedrock, Vertex, Foundry), or with telemetry off, now start in auto mode when no permission mode is configured. An agent that relies on the session's mode, rather than setting `permissionMode`, can therefore run under auto mode's classifier on those setups. Set `permissionMode` explicitly when an agent needs a specific mode.
+**Session starting mode is now auto (CC 2.1.283-2.1.285).** CC 2.1.200 made "Manual" (equivalent to `default` above) the starting mode across Claude Code interfaces. That no longer holds when no permission mode is configured: CC 2.1.283 started interactive sessions on third-party providers (Bedrock, Vertex, Foundry), or with telemetry off, in auto mode; CC 2.1.284 did the same for interactive terminal and VS Code sessions on every plan and provider; and CC 2.1.285 for `claude -p` and Python Agent SDK sessions on third-party providers or with telemetry off. A configured permission mode still takes precedence. An agent that relies on the session's mode, rather than setting `permissionMode`, will therefore usually run under auto mode's classifier. Set `permissionMode` explicitly when an agent needs a specific mode.
 
 #### acceptEdits
 
@@ -256,7 +254,7 @@ This plugin's agents need:
 
 - `Edit(src/**)` — to modify source files
 - `Bash(npm test)` — to run tests
-- `mcp__plugin_myserver__*` — for MCP tool access
+- `mcp__plugin_my-plugin_myserver__*` — for MCP tool access (`mcp__plugin_<plugin-name>_<server-name>__*`)
 ```
 
 **Configure agent permissions:** Use `permissionMode` in agent frontmatter for broad access control. For fine-grained restrictions, document the settings users should configure.
