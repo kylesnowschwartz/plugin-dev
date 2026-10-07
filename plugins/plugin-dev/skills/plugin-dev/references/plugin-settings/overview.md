@@ -200,7 +200,7 @@ fi
 # ...
 ```
 
-**Use case:** Enable/disable hooks without editing hooks.json (requires restart).
+**Use case:** Enable/disable hooks without editing hooks.json. The hook reads the file on every run, so the change applies from the next hook run.
 
 ### Pattern 2: Agent State Management
 
@@ -290,7 +290,7 @@ Steps:
 2. Create `.claude/my-plugin.local.md` with YAML frontmatter
 3. Set appropriate values based on user input
 4. Inform user that settings are saved
-5. Remind user to restart Claude Code for hooks to recognize changes
+5. Tell the user the settings apply from the next hook run, with no restart needed
 ```
 
 ### Template Generation
@@ -315,7 +315,7 @@ max_retries: 3
 Settings are active.
 \`\`\`
 
-After creating or editing, restart Claude Code for changes to take effect.
+After creating or editing, the changes apply from the next hook run; no restart is needed.
 ```
 
 ## Best Practices
@@ -374,22 +374,20 @@ if ! [[ "$MAX" =~ ^[0-9]+$ ]] || [[ $MAX -lt 1 ]] || [[ $MAX -gt 100 ]]; then
 fi
 ```
 
-### Restart Requirement
+### When Changes Take Effect
 
-**Important:** Settings changes require Claude Code restart.
+**No restart needed for the settings file.** Each hook run is a fresh process that reads `.claude/my-plugin.local.md` from disk, so an edit applies from the next hook run in the same session. The Ralph Loop example in `references/real-world-examples.md` depends on this: its Stop hook rewrites `iteration:` on every run and reads the new value on the next one.
 
 Document in the plugin README:
 
 ```markdown
 ## Changing Settings
 
-After editing `.claude/my-plugin.local.md`:
-
-1. Save the file
-2. Exit Claude Code
-3. Restart: `claude`
-4. New settings will be loaded
+Edit `.claude/my-plugin.local.md` and save it. The plugin's hooks read the
+file each time they run, so the new settings apply from the next hook run.
 ```
+
+Because the file can change while a session is running, including from the plugin's own hooks, write it atomically (write a temp file, then `mv` it into place) rather than editing it in place.
 
 Plugin hooks refresh within a session — run `/reload-plugins` after editing `hooks/hooks.json`. Hooks declared in `settings.json` load at session start and need a restart.
 
@@ -751,6 +749,6 @@ To add settings to a plugin:
 4. Implement settings parsing in hooks/commands
 5. Use quick-exit pattern (check file exists, check enabled field)
 6. Document settings in plugin README with template
-7. Remind users that changes require Claude Code restart
+7. Tell users that edits apply from the next hook run (only `hooks.json` or `settings.json` edits need `/reload-plugins` or a restart)
 
 Focus on keeping settings simple and providing good defaults when settings file doesn't exist.

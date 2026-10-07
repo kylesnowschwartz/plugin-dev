@@ -63,7 +63,7 @@ Use `allowed-tools` for:
 
 When specified, Claude can only use the listed tools without needing permission. If omitted, Claude follows the standard permission model.
 
-**Managed `allowManagedPermissionRulesOnly` (CC 2.1.282):** when an organization enables this managed setting, repository, user, and `--add-dir` skills and commands, and skills-directory plugin manifests, no longer pre-approve their own tools through `allowed-tools`. Their tool calls follow the managed permission rules instead. Do not rely on `allowed-tools` alone for a skill that must run unattended in such an organization. See `../../plugin-structure/references/advanced-topics.md` (Enterprise Hook and Permission Control).
+**Managed `allowManagedPermissionRulesOnly` (CC 2.1.282):** when an organization enables this managed setting, repository, user, and `--add-dir` skills and commands, and skills-directory plugin manifests, no longer pre-approve their own tools through `allowed-tools`. Their tool calls follow the managed permission rules instead. Since CC 2.1.284 the same applies to plugins from marketplaces, claude.ai, and npm: only plugins from an official Anthropic source, or a source that managed settings vouch for, keep `allowed-tools` pre-approval. Deny and ask rules still apply to all of them. Do not rely on `allowed-tools` alone for a skill that must run unattended in such an organization. See `../../plugin-structure/references/advanced-topics.md` (Enterprise Hook and Permission Control).
 
 ## context
 

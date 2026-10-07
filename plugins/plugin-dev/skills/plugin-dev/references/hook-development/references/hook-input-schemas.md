@@ -115,6 +115,8 @@ A hook that trusts or blocks an MCP tool should key the decision on `source`, ne
 | `title`             | string | Notification title (optional)                                                                                                              |
 | `notification_type` | string | `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog`, `agent_needs_input` (CC 2.1.198), `agent_completed` (CC 2.1.198) |
 
+`idle_prompt` does not fire while background agents are still running (CC 2.1.288).
+
 ### TeammateIdle
 
 | Field           | Type   | Description   |

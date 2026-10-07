@@ -120,11 +120,15 @@ Set `lspServers` in `plugin.json` to add further configuration sources alongside
 
 **settings** (optional): Settings passed via `workspace/didChangeConfiguration`
 
+**Placeholders in `initializationOptions` and `settings` (CC 2.1.288):** `${user_config.*}` and `${CLAUDE_PLUGIN_ROOT}` placeholders in these two fields are replaced with the configured values (or the manifest defaults). Before CC 2.1.288 the server received the literal placeholder strings, so a plugin that must support older versions should not depend on substitution here.
+
 **workspaceFolder** (optional): Workspace folder path for the server, sent as its root folder when the server initializes. Defaults to the session's current working directory. `${CLAUDE_PROJECT_DIR}` sets it to the project root; there is no editor-style `${workspaceFolder}` placeholder, so that string is treated as an unset environment variable and logs a "Missing environment variables in plugin LSP config" error
 
 **startupTimeout** (optional): Maximum time to wait for server startup in milliseconds
 
 **shutdownTimeout** (optional): Maximum time to wait for graceful shutdown in milliseconds
+
+**requestTimeout** (optional, CC 2.1.288): Milliseconds to wait for the server to answer a request, a positive integer. Defaults to `60000`. Before CC 2.1.288, LSP tool calls could hang indefinitely when a server used dynamic capability registration or stopped responding; requests now time out. Raise it for servers with slow first requests, such as large-workspace indexing
 
 **restartOnCrash** (optional): Whether to automatically restart the server if it crashes
 

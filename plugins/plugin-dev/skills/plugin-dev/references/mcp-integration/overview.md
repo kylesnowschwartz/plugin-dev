@@ -239,9 +239,32 @@ Pre-allow only necessary MCP tools — specific names, not wildcards:
 ❌ allowed-tools: mcp__plugin_api_server__*
 ```
 
-### URL-Mode Elicitation (CC 2.1.281)
+### URL-Mode Elicitation (CC 2.1.281, extended 2.1.287)
 
-On connections using the 2026-07-28 MCP protocol, a server can use URL-mode elicitation to ask Claude Code to open a browser-based flow. When the server has no way to confirm the flow completed, Claude Code does not leave a waiting dialog on screen. URL mode is not available on connections using older protocol versions, so a server that needs to support them should keep a fallback.
+On connections using the 2026-07-28 MCP protocol, a server can use URL-mode elicitation to ask Claude Code to open a browser-based flow, for example to sign in. When the server has no way to confirm the flow completed, Claude Code does not leave a waiting dialog on screen.
+
+**CC 2.1.287** extends URL prompts to servers on the 2025-11-25 protocol. If a server stops connecting after that update, add `"bareElicitationCapability": true` to its entry in the MCP config:
+
+```json
+{
+  "legacy-server": {
+    "command": "${CLAUDE_PLUGIN_ROOT}/servers/legacy-server",
+    "bareElicitationCapability": true
+  }
+}
+```
+
+URL mode is still unavailable on protocol versions older than 2025-11-25, so a server that needs to support them should keep a fallback.
+
+### Bundled `.mcpb` Servers (CC 2.1.285)
+
+A plugin can bundle an MCP server packaged as an `.mcpb` file, and that server can declare its own `user_config`. Since CC 2.1.285, `claude plugin install --config <server>.<key>=<value>` sets one of those settings at install time, so the server starts without the user visiting `/plugin` → Configure:
+
+```bash
+claude plugin install my-plugin@my-marketplace --config my-server.api_url=https://api.example.com
+```
+
+A key without a dot still sets the plugin's own `userConfig` option. Before CC 2.1.285, a bundled `.mcpb` server that still needed configuration was skipped silently. Now `/plugin`, the install message, and `claude plugin install` report it and point to Configure.
 
 Full authentication patterns (OAuth 2.0 with PKCE, bearer tokens, API keys, custom/dynamic headers, mTLS, JWT, HMAC, multi-tenancy) live in `references/authentication.md`. Organization-level `allowedMcpServers`/`deniedMcpServers` governance controls are documented in `references/operations.md`.
 

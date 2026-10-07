@@ -97,5 +97,5 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "✅ Settings file structure is valid"
 echo ""
-echo "Reminder: Changes to this file require restarting Claude Code"
+echo "Note: Hooks read this file on each run, so changes apply from the next hook run"
 exit 0

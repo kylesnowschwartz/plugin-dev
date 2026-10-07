@@ -33,7 +33,7 @@ Both commands and skills:
 When a command grows complex:
 
 1. Create `skills/name/SKILL.md`
-2. Move command content to SKILL.md body (frontmatter fields like `description`, `allowed-tools`, `model` work identically)
+2. Move command content to SKILL.md body (frontmatter fields like `description`, `allowed-tools`, and `model` carry over). For `model`, the skill reference lists `inherit` as the default value, while the command docs and `check-frontmatter.sh` cover only `haiku`/`sonnet`/`opus` or a full model ID and treat omitting `model` as "use the conversation's model". When moving in either direction, omit `model` to keep the conversation's model rather than writing `inherit`
 3. Add `references/` for detailed docs
 4. Add `scripts/` for utilities
 5. Delete original command file

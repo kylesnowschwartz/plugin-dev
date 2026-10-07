@@ -2,11 +2,13 @@
 
 This reference covers specialized topics that plugin developers may encounter in advanced use cases. Each section is self-contained.
 
-## Function-Hook Plugins (CC 2.1.260-2.1.261, expanded 2.1.267, reworked 2.1.283)
+## Function-Hook Plugins (CC 2.1.260-2.1.261, expanded 2.1.267, reworked 2.1.283, announced as Claude Mods 2.1.287)
 
-Function-hook plugins, which Claude Code's bundled guidance calls **mods**, are plugins whose hooks are TypeScript/JavaScript functions instead of shell commands. A mod can draw a live pane, a band above the prompt, a status line entry, or a toast, and can block, rewrite, or react to tool calls and prompts. It hot-reloads in the running session. This is an advanced tier beyond declarative `hooks.json` command hooks.
+Function-hook plugins, which Claude Code calls **mods** (announced as "Claude Mods" in CC 2.1.287), are plugins whose hooks are TypeScript/JavaScript functions instead of shell commands. A mod can draw a live pane, a band above the prompt, a status line entry, or a toast, and can block, rewrite, or react to tool calls and prompts. It hot-reloads in the running session. This is an advanced tier beyond declarative `hooks.json` command hooks.
 
-The layout, module shape, and hot-reload consent below follow the bundled "Plugin authoring" skill in CC 2.1.283. That skill supersedes the earlier descriptions in this section, which said constructors were imported from a JSX package and that the manifest declared an `experimental` function-hook field.
+The layout, module shape, and hot-reload consent below follow Claude Code's "Plugin authoring" guidance as of CC 2.1.283-2.1.289. Since CC 2.1.284 that guidance ships as a skill inside the built-in plugin `cc-plugin-plugin-authoring` (described as "Make a mod: a live pane, band, status line, toast or hook inside Claude Code ... Load before writing or debugging a hooks module"), rather than as bundled system-prompt text. A second built-in plugin, `cc-plugin-mods-guide`, ships beside it. Neither loads when `CLAUDE_CODE_ENTRYPOINT` is `local-agent`. The guidance supersedes the earlier descriptions in this section, which said constructors were imported from a JSX package and that the manifest declared an `experimental` function-hook field.
+
+**A built-in mod (CC 2.1.287).** Claude Code ships one mod of its own, "You should know", in which a side agent watches the session and flags things the user or Claude might miss. Users turn it on with `/plugin enable cc-plugin-you-should-know@builtin` (first-party sessions with telemetry on).
 
 ### Layout
 
@@ -23,7 +25,7 @@ A mod is an ordinary plugin folder with three files:
 
 **State contract.** A mod that keeps values in `$.state` adds a fourth file, `types/index.d.ts`. It declares each value in `interface PluginState` under the mod's name, and `plugin.json` names it with `"types": "./types/index.d.ts"`. The module imports its value types from `'../types'`, and `claude plugin validate` checks every `$.state` key the module uses against that contract.
 
-**Type declarations.** `/plugin-types` writes the running build's API declarations, plus the enabled plugins' contracts, into `.claude/types` so an editor and `tsc` can type-check the mod. `/plugin-types [dir]` writes them into another directory.
+**Type declarations.** The `/plugin-types` command and its `.claude/types` output are gone from CC 2.1.289 (CC 2.1.287 also dropped the guidance on pointing a mod's `tsconfig.json` or `jsconfig.json` at them). The running build's API declarations now come with the `cc-plugin-plugin-authoring` skill, as `types/claude-code.d.ts` inside the skill's extracted directory.
 
 ### Module Shape
 
@@ -35,6 +37,17 @@ The hooks module exports `register(on, options)`:
 - `next(e)` runs the plugins beneath and then Claude Code's own behavior, resolving to the event's result. A hook that returns without calling `next` answers for itself; `next({ ...e, x })` rewrites what the rest of the chain sees.
 
 Examples of event wiring: `on('tool.call', { tool }, hook)` returns `{ deny }`, calls `next({ ...e, ... })`, or awaits `next(e)` and acts on the result; `on('prompt.submit', hook)` rewrites a prompt with `next({ ...e, text })`; a slash command is registered with `$.command.register({ name, description })` in `session.start` and answered by a `command.run` hook returning `{ text }`.
+
+**API additions (CC 2.1.288-2.1.289):**
+
+- `$.ui.selection()` (CC 2.1.288) returns the text the user last selected in fullscreen mode and, when the selection lies within one transcript row, that row.
+- `agent.spawn` for teammates (CC 2.1.289).
+- `$.agent.list()` reports idle and waiting states (CC 2.1.289).
+- One agent id is used across plugin hook events (CC 2.1.289), so a mod can correlate events from the same agent.
+
+**Managed rules still apply (CC 2.1.289).** On managed machines, a managed deny or ask rule on a nested compound shell command holds even when a user-installed mod's `tool.call` hook approves the call.
+
+**Rewriting tool input under auto mode.** A `tool.call` hook that rewrites a call's input with `next({ ...e, ... })` can leave the auto-mode classifier with no verdict, the same as a PreToolUse hook that returns `updatedInput`. See `../../hook-development/references/advanced.md`.
 
 **No DOM and no Node.** The module runs in an environment of its own; `$` is its only way to reach anything outside it.
 
@@ -60,7 +73,7 @@ const { Box, Text, Button } = $.ui.resolve(e);
 
 Hot reload needs the user's consent once per session:
 
-1. When the bundled "Plugin authoring" skill loads, Claude Code starts watching `${CLAUDE_DEV_MODS_DIR}`; each mod goes in its own child folder, `${CLAUDE_DEV_MODS_DIR}/<mod-name>/`.
+1. When the "Plugin authoring" skill from the built-in `cc-plugin-plugin-authoring` plugin loads, Claude Code starts watching `${CLAUDE_DEV_MODS_DIR}`; each mod goes in its own child folder, `${CLAUDE_DEV_MODS_DIR}/<mod-name>/`.
 2. The first file written there makes Claude Code ask the user, once: "Enable mod hot-reloading for this session?" (`Not now` / `Enable for this session`). The turn keeps going while the question is open.
 3. **Only the user can answer it.** No permission mode, permission rule, or hook answers the question. Under `claude -p` nobody can be asked, so hot reload is off; an organization policy or an untrusted workspace also turns it off.
 4. On `Enable for this session`, the folder joins the session's plugin folders, and the mod loads when the turn ends. Each later edit reloads it when the turn that made the edit ends.
@@ -98,6 +111,10 @@ Claude Code reports failures in three places:
 - **Transcript** — one dim line naming the plugin, the event, and the reason when a hook fails (the hook is skipped and the chain continues) or a module does not load. Hook functions can use `.catch()` handlers to handle failures themselves.
 - **Debug log** (`claude --debug`) — a line for every failure occurrence and every result Claude Code refused, including rejected render trees.
 
+**Draw failures stay contained (CC 2.1.289).** A mod's `Client` that fails while drawn no longer takes down everything the mod drew around it. It fails alone and raises `ui.fault`. When a band or pane fails to draw, the line the author sees names the mod and says nothing was drawn.
+
+**`claude plugin test`.** Claude Code 2.1.288 and later also has a `claude plugin test` command; the CC 2.1.288 changelog mentions it only in a fix (it no longer reports mods as turned off remotely after reading an out-of-date saved setting). Run `claude plugin test --help` for its options.
+
 ### Limitations
 
 - The module has no DOM and no Node APIs; everything outside it goes through `$`
@@ -105,7 +122,7 @@ Claude Code reports failures in three places:
 - More complex to debug than command hooks
 - Hot reload requires the user's per-session consent and is unavailable under `claude -p`
 
-**Plugin-authoring guidance is bundled again (CC 2.1.283).** CC 2.1.269 removed the embedded plugin-development skill from Claude Code's system prompts. CC 2.1.283 ships a bundled "Plugin authoring" skill for mods, and when loaded it writes the running build's full API declaration file for Claude to read. Claude still has no function-hook API knowledge until that skill loads, so an author should load it (or point Claude at this reference) before writing a hooks module.
+**Plugin-authoring guidance ships as a built-in plugin (CC 2.1.284).** CC 2.1.269 removed the embedded plugin-development skill from Claude Code's system prompts. CC 2.1.283 bundled a "Plugin authoring" skill for mods; CC 2.1.284 moved it out of the system prompts into the built-in plugin `cc-plugin-plugin-authoring`, whose user-invocable skill extracts the running build's API declarations (`types/claude-code.d.ts`) for Claude to read. Claude still has no function-hook API knowledge until that skill loads, so an author should load it (or point Claude at this reference) before writing a hooks module.
 
 **Note:** This is an advanced feature. Most plugins work well with declarative `hooks.json` configuration. Consider function-hooks only when the simpler approach doesn't meet your requirements.
 
@@ -256,14 +273,13 @@ When a plugin is installed, Claude Code copies plugin content to a cache directo
 
 1. **No `../` paths:** Plugins cannot reference files outside their directory via `../` — the cache copy doesn't include parent directories
 2. **`${CLAUDE_PLUGIN_ROOT}` resolves to cache:** The variable points to the cached copy, not the source
-3. **Symlinks are followed:** Symlinks within the plugin directory are resolved during the copy, so the target content is included
+3. **Symlinks inside the plugin only:** A symlink whose target is also inside the plugin directory is resolved during the copy, so the target content is included. A symlink that resolves outside the plugin root makes installation fail (see Path Traversal Security below)
 
 ### Workarounds for External Files
 
 If your plugin needs content from outside its directory:
 
 - **`${CLAUDE_PLUGIN_DATA}`:** Write state to `~/.claude/plugins/data/<plugin>-<marketplace>`, a per-plugin directory created on install and removed on uninstall. It is the only writable location a plugin owns; the plugin directory itself is a cache copy
-- **Symlinks:** Create symlinks to external files within the plugin directory (followed during cache copy)
 - **Restructure:** Move shared content into the plugin directory
 - **Environment variables:** Reference external paths via environment variables, not file paths
 - **MCP servers:** Use MCP tools to access external resources at runtime
@@ -299,7 +315,7 @@ claude plugin install plugin-name@marketplace --scope local    # Personal projec
 claude plugin install plugin-name@marketplace --config API_ENDPOINT=https://api.example.com --config MAX_RESULTS=50
 ```
 
-Installing a plugin that declares `userConfig` does not prompt for the values. The install succeeds and prints `<N> userConfig option(s) not yet set — run /plugin configure <plugin> in Claude Code, or pass --config KEY=VALUE.`, and until they are set the session has no `CLAUDE_PLUGIN_OPTION_*` variables. `--config` is the unattended path; `/plugin configure <plugin>` is the interactive one.
+Installing a plugin that declares `userConfig` does not prompt for the values. The install succeeds and prints `<N> userConfig option(s) not yet set — run /plugin configure <plugin> in Claude Code, or pass --config KEY=VALUE.`, and until they are set the session has no `CLAUDE_PLUGIN_OPTION_*` variables. `--config` is the unattended path at install time; `/plugin configure <plugin>` is the interactive one. After install, `claude plugin configure <plugin>` (CC 2.1.285) shows the plugin's options and which are unset, and `--values-stdin` saves values read from stdin. `--config <server>.<key>=<value>` (CC 2.1.285) sets a bundled `.mcpb` MCP server's own settings.
 
 ### Management
 
@@ -442,6 +458,8 @@ Managed settings can also restrict hook and permission rule sources:
 | `allowManagedHooksOnly`           | Only managed hooks execute; plugin/user hooks disabled          |
 
 **`allowed-tools` does not pre-approve under `allowManagedPermissionRulesOnly` (CC 2.1.282).** With this managed setting on, repository, user, and `--add-dir` skills and commands, and skills-directory plugin manifests, no longer pre-approve their own tools through `allowed-tools`. Before CC 2.1.282 they still did. Their tool calls go through the managed permission rules like any other call.
+
+**Plugins keep pre-approval only from official or vouched sources (CC 2.1.284).** Under the same setting, plugins from marketplaces, claude.ai, and npm no longer pre-approve their own tools through `allowed-tools`. Only plugins from an official Anthropic source, or from a source that managed settings vouch for, keep that pre-approval. Deny and ask rules still apply to every plugin. Under this policy, a plugin's README should list the permission rules an administrator needs to add.
 
 **Plugin developer implications:**
 
@@ -655,6 +673,8 @@ This simplifies loading multiple plugins during development without specifying e
 
 **Folders that also hold a marketplace manifest (CC 2.1.281):** A folder of plugins that also has a `.claude-plugin/marketplace.json` now loads the plugins in it. Before CC 2.1.281 it loaded as one empty plugin instead. On older versions, point `--plugin-dir` at each plugin directory. Only direct child folders count, so a marketplace that keeps plugins under `plugins/<name>/` is loaded by pointing the flag at `plugins/`, not at the repository root.
 
+**`claude plugin validate` on such a folder (CC 2.1.289):** When a directory holds both `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json`, `claude plugin validate` checks the marketplace and also the plugin's manifest and component files. Before CC 2.1.289 it skipped the plugin, so validate the plugin directory on its own when supporting older versions.
+
 **ZIP archive (CC 2.1.128):**
 
 ```bash
@@ -774,7 +794,7 @@ The `autoMode.classifyAllShell` setting controls how shell commands are classifi
 
 **Which classifier runs (CC 2.1.273).** On Bedrock, Vertex and Foundry, auto mode now uses the **local** classifier by default. Set `CLAUDE_CODE_AUTO_MODE_SERVER=1` to use the platform's server-side classifier instead. This changes *which* classifier renders the verdict, not *which* commands get classified — the `classifyAllShell` and inline `[BANG]` rules above are unaffected.
 
-**Auto mode is the default on third-party providers (CC 2.1.283).** Interactive sessions on third-party providers, or with telemetry off, now start in auto mode when no permission mode is configured. Before CC 2.1.283 they started in `default` (Manual) mode, so the classifier choice above rarely came into play; it now governs interactive Bedrock, Vertex and Foundry sessions that leave the mode unset. A configured permission mode still takes precedence.
+**Auto mode is the default starting mode (CC 2.1.283-2.1.285).** CC 2.1.283 made interactive sessions on third-party providers, or with telemetry off, start in auto mode when no permission mode is configured; the classifier choice above now governs interactive Bedrock, Vertex and Foundry sessions that leave the mode unset. CC 2.1.284 extended the default to interactive terminal and VS Code sessions on every plan and provider, and CC 2.1.285 to `claude -p` and Python Agent SDK sessions on third-party providers or with telemetry off. Before these releases, those sessions started in `default` (Manual) mode. A configured permission mode still takes precedence. Because auto mode is now the common case, a PreToolUse hook (or mod) that rewrites tool input can stop its own tool from running; see `../../hook-development/references/advanced.md`.
 
 **Use cases:**
 
@@ -982,6 +1002,8 @@ claude plugin install pip-package-name
 ```
 
 **npm sources do not run install scripts (CC 2.1.275).** A plugin from an npm source is fetched with `npm pack --ignore-scripts` and integrity-verified, so `preinstall`, `install`, `postinstall`, and `prepare` scripts never run. Publish the plugin with everything it needs already in the package, such as built JavaScript and bundled binaries. Do not build or download files at install time. For work that must happen on the user's machine, use a `SessionStart` hook that writes into `${CLAUDE_PLUGIN_DATA}`.
+
+**npm sources must be registry packages (CC 2.1.286).** Plugin installs refuse npm sources that are git repositories or folders, and install plugin dependencies only from registry packages. Publish the plugin, and any packages it depends on, to an npm registry; use a git or archive source for anything that is not published.
 
 **Git LFS content is not downloaded (CC 2.1.274).** Plugin and marketplace clones leave Git LFS files as pointer files. Keep anything a plugin needs at runtime out of LFS, or tell users to run `git lfs pull` in the checkout.
 

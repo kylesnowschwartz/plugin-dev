@@ -128,11 +128,14 @@ Configure server lifecycle:
     },
     "startupTimeout": 60000,
     "shutdownTimeout": 5000,
+    "requestTimeout": 120000,
     "restartOnCrash": true,
     "maxRestarts": 3
   }
 }
 ```
+
+`requestTimeout` (CC 2.1.288) bounds each request to the server; it defaults to 60000 ms, so set it only for servers that need longer.
 
 ## Bundled Server
 

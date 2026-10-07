@@ -115,6 +115,11 @@ check_frontmatter() {
       echo "✅ model: $model (shorthand)"
     elif [[ "$model" =~ ^claude- ]]; then
       echo "✅ model: $model (full model ID)"
+    elif [[ "$model" == "inherit" ]]; then
+      # Skill docs list 'inherit' (the conversation's model) as the default.
+      # For commands, omitting 'model' is the documented way to get that.
+      echo "⚠️  Warning: model: inherit is documented for skills; for a command, omit 'model' to use the conversation's model"
+      warning_count=$((warning_count + 1))
     else
       echo "❌ Error: Invalid model '$model'"
       echo "   Valid: sonnet, opus, haiku, or full model ID (e.g., claude-sonnet-4-5-20250929)"

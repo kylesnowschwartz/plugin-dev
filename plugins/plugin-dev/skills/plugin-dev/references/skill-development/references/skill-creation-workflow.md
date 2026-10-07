@@ -1,6 +1,6 @@
 # Skill Creation Workflow
 
-This reference provides detailed step-by-step instructions for creating skills for Claude Code plugins. For an overview, see the main SKILL.md.
+This reference provides detailed step-by-step instructions for creating skills for Claude Code plugins. For an overview, see the skill-development topic overview (`../overview.md`).
 
 ## Step 1: Understanding the Skill with Concrete Examples
 
@@ -462,9 +462,11 @@ skill-name/
 
 Good for: Complex domains with validation utilities
 
-## Pre-Commit Skill Checks (CC 2.1.225)
+## Pre-Commit Skill Checks (CC 2.1.225, simplified 2.1.286)
 
-Skills designed for verification, simplification, or code review should support the pre-commit skill check pattern:
+**CC 2.1.286 removed the RAN/NOT RUN rule described below.** Claude's Bash commit guidance now just says to run verification, simplification, and review skills right before `commit`, and never for docs-only or tests-only commits. A project or user skill named `verify` is run before commits by name (see `skill-loading-and-runtime.md`). The pattern below is kept for skills that still want to report their own status; Claude Code no longer requires the per-skill status display.
+
+Skills designed for verification, simplification, or code review can support the pre-commit skill check pattern:
 
 **Pattern requirements:**
 

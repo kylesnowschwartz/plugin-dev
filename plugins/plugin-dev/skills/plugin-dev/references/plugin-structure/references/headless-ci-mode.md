@@ -64,6 +64,10 @@ claude -p "Fix the bug" --allowedTools "Read,Write,Edit,Bash(git *)"
 
 **Plugin design tip:** Document recommended `--allowedTools` values in your plugin README for CI usage.
 
+### Auto Mode as the Default on Some Setups (CC 2.1.285)
+
+`claude -p` and Python Agent SDK sessions on third-party providers (Bedrock, Vertex, Foundry), or with telemetry off, start in auto mode when no permission mode is configured, like interactive sessions. Other headless sessions keep their previous default. A configured permission mode (`--permission-mode`, or `permissions.defaultMode` in settings) still takes precedence, so CI jobs that depend on a specific mode should set it explicitly. Under auto mode, a PreToolUse hook that rewrites a tool's input can leave the classifier with no verdict; see `../../hook-development/references/advanced.md`.
+
 ### --max-turns
 
 Limit autonomous tool-use iterations to control cost and runtime:
@@ -217,6 +221,14 @@ claude -p "Run security audit" --allowedTools "Read,Grep,Glob"
 ```
 
 Options declared `sensitive: true` go to secure storage, so pass them from the CI secret store rather than committing them.
+
+To set options after the install, use `claude plugin configure` (CC 2.1.285). Without flags it lists the plugin's options and which are unset, which makes a quick CI check. With `--values-stdin` it saves values read from stdin:
+
+```bash
+claude plugin configure my-plugin@my-marketplace --values-stdin < values.json
+```
+
+A bundled `.mcpb` MCP server's own settings take the `<server>.<key>=<value>` form of `--config` (CC 2.1.285). See `manifest-reference.md` (userConfig).
 
 ### 5. Handle Missing Environment Gracefully
 

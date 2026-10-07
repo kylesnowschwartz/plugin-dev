@@ -147,6 +147,8 @@ If a verify skill already exists, new learnings are folded into it rather than d
 - Plugin-provided verify-related skills should avoid naming conflicts with the built-in `verify` skill
 - The auto-persistence pattern demonstrates how skills can evolve based on project learnings
 
+**Run before commits (CC 2.1.286).** When the project or user skills include one named `verify`, Claude's commit guidance tells it to run that skill right before committing, except for docs-only and tests-only commits. A skill named `verify` therefore gets commit-time meaning. A plugin skill meant for this slot should be fast and safe to run on every commit. A plugin that ships an unrelated skill should not name it `verify`.
+
 ## Project Skill Shadowing Warning (CC 2.1.200)
 
 **Important:** Creating new project skills can shadow built-in skills with the same name. Claude Code now includes explicit guidance:

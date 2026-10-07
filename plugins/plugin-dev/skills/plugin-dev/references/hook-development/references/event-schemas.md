@@ -139,6 +139,10 @@ Note: `permission_mode` is not present on SessionStart.
 
 **Output:** Observability only. No decision control. Runs asynchronously.
 
+**Subagent loads and effort (CC 2.1.288).** When a subagent's file access loads a rule or nested CLAUDE.md, the input carries the subagent's `agent_id` and `agent_type` (see Base Input); before CC 2.1.288 they were omitted. Rules and nested CLAUDE.md files loaded on file access also report `effort` now.
+
+**Loads on Write and Edit (CC 2.1.288).** Path-scoped `.claude/rules` and nested CLAUDE.md files load when Write or Edit creates or changes a file in their scope, not only when Read touches one. Expect `path_glob_match` and `nested_traversal` loads after file writes as well.
+
 **Matchers:** `session_start`, `nested_traversal`, `path_glob_match`, `include`, `compact`
 **Hook types:** Command, HTTP, MCP tool — this event is dispatched without a live conversation, so prompt and agent hooks cannot run on it.
 
@@ -356,6 +360,10 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 
 **Deprecated fields:** Top-level `decision: "approve|block"` still works but `hookSpecificOutput.permissionDecision` takes precedence.
 
+**`updatedInput` under auto mode (CC 2.1.287).** The auto-mode classifier reviews the input the model wrote. When a hook rewrites it, the review covers different input from what would run, so the classifier gives no verdict. Claude retries once; if the call is denied again, Claude stops and tells the user that a PreToolUse hook (or a mod) rewrites the call and that they can turn it off or leave auto mode. Auto mode is now the default starting mode for most sessions with no configured permission mode (CC 2.1.284-2.1.285), so see `advanced.md` (PreToolUse Decision Control) before shipping an `updatedInput` hook.
+
+**Fails closed on matching errors (CC 2.1.288).** If matching the hook against a call fails, or the tool's input cannot be serialized to JSON, the call is blocked. Before CC 2.1.288 the hook was skipped and the call went ahead. The same applies to PermissionRequest.
+
 **Matchers:** Tool names. Supports regex: `"Write|Edit"`, `"mcp__.*__delete.*"`
 **Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
@@ -426,6 +434,8 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 **Known issues:** `additionalContext` is parsed but silently dropped ([anthropics/claude-code#28035](https://github.com/anthropics/claude-code/issues/28035)) — it works in PreToolUse but not here. Race condition where the dialog may briefly show despite returning "allow" ([#12176](https://github.com/anthropics/claude-code/issues/12176)).
 
 **Agent hooks do not run here (CC 2.1.280).** An agent hook answers ok or not ok and cannot return the `allow`/`deny` decision above, so Claude Code refuses to run one on this event. It fails with `agent-type hooks are not supported for PermissionRequest events (an agent hook answers ok or not ok, and cannot return the allow / deny decision a permission request needs). Use a command- or http-type hook instead.` The changelog does not say whether prompt hooks are affected.
+
+**Fails closed on matching errors (CC 2.1.288).** As with PreToolUse, a call is blocked when matching a PermissionRequest hook fails or the tool's input cannot be serialized to JSON. Before CC 2.1.288 the hook was skipped.
 
 **Matchers:** Tool names (same as PreToolUse)
 **Hook types:** Command, HTTP, MCP tool, Prompt, Agent — an agent hook is accepted in config but fails at run time (CC 2.1.280, see above); use a command or HTTP hook for permission decisions.
@@ -1162,6 +1172,8 @@ Use to verify what survived compaction, log compaction results, or send alerts i
 - `decline`: Reject the elicitation request
 - `cancel`: Cancel the entire MCP operation
 
+**`{"decision": "block"}` declines (CC 2.1.284).** A top-level `{"decision": "block"}` from an Elicitation or ElicitationResult hook declines the MCP elicitation, the same as exit code 2. Before CC 2.1.284 it was ignored. `hookSpecificOutput.action` stays the way to accept, decline, or cancel explicitly.
+
 **Matchers:** MCP server name
 **Hook types:** Command, HTTP, MCP tool — this event is dispatched outside the conversation loop, so prompt and agent hooks cannot run on it.
 
@@ -1205,6 +1217,7 @@ Use to verify what survived compaction, log compaction results, or send alerts i
 - `accept` with `content`: Override the user's response
 - `accept` without `content`: Pass through user's response unchanged
 - `decline` or `cancel`: Reject or cancel the operation
+- Top-level `{"decision": "block"}` declines the elicitation, as exit code 2 does (CC 2.1.284; ignored before)
 
 **Matchers:** MCP server name
 **Hook types:** Command, HTTP, MCP tool — this event is dispatched outside the conversation loop, so prompt and agent hooks cannot run on it.
@@ -1247,6 +1260,8 @@ Observability only. No decision control.
 **Background Agent Notifications (CC 2.1.198):** Added matchers for background agent lifecycle events — `agent_needs_input` (background agent is blocked waiting for user input) and `agent_completed` (background agent has finished its work). These enable hooks to respond when background agents reach completion or need attention, facilitating automated workflows and external alerting for background agent status.
 
 **Desktop/VS Code fix (CC 2.1.233):** Fixed Notification hooks not firing for permission prompts under Desktop and VS Code environments. Plugin developers using the `permission_prompt` matcher should now see consistent behavior across all Claude Code interfaces (CLI, Desktop, VS Code).
+
+**`idle_prompt` waits for background agents (CC 2.1.288):** `idle_prompt` notifications no longer fire while background agents are still running. Before CC 2.1.288 an idle hook could alert while work was still in progress.
 
 **Matchers:** `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog`, `agent_needs_input` (CC 2.1.198), `agent_completed` (CC 2.1.198)
 **Hook types:** Command, HTTP, MCP tool — this event is dispatched without a live conversation, so prompt and agent hooks cannot run on it.

@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.49.0] - 2026-10-04
+
+Sync with Claude Code 2.1.284-2.1.289. This release covers twenty-two Must Update items (one added and two promoted by Stage 2), one May Update item, and seven Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. `scripts/check-doc-drift.sh` was clean before and after, and the `docs/claude-code-facts.json` diff was `claude_code_version`-only.
+
+### Added
+
+- **plugin-structure**: Claude Mods announcement (CC 2.1.287) and new mod APIs: `$.ui.selection()` (CC 2.1.288), `agent.spawn` for teammates, idle and waiting states in `$.agent.list()`, and one agent id across plugin hook events (CC 2.1.289); a failing `Client` raising `ui.fault` (CC 2.1.289); the built-in `cc-plugin-you-should-know@builtin` mod (CC 2.1.287); `claude plugin test`; managed deny and ask rules holding over a mod's approval (CC 2.1.289)
+- **plugin-structure**: `claude plugin configure <plugin>` with `--values-stdin` (CC 2.1.285) in the manifest reference, headless/CI guide, CLI section, and overview
+- **plugin-structure / mcp-integration**: `claude plugin install --config <server>.<key>=<value>` for bundled `.mcpb` MCP servers, and unconfigured `.mcpb` servers being reported (CC 2.1.285)
+- **mcp-integration**: per-tool `_meta['anthropic/alwaysLoad']` override (CC 2.1.285) and server `alwaysLoad: false` deferring every tool (CC 2.1.287); `claude mcp get` hiding plugin stdio command, args, and env values (CC 2.1.285); URL prompts on the 2025-11-25 protocol and the `bareElicitationCapability` config key (CC 2.1.287)
+- **hook-development**: `asyncRewake` hook option (wakes Claude on exit 2; missing-script fix in CC 2.1.287); `{"decision": "block"}` declining Elicitation and ElicitationResult (CC 2.1.284); `updatedInput` under auto mode leaving the classifier with no verdict (system prompts 2.1.287); synchronous hooks no longer hanging on background processes (CC 2.1.285)
+- **lsp-integration**: per-server `requestTimeout` (default 60000 ms) and `${user_config.*}`/`${CLAUDE_PLUGIN_ROOT}` substitution in `initializationOptions` and `settings` (CC 2.1.288)
+- **agent-development**: `SubagentHandback` one-call report delivery (CC 2.1.285); plugin agents spawned by name as teammates keeping their prompt, tools, `disallowedTools`, and effort (CC 2.1.288)
+- **skill-development**: a project or user skill named `verify` runs before commits, except docs-only and tests-only commits (CC 2.1.286)
+- **plugin-structure / marketplace-structure**: `claude plugin validate` checks both the marketplace and the plugin when a folder holds both manifests (CC 2.1.289)
+
+### Changed
+
+- **plugin-structure**: the "Plugin authoring" skill now ships in the built-in plugin `cc-plugin-plugin-authoring` (CC 2.1.284), not as bundled system-prompt text; `/plugin-types` and `.claude/types` are gone, and API declarations come as `types/claude-code.d.ts`
+- **plugin-structure / agent-development / hook-development**: auto mode is the default starting mode for interactive terminal and VS Code sessions (CC 2.1.284) and for `claude -p` and Python Agent SDK sessions on third-party providers or with telemetry off (CC 2.1.285). This replaces the Manual-default statement
+- **hook-development**: PreToolUse and PermissionRequest hooks block the call when matching fails or the tool input cannot be serialized (CC 2.1.288); InstructionsLoaded reports `agent_id`/`agent_type` for subagent loads and effort, and rules load on Write and Edit (CC 2.1.288); `idle_prompt` no longer fires while background agents run (CC 2.1.288)
+- **plugin-structure / skill-development / command-development**: under `allowManagedPermissionRulesOnly`, only plugins from an official Anthropic source or a managed-vouched source keep `allowed-tools` pre-approval (CC 2.1.284)
+- **plugin-structure / marketplace-structure**: npm sources that are git repositories or folders are refused, and dependencies install only from registry packages (CC 2.1.286)
+- **skill-development**: the pre-commit RAN/NOT RUN rule was removed from Claude's commit guidance (CC 2.1.286)
+
+### Fixed
+
+- **plugin-structure**: removed the workaround of symlinking external files into a plugin, which contradicts installation refusing symlinks that resolve outside the plugin root
+- **hook-development / plugin-structure**: the plugin `hooks.json` examples in `migration.md` and `component-patterns.md` now use the required `hooks` wrapper
+- **plugin-settings**: settings files are re-read on every hook run, so edits apply without a restart; the overview, examples, `parse-frontmatter.sh`, and `validate-settings.sh` no longer say a restart is needed, and writers are told to replace the file atomically
+- **command-development**: the plugin data pattern writes to `${CLAUDE_PLUGIN_DATA}` instead of the cached plugin directory
+- **command-development / skill-development**: `model: inherit` guidance reconciled; `check-frontmatter.sh` warns instead of erroring
+- **agent-development**: the README permission example uses `mcp__plugin_<plugin-name>_<server-name>__*`
+- **skill-development / command-development**: two "see the main SKILL.md" pointers now name the topic overview
+
 ## [0.48.0] - 2026-09-28
 
 Sync with Claude Code 2.1.281-2.1.283. This release covers nineteen changelog-driven Must Update items (two promoted by Stage 2), one May Update item, and eight Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. It also ships the fixes that were pending under Unreleased. `scripts/check-doc-drift.sh` was clean before, and the `docs/claude-code-facts.json` diff was `claude_code_version`-only.
@@ -1097,7 +1132,8 @@ Corrects references that had drifted from Claude Code behaviour, reported in [#6
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.48.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.49.0...HEAD
+[0.49.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.48.0...v0.49.0
 [0.48.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.47.0...v0.48.0
 [0.47.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.46.0...v0.47.0
 [0.46.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.45.0...v0.46.0

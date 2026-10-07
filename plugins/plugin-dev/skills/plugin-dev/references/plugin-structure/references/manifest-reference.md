@@ -724,6 +724,15 @@ claude plugin install my-plugin@my-marketplace \
   --config MAX_RESULTS=50
 ```
 
+**After install (CC 2.1.285):** `claude plugin configure <plugin>` shows a plugin's options and which of them are unset. With `--values-stdin` it saves new values read from stdin instead, which gives scripts a post-install path that does not need `/plugin configure`:
+
+```bash
+claude plugin configure my-plugin@my-marketplace
+claude plugin configure my-plugin@my-marketplace --values-stdin < values.json
+```
+
+**Bundled `.mcpb` server settings (CC 2.1.285):** A key written `<server>.<key>` (for example `--config my-server.api_url=https://api.example.com`) sets a setting that a bundled `.mcpb` MCP server declares in its own `user_config`, so the server starts without a visit to `/plugin` → Configure. A bundled `.mcpb` server that still needs configuration is reported by `/plugin`, the install message, and `claude plugin install`; before CC 2.1.285 it was skipped silently.
+
 **Storage:**
 
 - Non-sensitive values: `settings.json` under `pluginConfigs[<plugin-id>].options`
@@ -817,6 +826,8 @@ Claude Code validates the manifest on plugin load:
 - **Hook failures name the plugin (CC 2.1.281).** Not a validator check, but related: at run time, plugin hook-failure errors now name the offending plugin.
 
 Marketplace-level checks (plugin and marketplace names Claude Code cannot install, CC 2.1.283) are covered in `../../marketplace-structure/overview.md` (Validation).
+
+**Plugin and marketplace in one folder (CC 2.1.289).** When the directory passed to `claude plugin validate` holds both `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json`, Claude Code validates the marketplace and also the plugin's manifest and component files. Before CC 2.1.289 it skipped the plugin.
 
 ### Common Validation Errors
 

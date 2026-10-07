@@ -308,6 +308,8 @@ Teammates are spawned by the team lead and work independently on assigned tasks:
 - **Tool restrictions**: Use `tools` to limit what each teammate can do based on their role
 - **Plan mode for review**: Use `permissionMode: plan` for teammates that should propose changes for lead approval
 
+**Plugin agents keep their definition as teammates (CC 2.1.288).** A plugin-defined agent spawned by name as a teammate runs with its own body instructions, `tools`, `disallowedTools`, and `effort` (and `model`). Before CC 2.1.288 it ran with the defaults instead, so tool restrictions written for a teammate role did not apply on older versions.
+
 ### Display Modes
 
 The `teammateMode` setting controls how agent teams display in the terminal:
@@ -615,6 +617,14 @@ Subagents now inherit the session's extended thinking configuration. Agent type 
 ### Subagent Results Arrive Framed as Subagent Output (CC 2.1.277)
 
 A subagent's result reaches the main agent under a header marking it as subagent output, with the result text indented. This keeps text in a subagent's result from passing as the session's own instructions. Plugin agents should write their final report as data for the caller to act on, such as findings, file paths, and status. Do not phrase it as directives to the main agent, because the framing presents it as a subagent's report and not as instructions.
+
+### SubagentHandback: One Ending Call (CC 2.1.285)
+
+Subagents deliver their full final report to their caller through one `SubagentHandback` tool call, which ends the run. Plain-text endings are not delivered. In the 2.1.289 binary the handback applies to subagents running in auto mode (now the default starting mode), and the report passes auto mode's review: it is delivered, delivered under a security warning, or withheld. A subagent's run ends as soon as it hands its report back, instead of taking extra turns that reach no one. For plugin agents:
+
+- Put everything the caller needs (findings, file paths, status) in the handback report. Text written after it does not reach the caller
+- A system prompt that says "end with a summary" now means "put the summary in the handback"
+- Write the report as data, not directives (see the section above), so the review has no reason to flag or withhold it
 
 ### Non-Fork Subagent Delegation (CC 2.1.235)
 
