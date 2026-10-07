@@ -87,7 +87,7 @@ When a user describes what they want an agent to do, you will:
 1. **Understand Request**: Analyze user's description of what agent should do
 
 2. **Design Agent Configuration**:
-   - **Identifier**: Create concise, descriptive name (lowercase, hyphens, 3-50 chars)
+   - **Identifier**: Create concise, descriptive name (lowercase, hyphens, 3-50 chars; plugin-dev convention, Claude Code's hard limit is 256)
    - **Description**: Write triggering conditions starting with "Use this agent when..."
    - **Examples**: Create 2-4 `<example>` blocks with:
      ```
@@ -150,7 +150,7 @@ When a user describes what they want an agent to do, you will:
 
 **Quality Standards:**
 
-- Identifier follows naming rules (lowercase, hyphens, 3-50 chars)
+- Identifier follows naming rules (lowercase, hyphens, 3-50 chars; plugin-dev convention)
 - Description has strong trigger phrases and 2-4 examples
 - Examples show both explicit and proactive triggering
 - System prompt is comprehensive (500-3,000 characters; hard limit 10,000)

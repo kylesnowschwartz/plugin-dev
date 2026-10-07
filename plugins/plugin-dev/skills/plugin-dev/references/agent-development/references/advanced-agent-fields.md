@@ -331,6 +331,8 @@ Use hook events to enforce quality standards in team workflows:
 | `SubagentStart` | A teammate spawns            | Log team activity, enforce naming conventions |
 | `SubagentStop`  | A teammate finishes          | Clean up resources, collect metrics           |
 
+**Teammate identity (CC 2.1.290).** In Agent results, an in-process teammate's `agent_id` is now its agent ID, and its `name@team` address stays in `teammate_id`. Hooks and orchestration code that matched a teammate by `agent_id` holding `name@team` should read `teammate_id` instead. `TeammateIdle` hooks no longer fire from a teammate's own subagents or forks, only from the teammate itself.
+
 ### Plan Approval Mode
 
 Teammates can be configured to require plan approval from the team lead before implementing:
@@ -573,12 +575,12 @@ Claude Code enforces per-session limits to prevent runaway usage:
 
 | Resource | Limit | Behavior when exceeded |
 |----------|-------|----------------------|
-| WebSearch calls | 200 per session | Additional calls blocked |
+| WebSearch calls | 200 per session (`CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION`); in interactive sessions the budget refills at 100 calls/hour (CC 2.1.290) | Additional calls are refused until the budget refills; without refill (non-interactive sessions by default, or `CLAUDE_CODE_WEB_SEARCH_REFILLS_PER_HOUR=0`) the cap is final |
 | Concurrent subagents | 20 (default) | New spawns wait (CC 2.1.217) |
 | Nested subagent depth | 3 levels (CC 2.1.219) | Deeper nesting blocked |
 | Workflow concurrent agents | 16 per run (default) | Additional agents queue |
 
-**Overrides:** `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` raises or lowers the nesting depth. `CLAUDE_CODE_WORKFLOW_MAX_CONCURRENT_AGENTS` (1–256, CC 2.1.269) raises the Workflow tool's per-run concurrent agent limit for inference-bound fan-outs; the default is up to 16, fewer on CPU-limited hosts or in containers.
+**Overrides:** `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` raises or lowers the nesting depth. `CLAUDE_CODE_WORKFLOW_MAX_CONCURRENT_AGENTS` (1–256, CC 2.1.269) raises the Workflow tool's per-run concurrent agent limit for inference-bound fan-outs; the default is up to 16, fewer on CPU-limited hosts or in containers. `CLAUDE_CODE_WEB_SEARCH_REFILLS_PER_HOUR` (CC 2.1.290) sets the interactive session's WebSearch refill rate, and `0` turns refilling off. `CLAUDE_CODE_OVERLOADED_RETRY_BASE_DELAY_MS` (CC 2.1.292) sets the base delay for retries after an overloaded API response.
 
 **Subagent spawn cap removed (CC 2.1.224):** The previous 200-subagent-per-session spawn cap has been removed. Sessions can now spawn unlimited subagents, though concurrency and depth limits still apply. This reverses the limit added in CC 2.1.213.
 
@@ -612,7 +614,7 @@ The Agent tool now defaults to `run_in_background: true`. Claude keeps working w
 
 ### Extended Thinking Inheritance (CC 2.1.198)
 
-Subagents now inherit the session's extended thinking configuration. Agent type definitions supply model, reasoning effort, and tool access, while the call-level `model` parameter overrides only the model at launch. This means subagents automatically benefit from extended thinking when enabled in the parent session.
+Subagents now inherit the session's extended thinking configuration. Agent type definitions supply model, reasoning effort, and tool access. At launch, the Agent tool's call-level `model` parameter overrides the model, and since CC 2.1.292 its `effort` parameter overrides the reasoning effort for that spawn (see `orchestration-and-tools.md`). This means subagents automatically benefit from extended thinking when enabled in the parent session.
 
 ### Subagent Results Arrive Framed as Subagent Output (CC 2.1.277)
 

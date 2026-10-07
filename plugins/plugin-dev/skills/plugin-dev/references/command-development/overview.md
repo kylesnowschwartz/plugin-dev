@@ -159,6 +159,8 @@ The `[BANG]` syntax performs **load-time context injection**: commands execute w
 
 **Disable shell execution (CC 2.1.91):** Organizations can disable inline shell execution in skills, custom slash commands, and plugin commands via the `disableSkillShellExecution` setting. When enabled, `[BANG]`command`` blocks are not executed. Design commands to work gracefully when shell execution is unavailable.
 
+**Control characters are refused (CC 2.1.290):** skills and custom commands refuse a `[BANG]` shell command that contains raw control characters other than tab and newline, with a message that shows where they are. Keep inline commands to printable text; generate any escape sequences inside a script instead. The same release fixed multi-line `[BANG]` shell blocks failing on Windows when the file is saved with CRLF line endings.
+
 For advanced bash patterns, environment-specific configs, and `${CLAUDE_PLUGIN_ROOT}` script execution, see `references/plugin-features-reference.md`.
 
 ## Commands vs Skills: When to Use Which

@@ -713,7 +713,7 @@ A stored value outside the list counts as **unset** rather than raising a valida
 
 **Accessing configured values:**
 
-- In MCP/LSP server configs, hook commands, and skill/agent content: `${user_config.KEY}` (non-sensitive only)
+- In MCP/LSP server configs, exec-form hook commands (`command` plus an `args` array), and skill/agent content: `${user_config.KEY}` (non-sensitive only). Shell-form hook commands (a plain `command` string without `args`), monitors, and MCP `headersHelper` commands reject `${user_config.*}` since CC 2.1.207 (shell-injection fix); in those, use exec form or read `$CLAUDE_PLUGIN_OPTION_<KEY>` inside the script
 - As environment variables in plugin subprocesses: `CLAUDE_PLUGIN_OPTION_<KEY>`
 
 **Install-time behavior:** `claude plugin install` does not prompt for these values. Installation succeeds and prints `<N> userConfig option(s) not yet set — run /plugin configure <plugin> in Claude Code, or pass --config KEY=VALUE.` (with `(<M> required)` appended when some options are `required: true`). Until the options are set, the session has no `CLAUDE_PLUGIN_OPTION_*` variables at all — hooks and servers must handle their absence. For unattended installs, pass `--config KEY=VALUE` once per option:

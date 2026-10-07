@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.50.0] - 2026-10-07
+
+Sync with Claude Code 2.1.290-2.1.292. This release covers eighteen Must Update items (two promoted by Stage 2) and three Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. 2.1.291 had no plugin-relevant entries. `scripts/check-doc-drift.sh` was clean before and after.
+
+### Added
+
+- **marketplace-structure / plugin-structure**: `claude plugin install <plugin> --marketplace <source>` adds the marketplace if needed, under the same policy checks as `claude plugin marketplace add`, then installs (CC 2.1.292)
+- **agent-development**: Agent tool `effort` parameter for per-spawn reasoning effort, and how it relates to the agent definition's effort and the Workflow `agent()` option (CC 2.1.292)
+- **agent-development / skill-development**: Claude Code's 256-character name limit; a longer agent name is rejected, and a longer skill or plugin-file `name` is ignored (CC 2.1.292)
+- **plugin-structure**: mods API additions: `prompt.autocomplete`, workflow agents in `agent.spawn`, `$.model.complete` prompt caching (CC 2.1.292); `tool.check` `agentId` and `ceiling`, `turn.step` `serverToolUses`, `ThemeKey`/`Color` typings (CC 2.1.290); `claude plugin validate` `gatingHooks` (CC 2.1.290) and refusal of redeclared `$.state` `var`s (CC 2.1.292); hook behavior fixes for deny-after-`next(e)`, `tool.check` dialogs, `tool.call` arguments, and long reasons (CC 2.1.290-2.1.292)
+- **mcp-integration**: stdio servers negotiate protocol 2026-07-28 by default, `MCP_PROTOCOL_NEGOTIATION=legacy` opts out, and slow servers are remembered for 7 days (CC 2.1.292); MCP tool names over 128 characters, prefix included, are left out with an MCP error (CC 2.1.292)
+- **hook-development**: WebFetch `offset` in the tool-input table (CC 2.1.290) and Agent `effort` (CC 2.1.292)
+
+### Changed
+
+- **agent-development**: `permissionMode: auto` falls back when auto mode is unavailable (settings, circuit breaker, or unsupported model) (CC 2.1.292)
+- **hook-development**: a PreToolUse `allow` no longer skips the prompt for reads from network (UNC) paths (CC 2.1.292); `<system-reminder>` tags in hook output are escaped (CC 2.1.292); permission rules and safety checks apply to input rewritten by `updatedInput` (CC 2.1.290)
+- **agent-development / hook-development**: an in-process teammate's `agent_id` is its agent ID, with `name@team` in `teammate_id`, and TeammateIdle no longer fires from a teammate's subagents or forks (CC 2.1.290)
+- **skill-development / command-development**: `allowed-tools` grants last only for the invoking turn after leaving auto or plan mode (CC 2.1.292); `[BANG]` shell commands with raw control characters are refused, and CRLF multi-line blocks work on Windows (CC 2.1.290)
+- **skill-development**: a skill whose `name` differs from its folder name is found by `name`, and the listing shows both (CC 2.1.290)
+- **mcp-integration**: `allowedMcpServers` URL rules and `disableClaudeAiConnectors` cover `.mcp.json`, plugin, and agent MCP entries (CC 2.1.290)
+- **agent-development**: the interactive session's WebSearch budget refills at 100 calls/hour (`CLAUDE_CODE_WEB_SEARCH_REFILLS_PER_HOUR`) instead of stopping at 200 calls (CC 2.1.290); `CLAUDE_CODE_OVERLOADED_RETRY_BASE_DELAY_MS` (CC 2.1.292)
+- **plugin-structure**: `claude plugin test` fails on a failed `expect` or a refused stub answer (CC 2.1.292); the built-in plugin-authoring skill gives a one-command mod install for READMEs (CC 2.1.290)
+- **hook-development**: ConfigChange no longer fires spuriously from sandboxed Bash on Linux, and the `${CLAUDE_PLUGIN_ROOT}` quoting rule cites the async Stop hook loop fixed in CC 2.1.290
+
+### Fixed
+
+- **agent-development**: an agent with no `permissionMode` inherits the session's permission mode (usually auto), not `default`; the overview and `permission-modes-rules.md` no longer call `default` implicit
+- **agent-development**: the agent-file conversion template in `agent-creation-prompt.md` uses a `description: |` block scalar, since a plain scalar holding `<example>` blocks is invalid YAML
+- **plugin-structure**: `manifest-reference.md` limits `${user_config.KEY}` in hook commands to exec form; shell-form hooks, monitors, and `headersHelper` reject it (CC 2.1.207)
+- **agent-development / skill-development / agents**: the 3-50 agent identifier rule and the 64-character skill name rule are labeled as plugin-dev and Agent Skills spec conventions, not Claude Code limits
+
 ## [0.49.0] - 2026-10-04
 
 Sync with Claude Code 2.1.284-2.1.289. This release covers twenty-two Must Update items (one added and two promoted by Stage 2), one May Update item, and seven Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. `scripts/check-doc-drift.sh` was clean before and after, and the `docs/claude-code-facts.json` diff was `claude_code_version`-only.
@@ -1132,7 +1164,8 @@ Corrects references that had drifted from Claude Code behaviour, reported in [#6
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.49.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.50.0...HEAD
+[0.50.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.49.0...v0.50.0
 [0.49.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.48.0...v0.49.0
 [0.48.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.47.0...v0.48.0
 [0.47.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.46.0...v0.47.0

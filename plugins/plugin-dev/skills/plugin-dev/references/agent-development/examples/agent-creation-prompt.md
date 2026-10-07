@@ -38,7 +38,7 @@ Requirements:
    - Specific methodologies
    - Edge case handling
    - Output format
-4. Create identifier (lowercase, hyphens, 3-50 chars)
+4. Create identifier (lowercase, hyphens, 3-50 chars; plugin-dev convention, Claude Code's hard limit is 256)
 5. Write description with triggering conditions
 6. Include 2-3 <example> blocks showing when to use
 
@@ -71,7 +71,8 @@ Create `agents/[identifier].md`:
 ```markdown
 ---
 name: [identifier from JSON]
-description: [whenToUse from JSON]
+description: |
+  [whenToUse from JSON, with each line indented two spaces]
 model: inherit
 color: [choose: blue/cyan/green/yellow/magenta/red]
 tools: Read, Write, Grep # Optional: restrict tools
@@ -79,6 +80,8 @@ tools: Read, Write, Grep # Optional: restrict tools
 
 [systemPrompt from JSON]
 ```
+
+Use the `description: |` block scalar. The `whenToUse` value contains `Examples:` and `<example>` blocks, and pasting it as a plain scalar after `description:` is invalid YAML, so the agent never loads (see `complete-agent-examples.md`).
 
 ## Example 1: Code Review Agent
 

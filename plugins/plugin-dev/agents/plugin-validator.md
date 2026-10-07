@@ -110,7 +110,7 @@ First, determine what type of validation is needed:
      - Use `${CLAUDE_PLUGIN_ROOT}/skills/plugin-dev/references/agent-development/scripts/validate-agent.sh` utility
      - Or manually check:
        - Frontmatter with `name`, `description`, `model`, `color`
-       - Name format (lowercase, hyphens, 3-50 chars)
+       - Name format (lowercase, hyphens, 3-50 chars; plugin-dev convention, while Claude Code rejects agent names over 256 chars)
        - Description includes `<example>` blocks
        - Model is valid (inherit/sonnet/opus/haiku)
        - Color is valid (blue/cyan/green/yellow/magenta/red)
