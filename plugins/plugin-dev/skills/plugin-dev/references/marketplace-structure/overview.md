@@ -359,6 +359,8 @@ The Discover tab considers the current working directory when suggesting plugins
 
 **Install with the marketplace source (CC 2.1.275):** `/plugin install <plugin> --marketplace <source>` offers to add the marketplace before installing the plugin. A README can give one command that works for users who have not added the marketplace yet, for example `/plugin install my-plugin --marketplace owner/repo`.
 
+**Same flag on the CLI (CC 2.1.292):** `claude plugin install <plugin> --marketplace <source>` adds the marketplace if needed, under the same policy checks as `claude plugin marketplace add` (an organization's `strictKnownMarketplaces` list, for example, can refuse it), then installs the plugin from it. A README install section can give the shell form, `claude plugin install my-plugin --marketplace owner/repo`, beside the slash-command form.
+
 **Catalog Refresh on Install (CC 2.1.221):** `/plugin install` now automatically refreshes a stale marketplace catalog before reporting "not found." This improves the installation experience when users try to install recently-added plugins that aren't yet in their local cache.
 
 For detailed distribution patterns, see `references/distribution-patterns.md`.

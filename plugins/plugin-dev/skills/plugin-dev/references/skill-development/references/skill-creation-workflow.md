@@ -386,7 +386,7 @@ Before finalizing a skill:
 
 - [ ] SKILL.md file exists with valid YAML frontmatter
 - [ ] Frontmatter has `name` and `description` fields
-- [ ] Name uses only lowercase letters, numbers, and hyphens (max 64 chars)
+- [ ] Name uses only lowercase letters, numbers, and hyphens (max 64 chars, the Agent Skills spec limit; Claude Code ignores a `name` over 256 chars)
 - [ ] Description is under 1024 characters
 - [ ] (Optional) `allowed-tools` field if restricting tool access
 - [ ] (Optional) `disallowed-tools` field if blocking specific tools

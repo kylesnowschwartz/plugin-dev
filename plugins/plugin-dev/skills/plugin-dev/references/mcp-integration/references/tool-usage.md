@@ -28,6 +28,10 @@ mcp__plugin_<plugin-name>_<server-name>__<tool-name>
 - `mcp__plugin_myplug_database__execute`
 - `mcp__plugin_myplug_database__list_tables`
 
+### Name Length Limit (CC 2.1.292)
+
+An MCP tool whose name is longer than 128 characters is left out, and an MCP error names it. Before CC 2.1.292 such a tool made every request fail. The `mcp__plugin_<plugin-name>_<server-name>__` prefix counts toward the length, so long plugin and server names leave less room for the tool name. Keep the full namespaced name at 128 characters or fewer.
+
 ### Discovering Tool Names
 
 **Use `/mcp` command:**

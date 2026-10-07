@@ -265,6 +265,8 @@ Recent commits:
 
 **Disable shell execution (CC 2.1.91):** Organizations can disable inline shell execution in skills, custom slash commands, and plugin commands via the `disableSkillShellExecution` setting. When enabled, `[BANG]`command`` blocks are not executed. Design skills to work gracefully when shell execution is unavailable.
 
+**Control characters are refused (CC 2.1.290):** a `[BANG]` shell command that contains raw control characters other than tab and newline is refused, with a message that shows where they are. The same release fixed multi-line `[BANG]` shell blocks failing on Windows when the skill file is saved with CRLF line endings.
+
 ## Auto-Discovery
 
 Claude Code automatically discovers skills:
@@ -274,6 +276,8 @@ Claude Code automatically discovers skills:
 - Loads skill metadata (name + description) always
 - Loads SKILL.md body when skill triggers
 - Loads references/examples when needed
+
+**Folder name and `name` (CC 2.1.290):** when a skill's folder name differs from the `name` in its SKILL.md (for example a non-English folder name), the skill is found when asked for by its `name`, and the skill listing shows both names. Matching the folder name to `name` is still the recommended convention. A `name` longer than 256 characters is ignored (CC 2.1.292).
 
 ## No Packaging Needed
 

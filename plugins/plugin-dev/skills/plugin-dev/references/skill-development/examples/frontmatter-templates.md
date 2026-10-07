@@ -15,7 +15,7 @@ description: This skill should be used when the user asks to "do X", "perform Y"
 
 **Requirements:**
 
-- `name`: kebab-case, matches directory name
+- `name`: kebab-case, matches directory name (recommended; since CC 2.1.290 a skill whose `name` differs from its folder name is still found by its `name`, and the skill listing shows both names)
 - `description`: Third-person, starts with "This skill should be used when..."
 
 ## Skill with Strong Triggers

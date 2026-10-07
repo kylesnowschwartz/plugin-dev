@@ -351,10 +351,10 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 }
 ```
 
-- `permissionDecision`: `"allow"` approves without prompting, `"deny"` blocks execution, `"ask"` shows permission dialog, `"defer"` pauses execution
+- `permissionDecision`: `"allow"` approves without prompting, `"deny"` blocks execution, `"ask"` shows permission dialog, `"defer"` pauses execution. An `"allow"` does not skip the prompt for file reads from network (UNC) paths (CC 2.1.292 security fix); auto mode does not skip it either.
 - `permissionDecisionReason`: Explanation logged for the decision
-- `updatedInput`: Replace specific tool_input fields (merged, not replaced wholesale). For `AskUserQuestion` tool calls, return `updatedInput` alongside `permissionDecision: "allow"` to provide answers programmatically (CC 2.1.85), enabling headless integrations that collect answers via their own UI.
-- `additionalContext`: Injected into Claude's context for this tool call
+- `updatedInput`: Replace specific tool_input fields (merged, not replaced wholesale). For `AskUserQuestion` tool calls, return `updatedInput` alongside `permissionDecision: "allow"` to provide answers programmatically (CC 2.1.85), enabling headless integrations that collect answers via their own UI. Permission rules and safety checks apply to the rewritten input (CC 2.1.290 fixed cases where some were skipped), so `updatedInput` cannot move a call past a deny rule.
+- `additionalContext`: Injected into Claude's context for this tool call. `<system-reminder>` tags in it are escaped (CC 2.1.292)
 
 **Defer pattern (CC 2.1.89):** Return `permissionDecision: "defer"` to pause tool execution in headless sessions. The session can be resumed later with `-p --resume`. Use `defer` when you need external approval or want to batch decisions for later processing.
 
@@ -813,7 +813,7 @@ Same semantics as Stop: blocking causes the subagent to continue working with `r
 
 ### TeammateIdle
 
-**When:** An agent team teammate is about to go idle.
+**When:** An agent team teammate is about to go idle. Since CC 2.1.290 it fires only for the teammate itself, not from the teammate's own subagents or forks. In Agent results, an in-process teammate's `agent_id` is now its agent ID, and its `name@team` address is in `teammate_id` (CC 2.1.290).
 
 **Input:**
 
@@ -993,6 +993,8 @@ Use to verify what survived compaction, log compaction results, or send alerts i
 ```
 
 **Important:** Block decisions for `policy_settings` source are silently ignored. Policy changes cannot be blocked.
+
+**No spurious firings from sandboxed Bash (CC 2.1.290).** On Linux, sandboxed Bash commands no longer run `ConfigChange` hooks or reload settings mid-command when `.claude/settings.json` or `.claude/settings.local.json` does not exist. A hook that saw `project_settings` or `local_settings` events with no real edit behind them will stop seeing those.
 
 **Matchers:** `user_settings`, `project_settings`, `local_settings`, `policy_settings`, `skills`
 **Hook types:** Command, HTTP, MCP tool — this event is dispatched outside the conversation loop, so prompt and agent hooks cannot run on it.

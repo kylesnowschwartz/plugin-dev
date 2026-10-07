@@ -141,6 +141,8 @@ Three matcher types: `serverName`, `serverCommand`, `serverUrl`.
 
 These settings are configured by administrators and cannot be overridden by users or plugins.
 
+**Plugin and agent entries are covered (CC 2.1.290).** `allowedMcpServers` URL rules and `disableClaudeAiConnectors` apply to MCP entries declared in `.mcp.json`, in plugins, and in agent frontmatter `mcpServers`. Before CC 2.1.290 some of those entries escaped them. A plugin-bundled or agent-scoped HTTP/SSE server whose URL an organization's allowlist does not cover is refused like any other.
+
 Two related administrator keys:
 
 | Key | Type | Effect |

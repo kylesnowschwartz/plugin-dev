@@ -326,6 +326,10 @@ Before adding external plugins to your marketplace:
 # Offer to add the marketplace first, then install (CC 2.1.275)
 /plugin install plugin-name --marketplace owner/repo
 
+# Shell form: add the marketplace if needed (same policy checks as
+# `claude plugin marketplace add`), then install (CC 2.1.292)
+claude plugin install plugin-name --marketplace owner/repo
+
 # Browse available plugins
 /plugin
 ```

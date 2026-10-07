@@ -113,6 +113,8 @@ allowed-tools: "*"
 
 **Managed `allowManagedPermissionRulesOnly` (CC 2.1.282):** under this managed setting, repository, user, and `--add-dir` commands (and skills, and skills-directory plugin manifests) no longer pre-approve their own tools through `allowed-tools`; their calls follow the managed permission rules. Since CC 2.1.284, plugins from marketplaces, claude.ai, and npm lose that pre-approval too; only plugins from an official Anthropic source, or a source that managed settings vouch for, keep it. Deny and ask rules still apply to all of them.
 
+**Scoped to the invoking turn (CC 2.1.292):** a command's `allowed-tools` grant lasts for the turn that ran the command. Before CC 2.1.292, leaving auto mode or plan mode partway through that turn made the rule come back in a later turn.
+
 **When to use:**
 
 1. **Security:** Restrict command to safe operations

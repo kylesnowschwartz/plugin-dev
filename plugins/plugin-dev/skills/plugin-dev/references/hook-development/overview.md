@@ -58,6 +58,8 @@ Standard output (all fields optional):
 
 All fields optional. `continue` (default true) halts processing when false and displays `stopReason`; `suppressOutput` (default false) hides output from the transcript; `decision: "block"` blocks with the required `reason` fed back to Claude; `systemMessage` warns the user; `hookSpecificOutput` carries event-specific fields (`references/event-schemas.md`).
 
+**`<system-reminder>` tags are escaped (CC 2.1.292).** Claude Code escapes `<system-reminder>` tags written in a hook's output, including stdout and `additionalContext`, before they reach Claude. A hook cannot pass its text off as a system reminder; write plain context instead.
+
 - `terminalSequence` (CC 2.1.141): escape sequence written directly to the terminal for desktop notifications, window titles, or bells — e.g. desktop notification `"\u001b]9;Message\u0007"`, window title `"\u001b]0;Title\u0007"`, bell `"\u0007"`.
 
 Exit codes:
@@ -178,7 +180,7 @@ All matching hooks run **in parallel** — they don't see each other's output an
 
 **Shell-injection prevention (CC 2.1.207):** `${user_config.*}` interpolation in shell-form hook commands is now rejected to prevent injection when user-configurable plugin options contain malicious input. Fix by using exec form (`args` array) or reading values inside the script via `$CLAUDE_PLUGIN_OPTION_<KEY>`; the same restriction applies to monitors and headersHelper. Full migration guidance: `references/advanced.md` (Security Patterns).
 
-**Quote `${CLAUDE_PLUGIN_ROOT}` in shell-form commands (CC 2.1.281):** a `command` without `args` runs through a shell, so an unquoted placeholder splits into several words when the plugin path contains a space. `claude plugin validate` warns about it. Write `"command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/check.sh\""`, or use exec form: `"command": "bash", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/check.sh"]`. Plugin hook-failure errors also name the offending plugin since CC 2.1.281.
+**Quote `${CLAUDE_PLUGIN_ROOT}` in shell-form commands (CC 2.1.281):** a `command` without `args` runs through a shell, so an unquoted placeholder splits into several words when the plugin path contains a space. `claude plugin validate` warns about it. Write `"command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/check.sh\""`, or use exec form: `"command": "bash", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/check.sh"]`. Plugin hook-failure errors also name the offending plugin since CC 2.1.281. The failure is not hypothetical: before CC 2.1.290, a plugin's async Stop hook that passed an unquoted script path under a folder with a space, such as `Application Support` on macOS, left Claude replying in an endless loop.
 
 Other essentials: validate inputs, block path traversal (`..`) and sensitive files (`.env`), quote every variable, set appropriate timeouts. Examples: `examples/validate-write.sh`, `examples/validate-bash.sh`.
 

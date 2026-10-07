@@ -25,7 +25,7 @@ permissionMode: acceptEdits
 
 #### default
 
-The standard interactive permission model. Claude asks the user before performing actions that require permission. This is the implicit mode when `permissionMode` is not specified.
+The standard interactive permission model. Claude asks the user before performing actions that require permission. It is not the implicit mode for agents: a subagent whose definition leaves `permissionMode` unset inherits the parent session's permission mode, which is usually `auto` (see below). Set `permissionMode: default` explicitly when an agent must prompt.
 
 **When to use:** General-purpose agents, agents handling sensitive operations, agents in untrusted contexts.
 
@@ -65,6 +65,8 @@ Claude checks each tool call for risky actions and prompt injection before execu
 # Unattended agent with automatic risk checks
 permissionMode: auto
 ```
+
+**`auto` is conditional (CC 2.1.292).** A subagent definition with `permissionMode: auto` no longer enters auto mode when auto mode is unavailable: when settings disable it, when its circuit breaker has tripped, or when the model does not support it. Before CC 2.1.292 such an agent entered auto mode anyway. Do not assume the classifier is always in front of an `auto` agent; pair it with allow and deny rules that keep it safe under the mode it falls back to.
 
 ## Permission Specifier Syntax
 

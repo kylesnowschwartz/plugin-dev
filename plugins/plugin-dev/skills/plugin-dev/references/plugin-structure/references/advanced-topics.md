@@ -45,6 +45,23 @@ Examples of event wiring: `on('tool.call', { tool }, hook)` returns `{ deny }`, 
 - `$.agent.list()` reports idle and waiting states (CC 2.1.289).
 - One agent id is used across plugin hook events (CC 2.1.289), so a mod can correlate events from the same agent.
 
+**API additions (CC 2.1.290-2.1.292):**
+
+- `prompt.autocomplete` (CC 2.1.292) is an event a mod hooks to add its own rows to the prompt box's autocomplete list.
+- `agent.spawn` also covers workflow agents (CC 2.1.292), with their run and index, so a mod can refuse them.
+- `$.model.complete` supports prompt caching (CC 2.1.292): `prompt` and `system` take blocks of text, and `cache: true` on a block caches the request up to it.
+- The `tool.check` event carries `agentId` (CC 2.1.290), so a hook can tell a subagent's permission check from the main session's. The question and verdict a mod's `tool.check` hook reads carry `ceiling` (CC 2.1.290), naming the approval an organization requires for the tool.
+- A mod's `turn.step` hook result includes `serverToolUses` (CC 2.1.290): the tool calls the API ran itself (the advisor), each with its id, name, input, start, and end.
+- The plugin hooks typings add `ThemeKey` and `Color` types (CC 2.1.290), so an editor lists the theme colors a mod's drawing can name.
+
+**Hook behavior fixes (CC 2.1.290-2.1.292):**
+
+- A hook that calls `next(e)` and then denies or drops is reported as failed, by name, instead of being treated as a refusal or ignored: `prompt.submit` (CC 2.1.290) and `config.set`, `state.set`, `env.set`, `agent.spawn` (CC 2.1.292). Decide before calling `next(e)`.
+- A `tool.check` hook answering allow no longer runs a tool that requires the user's answer (a question, a plan approval) without showing its dialog (CC 2.1.292).
+- `tool.call` hooks see the arguments the tool will run with, after misnamed parameters are repaired (CC 2.1.292).
+- A prompt drop or setting deny whose reason is longer than 4,096 characters is no longer ignored (CC 2.1.292). Long text from plugin hooks is clipped and logged rather than refused or dropped silently (CC 2.1.290).
+- When another mod denies a `$.process.spawn` after the child ran, the call rejects saying the call ran and a plugin withheld its result (CC 2.1.290).
+
 **Managed rules still apply (CC 2.1.289).** On managed machines, a managed deny or ask rule on a nested compound shell command holds even when a user-installed mod's `tool.call` hook approves the call.
 
 **Rewriting tool input under auto mode.** A `tool.call` hook that rewrites a call's input with `next({ ...e, ... })` can leave the auto-mode classifier with no verdict, the same as a PreToolUse hook that returns `updatedInput`. See `../../hook-development/references/advanced.md`.
@@ -105,6 +122,10 @@ A mod developed outside `${CLAUDE_DEV_MODS_DIR}` loads like any other plugin wit
 
 `claude plugin validate <mod folder>` reads the manifest and the module source the way Claude Code will. It reports what the module hooks and calls, plus everything Claude Code would refuse, before any session loads it. When a state contract exists, it also checks `$.state` keys against it.
 
+- **Gating hooks (CC 2.1.290).** Each hook a mod registers at a gating site is listed with whether it has a `.catch`; under `--json` the list is `gatingHooks`.
+- **Destructured options (CC 2.1.290).** Validation and plugin loading no longer refuse a hooks module that destructures an option named like one of its top-level functions.
+- **Redeclared `$.state` variables are refused (CC 2.1.292).** A module that reads a `$.state` value through a top-level `var` that is declared again or reassigned is refused, by both `claude plugin validate` and loading.
+
 Claude Code reports failures in three places:
 
 - **Session notice** — the outcome of the hot-reload question and of the load, shown at the start of Claude's next turn.
@@ -113,7 +134,7 @@ Claude Code reports failures in three places:
 
 **Draw failures stay contained (CC 2.1.289).** A mod's `Client` that fails while drawn no longer takes down everything the mod drew around it. It fails alone and raises `ui.fault`. When a band or pane fails to draw, the line the author sees names the mod and says nothing was drawn.
 
-**`claude plugin test`.** Claude Code 2.1.288 and later also has a `claude plugin test` command; the CC 2.1.288 changelog mentions it only in a fix (it no longer reports mods as turned off remotely after reading an out-of-date saved setting). Run `claude plugin test --help` for its options.
+**`claude plugin test`.** Claude Code 2.1.288 and later also has a `claude plugin test` command (CC 2.1.288 fixed it reporting mods as turned off remotely after reading an out-of-date saved setting). Since CC 2.1.292, a failed `expect` inside a hook the test registered, or a stub answer the engine refuses, fails the test instead of passing silently. Run `claude plugin test --help` for its options.
 
 ### Limitations
 
@@ -122,7 +143,7 @@ Claude Code reports failures in three places:
 - More complex to debug than command hooks
 - Hot reload requires the user's per-session consent and is unavailable under `claude -p`
 
-**Plugin-authoring guidance ships as a built-in plugin (CC 2.1.284).** CC 2.1.269 removed the embedded plugin-development skill from Claude Code's system prompts. CC 2.1.283 bundled a "Plugin authoring" skill for mods; CC 2.1.284 moved it out of the system prompts into the built-in plugin `cc-plugin-plugin-authoring`, whose user-invocable skill extracts the running build's API declarations (`types/claude-code.d.ts`) for Claude to read. Claude still has no function-hook API knowledge until that skill loads, so an author should load it (or point Claude at this reference) before writing a hooks module.
+**Plugin-authoring guidance ships as a built-in plugin (CC 2.1.284).** CC 2.1.269 removed the embedded plugin-development skill from Claude Code's system prompts. CC 2.1.283 bundled a "Plugin authoring" skill for mods; CC 2.1.284 moved it out of the system prompts into the built-in plugin `cc-plugin-plugin-authoring`, whose user-invocable skill extracts the running build's API declarations (`types/claude-code.d.ts`) for Claude to read. Claude still has no function-hook API knowledge until that skill loads, so an author should load it (or point Claude at this reference) before writing a hooks module. Since CC 2.1.290 the skill also has Claude give the one command another person runs to install a mod, and write it in the README's install section.
 
 **Note:** This is an advanced feature. Most plugins work well with declarative `hooks.json` configuration. Consider function-hooks only when the simpler approach doesn't meet your requirements.
 
@@ -305,6 +326,10 @@ Users manage plugins through CLI commands (or the `/plugin` interactive interfac
 ```bash
 # Install from marketplace
 claude plugin install plugin-name@marketplace-name
+
+# Add the marketplace if needed, then install from it (CC 2.1.292)
+# Subject to the same policy checks as `claude plugin marketplace add`
+claude plugin install plugin-name --marketplace owner/repo
 
 # Installation scopes
 claude plugin install plugin-name@marketplace --scope user     # Personal (default)
