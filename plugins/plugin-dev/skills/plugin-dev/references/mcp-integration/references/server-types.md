@@ -363,6 +363,8 @@ Connect to MCP servers via WebSocket for real-time bidirectional communication. 
 4. **Heartbeat**: Keep-alive messages
 5. **Reconnection**: Automatic, but bounded — see [Reconnection is bounded](#reconnection-is-bounded) below
 
+**Message size limit (CC 2.1.295):** a WebSocket message over 16 MiB is not parsed and closes the connection, the same limit the other transports already had. Split large results across messages or paginate them.
+
 ### Use Cases
 
 - Real-time data streaming
@@ -401,6 +403,8 @@ Automatic reconnection applies to **remote transports only** — HTTP, SSE, and 
 Reconnection is not unlimited. Claude Code retries **5 times with exponential backoff** — waits of 1s, 2s, 4s and 8s between attempts, doubling up to a 30s cap — after which the server is marked failed and its tools stop being available for the rest of the session.
 
 > **CC 2.1.273:** When an MCP server disconnects mid-session and automatic reconnection gives up, Claude Code now notifies the user and points at `/mcp`. Before this, the give-up was silent.
+>
+> **CC 2.1.295:** In headless and SDK sessions, a remote server no longer stays disconnected after an outage longer than 15 seconds. A server that drops each connection right after it connects is no longer reconnected in a tight loop: repeated drops back off, up to 30s.
 
 Design implication for plugin authors: a plugin that bundles a remote MCP server cannot assume its tools stay reachable for the whole session. Make agents and commands that depend on those tools degrade gracefully when the tools disappear, rather than assuming a dropped connection will always heal.
 

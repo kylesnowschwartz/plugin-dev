@@ -210,6 +210,13 @@ The LLM can read the transcript file and make context-aware decisions.
 
 `ok` (boolean) is required. `reason` is optional and explains a not-ok verdict. `impossible` (boolean, meaningful only with `ok: false`) is what a Stop evaluator returns for a condition that can never be satisfied. Claude Code validates the reply against this schema and reports `Schema validation failed` for anything else, including `{"decision": ...}` shapes. Write prompts that ask for a verdict and a reason, not for a particular JSON shape.
 
+**Wording prompts as conditions (CC 2.1.294).** Before CC 2.1.294, a prompt or agent hook written as an instruction ("Block commands that delete files") could allow what it was meant to block. Stop and SubagentStop prompts written as instructions ("Carry on if the build is broken") were also judged loosely, so Claude stopped early more often. CC 2.1.294 judges both correctly. The evaluator now frames every hook as an allow-or-block decision and treats the event JSON as data, so instructions embedded in a tool input or transcript do not steer it. The agent hook prompt also asks for a reason with every result (system prompts 2.1.294). For hooks that also run on older versions, phrase the prompt as a condition with an explicit verdict:
+
+| Instead of | Write |
+| --- | --- |
+| "Block commands that delete files." | "Answer not ok if the command deletes files; otherwise answer ok." |
+| "Carry on if the build is broken." | "Answer not ok, with the failing step as the reason, if the build is broken; otherwise answer ok." |
+
 Agent hooks can also use tool access for multi-turn verification (up to 50 turns). Default timeout: 60 seconds.
 
 ## Performance Optimization
@@ -786,7 +793,7 @@ depending on which dispatcher the event uses. Which events those are, and what t
 
 PermissionRequest is the one conversation event that refuses agent hooks (CC 2.1.280). An agent hook answers ok or not ok, and a permission request needs an allow or deny decision, so the hook fails with `agent-type hooks are not supported for PermissionRequest events ... Use a command- or http-type hook instead.`
 
-Among the events that do accept them, agent hooks are most useful on decision-control events like **Stop** and **SubagentStop**. Their multi-turn latency makes them a poor fit for hot-path events like PreToolUse.
+Among the events that do accept them, agent hooks are most useful on decision-control events like **Stop** and **SubagentStop**. Their multi-turn latency makes them a poor fit for hot-path events like PreToolUse. Before CC 2.1.295, agent hook evaluations also took much longer when the session ran at `xhigh` or `max` effort.
 
 ### When to Use Agent Hooks
 
@@ -843,7 +850,8 @@ Each hook entry in a matcher group supports these fields:
   "statusMessage": "Validating...",
   "once": false,
   "async": false,
-  "asyncRewake": false
+  "asyncRewake": false,
+  "onFailure": "continue"
 }
 ```
 
@@ -876,6 +884,24 @@ When `true`, the hook runs only once per session and is then auto-removed. Usefu
 
 Display text shown in the UI while the hook is executing. Helps users understand what's happening during longer hook operations.
 
+### onFailure
+
+```json
+{
+  "type": "command",
+  "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/guard-bash.sh\"",
+  "onFailure": "block"
+}
+```
+
+Decides what a failure of the hook does (CC 2.1.295, command and HTTP hooks). A failure is a hook that could not start (a missing script or plugin directory), timed out, exited with a code other than 0 or 2, or printed JSON that is invalid or fails validation. The CC 2.1.296 binary reports an HTTP hook's non-2xx response as the same kind of non-blocking error, so `"block"` turns it into a block too.
+
+- `"continue"` (default): the failure is reported and the action goes ahead. This is how hooks behaved before CC 2.1.295, so a guard hook fails open.
+- `"block"`: the failure counts as exit code 2, so the action the event guards is blocked: a tool call, a permission request, or a prompt.
+- Ignored for async hooks and on Stop, SubagentStop, TaskCompleted, and TeammateIdle.
+
+Use `"block"` on security guards, such as a PreToolUse hook that vets Bash commands, where a broken or slow script should stop the call rather than wave it through. Keep the default for logging, formatting, and notification hooks, where a failure should not stop work. Older Claude Code versions do not have this field, so a guard that must fail closed there has to catch its own errors and exit 2.
+
 ## Event-Specific Matchers
 
 Matchers filter which registered hooks run for an occurrence of an event. Each event names one input field to match against; **which field, and which values it accepts, is documented on that event's Matchers line in `event-schemas.md`**, which covers all 33 events. This section covers only the syntax that applies once you know what an event matches on.
@@ -905,6 +931,7 @@ Different hook events support different output formats for controlling Claude's 
 ```
 
 - `permissionDecision`: `allow` (proceed), `deny` (block), `ask` (prompt user), `defer` (CC 2.1.89 — suspend the tool call rather than running it)
+- Managed-settings PreToolUse hooks that deny a call with `"continue": false`, and managed `prompt` hooks that block one, end the turn since CC 2.1.296. Before that the call was refused but the turn went on
 - `defer` is **not** a pass-through. The call does not run; it is recorded as deferred and the session can be resumed later with `-p --resume`. Deferral is unsupported for calls served to a cloud session, which fail with "deferred this call … so nothing ran". See [event-schemas.md](event-schemas.md) for the headless deferral flow
 - `ask` depends on the session being interactive: an interactive session shows `Hook PreToolUse:<Tool> requires confirmation ... [plugin:<name>]`, while headless runs (`claude -p`) have no one to prompt and treat the same `ask` as a block, surfacing the reason to the model.
 - `allow` does not skip every prompt. Since CC 2.1.292 (a security fix), a PreToolUse `allow`, like auto mode, no longer bypasses the permission prompt for file reads from network (UNC) paths
@@ -966,7 +993,7 @@ PostToolUse specifically supports additional fields for replacing tool output:
 }
 ```
 
-This allows hooks to replace what Claude sees as the tool response before processing. `updatedToolOutput` (CC 2.1.121) works for any tool; the older `updatedMCPToolOutput` applies to MCP tools only. See `event-schemas.md` for the authoritative per-event schemas.
+This allows hooks to replace what Claude sees as the tool response before processing. `updatedToolOutput` (CC 2.1.121) works for any tool; the older `updatedMCPToolOutput` applies to MCP tools only. Before CC 2.1.296, PostToolUse hooks in managed settings did not apply `updatedMCPToolOutput` in some sessions. See `event-schemas.md` for the authoritative per-event schemas.
 
 ### PostToolUseFailure Decision Control
 
@@ -1093,6 +1120,9 @@ Command hooks can run asynchronously in the background without blocking the main
 - Response fields (`decision`, `hookSpecificOutput`) have no effect
 - Useful for logging, metrics collection, and fire-and-forget notifications
 - Uses the same `timeout` field (default: 600 seconds)
+- `onFailure` is ignored, so an async hook cannot fail closed
+
+**Async output fixes (CC 2.1.295):** an async hook's JSON output printed over several lines used to be ignored, and an async SessionStart hook's unchanged context was added to the conversation again on every resume. Both are fixed. On older versions, print an async hook's JSON on one line (`jq -c`).
 
 ### asyncRewake
 

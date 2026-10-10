@@ -59,6 +59,8 @@ All fields are optional. Omitted fields use defaults.
 | 2     | Blocking error. stderr content fed to Claude or user     |
 | Other | Non-blocking error. Shown in verbose/debug mode only     |
 
+**`onFailure: "block"` (CC 2.1.295):** on a command or HTTP hook, this setting makes an "Other" exit code, a timeout, a failure to start, or invalid JSON output count as exit code 2, so the guarded action is blocked. It is ignored for async hooks and on Stop, SubagentStop, TaskCompleted, and TeammateIdle. See `advanced.md` (onFailure).
+
 **SessionStart/Setup/SubagentStart stderr fix (CC 2.1.199):** These hooks now properly show stderr in the transcript when exiting with code 2. Previously, stderr was silently hidden for these specific hooks, making debugging difficult. Error messages now appear correctly in the transcript.
 
 ---
@@ -109,7 +111,9 @@ Note: `permission_mode` is not present on SessionStart.
 - `reloadSkills` (CC 2.1.152): When `true`, triggers skill directory re-scanning. Useful when a hook installs or updates skills at session start.
 - `sessionTitle` (CC 2.1.152): Sets the session title. Only applies when `source` is `"startup"` or `"resume"` — ignored on `"clear"`, `"compact"`, and `"fork"`.
 
-**Special behavior:** The `CLAUDE_ENV_FILE` environment variable points to a file where you can write `export VAR=value` lines. These persist as environment variables for subsequent Bash tool calls in the session.
+**Special behavior:** The `CLAUDE_ENV_FILE` environment variable points to a file where you can write `export VAR=value` lines. These persist as environment variables for subsequent Bash tool calls in the session. Since CC 2.1.295 they also reach the Bash tool after an in-app `/resume` or `/branch`. Since CC 2.1.296, PowerShell commands see them too when the file holds only plain assignments.
+
+**Fixes for SessionStart authors (CC 2.1.295-2.1.296):** an async SessionStart hook's unchanged context is no longer added to the conversation again on every resume (CC 2.1.295). In headless sessions, a late-loading plugin's SessionStart output no longer reaches the new conversation after `/clear`, and a plugin loaded after the session started no longer has its SessionStart hooks skipped because a different plugin with the same name, or another spelling of it, already ran (CC 2.1.296). A prompt sent while SessionStart hooks were still running no longer vanishes when `←` moves the session to the background (CC 2.1.296).
 
 **Matchers:** `startup`, `resume`, `clear`, `compact`, `fork`
 **Hook types:** Command, MCP tool — HTTP hooks are skipped for this event, and prompt and agent hooks have no conversation context to run in. An `mcp_tool` hook here runs only when MCP servers are already available: at launch, including `--continue` and `--resume`, they are not, and the hook is skipped with `no MCP client context`; on `source` `clear` or `compact` they are, and it runs.
@@ -364,6 +368,8 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 
 **Fails closed on matching errors (CC 2.1.288).** If matching the hook against a call fails, or the tool's input cannot be serialized to JSON, the call is blocked. Before CC 2.1.288 the hook was skipped and the call went ahead. The same applies to PermissionRequest.
 
+**Managed deny ends the turn (CC 2.1.296).** A PreToolUse hook in managed settings that denies a call with `"continue": false`, or a managed `prompt` hook that blocks one, now ends the turn as well as refusing the call. Before CC 2.1.296 the call was refused but the turn went on.
+
 **Matchers:** Tool names. Supports regex: `"Write|Edit"`, `"mcp__.*__delete.*"`
 **Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
@@ -519,7 +525,7 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 ```
 
 - `updatedToolOutput`: Replace tool output for **any** tool (CC 2.1.121). Use this for general tool output modification.
-- `updatedMCPToolOutput`: Replace tool output for **MCP tools only** (legacy, still works). Prefer `updatedToolOutput` for new hooks.
+- `updatedMCPToolOutput`: Replace tool output for **MCP tools only** (legacy, still works). Prefer `updatedToolOutput` for new hooks. Before CC 2.1.296, PostToolUse hooks in managed settings did not apply it in some sessions.
 
 **Continue on block (CC 2.1.139):** PostToolUse hooks support a `continueOnBlock` option on the hook entry. When set and the hook returns `decision: "block"`, the rejection reason is fed back to Claude as context instead of stopping execution entirely. This lets the hook provide corrective feedback while letting Claude continue working.
 

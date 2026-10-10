@@ -88,7 +88,7 @@ Only `name` and `description` are required. Every optional field below is docume
 | `disallowed-tools` | No | Denylist tools to remove from the pool (CC 2.1.152) |
 | `context` | No | `fork` runs the skill in a subagent, preserving main context |
 | `agent` | No | Agent type handling the fork (`Explore`, `Plan`, `general-purpose`, custom); requires `context: fork` |
-| `skills` | No | Load other same-plugin skills into the fork; requires `context: fork` |
+| `skills` | No | Load other same-plugin skills into the fork; requires `context: fork`. Subagents preload at most 32 listed skills (CC 2.1.295) |
 | `user-invocable` | No | `false` hides from the `/` menu (still auto-discoverable + Skill-tool callable) |
 | `disable-model-invocation` | No | `true` blocks programmatic Skill-tool invocation (user-only) |
 | `model` | No | Override model: `sonnet`, `opus`, `haiku`, `inherit` (default), or full ID |

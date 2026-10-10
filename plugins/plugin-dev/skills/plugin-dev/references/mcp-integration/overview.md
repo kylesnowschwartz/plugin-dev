@@ -260,6 +260,8 @@ URL mode is still unavailable on protocol versions older than 2025-11-25, so a s
 
 Local (stdio) MCP server connections negotiate protocol version 2026-07-28 by default on every install, including Bedrock, Vertex, and Foundry. Setting `MCP_PROTOCOL_NEGOTIATION=legacy` opts out. A stdio server that ignores the newer protocol check is remembered after one slow connect, and for the next 7 days Claude Code connects to it the older way without the wait. Test a plugin's stdio server against 2026-07-28, and answer the version check promptly so users do not pay the slow first connect.
 
+Since CC 2.1.295, claude.ai connectors also negotiate 2026-07-28 by default on installs that fetch no flags, and `MCP_PROTOCOL_NEGOTIATION=legacy` opts out there too.
+
 ### Bundled `.mcpb` Servers (CC 2.1.285)
 
 A plugin can bundle an MCP server packaged as an `.mcpb` file, and that server can declare its own `user_config`. Since CC 2.1.285, `claude plugin install --config <server>.<key>=<value>` sets one of those settings at install time, so the server starts without the user visiting `/plugin` → Configure:

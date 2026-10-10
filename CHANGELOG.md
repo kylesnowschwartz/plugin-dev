@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.51.0] - 2026-10-10
+
+Sync with Claude Code 2.1.293-2.1.296. This release covers eighteen Must Update items (one promoted by Stage 2, and seven missed changelog bullets folded into existing items by Stage 2) and one May Update item. The `doc-drift-auditor` sweep found no contradictions. `scripts/check-doc-drift.sh` was clean before and after, and the `docs/claude-code-facts.json` diff was `claude_code_version`-only.
+
+### Added
+
+- **agent-development**: `autoCompactWindow` agent frontmatter and `--agents` field, an integer token count that only lowers the window a subagent inherits and has no effect on a main `--agent` session; type and 100,000-1,000,000 range read from the 2.1.296 binary (CC 2.1.296)
+- **hook-development**: `onFailure` for command and HTTP hooks; `"block"` makes a hook that cannot start, times out, exits with an unexpected code, or prints invalid JSON block the action as exit code 2 would, and it is ignored for async hooks and on Stop, SubagentStop, TaskCompleted, and TeammateIdle (CC 2.1.295)
+- **agent-development**: `CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL` runs every workflow agent on one model (CC 2.1.296)
+- **plugin-structure**: `subagentStatusLine` per-subagent status line, with `agentType` in its payload (CC 2.1.293)
+- **plugin-structure**: mod version history for CC 2.1.293, 2.1.295, and 2.1.296 (`isDeferred` on `$.tool.register`, `mock.session`, `$.ui.notify`, `Button` children, and the guard, reload, and `config.set` fixes)
+- **agent-development**: `claude --debug` names unrecognized frontmatter fields in custom agent files (CC 2.1.296)
+- **hook-development**: wording guidance for instruction-style `prompt` and `agent` hooks, which CC 2.1.294 now judges correctly
+- **marketplace-structure / plugin-structure**: `claude plugin validate` README install-line advice (CC 2.1.295); `marketplace add` refusals for uninstallable and `constructor`-like names (CC 2.1.295-2.1.296); settings-file warnings, submodule fetching, the Errors tab confirmation, and the Windows HTTPS clone retry
+- **plugin-settings / plugin-structure**: avoid `constructor` and `prototype` as `userConfig` option keys (CC 2.1.295 options, CC 2.1.296 secrets)
+
+### Changed
+
+- **mcp-integration**: the MCP tool description and server instruction cap is 4,096 characters (CC 2.1.296), and descriptions loaded through tool search are cut at 16,384 (CC 2.1.295); the official docs still say 2,048
+- **agent-development / skill-development**: `haiku` resolves to Claude Haiku 5.5 on the Anthropic API (CC 2.1.293); the 2.1.296 binary leaves Haiku 5.5 out of the task-tracking tool set, so `model: haiku` agents there lose TaskCreate and TodoWrite
+- **agent-development / skill-development**: subagents preload at most 32 skills from `skills`, each once (CC 2.1.295)
+- **mcp-integration**: WebSocket messages over 16 MiB close the connection (CC 2.1.295); claude.ai connectors negotiate protocol 2026-07-28 by default (CC 2.1.295); runtime fixes for headless reconnect backoff, pagination cursors, file extensions, switched-off servers, Windows stdio shutdown, and the HTTP memory leak (CC 2.1.293-2.1.296)
+- **hook-development**: managed PreToolUse `"continue": false` denials and managed prompt-hook blocks end the turn (CC 2.1.296); managed PostToolUse `updatedMCPToolOutput` applies (CC 2.1.296); `CLAUDE_ENV_FILE` reaches Bash after `/resume` and `/branch` (CC 2.1.295) and PowerShell (CC 2.1.296); async hook multi-line JSON and SessionStart resume fixes (CC 2.1.295); `--debug` hook timing (CC 2.1.296); `FORCE_COLOR=3` in background sessions (CC 2.1.295); same-name plugins leaving hooks out (CC 2.1.296)
+- **agent-development**: `--tools` and `--restricted` cover late-registering built-in tools (CC 2.1.295), and per-agent tool lists are no longer described as session-wide (CC 2.1.293)
+- **skill-development**: `allowed-tools` and `effort` dropped in `-p` runs, and forked skills from Workflow subagents returning to the main conversation, both fixed (CC 2.1.295); claude.ai-synced skill fixes (CC 2.1.293, 2.1.296); `claude plugin eval` Docker Desktop fix (CC 2.1.293)
+- **plugin-structure / plugin-settings**: claude.ai-synced plugin dependency and hook fixes (CC 2.1.295-2.1.296), and the tampered server-managed settings cache fix (CC 2.1.295)
+
 ## [0.50.1] - 2026-10-10
 
 ### Changed
@@ -1170,7 +1197,8 @@ Corrects references that had drifted from Claude Code behaviour, reported in [#6
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.50.1...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.51.0...HEAD
+[0.51.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.50.1...v0.51.0
 [0.50.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.50.0...v0.50.1
 [0.50.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.49.0...v0.50.0
 [0.49.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.48.0...v0.49.0

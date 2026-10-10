@@ -75,6 +75,30 @@ The `plugin-authoring` skill describes only the build it ships with. This histor
   - A prompt drop or setting deny reason longer than 4,096 characters is honored.
   - A module that reads a `$.state` value through a top-level `var` that is declared again or reassigned is refused.
   - A failed `expect` inside a test's hook, or a stub answer the engine refuses, fails the test.
+- **CC 2.1.293:**
+  - `$.tool.register` takes `isDeferred`; `false` lists the tool's schema in the prompt from the start instead of behind tool search.
+  - `claude plugin test` works for mods that call `$.session.append`, and tests can read the appended rows back with the new `mock.session`.
+  - A mod's hooks on `classic.*` events are no longer skipped while the plugin hooks worker restarts, which had left settings hooks to answer without them.
+- **CC 2.1.295:**
+  - `$.ui.notify` raises a native notification through the user's own notification setting and says which channel sent it.
+  - A mod's `Button` takes children, strings and `Text`, so a list row can be one pressable with a chip or a dim detail inside.
+  - A deeply nested tool input is no longer handed to a mod's hook cut short with no error, so a guard sees all of the content it checks.
+  - Calls a mod makes while it reloads during a plugin hooks worker restart are refused, instead of getting past another mod's guard hook that has a `.catch`.
+  - When a mod denies a tool call after the tool ran, Claude and the user read that the tool ran and a plugin withheld its result.
+  - `/model`, `/fast`, `/output-style`, and the auto-update channel in `/config` ask a plugin's `config.set` hook before saving.
+  - A prompt that a `prompt.submit` hook rewrote or dropped is no longer saved to prompt history as typed.
+  - Cloud sessions no longer hang when a `session.receive` hook asks for permission before passing a message on.
+  - `claude plugin test` fails a `session.append` hook that removes tool call, tool result, or thinking blocks that a real session keeps.
+  - Toasts from the organization's mods show ahead of other mods' toasts.
+  - A plugin that adds very large interfaces no longer gets another plugin unloaded when the plugin hooks worker stalls.
+  - Generated type files are written only where a mod is being developed, not into a `--plugin-dir` plugin's folder in `-p` and SDK sessions.
+  - A hooks module that nests code thousands of levels deep loads and validates instead of failing with a bare stack-overflow message. When a module is refused over a rebound top-level `var`, `claude plugin validate` and plugin loading name the line that rebinds it, the cause, and a fix.
+  - The built-in `plugin-authoring` skill no longer tells a session with no terminal to run terminal commands, and explains sharing a mod only when asked.
+- **CC 2.1.296:**
+  - A plugin's served `$` methods run in the calling agent's working directory and respect the turn their calling hook holds, instead of using the main session's directory.
+  - `$.agent.register` is refused from a mod's hook that is still running after the mod was reloaded or removed.
+  - `$.http.fetch` accepts a `HEAD` request whose response declares a `Content-Length` over the 4 MiB body limit.
+  - Esc or an interrupt during a mod's `prompt.submit` hook (or a `UserPromptSubmit` hook) no longer ends headless sessions, clears the typed prompt, or lets the unchecked prompt through.
 
 ## Keybindings Plugin Context
 
@@ -147,6 +171,10 @@ echo "[$model] \$${cost}"
 ```
 
 **Note:** Users must manually configure their status line to use the plugin's script. There is no auto-configuration mechanism.
+
+### Per-Subagent Status Line
+
+A separate `subagentStatusLine` setting (same `{"type": "command", "command": "..."}` shape) draws a custom status line for each subagent row in the agent panel. The script receives that row's context as JSON on stdin. Since CC 2.1.293 the payload includes `agentType`, so a script can tell custom subagent types apart, for example to label rows for a plugin's own agents differently from built-in ones. As with `statusLine`, the user configures it; a plugin can ship the script and document the setting.
 
 ## Claude Code as MCP Server
 
@@ -351,6 +379,14 @@ claude plugin marketplace update marketplace-name
 claude plugin marketplace remove marketplace-name
 ```
 
+**CLI behavior changes (CC 2.1.295-2.1.296):**
+
+- `claude plugin install`, `enable`, `disable`, and `marketplace add` warn when the settings file they write to does not load (CC 2.1.295)
+- `claude plugin marketplace add` refuses a marketplace whose name no plugin can be installed under, instead of reporting success (CC 2.1.295). It also refuses names such as `constructor` clearly; before CC 2.1.296 those failed `add`, `marketplace update`, and `plugin install` with an internal error
+- A marketplace repository with large git submodules adds and refreshes, because only the submodules that hold plugin files are fetched (CC 2.1.295)
+- On Windows machines with no GitHub SSH key, installing from a GitHub `owner/repo` source retries the clone over HTTPS (CC 2.1.296)
+- `/plugin`'s Errors tab asks before removing a marketplace that failed to load and uninstalling its plugins (CC 2.1.295)
+
 ### Plugin Developer Note
 
 Document the exact install command in your README:
@@ -401,6 +437,8 @@ Organizations can use managed settings to:
 - **Block plugins:** Prevent specific plugins from being installed
 
 **Headless and Desktop coverage (CC 2.1.269):** Plugins enabled through managed settings previously failed to load in headless sessions and on Claude Desktop. They now load in both, from the next session onward — Desktop picks this up once it bundles a CLI at or above CC 2.1.269. A plugin distributed by enterprise policy can therefore be relied on in CI, not just in interactive terminal sessions.
+
+**Tampered settings cache (CC 2.1.295):** a tampered cache of server-managed settings could make a person's own plugin count as organization-managed. Since CC 2.1.295 it no longer does, so organization-managed status comes only from the organization's real settings.
 
 ### Enterprise Hook and Permission Control
 
@@ -553,6 +591,15 @@ Cached content refreshes when:
 ### Version Constraint Auto-Update (CC 2.1.119)
 
 When a plugin depends on another plugin with a version constraint (e.g., `>=1.0.0`), the dependent plugin now auto-updates to the highest satisfying git tag rather than being locked to the original installation version. This ensures plugins stay up-to-date within compatible version ranges.
+
+### claude.ai-Synced Plugins (CC 2.1.295-2.1.296)
+
+Fixes for plugins synced from claude.ai:
+
+- A synced plugin is no longer disabled when the marketplace dependency it declares was also synced from claude.ai (CC 2.1.296)
+- Synced plugin hooks no longer fail with "Plugin directory does not exist" in long-running sessions after another session synced a plugin update (CC 2.1.295)
+
+A plugin distributed this way that declares a marketplace dependency should state the minimum Claude Code version, since older versions can leave it disabled.
 
 ### Plugin Auto-Rename with Marketplace Mapping (CC 2.1.193)
 

@@ -342,6 +342,8 @@ claude plugin install plugin-name --marketplace owner/repo
 2. Check `.claude-plugin/marketplace.json` exists at correct path
 3. Validate JSON syntax
 4. Confirm access permissions (for private repos)
+5. If the repository has large git submodules, upgrade to CC 2.1.295 or later. Earlier versions failed to add or refresh such a marketplace; now only the submodules that hold plugin files are fetched
+6. If the CLI warns that the settings file it writes to does not load (CC 2.1.295), fix that settings file first, because the marketplace or plugin change is recorded there
 
 ### Plugin Installation Fails
 
@@ -349,6 +351,7 @@ claude plugin install plugin-name --marketplace owner/repo
 2. Check plugin directory contains required files
 3. For GitHub sources, ensure repository is public or access is available
 4. Test plugin sources manually by cloning
+5. On Windows machines with no GitHub SSH key, GitHub `owner/repo` sources failed to install before CC 2.1.296, which retries the clone over HTTPS
 
 ### Validation Commands
 

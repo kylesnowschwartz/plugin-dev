@@ -68,34 +68,36 @@ The full frontmatter template (all fields, system-prompt scaffold) is shown in `
 
 ## Frontmatter Fields
 
-| Field           | Required | Format                                        | Example                  |
-| --------------- | -------- | --------------------------------------------- | ------------------------ |
-| name            | Yes      | lowercase-hyphens                             | code-reviewer            |
-| description     | Yes      | Text + examples                               | Use when... <example>... |
-| model           | Yes      | inherit/sonnet/opus/haiku/fable or a model ID | inherit                  |
-| color           | Yes      | Color name                                    | blue                     |
-| tools           | No       | Comma-separated tool names                    | Read, Grep               |
-| disallowedTools | No       | Comma-separated tool names                    | Bash, Write              |
-| skills          | No       | Comma-separated skill names                   | testing, security        |
-| permissionMode  | No       | Permission mode string                        | acceptEdits              |
-| maxTurns        | No       | Integer                                       | 50                       |
-| memory          | No       | Scope string                                  | user                     |
-| mcpServers      | No       | Server name map                               | slack:                   |
-| hooks           | No       | Hook event map                                | PreToolUse: [...]        |
-| initialPrompt   | No       | String                                        | "Run health check..."    |
-| omitClaudeMd    | No       | Boolean                                       | true                     |
+| Field             | Required | Format                                        | Example                  |
+| ----------------- | -------- | --------------------------------------------- | ------------------------ |
+| name              | Yes      | lowercase-hyphens                             | code-reviewer            |
+| description       | Yes      | Text + examples                               | Use when... <example>... |
+| model             | Yes      | inherit/sonnet/opus/haiku/fable or a model ID | inherit                  |
+| color             | Yes      | Color name                                    | blue                     |
+| tools             | No       | Comma-separated tool names                    | Read, Grep               |
+| disallowedTools   | No       | Comma-separated tool names                    | Bash, Write              |
+| skills            | No       | Comma-separated skill names                   | testing, security        |
+| permissionMode    | No       | Permission mode string                        | acceptEdits              |
+| maxTurns          | No       | Integer                                       | 50                       |
+| memory            | No       | Scope string                                  | user                     |
+| mcpServers        | No       | Server name map                               | slack:                   |
+| hooks             | No       | Hook event map                                | PreToolUse: [...]        |
+| initialPrompt     | No       | String                                        | "Run health check..."    |
+| omitClaudeMd      | No       | Boolean                                       | true                     |
+| autoCompactWindow | No       | Integer (tokens)                              | 150000                   |
 
 **Field notes:**
 
 - **name** — lowercase letters, numbers, hyphens only; 3-50 chars (plugin-dev convention, enforced by `validate-agent.sh`); must start and end with alphanumeric. Claude Code's own hard limit is 256 characters (CC 2.1.292): a longer agent name is rejected. **CC 2.1.216 (breaking):** Agent names cannot contain colons (`:`) — this is now a validation error. Colons are reserved for scoped naming conventions (e.g., `apps/web:reviewer`). See Validation Rules below.
 - **description** — the most critical field. Must state triggering conditions ("Use this agent when...") plus 2-4 `<example>` blocks (Context, user, assistant, `<commentary>`). Anatomy, example types, templates, and debugging live in `references/triggering-examples.md`.
-- **model** — `inherit` (recommended default), `sonnet`, `opus`, `haiku`, or `fable`, or a full model ID such as `claude-opus-5-5`. Use `haiku` for fast/cost-sensitive work, `opus` for complex reasoning. **As of CC 2.1.280, `opus` resolves to Claude Opus 5.5 (`claude-opus-5-5`, 1M-token context, $4/$20 per Mtok with $0.20/Mtok cache reads), the default Opus model.** CC 2.1.219 made Claude Opus 5 the `opus` target and the default model. Omitting `thinking` in API calls runs adaptive thinking on Opus 5; the API rejects an explicit request to disable thinking unless the effort is `high` (a `thinking: {type: "disabled"}` request at `xhigh` or `max` effort returns a 400 error). Separately, CC 2.1.219 adds `xhigh` as an effort value in the Claude Code UI/settings. If your agents rely on specific model behavior, note that `opus` now resolves to Opus 5.5 and `sonnet` resolves to Sonnet 5. Pin a full model ID when an agent must stay on one model across releases.
+- **model** — `inherit` (recommended default), `sonnet`, `opus`, `haiku`, or `fable`, or a full model ID such as `claude-opus-5-5`. Use `haiku` for fast/cost-sensitive work, `opus` for complex reasoning. **As of CC 2.1.280, `opus` resolves to Claude Opus 5.5 (`claude-opus-5-5`, 1M-token context, $4/$20 per Mtok with $0.20/Mtok cache reads), the default Opus model.** CC 2.1.219 made Claude Opus 5 the `opus` target and the default model. Omitting `thinking` in API calls runs adaptive thinking on Opus 5; the API rejects an explicit request to disable thinking unless the effort is `high` (a `thinking: {type: "disabled"}` request at `xhigh` or `max` effort returns a 400 error). Separately, CC 2.1.219 adds `xhigh` as an effort value in the Claude Code UI/settings. If your agents rely on specific model behavior, note that `opus` now resolves to Opus 5.5 and `sonnet` resolves to Sonnet 5. Pin a full model ID when an agent must stay on one model across releases. **Since CC 2.1.293, `haiku` resolves to Claude Haiku 5.5 (`claude-haiku-5-5`, 1M-token context) on the Anthropic API**, where it is the default Haiku model. A `model: haiku` agent there loses the task-tracking tools that Haiku 4.5 had (see `references/advanced-agent-fields.md`, Designing Team Lead Agents).
 - **color** — `blue`, `cyan`, `green`, `yellow`, `magenta`, `red`. Choose distinct colors per plugin; color→purpose conventions are in `examples/complete-agent-examples.md`.
 - **tools** — allowlist of comma-separated tool names; omit for full access. Follow least privilege. Common sets: read-only analysis `Read, Grep, Glob`; code generation `Read, Write, Grep`; testing `Read, Bash, Grep`; background monitoring `Monitor`. Version-specific behaviors (multiple `Agent(...)` types, `Monitor`, `Agent(type)` deny rules and the `Task(...)` alias, Config-tool removal, Bash guidance) are in `references/advanced-agent-fields.md`.
 - **disallowedTools** — denylist complement to `tools`; block specific tools while allowing the rest. Prefer `tools` (allowlist) for tighter security; use one or the other (specifying both is undefined).
-- **skills** — load specific plugin skills into the agent's context; the skill's SKILL.md content loads in. Skills must be from the same plugin.
+- **skills** — load specific plugin skills into the agent's context; the skill's SKILL.md content loads in. Skills must be from the same plugin. Since CC 2.1.295 a subagent preloads at most 32 skills from this list, each one once. A subagent that has the Skill tool can still invoke the rest, so keep the preload list to the skills the agent needs on every run.
 - **permissionMode** — `default`, `acceptEdits`, `dontAsk`, `bypassPermissions`, `plan`, `auto`. When unset, the agent inherits the session's permission mode, which is usually `auto` since CC 2.1.284. `permissionMode: auto` falls back instead of entering auto mode when auto mode is unavailable (CC 2.1.292). Use restrictive modes for untrusted agents; `bypassPermissions` only for fully trusted ones. Full mode details and permission rule syntax are in `references/permission-modes-rules.md`.
 - **omitClaudeMd** (CC 2.1.271) — `true` runs the agent without the user, project, and local CLAUDE.md instruction files; managed policy files still load. Takes effect **only when the agent is spawned as a subagent** — it has no effect on a main session started with `--agent`. Use it for agents that take everything they need from the delegation prompt. Settable in the `--agents` JSON payload too. Full semantics and the silent-invalid-value footgun are in `references/advanced-agent-fields.md`.
+- **autoCompactWindow** (CC 2.1.296) — the token count at which the agent compacts its own conversation when it runs as a subagent. It can only lower the window the subagent would otherwise inherit, and it has no effect on a main session started with `--agent`. Settable in the `--agents` JSON payload too. Details in `references/advanced-agent-fields.md`.
 - **maxTurns, memory, mcpServers, hooks, initialPrompt** — turn limits, persistent cross-session memory, agent-scoped MCP servers, lifecycle hooks, and auto-submitted first prompts. All documented in `references/advanced-agent-fields.md`.
 
 ### Fields NOT Available for Agents
@@ -195,6 +197,8 @@ claude --agents "code-reviewer,test-generator"
 
 `--agents` also accepts agent definitions as inline JSON and, with `-p`, the path to a JSON file holding them (CC 2.1.281). An empty `prompt` is allowed in those definitions since CC 2.1.281.
 
+**Catch frontmatter typos with `--debug` (CC 2.1.296):** Claude Code ignores frontmatter fields it does not recognize. `claude --debug` now names each unrecognized field in a custom agent file and hints at the likely intended field, so a misspelled `permissionMode` or `disallowedTools` shows up in the debug log instead of silently doing nothing.
+
 **Audit the prompt (CC 2.1.283):** `/doctor prompt-audit` (also `/checkup prompt-audit`) reviews loaded agents, skills, commands, and CLAUDE.md files for prompting patterns written for older models. See `../skill-development/references/skill-loading-and-runtime.md` (Prompt Audit).
 
 **Test the system prompt:** give the agent a typical task, confirm it follows the process steps, verify the output format, test edge cases, and confirm quality standards are met.
@@ -236,9 +240,9 @@ Agent teams enable multi-agent coordination where a team lead spawns and manages
 | `references/system-prompt-design.md` | Writing an agent's system prompt: the four patterns (Analysis, Generation, Validation, Orchestration), templates, writing style, common pitfalls, length guidelines, upstream prompt evolution |
 | `references/triggering-examples.md` | Writing or debugging `description` `<example>` blocks: anatomy, four example types, multiple-examples strategy, template library, triggering-issue diagnosis |
 | `references/agent-creation-system-prompt.md` | Using AI-assisted generation: the exact system prompt Claude Code uses, plus customization tips |
-| `references/advanced-agent-fields.md` | Configuring maxTurns, memory, mcpServers, hooks, or initialPrompt; tools/model/mcpServers version behaviors; autonomous, background, or isolated execution; CLI/testing behaviors; agent teams |
+| `references/advanced-agent-fields.md` | Configuring maxTurns, memory, mcpServers, hooks, initialPrompt, omitClaudeMd, or autoCompactWindow; tools/model/mcpServers version behaviors; autonomous, background, or isolated execution; CLI/testing behaviors; agent teams |
 | `references/permission-modes-rules.md` | Choosing a `permissionMode` or writing permission rules: all modes, specifier syntax, evaluation order, blocked categories, plugin-developer guidance |
-| `references/orchestration-and-tools.md` | Designing agents that spawn or coordinate others: Agent tool notes, sub-agent nesting, SendUserFile, SendMessage "main", Workflow tool limits/effort, browser file upload |
+| `references/orchestration-and-tools.md` | Designing agents that spawn or coordinate others: Agent tool notes, sub-agent nesting, SendUserFile, SendMessage "main", Workflow tool limits/effort/model override, browser file upload |
 | `examples/agent-creation-prompt.md` | Step-by-step AI-assisted generation walkthrough with worked request→JSON→file examples |
 | `examples/complete-agent-examples.md` | Copy a full, production-ready agent (code review, test generator, docs, security) or the complete frontmatter template; color/tool-set conventions |
 

@@ -249,6 +249,12 @@ workflow.agent({
 - Use `'low'` for stages that don't require deep reasoning
 - Reserve `'high'`/`'xhigh'`/`'max'` for critical validation steps
 
+## One Model for Workflow Agents (CC 2.1.296)
+
+`CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL` runs every agent the Workflow tool spawns on one model. It overrides the model each workflow agent would otherwise use. Subagents spawned outside a workflow keep their own models.
+
+**Design guidance:** This is a user-side environment variable, so a plugin cannot assume a workflow stage runs on the model its agent definition names. When a stage depends on a particular model's capability, say so in the plugin's documentation so users who set the variable know what they trade away.
+
 ## Agent Tool Effort Parameter (CC 2.1.292)
 
 The Agent tool now takes an `effort` parameter, so Claude runs a subagent at the effort level the caller asks for. It is the per-spawn counterpart of an agent definition's `effort` frontmatter field, in the same way the call-level `model` parameter pairs with the `model` field: the definition sets the agent's usual level, and the call can ask for a different one for a single run. The Workflow tool's `agent()` option above does the same inside workflows.

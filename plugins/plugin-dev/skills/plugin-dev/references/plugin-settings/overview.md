@@ -545,6 +545,10 @@ Settings follow precedence: Managed > CLI flags > Local (`.claude/settings.local
 
 **Unaffected:** Plugin `.local.md` state files (the pattern documented above) are not affected by this change — they are read directly by plugin hooks and are not part of the `pluginConfigs` system.
 
+### Option Keys Named `constructor` or `prototype` (CC 2.1.295-2.1.296)
+
+Avoid `constructor` and `prototype` as `userConfig` option keys. Before CC 2.1.295, an option with either name always read as its default, and editing it never reloaded the plugin. Before CC 2.1.296, a secret (a `sensitive: true` option) with either name was deleted by the next save of that plugin's options. Both are fixed, but users on older versions still hit them, and a descriptive key such as `API_TOKEN` costs nothing. Option key rules: `../plugin-structure/references/manifest-reference.md` (userConfig).
+
 ### syncClaudeAiPlugins Setting (CC 2.1.246)
 
 The `syncClaudeAiPlugins` setting controls whether plugins are synchronized from Claude.ai:
@@ -574,6 +578,8 @@ The `syncClaudeAiPlugins` setting controls whether plugins are synchronized from
 - Document alternative installation methods if targeting environments where sync may be disabled
 
 > **CC 2.1.273:** Signing in with a Claude account now also requests access to your claude.ai plugins. This is an OAuth scope change on the sync path; it changes nothing a plugin author authors.
+>
+> **CC 2.1.295-2.1.296:** synced plugins are no longer disabled when the marketplace dependency they declare was also synced, and their hooks no longer fail with "Plugin directory does not exist" after another session syncs an update. See `../plugin-structure/references/advanced-topics.md` (claude.ai-Synced Plugins).
 
 ### syncClaudeAiSkills Setting
 

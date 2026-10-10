@@ -25,6 +25,8 @@ Five hook types are available. Not all events support all types (see the [event 
 
 **Prompt and agent hooks do not return the standard hook output JSON.** Their model's reply must be `{"ok": true}` or `{"ok": false, "reason": "..."}`, and a Stop evaluator may add `"impossible": true` (`references/event-schemas.md`, Stop). A reply of any other shape, such as `{"decision": "block"}`, fails with `Schema validation failed`. Claude Code, not the hook, turns the verdict into the event's outcome. The standard output below, with `hookSpecificOutput` for event-specific behavior (PreToolUse, PermissionRequest, Elicitation), is what command, HTTP, and `mcp_tool` hooks return.
 
+**Instruction-style prompts are judged correctly since CC 2.1.294.** Before CC 2.1.294, a `prompt` or `agent` hook written as an instruction, such as "Block commands that delete files", could allow the very calls it was meant to block, and a Stop or SubagentStop prompt such as "Carry on if the build is broken" was more likely to let Claude stop early. The evaluator is now framed around allow and block, treats the event JSON as data rather than instructions, and asks an agent hook for a reason with every result (system prompts 2.1.294). For hooks that must also work on older versions, state the condition and the verdict outright: "Answer not ok if the command deletes files; otherwise answer ok." See `references/advanced.md` (Context-Aware Prompt Hooks).
+
 ## Configuration Formats
 
 **Plugin hooks** in `hooks/hooks.json` use a required `hooks` wrapper: `{"description": "...(optional)", "hooks": {"PreToolUse": [...], "Stop": [...]}}`. A top-level `$schema` key, for editor validation, is ignored at load. Before CC 2.1.274 it raised an "unknown key" notice.
@@ -35,7 +37,7 @@ Each event holds matcher groups; each group holds hook entries. An entry has a `
 
 - `args`: exec-form spawning (CC 2.1.139) — the command runs without shell interpolation and `command` becomes the executable path.
 - `if`: conditional execution using permission rule syntax, e.g. `Bash(git *)` fires only for git commands (CC 2.1.85). Combines with `matcher` (matcher selects the event, `if` filters within it). See `references/advanced.md` for compound-command handling (CC 2.1.88) and tool-parameter matching like `Agent(model:opus)` (CC 2.1.178).
-- `timeout` (defaults: command/http/mcp_tool 600s, prompt 30s, agent 60s; UserPromptSubmit and MessageDisplay lower the 600s types to 30s/10s), `statusMessage` (UI text while running), `once` (run once per session), `async` (fire-and-forget, command hooks only), `asyncRewake` (runs in the background like `async` and wakes Claude when the hook exits 2). Full entry schema: `references/advanced.md` (Handler Configuration Fields).
+- `timeout` (defaults: command/http/mcp_tool 600s, prompt 30s, agent 60s; UserPromptSubmit and MessageDisplay lower the 600s types to 30s/10s), `statusMessage` (UI text while running), `once` (run once per session), `async` (fire-and-forget, command hooks only), `asyncRewake` (runs in the background like `async` and wakes Claude when the hook exits 2), `onFailure` (command and HTTP hooks, CC 2.1.295: `"continue"`, the default, lets the action through when the hook fails; `"block"` fails closed). Full entry schema: `references/advanced.md` (Handler Configuration Fields).
 
 **Scoped hooks in frontmatter:** Skills and agents can declare `hooks:` in YAML frontmatter — all 33 events register, but they are lifecycle-bound to run only while the skill/agent is active, so in practice `PreToolUse`, `PostToolUse`, and `Stop` are the ones that fire. **Caveat:** `${CLAUDE_PLUGIN_ROOT}` resolves only under plugin discovery; agents loaded via the `--agent` CLI flag see it unbound — use `${CLAUDE_PROJECT_DIR}` with a project-relative path. Full diagnostic and related issues: `references/advanced.md` (Scoped Hooks section).
 
@@ -58,7 +60,7 @@ Standard output (all fields optional):
 
 All fields optional. `continue` (default true) halts processing when false and displays `stopReason`; `suppressOutput` (default false) hides output from the transcript; `decision: "block"` blocks with the required `reason` fed back to Claude; `systemMessage` warns the user; `hookSpecificOutput` carries event-specific fields (`references/event-schemas.md`).
 
-**`<system-reminder>` tags are escaped (CC 2.1.292).** Claude Code escapes `<system-reminder>` tags written in a hook's output, including stdout and `additionalContext`, before they reach Claude. A hook cannot pass its text off as a system reminder; write plain context instead.
+**`<system-reminder>` tags are escaped (CC 2.1.292).** Claude Code escapes `<system-reminder>` tags written in a hook's output, including stdout and `additionalContext`, before they reach Claude. A hook cannot pass its text off as a system reminder; write plain context instead. Before CC 2.1.296, hook output containing text that resembled a plugin hint tag could reach Claude altered; it now arrives as written.
 
 - `terminalSequence` (CC 2.1.141): escape sequence written directly to the terminal for desktop notifications, window titles, or bells — e.g. desktop notification `"\u001b]9;Message\u0007"`, window title `"\u001b]0;Title\u0007"`, bell `"\u0007"`.
 
@@ -69,6 +71,8 @@ Exit codes:
 | 0     | Success. JSON on stdout parsed if present      |
 | 2     | Blocking error. stderr fed to Claude/user      |
 | Other | Non-blocking. Shown in verbose/debug mode only |
+
+**Failing closed with `onFailure: "block"` (CC 2.1.295).** By default a command or HTTP hook that cannot start (a missing script or plugin directory), times out, exits with a code other than 0 or 2, or prints invalid JSON is reported and the action goes ahead. Set `"onFailure": "block"` on the hook entry and such a failure counts as exit code 2: the tool call, permission request, or prompt the event guards is blocked. It is ignored for async hooks and on Stop, SubagentStop, TaskCompleted, and TeammateIdle. Use it for guard hooks whose absence should never let a call through. Details: `references/advanced.md` (onFailure).
 
 Async command hooks (`"async": true`) cannot block (exit 2 ignored) or return decisions — useful for logging, metrics, and notifications. `"asyncRewake": true` is the exception for exit 2: the hook still runs in the background, but exit 2 wakes Claude with the hook's output. See `references/advanced.md`.
 
@@ -95,13 +99,15 @@ Inside a subagent, `agent_id` and `agent_type` are also present. Event-specific 
 - `$CLAUDE_PROJECT_DIR` — project root path.
 - `$CLAUDE_PLUGIN_ROOT` — plugin directory; use for portable paths. Loader-bound in frontmatter hooks (see the Scoped hooks caveat above).
 - `$CLAUDE_PLUGIN_DATA` — per-plugin state directory at `~/.claude/plugins/data/<plugin>-<marketplace>`, created on install and removed on uninstall. Use it for caches, logs, and anything that must outlive a session.
-- `$CLAUDE_ENV_FILE` — write `export VAR=value` lines to persist env vars (SessionStart, CwdChanged, FileChanged).
+- `$CLAUDE_ENV_FILE` — write `export VAR=value` lines to persist env vars (SessionStart, CwdChanged, FileChanged). Since CC 2.1.295 a SessionStart hook's variables also reach the Bash tool after an in-app `/resume` or `/branch`, and since CC 2.1.296 PowerShell commands see them when the file holds only plain assignments.
 - `$CLAUDE_CODE_REMOTE` — set if running in remote context.
 - `$CLAUDE_CODE_SESSION_ID` — current session identifier (CC 2.1.132), for correlating events.
 - `$CLAUDE_EFFORT` — current effort level (CC 2.1.133); also in hook input JSON as `effort.level`.
 - `$TMPDIR` — sandbox-writable temp directory. **CC 2.1.154:** set to the same sandbox-writable directory for both sandboxed and unsandboxed Bash commands, so scripts can rely on it regardless of sandbox mode.
 
-**Windows PowerShell (CC 2.1.126):** When the PowerShell tool is enabled on Windows, Claude treats PowerShell as the primary shell, so Bash-specific hook scripts may not run — consider cross-platform implementations.
+**Windows PowerShell (CC 2.1.126):** When the PowerShell tool is enabled on Windows, Claude treats PowerShell as the primary shell, so Bash-specific hook scripts may not run — consider cross-platform implementations. Before CC 2.1.293, stopping a hook on Windows could sometimes terminate an unrelated process.
+
+**Background sessions and `FORCE_COLOR` (CC 2.1.295):** commands and hooks in background sessions used to inherit `FORCE_COLOR=3`, which put color escape codes into the output Claude reads. They no longer do. A hook that must run on older versions should strip ANSI codes from tool output it passes back, or unset `FORCE_COLOR` itself.
 
 ## Matchers
 
@@ -193,7 +199,9 @@ Other essentials: validate inputs, block path traversal (`..`) and sensitive fil
 
 Hooks are validated at load (invalid JSON fails loading, missing scripts warn, syntax errors show in debug mode). Use `/hooks` to review loaded hooks.
 
-Debug with `claude --debug` (shows registration, execution logs, input/output JSON, timing). Test command hooks by piping sample JSON on stdin (`echo '{...}' | bash script.sh`) and validating output with `jq`.
+Debug with `claude --debug` (shows registration, execution logs, input/output JSON, timing). Since CC 2.1.296, command hooks on tool calls, prompts, SessionStart, and Stop log their command, plugin, outcome, and duration when they finish, which identifies a slow hook. Test command hooks by piping sample JSON on stdin (`echo '{...}' | bash script.sh`) and validating output with `jq`.
+
+**Same-name plugins (CC 2.1.296).** When two enabled plugins share a name, one plugin's hooks are left out, and `/plugin` now shows a note on the plugin whose hooks were dropped. Before CC 2.1.296, a plugin loaded after a headless session started could also have its SessionStart hooks skipped when a different plugin with the same name, or another spelling of it, had already run. Give a plugin a distinctive name so its hooks are never the ones left out.
 
 ### Hook-Failure Handling (CC 2.1.267)
 
@@ -215,7 +223,7 @@ This applies to function-hook plugins ("mods": a `hooks/hooks.json` holding `{ "
 6. **Policy settings cannot be blocked.** ConfigChange for `policy_settings` silently ignores block decisions.
 7. **Async hooks cannot block.** Exit code 2 is ignored for `async: true` hooks.
 8. **Subagent Stop hooks auto-convert.** Stop hooks in subagent context become SubagentStop.
-9. **HTTP hooks need 2xx for decisions.** Non-2xx status codes are treated as non-blocking errors.
+9. **HTTP hooks need 2xx for decisions.** Non-2xx status codes are treated as non-blocking errors, unless the hook sets `"onFailure": "block"` (CC 2.1.295), which turns the failure into a block.
 10. **`disableAllHooks` cannot disable managed hooks.** Policy-managed hooks always run.
 11. **`${CLAUDE_PLUGIN_ROOT}` is loader-bound in frontmatter hooks.** Resolves only under plugin discovery; agents loaded via `--agent` see it unbound — use `${CLAUDE_PROJECT_DIR}`. Full caveat: `references/advanced.md` (Scoped Hooks section).
 12. **PreToolUse auto-allow hooks cannot bypass tool restrictions in background agents (CC 2.1.222).** PreToolUse hooks that return auto-allow decisions no longer bypass tool restrictions when running in background agent tasks. This security fix ensures that tool restrictions remain enforced even when hooks attempt to approve tool usage in unsupervised contexts.
