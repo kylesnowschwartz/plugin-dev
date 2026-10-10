@@ -43,6 +43,8 @@ Most plugins work well with declarative `hooks.json` configuration.
 
 **Managed rules still apply (CC 2.1.289).** On managed machines, a managed deny or ask rule on a nested compound shell command holds even when a user-installed mod's `tool.call` hook approves the call.
 
+**Managed machines bypass some events for user mods (CC 2.1.296).** On a machine with managed settings, the built-in `cc-plugin-sec-default` plugin runs in front of user-installed mods and skips their hooks on `classic.*` events (`classic.SessionStart`, `classic.UserPromptSubmit`, `classic.Stop`, `classic.PermissionRequest`, `classic.PreCompact`, `classic.PostCompact`, `classic.SubagentStop`) and on `prompt.context` and `prompt.compose`. The hook does not run and no error shows; `claude --debug` logs `<plugin>: classic.Stop bypassed by cc-plugin-sec-default (tier user); beneath runs`. Command hooks in `hooks.json` are not affected. Use native events instead: `session.start` for session start, `tool.check` with an ask verdict for an approval wait, the `ToolUse` render's `isRunning` for an approval given, `session.compact` for compaction, and `turn.complete` with `agentId` for a subagent stop. A mod that adds system prompt or context text through `prompt.compose` or `prompt.context` has no effect on managed machines.
+
 ### Version History
 
 The `plugin-authoring` skill describes only the build it ships with. This history records when mod behavior changed, for authors who support older Claude Code versions.
