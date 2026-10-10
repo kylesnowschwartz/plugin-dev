@@ -85,6 +85,8 @@ CC 2.1.282 reserved `claude-ai` the same way; CC 2.1.283 reverted that. Skills, 
 
 **Synced skills can be withdrawn by org policy (CC 2.1.273).** A claude.ai-synced skill used to stay available after an organization turned Skills off. It now moves to `~/.claude/skills/.trash` — recoverable, but gone from the session. The same destination applies when a user sets `syncClaudeAiSkills: false`. A skill that resolved yesterday may therefore be absent today for reasons outside the plugin: do not write a plugin skill or agent that hard-depends on a synced skill being present. Plugin-bundled skills are unaffected, since they install with the plugin rather than syncing. See the `syncClaudeAiSkills` section in `../../plugin-settings/overview.md`.
 
+**Synced-skill fixes (CC 2.1.293, 2.1.296):** an edited description on a claude.ai-synced skill sometimes did not reach the model until a new conversation or `/clear` (fixed in CC 2.1.293). When several sessions shared a config directory, synced skills never finished installing and were downloaded again at every sync (fixed in CC 2.1.296).
+
 ## Nested Skill Directories (CC 2.1.178)
 
 Skills can be organized in nested directories within `.claude/skills/`. When working on files in a nested directory, skills from that directory's `.claude/skills/` are loaded automatically.
@@ -443,6 +445,8 @@ Graders also accept `weight` (relative contribution to the score) and `arm` (whi
 **Reports.** Results land in `<eval dir>/results/`. `--json [path]` prints the full machine-readable result; a self-contained HTML report (scores, prompts, grader verdicts) can be written to a path of your choosing.
 
 **Git 2.31 or later (CC 2.1.283).** When git is installed, `claude plugin eval` requires git 2.31 or later. Older git ignores `GIT_CONFIG_COUNT`, so before CC 2.1.283 an eval could stop before running any case; a run on older git is now refused with a message naming the version. Upgrade git on CI runners that pin an old distribution package.
+
+**Docker Desktop on macOS (CC 2.1.293).** Before CC 2.1.293, `claude plugin eval` refused every Bash-granting run on Macs with Docker Desktop, which installs links under `~/.docker/bin`. The refusal now names which part of a credential store held the link.
 
 **Trust.** `claude plugin eval` loads the plugin and runs its suite on your machine as you. A plugin directory must be trusted before the first run; a piloted run started from a non-interactive session cannot stop to ask, so it writes cases without running them.
 
