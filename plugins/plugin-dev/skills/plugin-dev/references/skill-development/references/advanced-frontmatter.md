@@ -65,6 +65,8 @@ When specified, Claude can only use the listed tools without needing permission.
 
 **Scoped to the invoking turn (CC 2.1.292):** the `allowed-tools` grant from a skill or slash command lasts for the turn that invoked it. Before CC 2.1.292, leaving auto mode or plan mode partway through that turn made the rule come back in a later turn. A skill that needs the same tools again should be invoked again rather than relying on a carried-over grant.
 
+**Dropped in `-p` runs before CC 2.1.295:** when the Skill tool finished before the response stream ended, the skill's `allowed-tools` and `effort` were dropped, which denied the skill's Bash commands in `-p` runs. A headless pipeline on an older version that sees a skill's pre-approved Bash calls denied is likely hitting this.
+
 **Managed `allowManagedPermissionRulesOnly` (CC 2.1.282):** when an organization enables this managed setting, repository, user, and `--add-dir` skills and commands, and skills-directory plugin manifests, no longer pre-approve their own tools through `allowed-tools`. Their tool calls follow the managed permission rules instead. Since CC 2.1.284 the same applies to plugins from marketplaces, claude.ai, and npm: only plugins from an official Anthropic source, or a source that managed settings vouch for, keep `allowed-tools` pre-approval. Deny and ask rules still apply to all of them. Do not rely on `allowed-tools` alone for a skill that must run unattended in such an organization. See `../../plugin-structure/references/advanced-topics.md` (Enterprise Hook and Permission Control).
 
 ## context
@@ -91,6 +93,8 @@ Use `context: fork` for:
 - Expensive operations you want isolated
 
 **Deferred tools (CC 2.1.126):** Skills with `context: fork` now correctly receive access to deferred tools (WebSearch, WebFetch, etc.) on their first turn. Previously, these tools were unavailable until the second turn in forked contexts.
+
+**Results return to the invoking agent (CC 2.1.295):** a forked skill invoked from a Workflow subagent delivers its result to that subagent. Before CC 2.1.295 the result went to the main conversation instead, so the invoking agent never received it.
 
 ## agent
 
@@ -152,6 +156,8 @@ skills: testing-patterns, security-audit
 ```
 
 Requires `context: fork` to be set. Only skills from the same plugin can be loaded.
+
+**32-skill preload cap (CC 2.1.295):** a subagent preloads at most 32 skills from a `skills` list, and each skill loads once even when it is listed twice. A subagent that has the Skill tool can still invoke the skills beyond the cap. Keep the list to the skills the fork needs on every run.
 
 ## user-invocable
 
@@ -259,7 +265,7 @@ model: haiku
 
 ### Notes
 
-- Shorthand names (`sonnet`, `opus`, `haiku`) resolve to the current default version of each family
+- Shorthand names (`sonnet`, `opus`, `haiku`) resolve to the current default version of each family. Since CC 2.1.293, `haiku` resolves to Claude Haiku 5.5 (`claude-haiku-5-5`) on the Anthropic API. Pin `claude-haiku-4-5` if a skill depends on Haiku 4.5 behavior
 - The `model` field is shared with commands (same syntax and behavior)
 - When `context: fork` is set, the model applies to the forked subagent
 

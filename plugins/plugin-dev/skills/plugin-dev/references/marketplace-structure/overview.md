@@ -382,6 +382,10 @@ claude plugin validate .
 
 **Uninstallable names fail validation (CC 2.1.283).** `claude plugin validate` used to accept some plugin or marketplace names in `marketplace.json` that Claude Code could not actually install. Such names now fail validation. A marketplace that passed on an older version can fail on CC 2.1.283, so re-run validation after upgrading and rename any entry it reports. The reserved and imitation names above are a separate check, applied when the marketplace is added.
 
+**Uninstallable names are refused at add time (CC 2.1.295-2.1.296).** `claude plugin marketplace add` used to report success for a marketplace whose name no plugin can be installed under; since CC 2.1.295 it refuses the add. A marketplace named like a built-in JavaScript property, such as `constructor`, made `marketplace add`, `marketplace update`, and `plugin install` fail with an internal error before CC 2.1.296; `add` now refuses such names with a clear message. Name marketplaces after the organization or project, as above.
+
+**README install line (CC 2.1.295).** When a plugin's README has no install line, `claude plugin validate` prints advice with the line to paste. The advice never changes the exit code, even with `--strict`. Adding the line, for example `claude plugin install my-plugin@my-marketplace`, silences it.
+
 **A folder with both manifests validates both (CC 2.1.289).** When the directory holds both `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json`, `claude plugin validate` checks the marketplace and also the plugin's manifest and component files. Earlier versions skipped the plugin in that case, so on older versions run `claude plugin validate` on the plugin separately.
 
 **Testing locally (CC 2.1.281):** `--plugin-dir` on a folder of plugins, whose direct child folders each hold a `.claude-plugin/plugin.json`, now loads those plugins even when the folder also has its own `.claude-plugin/marketplace.json`. Earlier versions loaded such a folder as one empty plugin. Plugins nested deeper, such as `plugins/<name>/`, are not direct children: point `--plugin-dir` at the folder that holds them, or at each plugin directory.

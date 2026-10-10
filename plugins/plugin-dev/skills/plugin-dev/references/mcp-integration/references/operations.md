@@ -233,6 +233,16 @@ Handle MCP server unavailability:
 
 **`claude mcp get` hides plugin stdio details (CC 2.1.285):** For a stdio server provided by a plugin, `claude mcp get` prints `Command: stdio`, an empty `Args:` line, and each environment variable as `NAME=[REDACTED]`. Variable names are still shown, but the command, arguments, and values are not. To check what a plugin server actually runs, read the plugin's `.mcp.json` or `plugin.json` instead.
 
+**Runtime fixes (CC 2.1.293-2.1.296):** these change how a plugin's MCP server behaves without any change to the plugin:
+
+- An HTTP MCP connection no longer keeps every request it sent until it closes, which leaked memory in long sessions (CC 2.1.293)
+- In headless and SDK sessions, a remote server stays reachable after an outage longer than 15 seconds, and a server that drops each connection right after connecting is retried with a backoff of up to 30s instead of a tight loop (CC 2.1.295)
+- A remote connection is no longer dropped because the server's error reply happens to contain a network error name (CC 2.1.295)
+- A server that repeats a pagination cursor is no longer asked for the same page up to 20 times at every connect (CC 2.1.295). Return a new cursor for each page, or none on the last one
+- CSS, JavaScript, and XML files returned by MCP tools are saved with their own extension instead of `.bin`, which the Read tool refuses; font and icon files get their own extension too (CC 2.1.295)
+- Headless sessions no longer start a `.mcp.json` or plugin MCP server that was switched off for that folder after changing directory or reloading plugins (CC 2.1.296)
+- On Windows, stdio servers are no longer force-killed at shutdown: stdin closes first, and the process tree is killed only if the server is still running after 300 ms (CC 2.1.296). Exit promptly when stdin closes so shutdown work finishes
+
 **Connection failure system reminder (CC 2.1.205):** When configured MCP servers fail to connect, Claude Code displays a system reminder informing the agent that:
 
 - The server's tools should be treated as unavailable due to connection failure (not missing capability)
@@ -391,9 +401,11 @@ Design plugin MCP tools to return concise results. Paginate or summarize large o
 
 ## MCP Description Limits
 
-Tool descriptions and server instructions are capped at **2,048 characters each**. This prevents OpenAPI-generated servers with verbose schemas from bloating the context window. Keep tool descriptions concise and focused on usage rather than exhaustive parameter documentation.
+Tool descriptions sent up front and server instructions are capped at **4,096 characters each** (CC 2.1.296; 2,048 before). Descriptions the model loads through tool search are cut at **16,384 characters** (CC 2.1.295; 2,048 before). The caps prevent OpenAPI-generated servers with verbose schemas from bloating the context window. Keep tool descriptions concise and focused on usage rather than exhaustive parameter documentation.
 
-**`CLAUDE_CODE_MAX_MCP_DESCRIPTION_LENGTH` (CC 2.1.280)** changes that cap. It applies to every MCP server in the session, not only one plugin's. It is a user-side setting, so a plugin cannot rely on a raised cap. Write descriptions that are useful when cut at 2,048 characters, with the essential usage guidance first.
+> **Note:** At the time of the CC 2.1.296 sync, the official MCP documentation still stated 2,048 characters. The 4,096 figure comes from the upstream changelog, which is authoritative here.
+
+**`CLAUDE_CODE_MAX_MCP_DESCRIPTION_LENGTH` (CC 2.1.280)** overrides the default cap. It applies to every MCP server in the session, not only one plugin's. It is a user-side setting, so a plugin cannot rely on a raised cap. Users on versions before CC 2.1.296 still get 2,048 characters, so put the essential usage guidance in the first 2,048 characters of each description.
 
 ## Tool Use Display Metadata (CC 2.1.181)
 

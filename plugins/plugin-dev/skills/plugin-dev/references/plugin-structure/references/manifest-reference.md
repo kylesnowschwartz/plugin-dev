@@ -674,7 +674,7 @@ Declares user-configurable values in `.claude-plugin/plugin.json`. Each key is a
 }
 ```
 
-**Option keys** must be valid identifiers — letters, digits, and underscore, with no leading digit (`^[A-Za-z_]\w*$`). They become `CLAUDE_PLUGIN_OPTION_<KEY>` environment variables, so uppercase names read best.
+**Option keys** must be valid identifiers — letters, digits, and underscore, with no leading digit (`^[A-Za-z_]\w*$`). They become `CLAUDE_PLUGIN_OPTION_<KEY>` environment variables, so uppercase names read best. Do not name an option `constructor` or `prototype`: before CC 2.1.295 such an option always read as its default and editing it never reloaded the plugin, and before CC 2.1.296 a `sensitive` option with either name was deleted by the next save of the plugin's options.
 
 **Option fields:**
 
@@ -824,6 +824,7 @@ Claude Code validates the manifest on plugin load:
 - **Unquoted `${CLAUDE_PLUGIN_ROOT}` in shell-form hooks (CC 2.1.281).** A hook `command` with no `args` runs through a shell, and an unquoted placeholder splits into several words when the plugin path contains a space. The validator warns: `Shell command uses ${CLAUDE_PLUGIN_ROOT} without quotes`. Wrap the placeholder in double quotes, `"command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh\""`, or use exec form, `{"command": "bash", "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh"]}`.
 - **Listing metadata keys (CC 2.1.281).** The keys under "Listing metadata fields" above are accepted rather than reported as unknown.
 - **Hook failures name the plugin (CC 2.1.281).** Not a validator check, but related: at run time, plugin hook-failure errors now name the offending plugin.
+- **README install line (CC 2.1.295).** When the plugin's README has no install line, the validator prints the line to paste. This is advice only: it never changes the exit code, even with `--strict`.
 
 Marketplace-level checks (plugin and marketplace names Claude Code cannot install, CC 2.1.283) are covered in `../../marketplace-structure/overview.md` (Validation).
 

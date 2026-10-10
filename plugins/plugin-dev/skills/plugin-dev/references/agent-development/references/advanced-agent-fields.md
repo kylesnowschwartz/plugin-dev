@@ -1,6 +1,6 @@
 # Advanced Agent Fields
 
-This reference covers advanced agent frontmatter fields (maxTurns, memory, mcpServers, hooks, initialPrompt), version-specific behaviors for the core fields (tools, model, mcpServers), and the runtime behaviors that govern autonomous, background, and isolated agent execution. The core fields themselves (name, description, model, color, tools, disallowedTools, skills, permissionMode) are summarized in the topic `../overview.md`; this file carries the turn limits, persistent memory, scoped MCP access, lifecycle hooks, autonomous/background operation guidance, isolation and worktree behavior, CLI/testing behaviors, and agent-teams detail.
+This reference covers advanced agent frontmatter fields (maxTurns, memory, mcpServers, hooks, initialPrompt, omitClaudeMd, autoCompactWindow), version-specific behaviors for the core fields (tools, model, mcpServers), and the runtime behaviors that govern autonomous, background, and isolated agent execution. The core fields themselves (name, description, model, color, tools, disallowedTools, skills, permissionMode) are summarized in the topic `../overview.md`; this file carries the turn limits, persistent memory, scoped MCP access, lifecycle hooks, autonomous/background operation guidance, isolation and worktree behavior, CLI/testing behaviors, and agent-teams detail.
 
 ## maxTurns
 
@@ -274,7 +274,7 @@ Team leads coordinate work across multiple teammates. Key design considerations:
 - **System prompt focus**: Task decomposition, work assignment, progress monitoring, quality review
 - **Tools**: Team leads automatically get access to `TaskCreate`, `TaskUpdate`, `TaskList`, `SendMessage`, and `Task` (for spawning). `TeamCreate` and `TeamDelete` are not offered (see [Removed Team Tools](#removed-team-tools-cc-21178)).
 
-**Task-tracking tools are model-gated (CC 2.1.268).** `TaskCreate`, `TaskGet`, `TaskUpdate`, `TaskList`, and `TodoWrite` are offered only on Claude 3.x, Opus 4.0–4.7, Sonnet 4.0–4.6, and Haiku 4.5. On newer models, including Opus 5 and Opus 5.5 (the default Opus model since CC 2.1.280), they are absent unless `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` is set. An agent whose `tools` list names them, or whose system prompt instructs it to track work with them, silently loses that capability on a default-model session. Design agents to report progress in their output rather than depending on task-tracking tools being present.
+**Task-tracking tools are model-gated (CC 2.1.268).** `TaskCreate`, `TaskGet`, `TaskUpdate`, `TaskList`, and `TodoWrite` are offered only on Claude 3.x, Opus 4.0–4.7, Sonnet 4.0–4.6, and Haiku 4.5. On newer models, including Opus 5 and Opus 5.5 (the default Opus model since CC 2.1.280), they are absent unless `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` is set. An agent whose `tools` list names them, or whose system prompt instructs it to track work with them, silently loses that capability on a default-model session. Claude Haiku 5.5 is not on the list either: the CC 2.1.296 binary's gating set ends at `claude-haiku-4-5`. Since CC 2.1.293, `haiku` resolves to Haiku 5.5 on the Anthropic API, so a `model: haiku` agent there no longer gets these tools, though it did on Haiku 4.5. Design agents to report progress in their output rather than depending on task-tracking tools being present.
 
 ### Permission Inheritance
 
@@ -384,6 +384,8 @@ This correctly blocks spawning the `untrusted-agent` type.
 
 **`Agent(...)` and `Task(...)` are aliases.** Both spellings are accepted in `settings.json` permission rules and resolve to the same agent-spawn tool. `Agent` is canonical — the rule parser normalizes `Task` to `Agent` (verified against the CC 2.1.273 binary, which also aliases `KillShell`/`KillBash` to `TaskStop`, still the case in CC 2.1.280). Existing rules written either way keep working; prefer `Agent(...)`, which is the form the upstream changelog uses. Some plugin-dev references use `Task(...)` — see [permission-modes-rules.md](permission-modes-rules.md) — and those rules are equally valid.
 
+**Per-agent tool lists and `--tools` (CC 2.1.293, 2.1.295):** Before CC 2.1.293, a subagent or `--agent` session whose own `tools` list left out a built-in tool was told that the tool was disabled for the whole session. The same release stopped Claude from being told to continue or message subagents with `SendMessage` when a host, a permission rule, or a `--tools` list had removed that tool. Since CC 2.1.295, `--tools` and `--restricted` also apply to built-in tools that register after launch, and deprecated tool names no longer reach tools outside the caller's tool set. On older versions, an agent's restricted tool list could be described more broadly than it applied, and a late-registering built-in tool could escape a `--tools` restriction.
+
 The CC 2.1.273 binary also aliased `BashOutput`/`AgentOutput` to `TaskOutput`, but **CC 2.1.277 removed the TaskOutput tool**. Claude now reads a background task's output file with Read. The CC 2.1.280 binary lists `TaskOutput`, `BashOutput`, and `AgentOutput` among tools it no longer offers, so drop them from `tools` lists and permission rules.
 
 > **Note:** The Config tool was removed in CC 2.1.118. Use the `/config` slash command instead for getting/setting Claude Code settings.
@@ -455,6 +457,27 @@ omitClaudeMd: true
 - Agents that must behave identically across every repo they run in, rather than inheriting per-project instructions
 
 Do **not** use it for agents that write code into the host repo — those need the project's conventions to match surrounding style.
+
+## autoCompactWindow (CC 2.1.296)
+
+Make a subagent auto-compact its conversation earlier than the main conversation does:
+
+```yaml
+autoCompactWindow: 150000
+```
+
+**Behavior:**
+
+- The value is a token count. When the subagent's conversation reaches it, the subagent compacts its own conversation
+- It only **lowers** the window the subagent would otherwise inherit from the session. A value above the inherited window changes nothing
+- Takes effect **only when the agent runs as a subagent**. It has no effect on a main session started with `--agent`
+- Also settable per-agent in the `--agents` JSON payload
+
+**Type:** optional integer. The CC 2.1.296 binary validates it as an integer from 100,000 to 1,000,000, the same range as the top-level `autoCompactWindow` setting.
+
+**Use cases:**
+
+- Long-running subagents that read many large files, where an earlier compaction keeps each turn cheaper
 
 ## experimental.cacheTtl (CC 2.1.248)
 
