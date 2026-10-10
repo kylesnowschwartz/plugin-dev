@@ -203,7 +203,7 @@ Function-hook plugins (JavaScript/TypeScript hooks) now have improved error hand
 - **One-time transcript notices:** When a hook fails or a module fails to load, a one-time notice appears in the transcript. This prevents log spam while ensuring failures are visible to users
 - **Debug logging:** Every hook failure occurrence is logged when running in debug mode (`claude --debug`). This helps track intermittent failures during development
 
-This applies to function-hook plugins ("mods": a `hooks/hooks.json` holding `{ "modules": [...] }` and a TypeScript/JavaScript module exporting `register(on, options)`), not command hooks which already had exit-code-based error handling. The transcript line names the plugin, the event, and the reason. Layout, hot-reload consent (CC 2.1.283), and rendering: `../plugin-structure/references/advanced-topics.md` (Function-Hook Plugins).
+This applies to function-hook plugins ("mods": a `hooks/hooks.json` holding `{ "modules": [...] }` and a TypeScript/JavaScript module exporting `register(on, options)`), not command hooks which already had exit-code-based error handling. The transcript line names the plugin, the event, and the reason. To write or debug a mod, load Claude Code's built-in `plugin-authoring` skill, which carries the API types for the running build and starts hot reload. When to choose a mod, cross-cutting risks, and version history: `../plugin-structure/references/advanced-topics.md` (Function-Hook Plugins).
 
 ## Critical Gotchas
 

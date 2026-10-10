@@ -2,109 +2,26 @@
 
 This reference covers specialized topics that plugin developers may encounter in advanced use cases. Each section is self-contained.
 
-## Function-Hook Plugins (CC 2.1.260-2.1.261, expanded 2.1.267, reworked 2.1.283, announced as Claude Mods 2.1.287)
+## Function-Hook Plugins (Mods)
 
-Function-hook plugins, which Claude Code calls **mods** (announced as "Claude Mods" in CC 2.1.287), are plugins whose hooks are TypeScript/JavaScript functions instead of shell commands. A mod can draw a live pane, a band above the prompt, a status line entry, or a toast, and can block, rewrite, or react to tool calls and prompts. It hot-reloads in the running session. This is an advanced tier beyond declarative `hooks.json` command hooks.
+Function-hook plugins, which Claude Code calls **mods**, are plugins whose hooks are TypeScript/JavaScript functions instead of shell commands. A mod can draw a live pane, a band above the prompt, a status line entry, or a toast, and can block, rewrite, or react to tool calls and prompts. Its `hooks/hooks.json` holds `{ "modules": ["./register.tsx"] }`, naming a module that exports `register(on, options)`, instead of the event-keyed `hooks` object that command hooks use.
 
-The layout, module shape, and hot-reload consent below follow Claude Code's "Plugin authoring" guidance as of CC 2.1.283-2.1.289. Since CC 2.1.284 that guidance ships as a skill inside the built-in plugin `cc-plugin-plugin-authoring` (described as "Make a mod: a live pane, band, status line, toast or hook inside Claude Code ... Load before writing or debugging a hooks module"), rather than as bundled system-prompt text. A second built-in plugin, `cc-plugin-mods-guide`, ships beside it. Neither loads when `CLAUDE_CODE_ENTRYPOINT` is `local-agent`. The guidance supersedes the earlier descriptions in this section, which said constructors were imported from a JSX package and that the manifest declared an `experimental` function-hook field.
+### Load the Built-in `plugin-authoring` Skill to Write or Debug a Mod
+
+Claude Code ships the authoritative mod guidance as the `plugin-authoring` skill in the built-in plugin `cc-plugin-plugin-authoring`. Load it (the Skill tool, or `/plugin-authoring`) before writing, changing, or debugging a hooks module. This reference does not repeat its content, because the skill is generated for the running build and this file is not:
+
+- **Types for this build.** Loading the skill writes `types/claude-code.d.ts` into the skill's extracted directory: every event's input and result, every `$` method with its doc comment, and every element's props. Once a mod has loaded, `<mod folder>/.claude-plugin/types/` holds the same declarations plus a `tsconfig.json` for `tsc -p <mod folder>`.
+- **Hot reload.** Loading the skill is what starts Claude Code's watch on the session's mods folder. The first file written there asks the user whether to enable hot reloading for the session; only the user can answer. Without the skill loaded, Claude Code does not watch the folder, and a new mod loads only through `claude --plugin-dir <folder>`.
+- **Working examples.** The skill's `examples/` folder holds complete modules for a pane, a band above the prompt, and a tool-call hook, each of which validates and type-checks on that build.
+- **The long form.** The skill's `reference.md` covers the full event list, `ui.render`, `$.state` contracts, `session.append`, the `.catch` pattern for guarding hooks, dispatch time budgets, `$.tool.register` and `$.agent.register`, `claude plugin test`, and sharing a mod through a marketplace.
+
+The skill does not load when `CLAUDE_CODE_ENTRYPOINT` is `local-agent`. A second built-in plugin, `cc-plugin-mods-guide`, ships beside it.
 
 **A built-in mod (CC 2.1.287).** Claude Code ships one mod of its own, "You should know", in which a side agent watches the session and flags things the user or Claude might miss. Users turn it on with `/plugin enable cc-plugin-you-should-know@builtin` (first-party sessions with telemetry on).
 
-### Layout
+### When to Use a Mod
 
-A mod is an ordinary plugin folder with three files:
-
-```text
-<mod-name>/
-├── .claude-plugin/plugin.json   # { "name": "<mod-name>", "version": "0.1.0", "description": "..." }
-├── hooks/hooks.json             # { "modules": ["./register.tsx"] } — path relative to this file
-└── hooks/register.tsx           # the hooks module (.ts also works)
-```
-
-`hooks/hooks.json` holds a `modules` array naming the hooks module instead of the event-keyed `hooks` object that command hooks use. No `experimental` flag and no JSX runtime dependency is declared in `plugin.json`.
-
-**State contract.** A mod that keeps values in `$.state` adds a fourth file, `types/index.d.ts`. It declares each value in `interface PluginState` under the mod's name, and `plugin.json` names it with `"types": "./types/index.d.ts"`. The module imports its value types from `'../types'`, and `claude plugin validate` checks every `$.state` key the module uses against that contract.
-
-**Type declarations.** The `/plugin-types` command and its `.claude/types` output are gone from CC 2.1.289 (CC 2.1.287 also dropped the guidance on pointing a mod's `tsconfig.json` or `jsconfig.json` at them). The running build's API declarations now come with the `cc-plugin-plugin-authoring` skill, as `types/claude-code.d.ts` inside the skill's extracted directory.
-
-### Module Shape
-
-The hooks module exports `register(on, options)`:
-
-- `on(event, matcher?, hook)` adds a hook. Every hook has the signature `($, e, next)`.
-- `$` is the engine interface. Calls are spelled noun then method: `$.ui.open(...)`, `$.ui.status(text)`, `$.ui.toast(text)`, `$.command.register(...)`, and `$.clock`, `$.tool`, `$.agent`, `$.model`, `$.fs`, `$.process` for timers, model-callable tools, subagent types, model calls, files, and processes.
-- `e` is the event's input, a plain frozen value.
-- `next(e)` runs the plugins beneath and then Claude Code's own behavior, resolving to the event's result. A hook that returns without calling `next` answers for itself; `next({ ...e, x })` rewrites what the rest of the chain sees.
-
-Examples of event wiring: `on('tool.call', { tool }, hook)` returns `{ deny }`, calls `next({ ...e, ... })`, or awaits `next(e)` and acts on the result; `on('prompt.submit', hook)` rewrites a prompt with `next({ ...e, text })`; a slash command is registered with `$.command.register({ name, description })` in `session.start` and answered by a `command.run` hook returning `{ text }`.
-
-**API additions (CC 2.1.288-2.1.289):**
-
-- `$.ui.selection()` (CC 2.1.288) returns the text the user last selected in fullscreen mode and, when the selection lies within one transcript row, that row.
-- `agent.spawn` for teammates (CC 2.1.289).
-- `$.agent.list()` reports idle and waiting states (CC 2.1.289).
-- One agent id is used across plugin hook events (CC 2.1.289), so a mod can correlate events from the same agent.
-
-**API additions (CC 2.1.290-2.1.292):**
-
-- `prompt.autocomplete` (CC 2.1.292) is an event a mod hooks to add its own rows to the prompt box's autocomplete list.
-- `agent.spawn` also covers workflow agents (CC 2.1.292), with their run and index, so a mod can refuse them.
-- `$.model.complete` supports prompt caching (CC 2.1.292): `prompt` and `system` take blocks of text, and `cache: true` on a block caches the request up to it.
-- The `tool.check` event carries `agentId` (CC 2.1.290), so a hook can tell a subagent's permission check from the main session's. The question and verdict a mod's `tool.check` hook reads carry `ceiling` (CC 2.1.290), naming the approval an organization requires for the tool.
-- A mod's `turn.step` hook result includes `serverToolUses` (CC 2.1.290): the tool calls the API ran itself (the advisor), each with its id, name, input, start, and end.
-- The plugin hooks typings add `ThemeKey` and `Color` types (CC 2.1.290), so an editor lists the theme colors a mod's drawing can name.
-
-**Hook behavior fixes (CC 2.1.290-2.1.292):**
-
-- A hook that calls `next(e)` and then denies or drops is reported as failed, by name, instead of being treated as a refusal or ignored: `prompt.submit` (CC 2.1.290) and `config.set`, `state.set`, `env.set`, `agent.spawn` (CC 2.1.292). Decide before calling `next(e)`.
-- A `tool.check` hook answering allow no longer runs a tool that requires the user's answer (a question, a plan approval) without showing its dialog (CC 2.1.292).
-- `tool.call` hooks see the arguments the tool will run with, after misnamed parameters are repaired (CC 2.1.292).
-- A prompt drop or setting deny whose reason is longer than 4,096 characters is no longer ignored (CC 2.1.292). Long text from plugin hooks is clipped and logged rather than refused or dropped silently (CC 2.1.290).
-- When another mod denies a `$.process.spawn` after the child ran, the call rejects saying the call ran and a plugin withheld its result (CC 2.1.290).
-
-**Managed rules still apply (CC 2.1.289).** On managed machines, a managed deny or ask rule on a nested compound shell command holds even when a user-installed mod's `tool.call` hook approves the call.
-
-**Rewriting tool input under auto mode.** A `tool.call` hook that rewrites a call's input with `next({ ...e, ... })` can leave the auto-mode classifier with no verdict, the same as a PreToolUse hook that returns `updatedInput`. See `../../hook-development/references/advanced.md`.
-
-**No DOM and no Node.** The module runs in an environment of its own; `$` is its only way to reach anything outside it.
-
-### Rendering (`ui.render`)
-
-JSX compiles against the global `h`. Element constructors are not imported from a package and are not globals: they come from the drawing surface's own table, resolved per event:
-
-```typescript
-const { Box, Text, Button } = $.ui.resolve(e);
-```
-
-`e.surface` is `terminal`, `desktop`, `vscode`, or `mobile`.
-
-- **Pane** — `$.ui.open({ id, title })`, drawn by a `ui.render` hook on `{ component: 'Pane', requestId: id }`. Opened by a user action (a typed command, a pressed Button) it seats at any width; opened unasked (from `session.start`, a timer) it seats from 144 terminal columns and waits below that.
-- **Band above the prompt** — a `ui.render` hook on `{ component: 'AbovePrompt' }` returning a tree, or `next(e)` when there is nothing to show.
-- **Shared values** — `atom(ref, initial)`, `read($, atom)` while drawing, `update($, atom, fn)` from a handler or another event; a write redraws the readers. Each value is declared in the state contract.
-
-**Keyed box hover styles (CC 2.1.267):** Keyed boxes (`<Box key="...">`) scope hover styles to their subtree.
-
-**Surface differences (CC 2.1.268):** Surfaces do not all support the same elements, and mobile renders in a narrow viewport with a reduced element set. Design the tree so the essential information survives when an element is unsupported, and keep layouts narrow. A tree that does not validate falls back to Claude Code's own rendering; the debug log carries a line beginning `ui.render (<Component>): a hook returned a tree that does not validate`, followed by the reason.
-
-### Hot Reload and Per-Session Consent (CC 2.1.283)
-
-Hot reload needs the user's consent once per session:
-
-1. When the "Plugin authoring" skill from the built-in `cc-plugin-plugin-authoring` plugin loads, Claude Code starts watching `${CLAUDE_DEV_MODS_DIR}`; each mod goes in its own child folder, `${CLAUDE_DEV_MODS_DIR}/<mod-name>/`.
-2. The first file written there makes Claude Code ask the user, once: "Enable mod hot-reloading for this session?" (`Not now` / `Enable for this session`). The turn keeps going while the question is open.
-3. **Only the user can answer it.** No permission mode, permission rule, or hook answers the question. Under `claude -p` nobody can be asked, so hot reload is off; an organization policy or an untrusted workspace also turns it off.
-4. On `Enable for this session`, the folder joins the session's plugin folders, and the mod loads when the turn ends. Each later edit reloads it when the turn that made the edit ends.
-5. If the user declines, the files are still written; load them with `claude --plugin-dir <folder>`.
-
-A process that restarts (an app relaunch, a resume) loads an enabled folder again by itself.
-
-**A reload is a fresh load.** `register` runs again and `session.start` fires again. Values in `$.state` (per session) and `$.store` (across sessions) are held by Claude Code and persist; the module's own variables start over. Keep anything that must survive a reload in `$.state` or `$.store`.
-
-A mod developed outside `${CLAUDE_DEV_MODS_DIR}` loads like any other plugin with `claude --plugin-dir`, and `/reload-plugins` refreshes it.
-
-### When to Use Function-Hook Plugins
-
-**Consider function-hooks when:**
+**Consider a mod when:**
 
 - Your plugin needs custom UI rendering (panes, bands, status line entries, toasts) beyond text output
 - Hook logic is complex enough that shell commands become unwieldy
@@ -118,34 +35,46 @@ A mod developed outside `${CLAUDE_DEV_MODS_DIR}` loads like any other plugin wit
 - You prefer not to write JavaScript/TypeScript
 - Maximum portability across environments
 
-### Validation and Error Reporting (CC 2.1.267, updated 2.1.283)
+Most plugins work well with declarative `hooks.json` configuration.
 
-`claude plugin validate <mod folder>` reads the manifest and the module source the way Claude Code will. It reports what the module hooks and calls, plus everything Claude Code would refuse, before any session loads it. When a state contract exists, it also checks `$.state` keys against it.
+### Risks That Apply Across Plugin Types
 
-- **Gating hooks (CC 2.1.290).** Each hook a mod registers at a gating site is listed with whether it has a `.catch`; under `--json` the list is `gatingHooks`.
-- **Destructured options (CC 2.1.290).** Validation and plugin loading no longer refuse a hooks module that destructures an option named like one of its top-level functions.
-- **Redeclared `$.state` variables are refused (CC 2.1.292).** A module that reads a `$.state` value through a top-level `var` that is declared again or reassigned is refused, by both `claude plugin validate` and loading.
+**Rewriting tool input under auto mode.** A `tool.call` hook that rewrites a call's input with `next({ ...e, ... })` can leave the auto-mode classifier with no verdict, the same as a PreToolUse hook that returns `updatedInput`. See `../../hook-development/references/advanced.md`.
 
-Claude Code reports failures in three places:
+**Managed rules still apply (CC 2.1.289).** On managed machines, a managed deny or ask rule on a nested compound shell command holds even when a user-installed mod's `tool.call` hook approves the call.
 
-- **Session notice** — the outcome of the hot-reload question and of the load, shown at the start of Claude's next turn.
-- **Transcript** — one dim line naming the plugin, the event, and the reason when a hook fails (the hook is skipped and the chain continues) or a module does not load. Hook functions can use `.catch()` handlers to handle failures themselves.
-- **Debug log** (`claude --debug`) — a line for every failure occurrence and every result Claude Code refused, including rejected render trees.
+### Version History
 
-**Draw failures stay contained (CC 2.1.289).** A mod's `Client` that fails while drawn no longer takes down everything the mod drew around it. It fails alone and raises `ui.fault`. When a band or pane fails to draw, the line the author sees names the mod and says nothing was drawn.
+The `plugin-authoring` skill describes only the build it ships with. This history records when mod behavior changed, for authors who support older Claude Code versions.
 
-**`claude plugin test`.** Claude Code 2.1.288 and later also has a `claude plugin test` command (CC 2.1.288 fixed it reporting mods as turned off remotely after reading an out-of-date saved setting). Since CC 2.1.292, a failed `expect` inside a hook the test registered, or a stub answer the engine refuses, fails the test instead of passing silently. Run `claude plugin test --help` for its options.
-
-### Limitations
-
-- The module has no DOM and no Node APIs; everything outside it goes through `$`
-- Surfaces support different element sets (see Rendering above)
-- More complex to debug than command hooks
-- Hot reload requires the user's per-session consent and is unavailable under `claude -p`
-
-**Plugin-authoring guidance ships as a built-in plugin (CC 2.1.284).** CC 2.1.269 removed the embedded plugin-development skill from Claude Code's system prompts. CC 2.1.283 bundled a "Plugin authoring" skill for mods; CC 2.1.284 moved it out of the system prompts into the built-in plugin `cc-plugin-plugin-authoring`, whose user-invocable skill extracts the running build's API declarations (`types/claude-code.d.ts`) for Claude to read. Claude still has no function-hook API knowledge until that skill loads, so an author should load it (or point Claude at this reference) before writing a hooks module. Since CC 2.1.290 the skill also has Claude give the one command another person runs to install a mod, and write it in the README's install section.
-
-**Note:** This is an advanced feature. Most plugins work well with declarative `hooks.json` configuration. Consider function-hooks only when the simpler approach doesn't meet your requirements.
+- **CC 2.1.260-2.1.261:** function-hook plugins introduced; expanded in CC 2.1.267.
+- **CC 2.1.267:** `.catch` handlers on hooks, one transcript notice per failing hook or module, and a debug-log line for every failure. Keyed boxes (`<Box key="...">`) scope hover styles to their subtree.
+- **CC 2.1.268:** surfaces (`terminal`, `desktop`, `vscode`, `mobile`) support different element sets; a tree that does not validate falls back to Claude Code's own rendering.
+- **CC 2.1.269:** the embedded plugin-development skill was removed from Claude Code's system prompts.
+- **CC 2.1.283:** the module shape was reworked (element constructors come from `$.ui.resolve(e)`; the manifest declares no `experimental` field and no JSX runtime dependency), hot reload gained per-session user consent, and a "Plugin authoring" skill was bundled.
+- **CC 2.1.284:** that skill moved out of the system prompts into the built-in plugin `cc-plugin-plugin-authoring`.
+- **CC 2.1.287:** announced as "Claude Mods"; the built-in "You should know" mod shipped.
+- **CC 2.1.288:** `$.ui.selection()` returns the text the user last selected in fullscreen mode. `claude plugin test` runs a mod's `*.test.ts` files (CC 2.1.288 fixed it reporting mods as turned off remotely after reading an out-of-date saved setting).
+- **CC 2.1.289:** the `/plugin-types` command and its `.claude/types` output were removed; types come from the `plugin-authoring` skill. `agent.spawn` covers teammates, `$.agent.list()` reports idle and waiting states, and one agent id is used across plugin hook events. A mod's `Client` that fails while drawn fails alone and raises `ui.fault`.
+- **CC 2.1.290:**
+  - The `tool.check` event carries `agentId`, and its question and verdict carry `ceiling`, naming the approval an organization requires.
+  - A `turn.step` hook result includes `serverToolUses`, the tool calls the API ran itself.
+  - The typings add `ThemeKey` and `Color`.
+  - `claude plugin validate` lists each gating hook with whether it has a `.catch` (`gatingHooks` under `--json`), and accepts a module that destructures an option named like one of its top-level functions.
+  - A `prompt.submit` hook that calls `next(e)` and then denies or drops is reported as failed.
+  - Long text from plugin hooks is clipped and logged rather than refused or dropped silently.
+  - When another mod denies a `$.process.spawn` after the child ran, the call rejects saying so.
+  - The skill has Claude give the one command another person runs to install a mod.
+- **CC 2.1.292:**
+  - `prompt.autocomplete` lets a mod add rows to the prompt box's autocomplete list.
+  - `agent.spawn` covers workflow agents, with their run and index.
+  - `$.model.complete` supports prompt caching through `cache: true` on a prompt or system block.
+  - `config.set`, `state.set`, `env.set`, and `agent.spawn` hooks that call `next(e)` and then deny or drop are reported as failed. Decide before calling `next(e)`.
+  - A `tool.check` hook answering allow does not skip the dialog of a tool that requires the user's answer.
+  - `tool.call` hooks see arguments after misnamed parameters are repaired.
+  - A prompt drop or setting deny reason longer than 4,096 characters is honored.
+  - A module that reads a `$.state` value through a top-level `var` that is declared again or reassigned is refused.
+  - A failed `expect` inside a test's hook, or a stub answer the engine refuses, fails the test.
 
 ## Keybindings Plugin Context
 

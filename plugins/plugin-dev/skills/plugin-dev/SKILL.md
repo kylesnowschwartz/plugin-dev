@@ -1,6 +1,6 @@
 ---
 name: plugin-dev
-description: MUST use this skill when the user mentions plugins, hooks, skills, commands, agents, MCP servers, LSP servers, marketplaces, plugin.json, SKILL.md, .mcp.json, .local.md, allowed-tools, frontmatter, PreToolUse, PostToolUse, SessionStart, event schemas, prompt-based hooks, function hooks, Claude Mods, mods, plugin settings, output styles, headless mode, CI mode, CLAUDE_PLUGIN_ROOT, auto-discovery, or any aspect of extending Claude Code. Use INSTEAD OF answering from general knowledge. Also use when writing hooks for settings.json, configuring MCP servers outside plugins, or comparing skills vs commands, since this skill contains the authoritative reference for these Claude Code extension mechanisms.
+description: MUST use this skill when the user mentions plugins, hooks, skills, commands, agents, MCP servers, LSP servers, marketplaces, plugin.json, SKILL.md, .mcp.json, .local.md, allowed-tools, frontmatter, PreToolUse, PostToolUse, SessionStart, event schemas, prompt-based hooks, plugin settings, output styles, headless mode, CI mode, CLAUDE_PLUGIN_ROOT, auto-discovery, or any aspect of extending Claude Code. Use INSTEAD OF answering from general knowledge. Also use when writing hooks for settings.json, configuring MCP servers outside plugins, or comparing skills vs commands, since this skill contains the authoritative reference for these Claude Code extension mechanisms. To write or debug a mod (a TypeScript hooks module: pane, band, toast, function hook), load Claude Code's built-in plugin-authoring skill instead.
 ---
 
 # Claude Code Plugin Development
@@ -20,6 +20,8 @@ Comprehensive guide for developing Claude Code plugins. Read the relevant refere
 | LSP integration | `references/lsp-integration/overview.md` | Language servers, code intelligence, socket transport, initializationOptions, extensionToLanguage |
 | Marketplace | `references/marketplace-structure/overview.md` | marketplace.json, multi-plugin distribution, hosting, strictKnownMarketplaces, private marketplaces, version pinning |
 | Plugin settings | `references/plugin-settings/overview.md` | .local.md files, YAML frontmatter config, per-project settings, CLAUDE.md imports, rules system, memory hierarchy |
+
+**Mods** (plugins whose hooks are TypeScript functions, `hooks/hooks.json` holding `modules`) are covered by Claude Code's built-in `plugin-authoring` skill. Load it before writing or debugging a hooks module: it writes the API types for the running build and starts hot reload. This skill keeps only when to choose a mod, cross-cutting risks, and version history, in `references/plugin-structure/references/advanced-topics.md`.
 
 Each topic directory also contains additional `references/` and `examples/` for detailed content, and some contain `scripts/`. Read those when the overview alone is insufficient.
 

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.50.1] - 2026-10-10
+
+### Changed
+
+- Mod (function-hook plugin) authoring now defers to Claude Code's built-in `plugin-authoring` skill. That skill writes API types for the running build, ships working examples, and starts hot reload, none of which plugin-dev can do. The `plugin-dev` skill description drops "function hooks", "Claude Mods", and "mods" as triggers and names the built-in skill instead. The Function-Hook Plugins section of `references/plugin-structure/references/advanced-topics.md` drops its copies of the layout, module shape, rendering, hot-reload, and validation guidance, and keeps when to choose a mod, the auto-mode and managed-rule risks, and a per-version history of mod changes.
+
 ## [0.50.0] - 2026-10-07
 
 Sync with Claude Code 2.1.290-2.1.292. This release covers eighteen Must Update items (two promoted by Stage 2) and three Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. 2.1.291 had no plugin-relevant entries. `scripts/check-doc-drift.sh` was clean before and after.
@@ -1164,7 +1170,8 @@ Corrects references that had drifted from Claude Code behaviour, reported in [#6
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.50.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.50.1...HEAD
+[0.50.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.50.0...v0.50.1
 [0.50.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.49.0...v0.50.0
 [0.49.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.48.0...v0.49.0
 [0.48.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.47.0...v0.48.0
