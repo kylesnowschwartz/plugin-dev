@@ -16,7 +16,7 @@ claude -p "Analyze this codebase for security issues" --allowedTools "Read,Grep,
 - **MCP servers:** Start and connect as usual. Tools are available once a server has connected. `CLAUDE_CODE_MCP_STARTUP_WAIT_MS` (CC 2.1.274) bounds how long the first turn waits for connecting servers (`0` = don't wait). A server that is still connecting after that joins on a later turn, so keep plugin server startup fast or raise the wait in CI.
 - **CLAUDE.md:** Project and user memory files load normally.
 - **Agents:** Can be spawned via Task tool during execution.
-- **Skills (as context):** Skill content with `user-invocable: false` loads into context and is available for Claude to use.
+- **Skills (automatic use):** Any skill whose description matches the task can be used automatically, whatever `user-invocable` is set to. The description is always in context; the skill body loads only when the skill is invoked.
 
 ### What Does NOT Work in Headless Mode
 
@@ -40,7 +40,7 @@ claude -p "/review"
 claude -p "Review the codebase for code quality issues"
 ```
 
-If the skill has `user-invocable: false` and is loaded via plugin, Claude can still use its knowledge automatically.
+If the plugin's skill description matches the task, Claude can invoke the skill automatically and load its body, whatever `user-invocable` is set to. That field only hides the skill from the `/` menu and blocks `/name`; it does not change discovery or loading.
 
 ## Permission Control
 

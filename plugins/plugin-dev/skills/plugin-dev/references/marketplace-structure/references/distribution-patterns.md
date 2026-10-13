@@ -100,7 +100,10 @@ Pre-configure required plugins for a project:
       }
     }
   },
-  "enabledPlugins": ["security-scanner@team-tools", "code-formatter@team-tools"]
+  "enabledPlugins": {
+    "security-scanner@team-tools": true,
+    "code-formatter@team-tools": true
+  }
 }
 ```
 

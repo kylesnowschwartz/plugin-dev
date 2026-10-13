@@ -394,11 +394,11 @@ This means any field valid in `plugin.json` can also be used in a marketplace en
 
 Organizations can control marketplace behavior through managed settings:
 
-| Setting                   | Type    | Description                                           |
-| ------------------------- | ------- | ----------------------------------------------------- |
-| `strictKnownMarketplaces` | array   | Allowlist of approved marketplace entries (see below) |
-| `enabledPlugins`          | array   | Pre-configured list of enabled plugins                |
-| `extraKnownMarketplaces`  | object  | Additional approved marketplaces beyond built-in ones |
+| Setting                   | Type    | Description                                                             |
+| ------------------------- | ------- | ----------------------------------------------------------------------- |
+| `strictKnownMarketplaces` | array   | Allowlist of approved marketplace entries (see below)                   |
+| `enabledPlugins`          | object  | Map of `plugin@marketplace` to `true` (force-enable) or `false` (block) |
+| `extraKnownMarketplaces`  | object  | Additional approved marketplaces beyond built-in ones                   |
 
 `strictKnownMarketplaces` is a **list of entries, never a boolean**. Entries take the `owner/*` wildcard form or a source object, and may carry a `pathPattern` regex. Writing `true` does not enable strict mode. See [overview.md](../overview.md#owner-wildcard-entries-cc-21223) for wildcard syntax.
 
@@ -407,7 +407,9 @@ Organizations can control marketplace behavior through managed settings:
 ```json
 {
   "strictKnownMarketplaces": ["company-internal/*", "approved-vendor/*"],
-  "enabledPlugins": ["security-scanner@company-tools"],
+  "enabledPlugins": {
+    "security-scanner@company-tools": true
+  },
   "extraKnownMarketplaces": {
     "company-tools": {
       "source": {

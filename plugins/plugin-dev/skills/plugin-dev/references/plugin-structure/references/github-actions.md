@@ -93,7 +93,7 @@ Reference plugin skills in the workflow's `prompt` parameter:
     claude_args: "--max-turns 15"
 ```
 
-Since skill slash commands (`/skill-name`) don't work in headless mode, describe the task instead. Some built-in slash commands, such as `/reload-plugins`, do run headless (see `headless-ci-mode.md`). If the skill has `user-invocable: false`, Claude will use it automatically based on context.
+Since skill slash commands (`/skill-name`) don't work in headless mode, describe the task instead. Some built-in slash commands, such as `/reload-plugins`, do run headless (see `headless-ci-mode.md`). Claude can still use any skill whose description matches the task automatically, whatever `user-invocable` is set to; the skill body loads only when the skill is invoked.
 
 ## Configuration Options
 

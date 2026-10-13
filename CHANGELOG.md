@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.51.1] - 2026-10-13
+
+Documentation drift fixes. CC version range: none (drift-only). No Claude Code releases came after 2.1.296, so the changelog baseline stays at 2.1.296. The `doc-drift-auditor` sweep found six contradictions. Facts.json does not cover them, and Stage 2 confirmed each one against the official Claude Code docs or the directory contents. `scripts/check-doc-drift.sh` was clean.
+
+### Fixed
+
+- **allowed-tools**: `agent-development/overview.md`, `command-development/references/frontmatter-reference.md`, `skill-development/references/advanced-frontmatter.md` (comparison table), `plugin-structure/overview.md`, and the remaining sites in `advanced-frontmatter.md` (intro, use list, both-fields note), `frontmatter-reference.md` (purpose, comparison table, best practices), `skill-development/overview.md`, `skill-creation-workflow.md`, and `command-development/references/documentation-patterns.md` described `allowed-tools` as restricting tool access, like an agent's `tools` field. It pre-approves the listed tools so they run without a prompt. Unlisted tools stay callable under the normal permission settings, so `allowed-tools: Read, Grep` is not a read-only boundary. The fixed sites now point to `disallowed-tools` for removing tools
+- **marketplace-structure**: `enabledPlugins` was shown as an array in `schema-reference.md` (type and managed-settings example), `distribution-patterns.md`, and both settings examples in `team-marketplace.md`. It is an object map of `plugin@marketplace` to `true` (force-enable) or `false` (block), matching `plugin-structure/references/advanced-topics.md`
+- **mcp-integration**: `overview.md` and the `server-types.md` comparison tied OAuth to SSE and listed HTTP as headers or tokens only, and they told authors to "Use SSE when: Need OAuth authentication". Claude Code runs the OAuth 2.0 + PKCE flow for HTTP servers too, as `authentication.md` already said. Both files now also note that the SSE transport is deprecated upstream in favour of HTTP. The `overview.md` and `server-types.md` conclusions and `server-discovery.md` now point hosted OAuth servers to HTTP as well
+- **plugin-structure**: `manifest-reference.md` gave `version` a default of `"0.1.0"`. There is no fixed default: when neither the manifest nor the marketplace entry sets it, the version is the 12-character commit SHA (git-backed sources), the SHA-256 digest (`archive`), or `unknown` (npm or a local directory outside git). The page also now says that semver is recommended, not checked
+- **skill-development**: `skill-creation-workflow.md` and `overview.md` called plugin-dev's topic directories "skills". They credited them with SKILL.md files, trigger phrases, and word and file counts that do not exist. The directories are now described as topic references with no SKILL.md, the stale counts are gone, and `skills/plugin-dev/SKILL.md` is named as the model skill. The topic-reference links in `skill-creation-workflow.md` now resolve (`../../<topic>/`)
+- **plugin-structure (headless/CI)**: `headless-ci-mode.md` and `github-actions.md` said a skill with `user-invocable: false` loads into context and is used automatically. That field only hides the skill from the `/` menu and blocks `/name`. Any skill whose description matches the task can be used automatically, and its body loads only when it is invoked
+
 ## [0.51.0] - 2026-10-10
 
 Sync with Claude Code 2.1.293-2.1.296. This release covers eighteen Must Update items (one promoted by Stage 2, and seven missed changelog bullets folded into existing items by Stage 2) and one May Update item. The `doc-drift-auditor` sweep found no contradictions. `scripts/check-doc-drift.sh` was clean before and after, and the `docs/claude-code-facts.json` diff was `claude_code_version`-only.
@@ -1197,7 +1210,8 @@ Corrects references that had drifted from Claude Code behaviour, reported in [#6
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.51.0...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.51.1...HEAD
+[0.51.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.51.0...v0.51.1
 [0.51.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.50.1...v0.51.0
 [0.50.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.50.0...v0.50.1
 [0.50.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.49.0...v0.50.0

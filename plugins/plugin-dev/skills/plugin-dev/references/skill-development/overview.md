@@ -84,7 +84,7 @@ Only `name` and `description` are required. Every optional field below is docume
 | --- | --- | --- |
 | `name` | Yes | Skill identifier (kebab-case, max 64 chars per the Agent Skills spec; Claude Code silently ignores a `name` over 256 chars, CC 2.1.292) |
 | `description` | Yes | When to use, third-person, with trigger phrases (< 1024 chars) |
-| `allowed-tools` | No | Allowlist tools Claude may use while active (read-only/security scopes) |
+| `allowed-tools` | No | Pre-approve tools to run without a permission prompt while active (not a restriction; see `disallowed-tools`) |
 | `disallowed-tools` | No | Denylist tools to remove from the pool (CC 2.1.152) |
 | `context` | No | `fork` runs the skill in a subagent, preserving main context |
 | `agent` | No | Agent type handling the fork (`Explore`, `Plan`, `general-purpose`, custom); requires `context: fork` |
@@ -149,7 +149,7 @@ my-plugin/
         └── scripts/
 ```
 
-Test locally with `claude --plugin-dir /path/to/plugin` and ask questions that should trigger the skill. Study plugin-dev's own skills (`../hook-development/`, `../agent-development/`, `../mcp-integration/`, `../plugin-settings/`, `../command-development/`, `../plugin-structure/`) as best-practice examples; details in `references/skill-creation-workflow.md`.
+Test locally with `claude --plugin-dir /path/to/plugin` and ask questions that should trigger the skill. Study plugin-dev's own skill (`skills/plugin-dev/SKILL.md`) as a best-practice example. Its topic reference directories (`../hook-development/`, `../agent-development/`, `../mcp-integration/`, `../plugin-settings/`, `../command-development/`, `../plugin-structure/`) are not separate skills (they have no SKILL.md) but show how to organize a skill's references and examples; details in `references/skill-creation-workflow.md`.
 
 ## Reference and Example Files
 

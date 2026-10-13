@@ -139,7 +139,7 @@ After discovering a server:
 
 1. **Check server type** - stdio (local), SSE (hosted), HTTP, or WebSocket
 2. **Get installation info** - Fetch detail page for GitHub README
-3. **Determine auth method** - OAuth (SSE), tokens (HTTP), env vars (stdio)
+3. **Determine auth method** - OAuth or headers/tokens (HTTP; SSE for legacy servers), env vars (stdio)
 4. **Generate configuration** - Create `.mcp.json` entry
 
 **Example workflow:**

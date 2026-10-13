@@ -45,7 +45,7 @@ user-invocable: 0
 
 ## allowed-tools
 
-Optionally restrict which tools Claude can use when the skill is active:
+Optionally pre-approve tools so Claude can use them without a permission prompt while the skill is active. This does not restrict which tools are available; use `disallowed-tools` to remove tools.
 
 ```yaml
 ---
@@ -57,11 +57,13 @@ allowed-tools: Read, Grep, Glob
 
 Use `allowed-tools` for:
 
-- Read-only skills that shouldn't modify files
-- Security-sensitive workflows
-- Skills with limited scope
+- Skills that repeatedly need the same tools (avoid prompts)
+- Unattended or headless skills that must not stall on prompts
+- Documenting the tools a skill relies on
 
-When specified, Claude can only use the listed tools without needing permission. If omitted, Claude follows the standard permission model.
+For read-only or security-sensitive skills, remove tools with `disallowed-tools`; `allowed-tools` is not a boundary.
+
+When specified, the listed tools run without a permission prompt. Unlisted tools remain callable and follow the standard permission model. If omitted, every tool follows the standard permission model.
 
 **Scoped to the invoking turn (CC 2.1.292):** the `allowed-tools` grant from a skill or slash command lasts for the turn that invoked it. Before CC 2.1.292, leaving auto mode or plan mode partway through that turn made the rule come back in a later turn. A skill that needs the same tools again should be invoked again rather than relying on a carried-over grant.
 
@@ -458,12 +460,12 @@ disallowed-tools:
 
 ### Comparison with allowed-tools
 
-| Field             | Approach  | Use When                                        |
-| ----------------- | --------- | ----------------------------------------------- |
-| `allowed-tools`   | Allowlist | Few tools needed, restrict to specific set      |
-| `disallowed-tools`| Denylist  | Most tools needed, block specific dangerous ones|
+| Field              | Approach     | Use When                                                                      |
+| ------------------ | ------------ | ----------------------------------------------------------------------------- |
+| `allowed-tools`    | Pre-approval | Listed tools should run without a prompt (unlisted tools stay callable)       |
+| `disallowed-tools` | Denylist     | Specific tools must be removed from the pool (the only way to restrict tools) |
 
-Use one or the other. If both are specified, behavior is undefined.
+The two fields do different jobs and can be combined: `allowed-tools` pre-approves tools, `disallowed-tools` removes them. Do not list the same tool in both.
 
 ### Lifecycle
 
