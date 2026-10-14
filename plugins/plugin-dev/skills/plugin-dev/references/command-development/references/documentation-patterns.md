@@ -604,7 +604,7 @@ PERFORMANCE:
 
 SECURITY CONSIDERATIONS:
   - Validates all inputs to prevent injection
-  - Uses allowed-tools to limit Bash access
+  - Uses allowed-tools to pre-approve only the needed Bash commands
   - No credentials in command file
 
 TESTING:

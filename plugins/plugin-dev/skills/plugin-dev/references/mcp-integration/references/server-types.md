@@ -415,7 +415,7 @@ Design implication for plugin authors: a plugin that bundles a remote MCP server
 | **Transport** | Process                     | HTTP/SSE             | HTTP                 | WebSocket            |
 | **Direction** | Bidirectional               | Server→Client        | Request/Response     | Bidirectional        |
 | **State**     | Stateful                    | Stateful             | Stateless            | Stateful             |
-| **Auth**      | Env vars                    | OAuth/Headers        | Headers              | Headers              |
+| **Auth**      | Env vars                    | OAuth/Headers        | OAuth/Headers        | Headers              |
 | **Use Case**  | Local tools                 | Cloud services       | REST APIs            | Real-time            |
 | **Latency**   | Lowest                      | Medium               | Medium               | Low                  |
 | **Setup**     | Easy                        | Medium               | Easy                 | Medium               |
@@ -432,16 +432,18 @@ Design implication for plugin authors: a plugin that bundles a remote MCP server
 
 **Use SSE when:**
 
-- Connecting to hosted services
-- Need OAuth authentication
-- Using official MCP servers (Asana, GitHub)
+The SSE transport is deprecated upstream; prefer HTTP for new servers. OAuth is not a reason to pick SSE, since Claude Code handles OAuth for HTTP servers too.
+
+- Connecting to a hosted service that does not offer an HTTP endpoint yet
+- Using official MCP servers that still publish only an SSE endpoint
 - Want automatic reconnection (bounded — see [Reconnection Is Bounded](#reconnection-is-bounded))
 
 **Use HTTP when:**
 
+- Connecting to hosted services (the recommended remote transport)
 - Integrating with REST APIs
 - Need stateless interactions
-- Using token-based auth
+- Need OAuth (handled automatically) or token-based auth
 - Simple request/response pattern
 
 **Use WebSocket when:**
@@ -579,8 +581,8 @@ Set different values for dev/prod:
 Choose the MCP server type based on your use case:
 
 - **stdio** for local, custom, or NPM-packaged servers
-- **SSE** for hosted services with OAuth
-- **HTTP** for REST APIs with token auth
+- **HTTP** for hosted services and REST APIs (OAuth or token auth)
+- **SSE** only for legacy servers without an HTTP endpoint (deprecated)
 - **WebSocket** for real-time bidirectional communication
 
 Test thoroughly and handle errors gracefully for robust MCP integration.

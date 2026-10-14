@@ -13,7 +13,7 @@ Agents are autonomous subprocesses that handle complex, multi-step tasks indepen
 - The markdown body becomes the agent's system prompt
 - Model and color customization
 
-> **Important - Field Name Difference:** Agents use `tools` to restrict tool access. Skills use `allowed-tools` for the same purpose. Don't confuse these when switching between component types.
+> **Important - Field Name Difference:** Agents use `tools` to restrict tool access. Skills use `allowed-tools`, which does something different: it pre-approves the listed tools so they run without a permission prompt, but it does not restrict which tools are available (unlisted tools stay callable under the normal permission settings). To remove tools from a skill, use `disallowed-tools`. Don't confuse these when switching between component types.
 >
 > **Note on Official Documentation:** The `color` field documented in this skill is supported by Claude Code (the former `/agents` creation wizard generated it; that wizard has been removed, and since CC 2.1.281 typing `/agents` only explains where it went), but it is not yet reflected in the [official sub-agents documentation](https://code.claude.com/docs/en/sub-agents). See [anthropics/claude-code#8501](https://github.com/anthropics/claude-code/issues/8501) for tracking. The [plugins-reference.md](https://code.claude.com/docs/en/plugins-reference) may show an older agent format using a `capabilities` field; for Claude Code plugins, prefer the structure documented in this skill which uses `tools` for tool restrictions.
 
@@ -104,13 +104,13 @@ The full frontmatter template (all fields, system-prompt scaffold) is shown in `
 
 Some frontmatter fields are specific to skills and do not apply to agents:
 
-| Skill-Only Field           | Purpose                                | Why Not for Agents                                      |
-| -------------------------- | -------------------------------------- | ------------------------------------------------------- |
-| `context: fork`            | Run skill in separate subagent context | Agents already run as subprocesses by design            |
-| `agent`                    | Specify agent type for forked context  | Only applies when `context: fork` is set                |
-| `user-invocable`           | Control slash menu visibility          | Agents aren't invoked via slash commands                |
-| `disable-model-invocation` | Block programmatic Skill tool usage    | Agents use Task tool, not Skill tool                    |
-| `allowed-tools`            | Restrict tool access (skill syntax)    | Agents use `tools` field instead (different field name) |
+| Skill-Only Field           | Purpose                                            | Why Not for Agents                            |
+| -------------------------- | -------------------------------------------------- | --------------------------------------------- |
+| `context: fork`            | Run skill in separate subagent context             | Agents already run as subprocesses by design  |
+| `agent`                    | Specify agent type for forked context              | Only applies when `context: fork` is set      |
+| `user-invocable`           | Control slash menu visibility                      | Agents aren't invoked via slash commands      |
+| `disable-model-invocation` | Block programmatic Skill tool usage                | Agents use Task tool, not Skill tool          |
+| `allowed-tools`            | Pre-approve tools without prompting (skill syntax) | Agents use `tools` to restrict access instead |
 
 Skills provide knowledge that loads into context; agents are autonomous subprocesses that execute independently — which is why context-forking options don't apply to agents.
 

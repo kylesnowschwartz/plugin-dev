@@ -90,16 +90,16 @@ See `references/server-discovery.md` for detailed search instructions, URL patte
 
 Claude Code supports four transport types. Pick by where the server runs and how it authenticates.
 
-| Type  | Transport | Best For                    | Auth     |
-| ----- | --------- | --------------------------- | -------- |
-| stdio | Process   | Local tools, custom servers | Env vars |
-| SSE   | HTTP      | Hosted services, cloud APIs | OAuth    |
-| HTTP  | REST      | API backends, token auth    | Tokens   |
-| ws    | WebSocket | Real-time, streaming        | Tokens   |
+| Type  | Transport | Best For                              | Auth            |
+| ----- | --------- | ------------------------------------- | --------------- |
+| stdio | Process   | Local tools, custom servers           | Env vars        |
+| SSE   | HTTP      | Legacy hosted servers (deprecated)    | OAuth / Headers |
+| HTTP  | REST      | Hosted services, cloud APIs, backends | OAuth / Headers |
+| ws    | WebSocket | Real-time, streaming                  | Tokens          |
 
 - **stdio** executes a local MCP server as a child process (stdin/stdout). Use for file systems, local databases, custom scripts, and NPM-packaged servers bundled with the plugin.
-- **SSE** connects to a hosted server over HTTP with server-sent events and automatic OAuth. Use for official hosted servers (Asana, GitHub) and cloud services.
-- **HTTP** connects to a RESTful MCP endpoint with token authentication for stateless request/response interactions.
+- **SSE** connects to a hosted server over HTTP with server-sent events. The SSE transport is deprecated upstream; use HTTP for new servers and keep SSE only for servers that do not offer HTTP yet.
+- **HTTP** connects to a remote MCP endpoint. Claude Code runs the OAuth 2.0 flow (with PKCE) automatically for HTTP servers, or the server can take headers/tokens instead. This is the recommended transport for hosted and cloud services.
 - **ws** connects over WebSocket for real-time bidirectional streaming and push notifications.
 
 **No `"type": "sdk"` servers in plugins (CC 2.1.274).** The official MCP docs also list `sdk`, an in-process server, but only an SDK host application can register one. An `sdk` entry in `.mcp.json`, `plugin.json` `mcpServers`, settings, or an agent file's `mcpServers` is skipped with a warning, so the plugin loads without that server. Ship the server as stdio, HTTP, SSE, or WebSocket instead.
@@ -327,7 +327,7 @@ To add MCP integration to a plugin:
 8. Test error cases (connection failures, auth errors)
 9. Document MCP integration in plugin README
 
-Focus on stdio for custom/local servers, SSE for hosted services with OAuth. For server lifecycle, testing/validation, debugging (`claude --debug`, `/mcp`), error handling, performance (`alwaysLoad`, lazy loading), output/description limits, and the full `claude mcp` CLI (including `login`/`logout` and `serve`), see `references/operations.md`.
+Focus on stdio for custom/local servers and HTTP for hosted services (Claude Code handles OAuth for HTTP; SSE is deprecated). For server lifecycle, testing/validation, debugging (`claude --debug`, `/mcp`), error handling, performance (`alwaysLoad`, lazy loading), output/description limits, and the full `claude mcp` CLI (including `login`/`logout` and `serve`), see `references/operations.md`.
 
 ## Routing Table
 

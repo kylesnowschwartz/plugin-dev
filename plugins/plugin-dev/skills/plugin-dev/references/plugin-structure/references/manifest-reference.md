@@ -48,9 +48,9 @@ The unique identifier for the plugin. Used for:
 #### version
 
 **Type**: String
-**Format**: Semantic versioning (MAJOR.MINOR.PATCH)
+**Format**: Semantic versioning (MAJOR.MINOR.PATCH) recommended; Claude Code does not check the value against semver
 **Example**: `"2.1.0"`
-**Default**: `"0.1.0"` if not specified
+**Default**: No fixed default. When neither the manifest nor the marketplace entry sets `version`, Claude Code computes one: the 12-character commit SHA for `github`, `url`, and `git-subdir` sources and for relative paths in a Git-hosted marketplace; the SHA-256 digest for `archive` sources; and `unknown` for npm sources or a local directory outside git. Omitting `version` therefore changes how updates and cache restores resolve.
 
 Semantic versioning guidelines:
 

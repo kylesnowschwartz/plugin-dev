@@ -388,7 +388,7 @@ Before finalizing a skill:
 - [ ] Frontmatter has `name` and `description` fields
 - [ ] Name uses only lowercase letters, numbers, and hyphens (max 64 chars, the Agent Skills spec limit; Claude Code ignores a `name` over 256 chars)
 - [ ] Description is under 1024 characters
-- [ ] (Optional) `allowed-tools` field if restricting tool access
+- [ ] (Optional) `allowed-tools` field to pre-approve tools the skill needs
 - [ ] (Optional) `disallowed-tools` field if blocking specific tools
 - [ ] (Optional) `context: fork` if running in subagent
 - [ ] (Optional) `agent` field if specifying agent type (requires `context: fork`)
@@ -523,38 +523,34 @@ This pattern ensures users have visibility into what verification ran before com
 
 ## Examples from Plugin-Dev
 
-Study the skills in this plugin as examples of best practices:
+Plugin-dev ships a single consolidated skill, `skills/plugin-dev/SKILL.md`. That file is the model skill to study: its frontmatter `description` carries the trigger phrases, and its body is a lean topic index that points to reference files loaded only when needed.
+
+The directories under `skills/plugin-dev/references/` are **topic references, not skills**. They have no SKILL.md and no frontmatter; each holds an `overview.md` plus its own `references/` and `examples/` (and sometimes `scripts/`). They show how to split detailed content out of a skill:
 
 **the hook-development topic (`../../hook-development/`):**
 
-- Excellent trigger phrases: "create a hook", "add a PreToolUse hook", etc.
-- Lean SKILL.md (2,125 words)
-- 3 references/ files for detailed content
-- 3 examples/ of working hooks
-- 3 scripts/ utilities
+- Overview plus detailed reference files and working hook examples
+- Utility scripts in `scripts/`
 
 **the agent-development topic (`../../agent-development/`):**
 
-- Strong triggers: "create an agent", "agent frontmatter", etc.
-- Focused SKILL.md (1,896 words)
 - References include the AI generation prompt from Claude Code
 - Complete agent examples
 
 **the plugin-settings topic (`../../plugin-settings/`):**
 
-- Specific triggers: "plugin settings", ".local.md files", "YAML frontmatter"
 - References show real implementations (multi-agent-swarm, ralph-wiggum)
 - Working parsing scripts
 
-Each demonstrates progressive disclosure and strong triggering.
+Together with SKILL.md, they demonstrate progressive disclosure.
 
-### Study These Skills
+### Study These Topic References
 
-Plugin-dev's skills demonstrate best practices:
+Plugin-dev's topic references show how to organize a skill's bundled content:
 
-- `../hook-development/` - Progressive disclosure, utilities
-- `../agent-development/` - AI-assisted creation, references
-- `../mcp-integration/` - Comprehensive references
-- `../plugin-settings/` - Real-world examples
-- `../command-development/` - Clear critical concepts
-- `../plugin-structure/` - Good organization
+- `../../hook-development/` - Progressive disclosure, utilities
+- `../../agent-development/` - AI-assisted creation, references
+- `../../mcp-integration/` - Comprehensive references
+- `../../plugin-settings/` - Real-world examples
+- `../../command-development/` - Clear critical concepts
+- `../../plugin-structure/` - Good organization

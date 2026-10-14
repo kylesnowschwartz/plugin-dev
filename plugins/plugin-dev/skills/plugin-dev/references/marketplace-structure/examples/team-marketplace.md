@@ -84,10 +84,10 @@ Add to project's `.claude/settings.json`:
       }
     }
   },
-  "enabledPlugins": [
-    "code-standards@company-plugins",
-    "security-scanner@company-plugins"
-  ]
+  "enabledPlugins": {
+    "code-standards@company-plugins": true,
+    "security-scanner@company-plugins": true
+  }
 }
 ```
 
@@ -105,7 +105,9 @@ For projects requiring specific plugins, commit `.claude/settings.json`:
       }
     }
   },
-  "enabledPlugins": ["code-standards@company-plugins"]
+  "enabledPlugins": {
+    "code-standards@company-plugins": true
+  }
 }
 ```
 

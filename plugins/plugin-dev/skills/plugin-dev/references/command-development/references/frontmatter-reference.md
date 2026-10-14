@@ -69,7 +69,7 @@ description: Generate API documentation
 **Required:** No
 **Default:** Inherits from conversation permissions
 
-**Purpose:** Restrict or specify which tools command can use
+**Purpose:** Pre-approve tools so the command can use them without a permission prompt (does not restrict other tools; use `disallowed-tools` for that).
 
 **Formats:**
 
@@ -100,10 +100,12 @@ allowed-tools: Read, Grep, Edit
 **Bash with command filter:**
 
 ```yaml
-allowed-tools: Bash(git *)           # Only git commands
-allowed-tools: Bash(npm *)           # Only npm commands
-allowed-tools: Bash(docker *)        # Only docker commands
+allowed-tools: Bash(git *)           # Pre-approve git commands
+allowed-tools: Bash(npm *)           # Pre-approve npm commands
+allowed-tools: Bash(docker *)        # Pre-approve docker commands
 ```
+
+These patterns pre-approve matching commands; they do not block other commands, which still go through the normal permission settings. Use `disallowed-tools` to remove tools.
 
 **All tools (not recommended):**
 
@@ -117,11 +119,13 @@ allowed-tools: "*"
 
 **When to use:**
 
-1. **Security:** Restrict command to safe operations
+1. **Fewer prompts:** Pre-approve the safe operations the command needs
 
    ```yaml
-   allowed-tools: Read, Grep # Read-only command
+   allowed-tools: Read, Grep # Run without prompting; other tools still follow permission settings
    ```
+
+   This is not a security boundary: tools that are not listed remain callable. To make a command read-only, remove tools with `disallowed-tools`.
 
 2. **Clarity:** Document required tools
 
@@ -136,7 +140,7 @@ allowed-tools: "*"
 
 **Best practices:**
 
-- Be as restrictive as possible
+- Pre-approve as narrowly as possible
 - Use command filters for Bash (e.g., `git *` not `*`)
 - Only specify when different from conversation permissions
 - Document why specific tools are needed
@@ -343,12 +347,12 @@ disallowed-tools:
 
 **Comparison with allowed-tools:**
 
-| Field              | Approach  | Use When                                         |
-| ------------------ | --------- | ------------------------------------------------ |
-| `allowed-tools`    | Allowlist | Few tools needed, restrict to specific set       |
-| `disallowed-tools` | Denylist  | Most tools needed, block specific dangerous ones |
+| Field              | Approach     | Use When                                                                      |
+| ------------------ | ------------ | ----------------------------------------------------------------------------- |
+| `allowed-tools`    | Pre-approval | Listed tools should run without a prompt (unlisted tools stay callable)       |
+| `disallowed-tools` | Denylist     | Specific tools must be removed from the pool (the only way to restrict tools) |
 
-Use one or the other. If both are specified, behavior is undefined.
+The two fields do different jobs and can be combined: `allowed-tools` pre-approves tools, `disallowed-tools` removes them. Do not list the same tool in both.
 
 The restriction clears when the user sends their next message.
 
@@ -556,7 +560,7 @@ Before committing command:
 
 1. **Start minimal:** Add frontmatter only when needed
 2. **Document arguments:** Always use argument-hint with arguments
-3. **Restrict tools:** Use most restrictive allowed-tools that works
+3. **Pre-approve narrowly:** List only the tools the command needs in `allowed-tools`; use `disallowed-tools` to remove tools.
 4. **Choose right model:** Use haiku for speed, opus for complexity
 5. **Manual-only sparingly:** Only use disable-model-invocation when necessary
 6. **Clear descriptions:** Make commands discoverable in `/help`
