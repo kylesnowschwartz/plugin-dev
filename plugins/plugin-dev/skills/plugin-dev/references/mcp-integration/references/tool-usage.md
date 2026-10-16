@@ -91,6 +91,8 @@ allowed-tools: ["mcp__plugin_asana_asana__*"]
 
 **Caution:** Only use wildcards if the command truly needs access to all tools from a server.
 
+**Server-level rules match one server (CC 2.1.299).** A permission allow rule or agent `tools:` entry of the form `mcp__<server>` reaches only the server it names: `mcp__a` no longer covers a server named `a__b` or `a_`. For a server whose normalized name contains `__`, write `mcp__<whole name>__*`. Deny and ask rules for such a server now apply too. See `../../agent-development/references/permission-modes-rules.md` (MCP Tool Patterns).
+
 ### Tool Usage in Command Instructions
 
 **Example command:**

@@ -23,6 +23,8 @@ Claude Code automatically handles the complete OAuth 2.0 flow (with PKCE) for SS
 
 PKCE provides additional security for public clients by preventing authorization code interception attacks. Claude Code also supports pre-configured OAuth credentials for MCP servers that provide them.
 
+**Configured headers reach the OAuth requests (CC 2.1.299).** OAuth sign-in, token refresh, and sign-out now send the server's configured `headers` and `headersHelper` values. Before CC 2.1.299 they did not, which broke OAuth for servers behind an authenticating proxy. A plugin whose OAuth server sits behind such a proxy needs CC 2.1.299 or later.
+
 ### Configuration
 
 ```json
@@ -328,6 +330,8 @@ MCP servers using `headersHelper` for authentication now automatically retry on 
 - User does not need to manually re-authenticate
 
 **Use case:** Long-running sessions where tokens may expire mid-session. The retry happens transparently without user intervention.
+
+**OAuth requests (CC 2.1.299):** `headersHelper` output, like static `headers`, is also sent on OAuth sign-in, token refresh, and sign-out. See OAuth (Automatic) above.
 
 ## Security Best Practices
 

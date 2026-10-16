@@ -43,7 +43,7 @@ Most plugins work well with declarative `hooks.json` configuration.
 
 **Managed rules still apply (CC 2.1.289).** On managed machines, a managed deny or ask rule on a nested compound shell command holds even when a user-installed mod's `tool.call` hook approves the call.
 
-**Managed machines bypass some events for user mods (CC 2.1.296).** On a machine with managed settings, the built-in `cc-plugin-sec-default` plugin runs in front of user-installed mods and skips their hooks on `classic.*` events (`classic.SessionStart`, `classic.UserPromptSubmit`, `classic.Stop`, `classic.PermissionRequest`, `classic.PreCompact`, `classic.PostCompact`, `classic.SubagentStop`) and on `prompt.context` and `prompt.compose`. The hook does not run and no error shows; `claude --debug` logs `<plugin>: classic.Stop bypassed by cc-plugin-sec-default (tier user); beneath runs`. Command hooks in `hooks.json` are not affected. Use native events instead: `session.start` for session start, `tool.check` with an ask verdict for an approval wait, the `ToolUse` render's `isRunning` for an approval given, `session.compact` for compaction, and `turn.complete` with `agentId` for a subagent stop. A mod that adds system prompt or context text through `prompt.compose` or `prompt.context` has no effect on managed machines.
+**Managed machines bypass some events for user mods (CC 2.1.296).** On a machine with managed settings, the built-in `cc-plugin-sec-default` plugin runs in front of user-installed mods and skips their hooks on `classic.*` events (`classic.SessionStart`, `classic.UserPromptSubmit`, `classic.Stop`, `classic.PermissionRequest`, `classic.PreCompact`, `classic.PostCompact`, `classic.SubagentStop`) and on `prompt.context` and `prompt.compose`. The hook does not run and no error shows; `claude --debug` logs `<plugin>: classic.Stop bypassed by cc-plugin-sec-default (tier user); beneath runs`. Command hooks in `hooks.json` are not affected. Use native events instead: `session.start` for session start, `tool.check` with an ask verdict for an approval wait, the `ToolUse` render's `isRunning` for an approval given, `session.compact` for compaction, and `turn.complete` with `agentId` for a subagent stop. A mod that adds system prompt or context text through `prompt.compose` or `prompt.context` has no effect on managed machines. Since CC 2.1.299, `/plugin` and `claude plugin validate` show a note naming a mod's hooks that are skipped where an organization manages Claude Code, so the skip no longer needs `--debug` to find.
 
 ### Version History
 
@@ -101,6 +101,12 @@ The `plugin-authoring` skill describes only the build it ships with. This histor
   - `$.agent.register` is refused from a mod's hook that is still running after the mod was reloaded or removed.
   - `$.http.fetch` accepts a `HEAD` request whose response declares a `Content-Length` over the 4 MiB body limit.
   - Esc or an interrupt during a mod's `prompt.submit` hook (or a `UserPromptSubmit` hook) no longer ends headless sessions, clears the typed prompt, or lets the unchecked prompt through.
+- **CC 2.1.299:**
+  - An action a plugin hook can block is refused, not let through, when the hook cannot be handed it or cannot hand back its answer; a tool that already ran has its result withheld.
+  - Values plugin hooks hand back that nest deeper than 28,000 levels are refused with an error naming the limit (workflow scripts allow 100,000). Hooks that pass a very deeply nested tool input or message on with `next()` are no longer skipped.
+  - `/plugin` and `claude plugin validate` name a mod's hooks that are skipped where an organization manages Claude Code.
+  - Plan mode no longer runs a write that a mod's `tool.check` hook (or a PreToolUse hook) allowed.
+  - Other mod API changes in CC 2.1.299-2.1.301 are covered by the built-in `plugin-authoring` skill for the running build.
 
 ## Keybindings Plugin Context
 

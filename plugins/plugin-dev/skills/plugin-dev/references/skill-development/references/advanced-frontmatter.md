@@ -312,7 +312,9 @@ All 33 hook events register in frontmatter scope; the loader applies no allowlis
 | `PostToolUse` | Run checks after successful tool execution       |
 | `Stop`        | Verify completion criteria before skill finishes |
 
-Session-lifecycle events (`SessionStart`, `UserPromptSubmit`, `Notification`) register without error but usually have no chance to fire, because the session event happens before the skill is dispatched or after it unloads. Declare those in `hooks/hooks.json` instead.
+Session-lifecycle events (`SessionStart`, `Notification`) register without error but usually have no chance to fire, because the session event happens before the skill is dispatched or after it unloads. Declare those in `hooks/hooks.json` instead.
+
+`UserPromptSubmit` does fire from a skill's frontmatter (CC 2.1.299). It first runs on the prompt after the one that invokes the skill, then on each later prompt while the skill is loaded. It never sees the invoking prompt, so a hook meant to vet the prompt that triggers the skill belongs in `hooks/hooks.json`.
 
 ### Comparison with hooks.json
 

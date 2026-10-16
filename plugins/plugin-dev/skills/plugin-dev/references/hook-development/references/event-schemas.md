@@ -179,6 +179,8 @@ Two ways to extend it:
 
 Keep SessionEnd cleanup short. A hook that needs more than a second or two of work is better off handing it to a detached process.
 
+**Exiting with a background command running (CC 2.1.300).** Before CC 2.1.300, SessionEnd hooks sometimes did not run when the user exited while a background command was still running. They now run. In the same release, exit force-kills a background command that is still running 1.5 seconds after being asked to stop, so a SessionEnd hook cannot count on a background process the session started still being alive.
+
 **Matchers:** `clear`, `resume`, `logout`, `prompt_input_exit`, `other`
 **Hook types:** Command, HTTP, MCP tool — this event is dispatched outside the conversation loop, so prompt and agent hooks cannot run on it.
 
@@ -254,6 +256,10 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 }
 ```
 
+**Runs before skill and command expansion (CC 2.1.299).** When the prompt invokes a skill or a custom slash command, UserPromptSubmit hooks now run before it expands. A hook that blocks the prompt therefore also stops the skill's or command's embedded `[BANG]` shell lines, which a blocking hook did not stop before CC 2.1.299. UserPromptExpansion fires after this, when the command expands.
+
+**Skill frontmatter (CC 2.1.299).** A UserPromptSubmit hook declared in a skill's own frontmatter first runs on the prompt after the one that invokes the skill, and then on each later prompt while the skill is loaded. It never sees the invoking prompt.
+
 **Matchers:** Not supported (matcher field is silently ignored).
 **Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
@@ -296,6 +302,7 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 
 - `suppressOriginalPrompt`: when `decision` is `"block"`, omits the original prompt from the block message.
 - Exit code 0 with plain stdout injects that text as `additionalContext`. Exit code 2 blocks the expansion and shows stderr to the user only.
+- Ordering (CC 2.1.299): UserPromptSubmit runs first, before the command expands, so a prompt that a UserPromptSubmit hook blocks never reaches UserPromptExpansion.
 
 **Use cases:** Gate which slash commands may run, add repository context to a command before Claude sees it, audit MCP prompt usage.
 
@@ -355,9 +362,9 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 }
 ```
 
-- `permissionDecision`: `"allow"` approves without prompting, `"deny"` blocks execution, `"ask"` shows permission dialog, `"defer"` pauses execution. An `"allow"` does not skip the prompt for file reads from network (UNC) paths (CC 2.1.292 security fix); auto mode does not skip it either.
+- `permissionDecision`: `"allow"` approves without prompting, `"deny"` blocks execution, `"ask"` shows permission dialog, `"defer"` pauses execution. An `"allow"` does not skip the prompt for file reads from network (UNC) paths (CC 2.1.292 security fix); auto mode does not skip it either. An `"allow"` also does not lift plan mode's read-only rule: before CC 2.1.299, plan mode ran a write (an MCP tool's, a file's, or a shell command's) that a PreToolUse hook or a mod's `tool.check` hook allowed, and it no longer does.
 - `permissionDecisionReason`: Explanation logged for the decision
-- `updatedInput`: Replace specific tool_input fields (merged, not replaced wholesale). For `AskUserQuestion` tool calls, return `updatedInput` alongside `permissionDecision: "allow"` to provide answers programmatically (CC 2.1.85), enabling headless integrations that collect answers via their own UI. Permission rules and safety checks apply to the rewritten input (CC 2.1.290 fixed cases where some were skipped), so `updatedInput` cannot move a call past a deny rule.
+- `updatedInput`: Replaces `tool_input` as a whole, so it must be a complete, valid input object for the tool, not just the fields being changed. Since CC 2.1.300 it is validated like Claude's own input: unknown keys are dropped, and input the tool rejects (a missing required field, a wrong type) denies the call. A hook that returns only the changed fields, or adds keys of its own, loses them or gets the call denied. For `AskUserQuestion` tool calls, return `updatedInput` alongside `permissionDecision: "allow"` to provide answers programmatically (CC 2.1.85), enabling headless integrations that collect answers via their own UI. Permission rules and safety checks apply to the rewritten input (CC 2.1.290 fixed cases where some were skipped), so `updatedInput` cannot move a call past a deny rule.
 - `additionalContext`: Injected into Claude's context for this tool call. `<system-reminder>` tags in it are escaped (CC 2.1.292)
 
 **Defer pattern (CC 2.1.89):** Return `permissionDecision: "defer"` to pause tool execution in headless sessions. The session can be resumed later with `-p --resume`. Use `defer` when you need external approval or want to batch decisions for later processing.
@@ -428,7 +435,7 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 ```
 
 - `behavior`: `"allow"` approves, `"deny"` rejects
-- `updatedInput`: Modify tool parameters (allow only)
+- `updatedInput`: Replacement tool input (allow only). As with PreToolUse, it replaces `tool_input` and is validated like Claude's own input since CC 2.1.300: unknown keys are dropped, and input the tool rejects denies the call
 - `updatedPermissions`: Apply permission changes so user isn't prompted again (allow only)
 - `message`: Reason for denial, shown to user (deny only)
 - `interrupt`: If true, stops Claude entirely (deny only)
@@ -1075,6 +1082,8 @@ Use to verify what survived compaction, log compaction results, or send alerts i
 
 **When:** A git worktree is created via `--worktree` flag or subagent with `isolation: "worktree"`.
 
+**Plugin hooks and `--worktree` (CC 2.1.300).** Before CC 2.1.300, WorktreeCreate and WorktreeRemove hooks declared in a plugin did not run when Claude Code started with `--worktree`. They now run there, but still not when Claude Code starts with `--tmux`. A plugin that must support older versions or `--tmux` should not assume its worktree hooks ran.
+
 **Input:**
 
 ```json
@@ -1125,6 +1134,8 @@ Use to verify what survived compaction, log compaction results, or send alerts i
 ```
 
 **Output:** Cleanup only. Output and exit code are ignored.
+
+**Quitting with unpushed commits (CC 2.1.301).** Before CC 2.1.301, quitting removed a worktree that a WorktreeCreate hook had made without asking, even when it might hold unpushed commits. Claude Code now asks first in that case. Plugin WorktreeRemove hooks follow the same `--worktree` and `--tmux` rule as WorktreeCreate (CC 2.1.300, see above).
 
 **Matchers:** Not supported.
 **Hook types:** Command, HTTP, MCP tool — this event is dispatched outside the conversation loop, so prompt and agent hooks cannot run on it.

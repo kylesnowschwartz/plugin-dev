@@ -38,15 +38,18 @@ description: This skill should be used when the user asks to "create a migration
 
 ## Read-Only Skill
 
-Restrict to read-only tools for safe exploration:
+Remove the write tools with `disallowed-tools`, and pre-approve the read tools with `allowed-tools` so exploration runs without prompts:
 
 ```yaml
 ---
 name: codebase-analyzer
 description: This skill should be used when the user asks to "analyze codebase", "find patterns", "code quality report", "architecture overview", "dependency analysis", or needs guidance on understanding existing code structure.
 allowed-tools: Read, Grep, Glob, Task
+disallowed-tools: Write, Edit, NotebookEdit, Bash
 ---
 ```
+
+`allowed-tools` alone does not make a skill read-only: it only pre-approves the listed tools, and unlisted tools stay callable under the normal permission rules. `disallowed-tools` is what removes tools. See `../references/advanced-frontmatter.md` (allowed-tools, disallowed-tools).
 
 **Use cases:**
 
@@ -81,19 +84,21 @@ references/
 
 ## Security-Focused Skill
 
-Restricted tools for sensitive operations:
+Removed tools for sensitive operations:
 
 ```yaml
 ---
 name: secrets-manager
 description: This skill should be used when the user asks to "manage secrets", "rotate credentials", "environment variables", "secure configuration", "vault integration", or needs guidance on secrets management patterns.
 allowed-tools: Read, Grep, AskUserQuestion
+disallowed-tools: Write, Edit, NotebookEdit, Bash
 ---
 ```
 
 **Security considerations:**
 
-- Exclude Write, Edit, Bash to prevent accidental exposure
+- Remove Write, Edit, and Bash with `disallowed-tools` to prevent accidental exposure. Leaving them out of `allowed-tools` is not enough, because unlisted tools stay callable
+- The `disallowed-tools` restriction clears when the user sends their next message (see `../references/advanced-frontmatter.md`, disallowed-tools Lifecycle), so it covers the skill's turn, not the rest of the session
 - Include AskUserQuestion for confirmation flows
 - Document why restrictions exist in SKILL.md
 

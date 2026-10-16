@@ -68,6 +68,8 @@ Commands are Markdown files with a `.md` extension -- one file per command:
 └── deploy.md           # /deploy command
 ```
 
+**Refused file names (CC 2.1.299):** a command whose file or folder name contains hidden, direction-changing, or blank-like characters, `<`, or `>` is no longer offered until it is renamed, and a `name:` containing those characters is ignored. Use plain kebab-case file names.
+
 A basic command needs no frontmatter -- the file body is the prompt:
 
 ```markdown
@@ -121,6 +123,8 @@ After review, assign to $3 for follow-up.
 
 `> /review-pr 123 high alice` substitutes each position in order. Positional and trailing arguments combine freely, e.g. `Deploy $1 to $2 environment with options: $3`.
 
+**Argument name cap (CC 2.1.301):** names declared in the `arguments` frontmatter key (a list, or a space-separated string) are substituted as `$name` in the body. Only the first 64 names are filled in, and a name longer than 64 characters is not filled in. Before CC 2.1.301, skills and commands with very many or very long argument names could stall for seconds when invoked.
+
 ## File References
 
 The `@` syntax injects file contents into the command before Claude processes it:
@@ -158,6 +162,8 @@ The `[BANG]` syntax performs **load-time context injection**: commands execute w
 **Permission handling in auto mode (CC 2.1.271):** Inline `[BANG]` commands in a slash command or skill bypass the auto-mode safety classifier and follow **default-mode permission rules** instead — allow rules run them, deny rules block them, and anything no rule decides runs as a reviewed tool call. `autoMode.classifyAllShell` does not override this. Ship the `permissions.allow` entries your inline commands need rather than assuming the classifier will wave them through.
 
 **Disable shell execution (CC 2.1.91):** Organizations can disable inline shell execution in skills, custom slash commands, and plugin commands via the `disableSkillShellExecution` setting. When enabled, `[BANG]`command`` blocks are not executed. Design commands to work gracefully when shell execution is unavailable.
+
+**UserPromptSubmit hooks run first (CC 2.1.299):** UserPromptSubmit hooks now run before a custom slash command or skill expands, so a hook that blocks the prompt also stops the command's `[BANG]` lines from running. Before CC 2.1.299 a blocking UserPromptSubmit hook did not stop them. A plugin that gates commands with a UserPromptSubmit hook can rely on this from CC 2.1.299 on.
 
 **Control characters are refused (CC 2.1.290):** skills and custom commands refuse a `[BANG]` shell command that contains raw control characters other than tab and newline, with a message that shows where they are. Keep inline commands to printable text; generate any escape sequences inside a script instead. The same release fixed multi-line `[BANG]` shell blocks failing on Windows when the file is saved with CRLF line endings.
 
