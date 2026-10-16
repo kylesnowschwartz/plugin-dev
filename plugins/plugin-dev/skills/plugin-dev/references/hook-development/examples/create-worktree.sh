@@ -4,6 +4,9 @@
 # This is the only hook where stdout is the return value (an absolute path),
 # not JSON. The path printed to stdout becomes the worktree directory.
 #
+# Plugin WorktreeCreate/WorktreeRemove hooks run at `claude --worktree`
+# startup only since CC 2.1.300, and still not with `--tmux`.
+#
 # Hook config:
 # {
 #   "WorktreeCreate": [

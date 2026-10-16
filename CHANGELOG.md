@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.52.0] - 2026-10-16
+
+Sync with Claude Code 2.1.299-2.1.301 (2.1.297 and 2.1.298 do not exist upstream). This release covers twenty Must Update items (three promoted from May Update by Stage 2), five Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep, and two May Update items. `scripts/check-doc-drift.sh` was clean before and after, and the `docs/claude-code-facts.json` diff was `claude_code_version`-only.
+
+### Added
+
+- **skill-development**: `claude plugin eval` `--disallow-tools` flag and `disallowed_tools` case field for keeping built-in tools such as Agent out of eval runs, and runs that end on an API error now score 0 and make the suite exit 1 (CC 2.1.299)
+- **skill-development / command-development**: skills and commands whose file or folder name has hidden, direction-changing, or blank-like characters, `<`, or `>` are no longer offered, and such a `name:` is ignored (CC 2.1.299); only the first 64 argument names, each up to 64 characters, are filled in (CC 2.1.301)
+- **hook-development**: agent hooks honor `model`, with alias resolution, no subagent override, and fallback to the caller's model instead of fail-open (CC 2.1.300)
+- **hook-development**: plugin WorktreeCreate/WorktreeRemove hooks run with `--worktree` but not `--tmux` (CC 2.1.300), and quitting asks before removing a WorktreeCreate-hook worktree that may hold unpushed commits (CC 2.1.301); version note added to `examples/create-worktree.sh`
+- **plugin-structure**: mod version history for CC 2.1.299 (handoff failures fail closed, the 28,000-level nesting limit, the `next()` deep-nesting fix, skipped-hook notes in `/plugin` and `claude plugin validate`, plan mode and `tool.check`)
+- **plugin-structure**: sandboxed shell commands cannot write into a `--plugin-dir` folder, and `/reload-plugins` picks up a plugin installed from another terminal (CC 2.1.299)
+
+### Changed
+
+- **hook-development**: PreToolUse and PermissionRequest `updatedInput` is validated like Claude's own input, so unknown keys are dropped and input the tool rejects denies the call (CC 2.1.300)
+- **hook-development / command-development / skill-development**: UserPromptSubmit hooks run before a skill or custom slash command expands, so a blocking hook also stops its `[BANG]` lines (CC 2.1.299), and a skill's own frontmatter UserPromptSubmit hook first runs on the prompt after the invoking one (CC 2.1.299). The scoped-hooks notes in `advanced.md`, `advanced-frontmatter.md`, and the hook-development overview no longer list UserPromptSubmit among events that never fire in skill frontmatter
+- **hook-development**: a PreToolUse `allow` or a mod's `tool.check` allow no longer lets a write through in plan mode (CC 2.1.299); Windows PreToolUse/PermissionRequest hooks with no `shell` fail closed when Git for Windows is missing (CC 2.1.299); SessionEnd hooks run when exiting with a background command still running, which is force-killed after 1.5 s (CC 2.1.300); the plugin or skill behind an `ask` prompt is named (CC 2.1.301)
+- **hook-development / plugin-structure**: plugin hooks fail closed when they cannot be handed an action or cannot answer, and returned values nested deeper than 28,000 levels are refused (CC 2.1.299)
+- **agent-development / mcp-integration**: `mcp__<server>` allow rules and agent `tools:` entries reach only the server they name, deny and ask rules apply to servers with `__` in their normalized names, and such servers are written `mcp__<whole name>__*` (CC 2.1.299)
+- **mcp-integration**: MCP OAuth sign-in, refresh, and sign-out send configured `headers`/`headersHelper` (CC 2.1.299); first-party `api.anthropic.com` MCP descriptions and instructions are exempt from the 4,096-character cap (CC 2.1.299)
+- **skill-development**: `/reload-skills` re-sends the full skill list, which restores skills after compaction (CC 2.1.299), skills are listed again after `/rewind` (CC 2.1.301), and the "Unknown skill" error suggests the listed name when `anthropic-skills:` is wrongly prefixed (CC 2.1.299)
+
+### Fixed
+
+- **hook-development**: `event-schemas.md` said `updatedInput` was merged into `tool_input`. It replaces it as a whole, per the official hooks page, so a hook must return a complete input object
+- **hook-development**: the async hook constraints said response fields, `hookSpecificOutput` included, have no effect. Only control fields (`decision`, `permissionDecision`, `continue`) have none; `additionalContext` and `systemMessage` reach Claude on the next turn and are not shown to the user
+- **hook-development**: the async hook constraints said async hooks use the 600-second `timeout`. It is not enforced on a running async hook, only on `asyncRewake` hooks, and `-p` teardown cancels async hooks still running
+- **hook-development**: the flag-file pattern (`patterns.md`, Pattern 9) said Claude Code must be restarted after creating or removing the flag file. The script checks the file on every run, so the toggle applies on the next run
+- **skill-development**: the Read-Only and Security-Focused templates in `frontmatter-templates.md` relied on `allowed-tools` to keep a skill read-only. They now remove write tools with `disallowed-tools`, matching `advanced-frontmatter.md`
+- **command-development**: the "Read-Only Analysis" pattern in `simple-commands.md` relied on `allowed-tools`. It now adds `disallowed-tools`, matching `frontmatter-reference.md`
+
 ## [0.51.1] - 2026-10-13
 
 Documentation drift fixes. CC version range: none (drift-only). No Claude Code releases came after 2.1.296, so the changelog baseline stays at 2.1.296. The `doc-drift-auditor` sweep found six contradictions. Facts.json does not cover them, and Stage 2 confirmed each one against the official Claude Code docs or the directory contents. `scripts/check-doc-drift.sh` was clean.

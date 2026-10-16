@@ -70,7 +70,7 @@ Skills follow precedence: Enterprise > Personal (`~/.claude/skills/`) > Project 
 
 This ordering governs **name collisions only**. It is not the same as the Skill tool's budget admission order (project, then user, then plugin), which governs which descriptions fit inside the 8,000-character visibility budget. The two rank project and personal skills differently because they answer different questions — see the Visibility Budget section in `../overview.md`.
 
-**Qualified names in errors (CC 2.1.269):** When a bare skill name matches exactly one plugin skill, the Skill tool's "Unknown skill" error names the skill in its full `plugin-name:skill-name` form. A user who typed the bare name gets told what to type instead, which makes a shadowed plugin skill much easier to diagnose.
+**Qualified names in errors (CC 2.1.269):** When a bare skill name matches exactly one plugin skill, the Skill tool's "Unknown skill" error names the skill in its full `plugin-name:skill-name` form. A user who typed the bare name gets told what to type instead, which makes a shadowed plugin skill much easier to diagnose. Since CC 2.1.299, when the name is wrongly prefixed with `anthropic-skills:`, the error suggests the name the skill is actually listed under.
 
 **Reserved namespace: `anthropic-skills` (CC 2.1.269, reserved 2.1.282).** Skills synced from claude.ai into cloud sessions are named `anthropic-skills:<name>`, matching Claude Desktop. The bare name still resolves when nothing else claims it. Since CC 2.1.282 the namespace is reserved for those synced skills:
 
@@ -239,6 +239,8 @@ The regex pattern is \$1 for the first capture group.
 
 This outputs `$1` literally instead of substituting the first argument.
 
+**Argument name cap (CC 2.1.301):** names declared in the `arguments` frontmatter key (a list, or a space-separated string) are substituted as `$name` in the body. Only the first 64 names are filled in, and a name longer than 64 characters is not filled in. Before CC 2.1.301, skills and commands with very many or very long argument names could stall for seconds when invoked.
+
 ### Dynamic Context Injection
 
 Execute commands to inject their output into skill context using backtick syntax:
@@ -269,6 +271,8 @@ Recent commits:
 
 **Control characters are refused (CC 2.1.290):** a `[BANG]` shell command that contains raw control characters other than tab and newline is refused, with a message that shows where they are. The same release fixed multi-line `[BANG]` shell blocks failing on Windows when the skill file is saved with CRLF line endings.
 
+**UserPromptSubmit hooks run first (CC 2.1.299):** UserPromptSubmit hooks now run before a skill or custom slash command expands, so a hook that blocks the prompt also stops the skill's `[BANG]` lines from running. Before CC 2.1.299 a blocking UserPromptSubmit hook did not stop them.
+
 ## Auto-Discovery
 
 Claude Code automatically discovers skills:
@@ -280,6 +284,8 @@ Claude Code automatically discovers skills:
 - Loads references/examples when needed
 
 **Folder name and `name` (CC 2.1.290):** when a skill's folder name differs from the `name` in its SKILL.md (for example a non-English folder name), the skill is found when asked for by its `name`, and the skill listing shows both names. Matching the folder name to `name` is still the recommended convention. A `name` longer than 256 characters is ignored (CC 2.1.292).
+
+**Refused characters (CC 2.1.299):** a skill or command whose file or folder name contains hidden, direction-changing, or blank-like characters, `<`, or `>` is no longer offered until it is renamed, and a `name:` containing those characters is ignored. Stick to kebab-case ASCII names.
 
 ## No Packaging Needed
 
@@ -308,6 +314,8 @@ Use the `/reload-skills` command to re-scan skill directories without restarting
 Changes to skill content, frontmatter, and references are picked up. No need to restart Claude Code.
 
 **Performance optimization (CC 2.1.174):** Skill hot-reload now only re-sends changed skills instead of the entire skill listing. When you modify a single skill, only that skill is re-announced to Claude, reducing token overhead during rapid iteration. This makes the edit-reload-test cycle faster for developers working on individual skills.
+
+**Restoring the skill list (CC 2.1.299, 2.1.301):** `/reload-skills` now says that it re-sends the full skill list, which is how to get skills back in front of the model after compaction. Since CC 2.1.301, skills are also listed to the model again after `/rewind`.
 
 ## /skills Menu Display (CC 2.1.86)
 
@@ -427,6 +435,8 @@ evals/
 
 A case needs a prompt — either the `prompt.md` body or `execution.prompt` in `case.yaml`. Useful `prompt.md` frontmatter keys include `runs`, `max_turns`, `timeout_seconds`, `allowed_tools`, `model`, and `append_system_prompt`. `case.yaml` carries a required `schema_version` plus keys such as `scaffold_script`, `history_file`, and `add_dirs`.
 
+**Keeping tools out of a run (CC 2.1.299).** `--disallow-tools` on the command line, or a `disallowed_tools` case field, keeps specific built-in tools, such as Agent, out of eval runs. Use it when a case should exercise a skill directly rather than through a subagent.
+
 **Grader types.** Each file in `graders/` must declare `type:` in its frontmatter, one of:
 
 | Type          | Checks                                         |
@@ -443,6 +453,8 @@ Graders also accept `weight` (relative contribution to the score) and `arm` (whi
 **MCP mocks.** `--mocks record` (the default) reads stand-ins from `<eval dir>/mocks/`. A plugin MCP server with no mock is **not** started, and its tools are unavailable for that run — add `mocks/<server>/` to cover it. `--mocks off` disables mocking.
 
 **Reports.** Results land in `<eval dir>/results/`. `--json [path]` prints the full machine-readable result; a self-contained HTML report (scores, prompts, grader verdicts) can be written to a path of your choosing.
+
+**API errors score 0 (CC 2.1.299).** A run that ends on an API error now scores 0 without being graded, and the suite exits 1. Before CC 2.1.299, `claude plugin eval` could pass runs the API had refused, so a CI gate on an older version may have reported false passes.
 
 **Git 2.31 or later (CC 2.1.283).** When git is installed, `claude plugin eval` requires git 2.31 or later. Older git ignores `GIT_CONFIG_COUNT`, so before CC 2.1.283 an eval could stop before running any case; a run on older git is now refused with a message naming the version. Upgrade git on CI runners that pin an old distribution package.
 

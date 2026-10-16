@@ -386,6 +386,8 @@ This correctly blocks spawning the `untrusted-agent` type.
 
 **Per-agent tool lists and `--tools` (CC 2.1.293, 2.1.295):** Before CC 2.1.293, a subagent or `--agent` session whose own `tools` list left out a built-in tool was told that the tool was disabled for the whole session. The same release stopped Claude from being told to continue or message subagents with `SendMessage` when a host, a permission rule, or a `--tools` list had removed that tool. Since CC 2.1.295, `--tools` and `--restricted` also apply to built-in tools that register after launch, and deprecated tool names no longer reach tools outside the caller's tool set. On older versions, an agent's restricted tool list could be described more broadly than it applied, and a late-registering built-in tool could escape a `--tools` restriction.
 
+**MCP server entries take only that server's tools (CC 2.1.299):** an `mcp__<server>` entry in `tools:` now brings in only the tools of the server it names. To list a server whose normalized name contains `__`, write `mcp__<whole name>__*`. Permission allow rules changed the same way; see [permission-modes-rules.md](permission-modes-rules.md) (MCP Tool Patterns).
+
 The CC 2.1.273 binary also aliased `BashOutput`/`AgentOutput` to `TaskOutput`, but **CC 2.1.277 removed the TaskOutput tool**. Claude now reads a background task's output file with Read. The CC 2.1.280 binary lists `TaskOutput`, `BashOutput`, and `AgentOutput` among tools it no longer offers, so drop them from `tools` lists and permission rules.
 
 > **Note:** The Config tool was removed in CC 2.1.118. Use the `/config` slash command instead for getting/setting Claude Code settings.

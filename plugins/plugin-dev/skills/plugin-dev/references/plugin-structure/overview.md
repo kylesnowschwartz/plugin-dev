@@ -206,6 +206,8 @@ claude --plugin-dir /path/to/plugins-folder/
 
 The `--plugin-dir` flag supports both individual plugin directories and folders containing multiple plugins (CC 2.1.265). When pointing to a folder, each child folder holding a `.claude-plugin/plugin.json` is loaded. Since CC 2.1.281 this also works when the folder has its own `.claude-plugin/marketplace.json`; earlier versions loaded such a folder as one empty plugin. Only direct child folders are loaded, so for a marketplace repository that keeps plugins under `plugins/<name>/`, point the flag at `plugins/` or at each plugin.
 
+**Sandboxed writes (CC 2.1.299):** sandboxed shell commands can no longer write into a `--plugin-dir` folder. A plugin script that Claude runs through the sandboxed shell cannot keep state or caches inside the plugin's own directory, so keep that data elsewhere. The same release made `/reload-plugins` pick up a plugin installed from another terminal.
+
 **Checking load failures headlessly (CC 2.1.283):** in `--output-format stream-json`, the `system/init` message's `plugin_errors` field lists plugins that failed to load or loaded only partially, and `--plugin-dir` failures carry a `path` naming the directory that did not load. Remote Control workers always omit the key, so its absence is not proof of a clean load. See `references/headless-ci-mode.md`.
 
 Additional loading options (ZIP archives, remote URLs), safe mode, caching internals, auto-update, install scopes, and CLI management commands are covered in `references/advanced-topics.md`.

@@ -723,7 +723,7 @@ In practice three events do the work:
 | `PostToolUse` | Run checks after tool execution during skill use                                                   |
 | `Stop`        | Verify completion criteria before skill/agent finishes (auto-converted to SubagentStop for agents) |
 
-Session-lifecycle events (`SessionStart`, `SessionEnd`, `UserPromptSubmit`, `Notification`) register without error but usually have no chance to fire, because the session event happens before the skill is dispatched or after the agent has exited. The exception is an agent run as the main session agent via `--agent`, whose lifetime *is* the session's — agent frontmatter hooks fire in that configuration as of CC 2.1.116, so session-level events can reach them there. Declare a session-level hook in `hooks/hooks.json` instead whenever it must fire for the whole session regardless of which component is running.
+Session-lifecycle events (`SessionStart`, `SessionEnd`, `Notification`) register without error but usually have no chance to fire, because the session event happens before the skill is dispatched or after the agent has exited. `UserPromptSubmit` is different in a skill (CC 2.1.299): a skill's own frontmatter `UserPromptSubmit` hook first runs on the prompt after the one that invokes the skill, then on each later prompt while the skill stays loaded. It never sees the invoking prompt, so it cannot gate the skill's own invocation; use a `hooks/hooks.json` UserPromptSubmit hook for that. The exception is an agent run as the main session agent via `--agent`, whose lifetime *is* the session's — agent frontmatter hooks fire in that configuration as of CC 2.1.116, so session-level events can reach them there. Declare a session-level hook in `hooks/hooks.json` instead whenever it must fire for the whole session regardless of which component is running.
 
 ### Comparison with hooks.json
 
@@ -857,6 +857,7 @@ Each hook entry in a matcher group supports these fields:
 
 - `args`: Array of command arguments for exec-form spawning (CC 2.1.139). When provided, the command is executed directly without shell interpolation, which is safer for hooks that pass user-controlled data. Example: `"args": ["--file", "$FILE_PATH"]`. The `command` field becomes the executable path when `args` is present.
 - `timeout`: Max execution time in seconds. Defaults vary by type — command/http/mcp_tool 600s, prompt 30s, agent 60s. UserPromptSubmit lowers the command/http/mcp_tool default to 30s; MessageDisplay lowers it to 10s.
+- `model`: Model for a prompt or agent hook. Since CC 2.1.300 agent hooks honor it: aliases such as `haiku` resolve, a subagent's model no longer overrides the hook's, and a model that is unavailable falls back to the calling session's model. Before CC 2.1.300 agent hooks ignored the field, and an unavailable model let the action through (fail-open).
 
 For the `if` field, see the [Declarative `if` Field](#declarative-if-field-cc-2185) section above. Beyond these, hook handlers support additional fields:
 
@@ -902,6 +903,10 @@ Decides what a failure of the hook does (CC 2.1.295, command and HTTP hooks). A 
 
 Use `"block"` on security guards, such as a PreToolUse hook that vets Bash commands, where a broken or slow script should stop the call rather than wave it through. Keep the default for logging, formatting, and notification hooks, where a failure should not stop work. Older Claude Code versions do not have this field, so a guard that must fail closed there has to catch its own errors and exit 2.
 
+**Handoff failures fail closed (CC 2.1.299).** Separate from `onFailure`, an action a plugin hook can block is now refused, not let through, when Claude Code cannot hand the action to the hook or the hook cannot hand back its answer; if the tool already ran, its result is withheld. Values a plugin hook hands back that nest deeper than 28,000 levels are refused with an error naming the limit. The changelog groups these with workflow scripts and with a fix for hooks that pass deeply nested input on with `next()`, which points at function-hook plugins (mods); it does not say the `"continue"` default for command and HTTP hook failures changed. See `../overview.md` (Hook-Failure Handling).
+
+**Windows hooks with no `shell` (CC 2.1.299).** On Windows without Git for Windows, a PreToolUse or PermissionRequest hook that sets no `shell` used to fail open when it failed. A failing guard now blocks the call. See `../overview.md` (Windows PowerShell).
+
 ## Event-Specific Matchers
 
 Matchers filter which registered hooks run for an occurrence of an event. Each event names one input field to match against; **which field, and which values it accepts, is documented on that event's Matchers line in `event-schemas.md`**, which covers all 33 events. This section covers only the syntax that applies once you know what an event matches on.
@@ -933,9 +938,10 @@ Different hook events support different output formats for controlling Claude's 
 - `permissionDecision`: `allow` (proceed), `deny` (block), `ask` (prompt user), `defer` (CC 2.1.89 — suspend the tool call rather than running it)
 - Managed-settings PreToolUse hooks that deny a call with `"continue": false`, and managed `prompt` hooks that block one, end the turn since CC 2.1.296. Before that the call was refused but the turn went on
 - `defer` is **not** a pass-through. The call does not run; it is recorded as deferred and the session can be resumed later with `-p --resume`. Deferral is unsupported for calls served to a cloud session, which fail with "deferred this call … so nothing ran". See [event-schemas.md](event-schemas.md) for the headless deferral flow
-- `ask` depends on the session being interactive: an interactive session shows `Hook PreToolUse:<Tool> requires confirmation ... [plugin:<name>]`, while headless runs (`claude -p`) have no one to prompt and treat the same `ask` as a block, surfacing the reason to the model.
+- `ask` depends on the session being interactive: an interactive session shows `Hook PreToolUse:<Tool> requires confirmation ... [plugin:<name>]`, while headless runs (`claude -p`) have no one to prompt and treat the same `ask` as a block, surfacing the reason to the model. Before CC 2.1.301, the prompt for a plugin or skill hook's `ask` did not always show which plugin or skill the hook came from.
 - `allow` does not skip every prompt. Since CC 2.1.292 (a security fix), a PreToolUse `allow`, like auto mode, no longer bypasses the permission prompt for file reads from network (UNC) paths
-- `updatedInput`: Optionally modify tool parameters before execution. The rewritten input is checked against permission rules and safety checks; CC 2.1.290 fixed cases where some were not applied after a rewrite, so a rewrite cannot carry a call past a deny rule
+- `allow` does not override plan mode. Before CC 2.1.299, plan mode ran a write (an MCP tool's, a file's, or a shell command's) that a PreToolUse hook or a mod's `tool.check` hook allowed; plan mode's read-only rule now holds
+- `updatedInput`: Optionally replace the tool's input before execution. It replaces `tool_input` as a whole, so return the complete input object. Since CC 2.1.300 it is validated like Claude's own input: unknown keys are dropped, and input the tool rejects denies the call. The rewritten input is checked against permission rules and safety checks; CC 2.1.290 fixed cases where some were not applied after a rewrite, so a rewrite cannot carry a call past a deny rule
 - `additionalContext`: Injected into Claude's context. `<system-reminder>` tags in it, as in any hook output, are escaped before they reach Claude (CC 2.1.292)
 - A failure to match the hook against a call, or tool input that cannot be serialized to JSON, blocks the call (CC 2.1.288). Before CC 2.1.288 the hook was skipped and the call ran. PermissionRequest behaves the same way
 
@@ -965,7 +971,7 @@ Different hook events support different output formats for controlling Claude's 
 ```
 
 - `behavior`: `allow` or `deny`
-- `updatedInput`: Modified tool parameters (only with `allow`)
+- `updatedInput`: Replacement tool input (only with `allow`), validated the same way as PreToolUse `updatedInput` since CC 2.1.300
 - `updatedPermissions`: Permission changes (only with `allow`)
 - `message`: Shown to user (only with `deny`)
 - `interrupt`: If true with `deny`, stops the current operation
@@ -1117,9 +1123,10 @@ Command hooks can run asynchronously in the background without blocking the main
 
 - Only available on `type: "command"` hooks (not prompt or agent)
 - Cannot block or control behavior — the action proceeds immediately
-- Response fields (`decision`, `hookSpecificOutput`) have no effect
+- Control fields (`decision`, `permissionDecision`, `continue`) have no effect
+- `additionalContext` and `systemMessage` in the hook's JSON output are delivered to Claude on the next conversation turn, after the background process exits. Unlike a synchronous hook's `systemMessage`, neither is shown to the user
 - Useful for logging, metrics collection, and fire-and-forget notifications
-- Uses the same `timeout` field (default: 600 seconds)
+- `timeout` is not enforced once the hook is running in the background, so a runaway async hook is not killed at 600 seconds. It is still enforced for `asyncRewake` hooks. In `-p` mode, async hooks still running at teardown are killed with outcome `cancelled`
 - `onFailure` is ignored, so an async hook cannot fail closed
 
 **Async output fixes (CC 2.1.295):** an async hook's JSON output printed over several lines used to be ignored, and an async SessionStart hook's unchanged context was added to the conversation again on every resume. Both are fixed. On older versions, print an async hook's JSON on one line (`jq -c`).

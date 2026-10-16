@@ -437,10 +437,13 @@ Explain at level appropriate for junior engineer.
 ```markdown
 ---
 allowed-tools: Read, Grep
+disallowed-tools: Write, Edit, NotebookEdit, Bash
 ---
 
 Analyze but don't modify...
 ```
+
+`disallowed-tools` is what keeps the command read-only. `allowed-tools` only pre-approves Read and Grep so they run without a prompt; tools it does not list stay callable. See `../references/frontmatter-reference.md` (allowed-tools).
 
 **Use for:** Code review, documentation, analysis
 

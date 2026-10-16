@@ -403,6 +403,8 @@ Design plugin MCP tools to return concise results. Paginate or summarize large o
 
 Tool descriptions sent up front and server instructions are capped at **4,096 characters each** (CC 2.1.296; 2,048 before). Descriptions the model loads through tool search are cut at **16,384 characters** (CC 2.1.295; 2,048 before). The caps prevent OpenAPI-generated servers with verbose schemas from bloating the context window. Keep tool descriptions concise and focused on usage rather than exhaustive parameter documentation.
 
+**First-party exception (CC 2.1.299):** tool descriptions and server instructions from first-party `api.anthropic.com` MCP servers are no longer cut at 4,096 characters. The cap still applies to plugin and third-party servers.
+
 > **Note:** At the time of the CC 2.1.296 sync, the official MCP documentation still stated 2,048 characters. The 4,096 figure comes from the upstream changelog, which is authoritative here.
 
 **`CLAUDE_CODE_MAX_MCP_DESCRIPTION_LENGTH` (CC 2.1.280)** overrides the default cap. It applies to every MCP server in the session, not only one plugin's. It is a user-side setting, so a plugin cannot rely on a raised cap. Users on versions before CC 2.1.296 still get 2,048 characters, so put the essential usage guidance in the first 2,048 characters of each description.

@@ -133,6 +133,8 @@ WebFetch(domain:claude.ai)
 | `mcp__server__*`    | All tools from server     |
 | `mcp__server__tool` | Specific tool from server |
 
+**A server rule reaches only the server it names (CC 2.1.299).** An `mcp__a` allow rule no longer allows a server named `a__b` or `a_`. For a server whose normalized name contains a double underscore, write `mcp__<whole name>__*` with the server's whole normalized name. The same release fixed deny and ask rules of the form `mcp__<server>` not applying to a server whose normalized name contains `__`.
+
 ### Task (Agent) Patterns
 
 | Pattern              | Matches                      |
