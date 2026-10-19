@@ -239,6 +239,8 @@ The regex pattern is \$1 for the first capture group.
 
 This outputs `$1` literally instead of substituting the first argument.
 
+**Argument-name cap (CC 2.1.301):** Only the first 64 argument names, each up to 64 characters, are filled in. Placeholders for extra or longer names are left unsubstituted. Before CC 2.1.301, a skill or command with very many or very long argument names could stall for seconds when invoked.
+
 ### Dynamic Context Injection
 
 Execute commands to inject their output into skill context using backtick syntax:
@@ -308,6 +310,8 @@ Use the `/reload-skills` command to re-scan skill directories without restarting
 Changes to skill content, frontmatter, and references are picked up. No need to restart Claude Code.
 
 **Performance optimization (CC 2.1.174):** Skill hot-reload now only re-sends changed skills instead of the entire skill listing. When you modify a single skill, only that skill is re-announced to Claude, reducing token overhead during rapid iteration. This makes the edit-reload-test cycle faster for developers working on individual skills.
+
+**Getting skills back after compaction (CC 2.1.299, 2.1.301):** Since CC 2.1.299, `/reload-skills` says it re-sends the full skill list, which is the way to get skills listed to Claude again after compaction. Since CC 2.1.301, skills are also listed to the model again after `/rewind`. When Claude adds an `anthropic-skills:` prefix to a skill name, the Skill tool's "Unknown skill" error now suggests the listed name (CC 2.1.299).
 
 ## /skills Menu Display (CC 2.1.86)
 
@@ -445,6 +449,10 @@ Graders also accept `weight` (relative contribution to the score) and `arm` (whi
 **Reports.** Results land in `<eval dir>/results/`. `--json [path]` prints the full machine-readable result; a self-contained HTML report (scores, prompts, grader verdicts) can be written to a path of your choosing.
 
 **Git 2.31 or later (CC 2.1.283).** When git is installed, `claude plugin eval` requires git 2.31 or later. Older git ignores `GIT_CONFIG_COUNT`, so before CC 2.1.283 an eval could stop before running any case; a run on older git is now refused with a message naming the version. Upgrade git on CI runners that pin an old distribution package.
+
+**Keeping tools out of a run (CC 2.1.299).** `--disallow-tools` on the command line, or a `disallowed_tools` key in a case, keeps specific built-in tools, such as Agent, out of eval runs. It is the counterpart to `allowed_tools`.
+
+**API errors score 0 (CC 2.1.299).** A run that ends on an API error, such as a request the API refused, now scores 0 without grading and makes the suite exit 1. Before CC 2.1.299 such a run could pass, so a CI gate on `claude plugin eval` could report success for runs that never got an answer.
 
 **Docker Desktop on macOS (CC 2.1.293).** Before CC 2.1.293, `claude plugin eval` refused every Bash-granting run on Macs with Docker Desktop, which installs links under `~/.docker/bin`. The refusal now names which part of a credential store held the link.
 

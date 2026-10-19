@@ -129,9 +129,11 @@ WebFetch(domain:claude.ai)
 
 | Pattern             | Matches                   |
 | ------------------- | ------------------------- |
-| `mcp__server`       | All tools from server     |
-| `mcp__server__*`    | All tools from server     |
+| `mcp__server`       | All tools from the server whose normalized name is exactly `server` |
+| `mcp__server__*`    | All tools from that server |
 | `mcp__server__tool` | Specific tool from server |
+
+**Server rules match the exact server name (CC 2.1.299).** An allow rule reaches only the server it names: `mcp__a` no longer allows a server named `a__b` or `a_`. To allow a server whose normalized name contains `__`, write `mcp__<whole normalized name>__*`. The same exact matching applies to agent `tools:` lists. Deny and ask rules for `mcp__<server>` also apply when the server's normalized name contains `__`; before CC 2.1.299 they silently did not, so a deny rule for such a server let its tools through.
 
 ### Task (Agent) Patterns
 
@@ -218,6 +220,8 @@ Rules are specified in `settings.json` under `permissions`:
 - `mcp__server__*` — all tools from a server
 - `mcp__*` — all MCP tools (use sparingly)
 
+Since CC 2.1.299 a server-level rule matches only the server with exactly that normalized name, for allow, deny, and ask alike. A server whose name contains `__` needs its whole normalized name: `mcp__<whole name>__*`.
+
 ### Task (Agent) Patterns
 
 Control which agent types can be spawned:
@@ -258,6 +262,8 @@ This plugin's agents need:
 - `Bash(npm test)` — to run tests
 - `mcp__plugin_my-plugin_myserver__*` — for MCP tool access (`mcp__plugin_<plugin-name>_<server-name>__*`)
 ```
+
+Write the plugin server's whole normalized name in the rule, because since CC 2.1.299 a server-level rule reaches only the server it names exactly (see MCP Tool Patterns above).
 
 **Configure agent permissions:** Use `permissionMode` in agent frontmatter for broad access control. For fine-grained restrictions, document the settings users should configure.
 

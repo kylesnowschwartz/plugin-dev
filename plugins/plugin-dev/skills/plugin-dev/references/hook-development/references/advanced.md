@@ -191,8 +191,8 @@ Use transcript and session context for intelligent decisions:
       "matcher": "*",
       "hooks": [
         {
-          "type": "prompt",
-          "prompt": "Review the full transcript at $TRANSCRIPT_PATH. Check: 1) Were tests run after code changes? 2) Did the build succeed? 3) Were all user questions answered? 4) Is there any unfinished work? Answer ok only if everything is complete; otherwise give the reason."
+          "type": "agent",
+          "prompt": "The hook input is in $ARGUMENTS. Read the transcript file named by its transcript_path field. Check: 1) Were tests run after code changes? 2) Did the build succeed? 3) Were all user questions answered? 4) Is there any unfinished work? Answer ok only if everything is complete; otherwise give the reason."
         }
       ]
     }
@@ -200,7 +200,7 @@ Use transcript and session context for intelligent decisions:
 }
 ```
 
-The LLM can read the transcript file and make context-aware decisions.
+This is an `agent` hook because reading the transcript file needs tool access. A `prompt` hook is a single-turn evaluation with no tools: `$ARGUMENTS` is its only placeholder, and it sees the hook input JSON (including the `transcript_path` string) but cannot open the file. A placeholder such as `$TRANSCRIPT_PATH` is not substituted and reaches the model as literal text.
 
 **Response format:** Prompt and agent hooks share one response schema, and it is not the standard hook output:
 
@@ -279,6 +279,8 @@ Since hooks run in parallel, design them to be independent:
 ```
 
 All three hooks run simultaneously, reducing total latency.
+
+**Prompt and agent hook concurrency cap (CC 2.1.302).** At most 12 prompt and agent hooks of one event run at a time; the rest queue until a slot frees. A plugin that registers many LLM-backed hooks on one event, or that combines with other plugins doing so, sees them run in waves rather than all at once. Consolidate checks into fewer prompt hooks where latency matters. The changelog names no cap for command or HTTP hooks.
 
 ## Cross-Event Workflows
 
@@ -383,9 +385,11 @@ exit 0
    {
      "type": "command",
      "command": "bash",
-     "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh", "--token", "$CLAUDE_PLUGIN_OPTION_API_TOKEN"]
+     "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh", "--endpoint", "${user_config.API_ENDPOINT}"]
    }
    ```
+
+   With no shell, each `args` element reaches the program exactly as written: a bare `$VAR`, `$`, and backticks pass through verbatim. Claude Code substitutes only `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}`, `${CLAUDE_PROJECT_DIR}`, and non-sensitive `${user_config.KEY}`. So `"$CLAUDE_PLUGIN_OPTION_API_TOKEN"` in `args` would pass that literal string, not the token. Read sensitive options and other secrets from `$CLAUDE_PLUGIN_OPTION_<KEY>` inside the script (option 2) rather than passing them in `args`.
 
 2. **Use `$CLAUDE_PLUGIN_OPTION_<KEY>` environment variables** — read values inside the script:
 
@@ -628,6 +632,8 @@ rm -rf "$CLAUDE_PROJECT_DIR"
 # BAD: Assumes hooks run in specific order
 # Hook 1 saves state, Hook 2 reads it
 # This can fail because hooks run in parallel!
+# (Since CC 2.1.302, prompt and agent hooks beyond 12 per event wait
+# their turn; that is a concurrency cap, not a documented run order.)
 ```
 
 ### ❌ Long-Running Hooks
@@ -725,6 +731,8 @@ In practice three events do the work:
 
 Session-lifecycle events (`SessionStart`, `SessionEnd`, `UserPromptSubmit`, `Notification`) register without error but usually have no chance to fire, because the session event happens before the skill is dispatched or after the agent has exited. The exception is an agent run as the main session agent via `--agent`, whose lifetime *is* the session's — agent frontmatter hooks fire in that configuration as of CC 2.1.116, so session-level events can reach them there. Declare a session-level hook in `hooks/hooks.json` instead whenever it must fire for the whole session regardless of which component is running.
 
+A skill's own `UserPromptSubmit` hook has defined timing since CC 2.1.299: it first runs on the prompt after the one that invokes the skill, never on the invoking prompt itself.
+
 ### Comparison with hooks.json
 
 | Aspect         | `hooks.json`                               | Frontmatter `hooks`                                      |
@@ -781,6 +789,8 @@ While `command` hooks execute bash scripts and `prompt` hooks evaluate a single 
   "timeout": 120
 }
 ```
+
+**`model` (CC 2.1.300).** An agent hook may set `model`. Since CC 2.1.300 it is honored: aliases such as `haiku` resolve, a subagent's model no longer overrides the hook's, and an unavailable model falls back to the caller's model. Before CC 2.1.300 the field was ignored, and an unavailable model allowed the action, so the hook failed open.
 
 ### Supported Events
 
@@ -855,7 +865,7 @@ Each hook entry in a matcher group supports these fields:
 }
 ```
 
-- `args`: Array of command arguments for exec-form spawning (CC 2.1.139). When provided, the command is executed directly without shell interpolation, which is safer for hooks that pass user-controlled data. Example: `"args": ["--file", "$FILE_PATH"]`. The `command` field becomes the executable path when `args` is present.
+- `args`: Array of command arguments for exec-form spawning (CC 2.1.139). When provided, the command is executed directly without shell interpolation, which is safer for hooks that pass user-controlled data. Example: `"args": ["${CLAUDE_PLUGIN_ROOT}/scripts/check.sh", "--config", "${user_config.CONFIG_PATH}"]`. Each element is passed exactly as written, so a bare `$VAR` stays literal; only `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}`, `${CLAUDE_PROJECT_DIR}`, and non-sensitive `${user_config.KEY}` are substituted. Read tool input such as a file path from the hook's stdin JSON. The `command` field becomes the executable path when `args` is present.
 - `timeout`: Max execution time in seconds. Defaults vary by type — command/http/mcp_tool 600s, prompt 30s, agent 60s. UserPromptSubmit lowers the command/http/mcp_tool default to 30s; MessageDisplay lowers it to 10s.
 
 For the `if` field, see the [Declarative `if` Field](#declarative-if-field-cc-2185) section above. Beyond these, hook handlers support additional fields:
@@ -902,6 +912,8 @@ Decides what a failure of the hook does (CC 2.1.295, command and HTTP hooks). A 
 
 Use `"block"` on security guards, such as a PreToolUse hook that vets Bash commands, where a broken or slow script should stop the call rather than wave it through. Keep the default for logging, formatting, and notification hooks, where a failure should not stop work. Older Claude Code versions do not have this field, so a guard that must fail closed there has to catch its own errors and exit 2.
 
+**Hand-off failures fail closed (CC 2.1.299).** Separately from `onFailure`, an action a plugin hook can block is refused, not let through, when the hook cannot be handed the action or cannot hand back its answer; a tool that already ran has its result withheld. Values a hook hands back that nest deeper than 28,000 levels are refused with an error naming the limit. The changelog words this for plugin hooks and workflow scripts and targets the hooks-module (mod) path; it does not say whether command hooks are covered.
+
 ## Event-Specific Matchers
 
 Matchers filter which registered hooks run for an occurrence of an event. Each event names one input field to match against; **which field, and which values it accepts, is documented on that event's Matchers line in `event-schemas.md`**, which covers all 33 events. This section covers only the syntax that applies once you know what an event matches on.
@@ -933,13 +945,15 @@ Different hook events support different output formats for controlling Claude's 
 - `permissionDecision`: `allow` (proceed), `deny` (block), `ask` (prompt user), `defer` (CC 2.1.89 — suspend the tool call rather than running it)
 - Managed-settings PreToolUse hooks that deny a call with `"continue": false`, and managed `prompt` hooks that block one, end the turn since CC 2.1.296. Before that the call was refused but the turn went on
 - `defer` is **not** a pass-through. The call does not run; it is recorded as deferred and the session can be resumed later with `-p --resume`. Deferral is unsupported for calls served to a cloud session, which fail with "deferred this call … so nothing ran". See [event-schemas.md](event-schemas.md) for the headless deferral flow
-- `ask` depends on the session being interactive: an interactive session shows `Hook PreToolUse:<Tool> requires confirmation ... [plugin:<name>]`, while headless runs (`claude -p`) have no one to prompt and treat the same `ask` as a block, surfacing the reason to the model.
+- `ask` depends on the session being interactive: an interactive session shows `Hook PreToolUse:<Tool> requires confirmation ... [plugin:<name>]`, while headless runs (`claude -p`) have no one to prompt and treat the same `ask` as a block, surfacing the reason to the model. The prompt names the hook's source, `[plugin:<name>]` for a plugin hook or `[skill]` for a skill-scoped hook; before CC 2.1.301 that label could be missing
 - `allow` does not skip every prompt. Since CC 2.1.292 (a security fix), a PreToolUse `allow`, like auto mode, no longer bypasses the permission prompt for file reads from network (UNC) paths
-- `updatedInput`: Optionally modify tool parameters before execution. The rewritten input is checked against permission rules and safety checks; CC 2.1.290 fixed cases where some were not applied after a rewrite, so a rewrite cannot carry a call past a deny rule
+- `allow` does not lift plan mode. Since CC 2.1.299, a write that a PreToolUse hook (or a mod's `tool.check` hook) allows, whether an MCP tool's, a file's, or a shell command's, still does not run in plan mode. Before CC 2.1.299 such a write ran despite plan mode's read-only restriction
+- `updatedInput`: Optionally modify tool parameters before execution. The rewritten input is checked against permission rules and safety checks; CC 2.1.290 fixed cases where some were not applied after a rewrite, so a rewrite cannot carry a call past a deny rule. Since CC 2.1.300 it is also validated against the tool's input schema, like Claude's own input: unknown keys are dropped silently, and input the tool rejects denies the call instead of passing through. The same applies to PermissionRequest `updatedInput`
+- Windows: a PreToolUse or PermissionRequest command hook that sets no `shell` fails closed when Git for Windows is not installed (CC 2.1.299): a guard that fails blocks the call. Before CC 2.1.299 such a hook failed open and the call ran
 - `additionalContext`: Injected into Claude's context. `<system-reminder>` tags in it, as in any hook output, are escaped before they reach Claude (CC 2.1.292)
 - A failure to match the hook against a call, or tool input that cannot be serialized to JSON, blocks the call (CC 2.1.288). Before CC 2.1.288 the hook was skipped and the call ran. PermissionRequest behaves the same way
 
-**`updatedInput` under auto mode (CC 2.1.287).** Auto mode is the default starting mode, when no permission mode is configured, since CC 2.1.284 for interactive terminal and VS Code sessions, and since CC 2.1.285 for `claude -p` and Python Agent SDK sessions on third-party providers or with telemetry off. Its classifier reviews the tool input the model wrote. When a PreToolUse hook (or a mod's `tool.call` hook) changes that input, the review covers different input from what would run, so the classifier gives no verdict. Claude retries the call once. If it is denied again, Claude stops trying and tells the user that a hook rewrites the call, that auto mode could not evaluate the rewritten call, and that they can turn the hook off or leave auto mode. In practice, an `updatedInput` hook can block its own tool in a default session. Prefer `deny` with a `permissionDecisionReason` that tells Claude how to fix the call, and keep `updatedInput` for sessions that run in another permission mode or for cases where blocking is acceptable.
+**`updatedInput` under auto mode (CC 2.1.287).** Auto mode is the default starting mode, when no permission mode is configured, since CC 2.1.284 for interactive terminal and VS Code sessions. From CC 2.1.285 it was also the default for `claude -p` and Python Agent SDK sessions on third-party providers or with telemetry off, but since CC 2.1.302 those headless and SDK sessions, and fresh installs, start in `default` mode unless `--permission-mode auto` is passed. Its classifier reviews the tool input the model wrote. When a PreToolUse hook (or a mod's `tool.call` hook) changes that input, the review covers different input from what would run, so the classifier gives no verdict. Claude retries the call once. If it is denied again, Claude stops trying and tells the user that a hook rewrites the call, that auto mode could not evaluate the rewritten call, and that they can turn the hook off or leave auto mode. In practice, an `updatedInput` hook can block its own tool in a default session. Prefer `deny` with a `permissionDecisionReason` that tells Claude how to fix the call, and keep `updatedInput` for sessions that run in another permission mode or for cases where blocking is acceptable.
 
 ### PermissionRequest Decision Control
 
@@ -965,7 +979,7 @@ Different hook events support different output formats for controlling Claude's 
 ```
 
 - `behavior`: `allow` or `deny`
-- `updatedInput`: Modified tool parameters (only with `allow`)
+- `updatedInput`: Modified tool parameters (only with `allow`). Validated against the tool's input schema since CC 2.1.300: unknown keys are dropped, and input the tool rejects denies the call
 - `updatedPermissions`: Permission changes (only with `allow`)
 - `message`: Shown to user (only with `deny`)
 - `interrupt`: If true with `deny`, stops the current operation

@@ -673,6 +673,8 @@ head -n 20 .claude/commands/my-command.md
 claude --debug
 ```
 
+**Unsafe characters in the name (CC 2.1.299).** A command or skill whose file or folder name contains hidden, direction-changing, or blank-like characters, `<`, or `>` is not offered until it is renamed. A `name:` frontmatter value with those characters is ignored. Rename the file to plain printable characters (lowercase letters, digits, and hyphens are safest).
+
 #### Issue: Arguments not substituting
 
 ```bash

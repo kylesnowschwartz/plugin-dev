@@ -76,7 +76,11 @@ Exit codes:
 
 Async command hooks (`"async": true`) cannot block (exit 2 ignored) or return decisions — useful for logging, metrics, and notifications. `"asyncRewake": true` is the exception for exit 2: the hook still runs in the background, but exit 2 wakes Claude with the hook's output. See `references/advanced.md`.
 
-**Auto mode and `updatedInput` (CC 2.1.287).** Auto mode is now the default starting mode for most sessions with no configured permission mode (CC 2.1.284-2.1.285). Under it, a PreToolUse hook that rewrites a tool's input leaves the classifier with no verdict, and after one retry Claude stops and asks the user to turn the hook off or leave auto mode. See `references/advanced.md` (PreToolUse Decision Control).
+**Auto mode and `updatedInput` (CC 2.1.287).** Auto mode is the default starting mode for most interactive sessions with no configured permission mode (CC 2.1.284-2.1.285). Since CC 2.1.302, `claude -p` and Agent SDK sessions with no permission mode start in `default` mode on third-party providers, with telemetry off, or on a fresh install; `--permission-mode auto` keeps auto. Under auto mode, a PreToolUse hook that rewrites a tool's input leaves the classifier with no verdict, and after one retry Claude stops and asks the user to turn the hook off or leave auto mode. See `references/advanced.md` (PreToolUse Decision Control).
+
+**`updatedInput` is schema-validated (CC 2.1.300).** A PreToolUse or PermissionRequest hook's `updatedInput` is validated like Claude's own input: unknown keys are dropped silently, and input the tool rejects denies the call. A PreToolUse `allow` also no longer lets a write run in plan mode (CC 2.1.299).
+
+**Plugin hooks fail closed on hand-off failures (CC 2.1.299).** An action a plugin hook can block is now refused, not let through, when the hook cannot be handed the action or cannot hand back its answer; a tool that already ran has its result withheld. Values a hook hands back that nest deeper than 28,000 levels are refused with an error naming the limit. The changelog words both changes for plugin hooks and workflow scripts, and it is not stated whether they reach command hooks beyond the hooks-module (mod) path.
 
 ## Hook Input
 
@@ -105,7 +109,7 @@ Inside a subagent, `agent_id` and `agent_type` are also present. Event-specific 
 - `$CLAUDE_EFFORT` — current effort level (CC 2.1.133); also in hook input JSON as `effort.level`.
 - `$TMPDIR` — sandbox-writable temp directory. **CC 2.1.154:** set to the same sandbox-writable directory for both sandboxed and unsandboxed Bash commands, so scripts can rely on it regardless of sandbox mode.
 
-**Windows PowerShell (CC 2.1.126):** When the PowerShell tool is enabled on Windows, Claude treats PowerShell as the primary shell, so Bash-specific hook scripts may not run — consider cross-platform implementations. Before CC 2.1.293, stopping a hook on Windows could sometimes terminate an unrelated process.
+**Windows PowerShell (CC 2.1.126):** When the PowerShell tool is enabled on Windows, Claude treats PowerShell as the primary shell, so Bash-specific hook scripts may not run — consider cross-platform implementations. Before CC 2.1.293, stopping a hook on Windows could sometimes terminate an unrelated process. Since CC 2.1.299, a PreToolUse or PermissionRequest hook that sets no `shell` fails closed when Git for Windows is not installed: the guard fails and the call is blocked, where before it failed open.
 
 **Background sessions and `FORCE_COLOR` (CC 2.1.295):** commands and hooks in background sessions used to inherit `FORCE_COLOR=3`, which put color escape codes into the output Claude reads. They no longer do. A hook that must run on older versions should strip ANSI codes from tool output it passes back, or unset `FORCE_COLOR` itself.
 
@@ -176,11 +180,11 @@ An `mcp_tool` hook is accepted on every event, but it only runs where an MCP cli
 | Managed policy settings       | Organization   | Yes (admin-managed)  |
 | Plugin `hooks/hooks.json`     | Plugin-scoped  | Yes (with plugin)    |
 
-Plugin hooks merge with user hooks and run in parallel. Duplicates are deduplicated (command hooks by command string, HTTP hooks by URL). `disableAllHooks` cannot disable managed policy hooks.
+Plugin hooks merge with user hooks and run in parallel (at most 12 prompt or agent hooks per event at once since CC 2.1.302; see Performance). Duplicates are deduplicated (command hooks by command string, HTTP hooks by URL). `disableAllHooks` cannot disable managed policy hooks.
 
 ## Performance
 
-All matching hooks run **in parallel** — they don't see each other's output and ordering is non-deterministic, so design them to be independent. Use command hooks for quick checks, prompt hooks for complex reasoning, cache results in temp files, `async: true` for logging, and `once: true` for one-time setup. See `references/advanced.md` for caching, hook-chaining-via-state, and parallel-optimization patterns.
+All matching hooks run **in parallel** — they don't see each other's output and ordering is non-deterministic, so design them to be independent. **Prompt and agent hooks are capped at 12 concurrent runs per event (CC 2.1.302):** when more of them match one event, the rest wait their turn, which adds latency. The changelog does not mention a cap for command or HTTP hooks. Use command hooks for quick checks, prompt hooks for complex reasoning, cache results in temp files, `async: true` for logging, and `once: true` for one-time setup. See `references/advanced.md` for caching, hook-chaining-via-state, and parallel-optimization patterns.
 
 ## Security
 
@@ -228,6 +232,7 @@ This applies to function-hook plugins ("mods": a `hooks/hooks.json` holding `{ "
 11. **`${CLAUDE_PLUGIN_ROOT}` is loader-bound in frontmatter hooks.** Resolves only under plugin discovery; agents loaded via `--agent` see it unbound — use `${CLAUDE_PROJECT_DIR}`. Full caveat: `references/advanced.md` (Scoped Hooks section).
 12. **PreToolUse auto-allow hooks cannot bypass tool restrictions in background agents (CC 2.1.222).** PreToolUse hooks that return auto-allow decisions no longer bypass tool restrictions when running in background agent tasks. This security fix ensures that tool restrictions remain enforced even when hooks attempt to approve tool usage in unsupervised contexts.
 13. **Invalid JSON from hooks is now reported as an error (CC 2.1.248).** Hooks that return invalid JSON were previously treated silently as plain text. Now they are reported as hook errors with parse messages. Ensure your hook scripts output valid JSON or exit without output.
+14. **UserPromptSubmit runs before skill and command expansion (CC 2.1.299).** It gets the line as typed, then the skill or slash command expands and UserPromptExpansion fires. A UserPromptSubmit block therefore also stops the skill's or command's embedded shell commands. A skill's own frontmatter UserPromptSubmit hook first runs on the prompt after the one that invoked the skill. Details: `references/event-schemas.md` (UserPromptSubmit).
 
 ## References and Examples
 

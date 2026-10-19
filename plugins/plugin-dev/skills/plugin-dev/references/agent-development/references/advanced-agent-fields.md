@@ -149,7 +149,7 @@ All hook events are supported in agent frontmatter. Key behavior difference:
 
 ### Background vs Foreground
 
-- **Background** (default since CC 2.1.198): Runs concurrently with the main conversation. All permissions must be pre-approved at spawn time since the user cannot be prompted.
+- **Background** (default since CC 2.1.198 for the main conversation's subagents): Runs concurrently with the main conversation. All permissions must be pre-approved at spawn time since the user cannot be prompted. Since CC 2.1.302 the desktop app and VS Code always run the main conversation's subagents in the background, as the terminal does, rather than letting Claude choose. A subagent's own Agent calls in `claude -p`, the Agent SDK, the desktop app, and VS Code run in the foreground by default (CC 2.1.302).
 - **Foreground** (`run_in_background: false` on the Agent tool call): Blocks the main conversation until the agent completes. User can interact if the agent requests permission.
 
 Background agents that encounter an unapproved permission request will fail. Design tool restrictions (`tools`, `permissionMode`) accordingly when agents may run in background.
@@ -386,6 +386,12 @@ This correctly blocks spawning the `untrusted-agent` type.
 
 **Per-agent tool lists and `--tools` (CC 2.1.293, 2.1.295):** Before CC 2.1.293, a subagent or `--agent` session whose own `tools` list left out a built-in tool was told that the tool was disabled for the whole session. The same release stopped Claude from being told to continue or message subagents with `SendMessage` when a host, a permission rule, or a `--tools` list had removed that tool. Since CC 2.1.295, `--tools` and `--restricted` also apply to built-in tools that register after launch, and deprecated tool names no longer reach tools outside the caller's tool set. On older versions, an agent's restricted tool list could be described more broadly than it applied, and a late-registering built-in tool could escape a `--tools` restriction.
 
+**MCP entries take only the named server (CC 2.1.299):** An MCP entry in `tools:` grants only the tools of the server it names exactly. A server whose normalized name contains `__` must be listed with its whole name, `mcp__<whole name>__*`; a shorter `mcp__<prefix>` entry no longer reaches it. This is the same exact-server matching that permission allow rules use (see [permission-modes-rules.md](permission-modes-rules.md), MCP Tool Patterns).
+
+```yaml
+tools: Read, Grep, mcp__github__*, mcp__plugin_my-plugin_myserver__*
+```
+
 The CC 2.1.273 binary also aliased `BashOutput`/`AgentOutput` to `TaskOutput`, but **CC 2.1.277 removed the TaskOutput tool**. Claude now reads a background task's output file with Read. The CC 2.1.280 binary lists `TaskOutput`, `BashOutput`, and `AgentOutput` among tools it no longer offers, so drop them from `tools` lists and permission rules.
 
 > **Note:** The Config tool was removed in CC 2.1.118. Use the `/config` slash command instead for getting/setting Claude Code settings.
@@ -544,7 +550,7 @@ Once a user authorizes read-only access to a particular target, further read-onl
 
 Forked worker agents receive explicit guidance that they should **not spawn further subagents**. Instead, they should execute their assigned directive directly. This prevents infinite delegation chains and ensures work gets done.
 
-**Subagent forking enabled by default (CC 2.1.232):** Subagent forking is now enabled by default. The fork agent's availability description changed from "fork experiment" to "fork gate". This affects how agents should be designed — forking is now the standard rather than experimental behavior.
+**Subagent forking enabled by default (CC 2.1.232, extended 2.1.302):** CC 2.1.232 made subagent forking the default in the terminal. The fork agent's availability description changed from "fork experiment" to "fork gate". Since CC 2.1.302, fork subagents (`subagent_type: "fork"`) are also on by default in `claude -p`, the Agent SDK, the desktop app, and VS Code; before that those surfaces needed `CLAUDE_CODE_FORK_SUBAGENT=1`. `CLAUDE_CODE_FORK_SUBAGENT=0` turns forks off, and `claude mcp serve` never offers them. As of CC 2.1.303 the official sub-agents docs still describe fork mode as off in `-p` and the Agent SDK unless turned on; the changelog is newer. Forking is the standard rather than experimental behavior on every surface.
 
 **Fork syntax change (CC 2.1.176):** Creating a background fork now requires passing `subagent_type: "fork"` explicitly. Previously, omitting `subagent_type` would create a fork inheriting the current context. Now, omitting the type or using any other type starts a **fresh agent with no context**.
 
@@ -634,6 +640,8 @@ Building on the Execution Modes section above, these behaviors apply specificall
 ### Background by Default (CC 2.1.198)
 
 The Agent tool now defaults to `run_in_background: true`. Claude keeps working while subagents run in the background. To run an agent in foreground (blocking) mode, explicitly set `run_in_background: false` in the Agent tool call.
+
+**Per-surface defaults (CC 2.1.302).** The background default covers the main conversation's subagents, which the desktop app and VS Code now always run in the background, as the terminal does. Nested calls differ: a subagent's own Agent calls in `claude -p`, the Agent SDK, the desktop app, and VS Code run in the foreground by default. An agent that spawns helpers should not assume they run concurrently with it on those surfaces.
 
 ### Extended Thinking Inheritance (CC 2.1.198)
 

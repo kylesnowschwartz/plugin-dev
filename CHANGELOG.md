@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.52.0] - 2026-10-19
+
+Sync with Claude Code 2.1.297-2.1.303. The changelog has entries only for 2.1.299-2.1.303, and 2.1.303 is bug fixes only. This release covers twenty-three Must Update items (one promoted by Stage 2), three May Update items, and four Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. `scripts/check-doc-drift.sh` was clean before and after, and the `docs/claude-code-facts.json` diff changed only `claude_code_version`.
+
+### Added
+
+- **hook-development**: prompt and agent hooks are capped at 12 concurrent runs per event, and the rest queue (CC 2.1.302)
+- **hook-development**: `updatedInput` from PreToolUse and PermissionRequest hooks is validated against the tool schema. Unknown keys are dropped, and input the tool rejects denies the call, including a partial object missing required fields (CC 2.1.300). `event-schemas.md` had said `updatedInput` is merged into the tool input; it replaces the input, so hooks return the complete object
+- **hook-development**: a PreToolUse `allow` no longer lets a write run in plan mode (CC 2.1.299)
+- **hook-development**: UserPromptSubmit runs before a skill or slash command expands, so a block also stops its embedded shell commands. The ordering against UserPromptExpansion is now documented (CC 2.1.299)
+- **hook-development / skill-development**: a skill's own frontmatter UserPromptSubmit hook first runs on the prompt after the one that invokes the skill (CC 2.1.299)
+- **hook-development**: agent hooks honor `model`. Aliases resolve, a subagent's model no longer overrides the hook's, and an unavailable model falls back to the caller's model instead of allowing the action (CC 2.1.300)
+- **hook-development / plugin-structure**: plugin hooks fail closed when they cannot be handed an action or cannot answer, and handed-back values nested deeper than 28,000 levels are refused (CC 2.1.299). This is documented with the changelog's mod-path scope caveat
+- **hook-development**: Windows PreToolUse and PermissionRequest hooks with no `shell` fail closed without Git for Windows (CC 2.1.299)
+- **hook-development**: plugin WorktreeCreate and WorktreeRemove hooks run under `--worktree` but not yet under `--tmux` (CC 2.1.300). Quitting asks before removing a hook-made worktree that may hold unpushed commits (CC 2.1.301)
+- **hook-development**: SessionEnd hooks run reliably on exit while a background command runs, and exit force-kills background commands after 1.5 seconds (CC 2.1.300)
+- **agent-development / mcp-integration**: MCP allow rules and agent `tools:` entries reach only the server they name exactly. Servers whose names contain `__` need `mcp__<whole name>__*`, and deny and ask rules for such servers now apply (CC 2.1.299)
+- **command-development / skill-development**: skills and commands whose file or folder names have hidden, direction-changing, or blank-like characters, `<`, or `>` are not offered until renamed, and such a `name:` is ignored (CC 2.1.299)
+- **command-development / skill-development**: only the first 64 argument names, each up to 64 characters, are filled in (CC 2.1.301)
+- **skill-development / plugin-structure**: `claude plugin eval` has `--disallow-tools` and a `disallowed_tools` case field, and a run that ends on an API error scores 0 and makes the suite exit 1 (CC 2.1.299)
+- **mcp-integration**: MCP OAuth sign-in, refresh, and sign-out send configured `headers`/`headersHelper` (CC 2.1.299). Descriptions from Anthropic's first-party servers at `api.anthropic.com` are exempt from the 4,096-character cap (CC 2.1.299)
+- **mcp-integration**: compatibility fixes for empty `.mcp.json`, single-string `enabledMcpjsonServers`, `constructor`-like server names, protocol 2026-07-28 servers, rejected tool schemas, and post-compaction connects (CC 2.1.299-2.1.302)
+- **plugin-structure**: 2.1.299 mod version history, covering managed-hook enforcement against user mods, `validate` naming skipped mod hooks, and the `$.env.set` and deep-nesting fixes
+- **skill-development**: `/reload-skills` re-sends the full skill list after compaction (CC 2.1.299), and skills are listed again after `/rewind` (CC 2.1.301)
+
+### Changed
+
+- **plugin-structure / hook-development**: `claude -p` and Agent SDK sessions with no permission mode start in `default` mode, not auto, on third-party providers, with telemetry off, or on a fresh install (CC 2.1.302). `headless-ci-mode.md` had said these sessions start in auto mode
+- **agent-development / plugin-structure**: fork subagents are on by default in `claude -p`, the Agent SDK, desktop, and VS Code, and `CLAUDE_CODE_FORK_SUBAGENT=0` turns them off (CC 2.1.302). The claim that forking had been on "in all sessions" since 2.1.232 now says the terminal only. The official docs still lag this change
+- **agent-development**: desktop and VS Code always run the main conversation's subagents in the background, and a subagent's own Agent calls in `-p`, the SDK, desktop, and VS Code run in the foreground by default (CC 2.1.302)
+- **plugin-structure**: plugin `bin/` executables are found by the PowerShell tool (CC 2.1.302)
+- **hook-development**: the `ask` permission prompt names its source, `[plugin:<name>]` or `[skill]` (CC 2.1.301)
+
+### Fixed
+
+- **hook-development**: the Context-Aware Prompt Hooks example used a `$TRANSCRIPT_PATH` placeholder in a `prompt` hook and said the model could read the transcript file. Prompt hooks have only `$ARGUMENTS` and no tools, so the example is now an `agent` hook that reads `transcript_path` from `$ARGUMENTS`
+- **hook-development**: the exec-form `args` examples passed bare `$CLAUDE_PLUGIN_OPTION_API_TOKEN` and `$FILE_PATH`, which pass through verbatim with no shell. They now use non-sensitive `${user_config.KEY}` options, and the page lists the only placeholders `args` substitutes: `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}`, `${CLAUDE_PROJECT_DIR}`, and non-sensitive `${user_config.KEY}`. Sensitive options and secrets are read from `$CLAUDE_PLUGIN_OPTION_<KEY>` inside the script
+- **hook-development**: Pattern 9 said flag files need a Claude Code restart. Each hook run re-checks the file, so no restart is needed
+- **command-development**: the "Questions not appearing" troubleshooting treated `allowed-tools` as a gate on AskUserQuestion. It now points to `disallowed-tools`, the only field that removes a tool
+
 ## [0.51.1] - 2026-10-13
 
 Documentation drift fixes. CC version range: none (drift-only). No Claude Code releases came after 2.1.296, so the changelog baseline stays at 2.1.296. The `doc-drift-auditor` sweep found six contradictions. Facts.json does not cover them, and Stage 2 confirmed each one against the official Claude Code docs or the directory contents. `scripts/check-doc-drift.sh` was clean.
@@ -1210,7 +1250,8 @@ Corrects references that had drifted from Claude Code behaviour, reported in [#6
 - Based on original plugin by Daisy Hollman at Anthropic
 - Expanded with enhanced skills, additional utilities, and CI/CD infrastructure
 
-[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.51.1...HEAD
+[Unreleased]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.52.0...HEAD
+[0.52.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.51.1...v0.52.0
 [0.51.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.51.0...v0.51.1
 [0.51.0]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.50.1...v0.51.0
 [0.50.1]: https://github.com/kylesnowschwartz/plugin-dev/compare/v0.50.0...v0.50.1

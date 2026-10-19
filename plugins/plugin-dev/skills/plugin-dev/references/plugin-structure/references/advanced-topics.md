@@ -39,7 +39,9 @@ Most plugins work well with declarative `hooks.json` configuration.
 
 ### Risks That Apply Across Plugin Types
 
-**Rewriting tool input under auto mode.** A `tool.call` hook that rewrites a call's input with `next({ ...e, ... })` can leave the auto-mode classifier with no verdict, the same as a PreToolUse hook that returns `updatedInput`. See `../../hook-development/references/advanced.md`.
+**Rewriting tool input under auto mode.** A `tool.call` hook that rewrites a call's input with `next({ ...e, ... })` can leave the auto-mode classifier with no verdict, the same as a PreToolUse hook that returns `updatedInput`. See `../../hook-development/references/advanced.md`. Since CC 2.1.300 a PreToolUse or PermissionRequest `updatedInput` is also validated against the tool's schema: unknown keys are dropped and input the tool rejects denies the call.
+
+**Plugin hooks fail closed on hand-off failures (CC 2.1.299).** An action a plugin hook can block is refused, not let through, when the hook cannot be handed the action or cannot hand back its answer; a tool that already ran has its result withheld. Values a plugin hook hands back that nest deeper than 28,000 levels are refused with an error naming the limit (workflow scripts allowed 100,000). A `tool.check` allow, like a PreToolUse `allow`, no longer lets a write run in plan mode (CC 2.1.299).
 
 **Managed rules still apply (CC 2.1.289).** On managed machines, a managed deny or ask rule on a nested compound shell command holds even when a user-installed mod's `tool.call` hook approves the call.
 
@@ -101,6 +103,12 @@ The `plugin-authoring` skill describes only the build it ships with. This histor
   - `$.agent.register` is refused from a mod's hook that is still running after the mod was reloaded or removed.
   - `$.http.fetch` accepts a `HEAD` request whose response declares a `Content-Length` over the 4 MiB body limit.
   - Esc or an interrupt during a mod's `prompt.submit` hook (or a `UserPromptSubmit` hook) no longer ends headless sessions, clears the typed prompt, or lets the unchecked prompt through.
+- **CC 2.1.299:**
+  - Plugin hooks fail closed when they cannot be handed an action or cannot answer, and values nested deeper than 28,000 levels are refused (see Risks above).
+  - `/plugin` and `claude plugin validate` name a mod's hooks that are skipped where an organization manages Claude Code.
+  - Managed permission rules, managed hooks, and organization MCP tool names are enforced more reliably against user-installed mods, and a user mod's `$.env.set` no longer changes the environment of managed command hooks.
+  - Plugin hooks with very deeply nested input passed through `next()` are no longer skipped.
+  - `plugin_loaded` telemetry reports `has_hooks` correctly for hooks modules.
 
 ## Keybindings Plugin Context
 

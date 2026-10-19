@@ -179,6 +179,8 @@ Two ways to extend it:
 
 Keep SessionEnd cleanup short. A hook that needs more than a second or two of work is better off handing it to a detached process.
 
+**Exit with background commands (CC 2.1.300).** SessionEnd hooks now run reliably when the user exits while a background command is still running; before CC 2.1.300 they were sometimes skipped. Exit also force-kills background commands still running 1.5 seconds after being asked to stop, so a cleanup hook should not expect a session's background processes to still be alive when it runs.
+
 **Matchers:** `clear`, `resume`, `logout`, `prompt_input_exit`, `other`
 **Hook types:** Command, HTTP, MCP tool — this event is dispatched outside the conversation loop, so prompt and agent hooks cannot run on it.
 
@@ -254,6 +256,10 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 }
 ```
 
+**Runs before expansion (CC 2.1.299).** When the prompt invokes a skill or custom slash command, UserPromptSubmit runs first and gets the line as typed, before the skill or command expands and before UserPromptExpansion fires. A UserPromptSubmit hook that blocks the prompt therefore also stops the skill's or command's embedded shell commands (the `[BANG]` lines) from running. Before CC 2.1.299 expansion, and those shell commands, came first.
+
+**Skill-scoped UserPromptSubmit (CC 2.1.299).** A `UserPromptSubmit` hook declared in a skill's own frontmatter first runs on the prompt after the one that invokes the skill; it never sees the invoking prompt.
+
 **Matchers:** Not supported (matcher field is silently ignored).
 **Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
@@ -296,6 +302,8 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 
 - `suppressOriginalPrompt`: when `decision` is `"block"`, omits the original prompt from the block message.
 - Exit code 0 with plain stdout injects that text as `additionalContext`. Exit code 2 blocks the expansion and shows stderr to the user only.
+
+**Ordering:** UserPromptSubmit runs before this event (CC 2.1.299). A UserPromptSubmit block stops the prompt before any expansion, so UserPromptExpansion does not fire and the command's embedded shell commands do not run.
 
 **Use cases:** Gate which slash commands may run, add repository context to a command before Claude sees it, audit MCP prompt usage.
 
@@ -357,14 +365,15 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 
 - `permissionDecision`: `"allow"` approves without prompting, `"deny"` blocks execution, `"ask"` shows permission dialog, `"defer"` pauses execution. An `"allow"` does not skip the prompt for file reads from network (UNC) paths (CC 2.1.292 security fix); auto mode does not skip it either.
 - `permissionDecisionReason`: Explanation logged for the decision
-- `updatedInput`: Replace specific tool_input fields (merged, not replaced wholesale). For `AskUserQuestion` tool calls, return `updatedInput` alongside `permissionDecision: "allow"` to provide answers programmatically (CC 2.1.85), enabling headless integrations that collect answers via their own UI. Permission rules and safety checks apply to the rewritten input (CC 2.1.290 fixed cases where some were skipped), so `updatedInput` cannot move a call past a deny rule.
+- `updatedInput`: Replaces the tool's input: return the complete input object with your changes applied. For `AskUserQuestion` tool calls, return `updatedInput` alongside `permissionDecision: "allow"` to provide answers programmatically (CC 2.1.85), enabling headless integrations that collect answers via their own UI. Permission rules and safety checks apply to the rewritten input (CC 2.1.290 fixed cases where some were skipped), so `updatedInput` cannot move a call past a deny rule. Since CC 2.1.300 the input is validated against the tool's schema, like Claude's own input: unknown keys are dropped silently, and input the tool rejects denies the call; a partial object missing required fields is rejected and the call is denied. PermissionRequest `updatedInput` is validated the same way.
+- **Plan mode (CC 2.1.299):** an `"allow"` no longer lets a write (an MCP tool's, a file's, or a shell command's) run in plan mode. Before CC 2.1.299 such a write ran.
 - `additionalContext`: Injected into Claude's context for this tool call. `<system-reminder>` tags in it are escaped (CC 2.1.292)
 
 **Defer pattern (CC 2.1.89):** Return `permissionDecision: "defer"` to pause tool execution in headless sessions. The session can be resumed later with `-p --resume`. Use `defer` when you need external approval or want to batch decisions for later processing.
 
 **Deprecated fields:** Top-level `decision: "approve|block"` still works but `hookSpecificOutput.permissionDecision` takes precedence.
 
-**`updatedInput` under auto mode (CC 2.1.287).** The auto-mode classifier reviews the input the model wrote. When a hook rewrites it, the review covers different input from what would run, so the classifier gives no verdict. Claude retries once; if the call is denied again, Claude stops and tells the user that a PreToolUse hook (or a mod) rewrites the call and that they can turn it off or leave auto mode. Auto mode is now the default starting mode for most sessions with no configured permission mode (CC 2.1.284-2.1.285), so see `advanced.md` (PreToolUse Decision Control) before shipping an `updatedInput` hook.
+**`updatedInput` under auto mode (CC 2.1.287).** The auto-mode classifier reviews the input the model wrote. When a hook rewrites it, the review covers different input from what would run, so the classifier gives no verdict. Claude retries once; if the call is denied again, Claude stops and tells the user that a PreToolUse hook (or a mod) rewrites the call and that they can turn it off or leave auto mode. Auto mode is the default starting mode for most interactive sessions with no configured permission mode (CC 2.1.284-2.1.285); since CC 2.1.302, `claude -p` and Agent SDK sessions on third-party providers, with telemetry off, or on a fresh install start in `default` mode instead. See `advanced.md` (PreToolUse Decision Control) before shipping an `updatedInput` hook.
 
 **Fails closed on matching errors (CC 2.1.288).** If matching the hook against a call fails, or the tool's input cannot be serialized to JSON, the call is blocked. Before CC 2.1.288 the hook was skipped and the call went ahead. The same applies to PermissionRequest.
 
@@ -1102,6 +1111,8 @@ Use to verify what survived compaction, log compaction results, or send alerts i
 ```
 
 > **worktree.baseRef setting (CC 2.1.133):** The `worktree.baseRef` setting controls the base reference for new worktrees. Options are `fresh` (default, branch from `origin/<default-branch>`) and `head` (branch from current local HEAD). Hooks processing WorktreeCreate events can check this setting to understand the worktree's origin point.
+
+**Plugin hooks and `--worktree` (CC 2.1.300).** Plugin WorktreeCreate and WorktreeRemove hooks run when Claude Code starts with `--worktree`; before CC 2.1.300 they did not. They still do not run under `--tmux`. Since CC 2.1.301, quitting asks before removing a worktree made by a WorktreeCreate hook when it may hold unpushed commits; before that it was removed without asking.
 
 **Matchers:** Not supported.
 **Hook types:** Command, HTTP, MCP tool — this event is dispatched outside the conversation loop, so prompt and agent hooks cannot run on it.

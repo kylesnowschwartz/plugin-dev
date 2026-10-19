@@ -82,7 +82,7 @@ Only `name` and `description` are required. Every optional field below is docume
 
 | Field | Required | Purpose |
 | --- | --- | --- |
-| `name` | Yes | Skill identifier (kebab-case, max 64 chars per the Agent Skills spec; Claude Code silently ignores a `name` over 256 chars, CC 2.1.292) |
+| `name` | Yes | Skill identifier (kebab-case, max 64 chars per the Agent Skills spec; Claude Code silently ignores a `name` over 256 chars, CC 2.1.292; a skill whose folder or file name has hidden, direction-changing, or blank-like characters, `<`, or `>` is not offered, and such a `name` is ignored, CC 2.1.299) |
 | `description` | Yes | When to use, third-person, with trigger phrases (< 1024 chars) |
 | `allowed-tools` | No | Pre-approve tools to run without a permission prompt while active (not a restriction; see `disallowed-tools`) |
 | `disallowed-tools` | No | Denylist tools to remove from the pool (CC 2.1.152) |

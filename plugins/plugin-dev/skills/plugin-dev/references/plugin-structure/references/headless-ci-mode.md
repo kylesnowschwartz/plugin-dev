@@ -64,9 +64,9 @@ claude -p "Fix the bug" --allowedTools "Read,Write,Edit,Bash(git *)"
 
 **Plugin design tip:** Document recommended `--allowedTools` values in your plugin README for CI usage.
 
-### Auto Mode as the Default on Some Setups (CC 2.1.285)
+### Default Permission Mode for Headless and SDK Sessions (CC 2.1.285, changed 2.1.302)
 
-`claude -p` and Python Agent SDK sessions on third-party providers (Bedrock, Vertex, Foundry), or with telemetry off, start in auto mode when no permission mode is configured, like interactive sessions. Other headless sessions keep their previous default. A configured permission mode (`--permission-mode`, or `permissions.defaultMode` in settings) still takes precedence, so CI jobs that depend on a specific mode should set it explicitly. Under auto mode, a PreToolUse hook that rewrites a tool's input can leave the classifier with no verdict; see `../../hook-development/references/advanced.md`.
+Since CC 2.1.302, `claude -p` and Agent SDK sessions with no permission mode start in `default` mode on third-party providers (Bedrock, Vertex, Foundry), with telemetry off, or on a fresh install. Pass `--permission-mode auto` to keep auto mode. From CC 2.1.285 until 2.1.302, `claude -p` and Python Agent SDK sessions on third-party providers or with telemetry off started in auto mode instead, so a CI job that ran unattended under auto on those versions now meets permission prompts it cannot answer. `CLAUDE_CODE_AUTO_MODE_MODEL` (CC 2.1.302) selects the model for the client-side auto mode classifier. A configured permission mode (`--permission-mode`, or `permissions.defaultMode` in settings) still takes precedence, so CI jobs that depend on a specific mode should set it explicitly. Under auto mode, a PreToolUse hook that rewrites a tool's input can leave the classifier with no verdict; see `../../hook-development/references/advanced.md`.
 
 ### --max-turns
 
@@ -249,13 +249,19 @@ CI runs can accumulate significant API costs. Help users control spending:
 - Use `haiku` model for simple analysis skills
 - Document expected token usage for key workflows
 
-## Subagent Forking in Headless Mode (CC 2.1.121, updated 2.1.232)
+## Subagent Forking in Headless Mode (CC 2.1.121, updated 2.1.302)
 
-**Note (CC 2.1.232):** Subagent forking is now enabled by default in all sessions. The `CLAUDE_CODE_FORK_SUBAGENT` environment variable may no longer be required for most use cases. However, for explicit control in headless/CI contexts:
+**Note (CC 2.1.302):** Fork subagents (`subagent_type: "fork"`) are on by default in `claude -p`, the Agent SDK, the desktop app, and VS Code, as they already were in the terminal. Before CC 2.1.302, headless and SDK sessions needed `CLAUDE_CODE_FORK_SUBAGENT=1` to offer them. The CC 2.1.232 change made forking the default in the terminal only. Set `CLAUDE_CODE_FORK_SUBAGENT=0` to turn forks off; `claude mcp serve` never offers them. As of CC 2.1.303 the official sub-agents docs still say fork mode is off in `-p` and the Agent SDK unless turned on; the changelog behavior is the current one.
 
 ```bash
+# Turn fork subagents off for a CI run (CC 2.1.302+)
+CLAUDE_CODE_FORK_SUBAGENT=0 claude -p "Run analysis with subagents"
+
+# Turn them on explicitly on versions before CC 2.1.302
 CLAUDE_CODE_FORK_SUBAGENT=1 claude -p "Run analysis with subagents"
 ```
+
+**Nested Agent calls run in the foreground (CC 2.1.302).** In `claude -p`, the Agent SDK, the desktop app, and VS Code, a subagent's own Agent calls now run in the foreground by default. The main conversation's subagents still run in the background.
 
 **Use cases:**
 

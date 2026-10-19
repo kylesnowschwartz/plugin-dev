@@ -329,6 +329,10 @@ MCP servers using `headersHelper` for authentication now automatically retry on 
 
 **Use case:** Long-running sessions where tokens may expire mid-session. The retry happens transparently without user intervention.
 
+### Headers in OAuth Flows (CC 2.1.299)
+
+OAuth sign-in, token refresh, and sign-out send the server's configured `headers` and `headersHelper` values. Before CC 2.1.299 they did not, which broke OAuth for servers behind an authenticating proxy that needs its own header. A plugin whose server sits behind such a proxy should state CC 2.1.299 as its minimum version.
+
 ## Security Best Practices
 
 ### DO
