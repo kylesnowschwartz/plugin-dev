@@ -263,6 +263,8 @@ Handle failed MCP operations:
 - Provide clear error messages
 - Check rate limiting and quotas
 
+**A tool schema the API rejects (CC 2.1.300).** When the API rejects a tool's input schema, Claude Code sends that tool without parameters for the rest of the conversation instead of failing every turn. If Claude calls a plugin tool with no arguments, check whether the API accepts that tool's input schema.
+
 ### Configuration Errors
 
 Validate MCP configuration:
@@ -270,6 +272,16 @@ Validate MCP configuration:
 - Test server connectivity during development
 - Validate JSON syntax
 - Check required environment variables
+
+**Compatibility fixes (CC 2.1.299-2.1.302).** On older versions these cases failed in ways that look like plugin bugs:
+
+- An empty `.mcp.json` is no longer reported invalid (CC 2.1.299)
+- A single string, rather than an array, in `enabledMcpjsonServers` or `disabledMcpjsonServers` no longer causes the whole settings file to be ignored (CC 2.1.299)
+- Servers named `constructor`, `prototype`, or `toString` connect and get normal permission handling (CC 2.1.299)
+- HTTP MCP no longer hangs 30 seconds on a notification reply that never ends (CC 2.1.299)
+- Servers on protocol 2026-07-28 that omit `resultType`, `ttlMs`, or `cacheScope` no longer lose all their tools (CC 2.1.302)
+- A server that connects after a compaction has its tools and instructions reach Claude right away (CC 2.1.300)
+- Cloud and Remote Control connectors negotiate protocol 2026-07-28 by default; `MCP_PROTOCOL_NEGOTIATION=legacy` opts out (CC 2.1.299)
 
 ## Performance Considerations
 
@@ -401,7 +413,7 @@ Design plugin MCP tools to return concise results. Paginate or summarize large o
 
 ## MCP Description Limits
 
-Tool descriptions sent up front and server instructions are capped at **4,096 characters each** (CC 2.1.296; 2,048 before). Descriptions the model loads through tool search are cut at **16,384 characters** (CC 2.1.295; 2,048 before). The caps prevent OpenAPI-generated servers with verbose schemas from bloating the context window. Keep tool descriptions concise and focused on usage rather than exhaustive parameter documentation.
+Tool descriptions sent up front and server instructions are capped at **4,096 characters each** (CC 2.1.296; 2,048 before). Descriptions the model loads through tool search are cut at **16,384 characters** (CC 2.1.295; 2,048 before). The caps prevent OpenAPI-generated servers with verbose schemas from bloating the context window. Keep tool descriptions concise and focused on usage rather than exhaustive parameter documentation. Since CC 2.1.299, tool descriptions and server instructions from Anthropic's first-party MCP servers at `api.anthropic.com` reach Claude in full; the cap still applies to plugin and other third-party servers.
 
 > **Note:** At the time of the CC 2.1.296 sync, the official MCP documentation still stated 2,048 characters. The 4,096 figure comes from the upstream changelog, which is authoritative here.
 

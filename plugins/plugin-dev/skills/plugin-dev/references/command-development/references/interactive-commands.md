@@ -945,7 +945,7 @@ These require explanation, so questions work better than arguments.
 
 **Questions not appearing:**
 
-- Verify AskUserQuestion in allowed-tools
+- Verify AskUserQuestion is not removed by `disallowed-tools` (listing it in `allowed-tools` only pre-approves it; leaving it out does not block it)
 - Check question format is correct
 - Ensure options array has 2-4 items
 

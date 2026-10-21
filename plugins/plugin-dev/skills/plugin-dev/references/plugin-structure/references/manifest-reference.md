@@ -530,7 +530,7 @@ Directory of eval cases for the `claude plugin eval` harness. When an array is g
 }
 ```
 
-`--eval-dir <dir>` overrides this per run. See [Plugin Eval](../../skill-development/references/skill-loading-and-runtime.md#plugin-eval-claude-plugin-eval--generally-available-cc-21269) for the case layout and grader types.
+`--eval-dir <dir>` overrides this per run, and `--disallow-tools` (or a case's `disallowed_tools` field) keeps built-in tools such as Agent out of the runs (CC 2.1.299). Since CC 2.1.299 a run that ends on an API error scores 0 and makes the suite exit 1. See [Plugin Eval](../../skill-development/references/skill-loading-and-runtime.md#plugin-eval-claude-plugin-eval--generally-available-cc-21269) for the case layout and grader types.
 
 #### experimental.monitors
 

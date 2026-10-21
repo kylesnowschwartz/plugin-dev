@@ -316,7 +316,7 @@ rm .enable-security-scan
 - Project-specific validation that's opt-in
 - Performance-intensive checks only when needed
 
-**Note:** Must restart Claude Code after creating/removing flag files for hooks to recognize changes.
+**Note:** No restart is needed. Each hook run is a fresh process that tests for the flag file, so creating or removing it takes effect on the next hook run. Only edits to the hook configuration itself (`hooks.json` or `settings.json`) need `/reload-plugins` or a restart (see `../../plugin-settings/overview.md`).
 
 ## Pattern 10: Configuration-Driven Hooks
 

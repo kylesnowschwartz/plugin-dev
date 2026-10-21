@@ -239,6 +239,8 @@ Pre-allow only necessary MCP tools — specific names, not wildcards:
 ❌ allowed-tools: mcp__plugin_api_server__*
 ```
 
+**Server-level rules match the exact server name (CC 2.1.299).** A permission allow rule or agent `tools:` entry of the form `mcp__<server>` reaches only the server with exactly that normalized name: `mcp__a` no longer allows a server named `a__b` or `a_`. For a server whose normalized name contains `__`, write `mcp__<whole normalized name>__*`. Deny and ask rules for such a server now apply too; before CC 2.1.299 they silently did not. Full rule table: `../agent-development/references/permission-modes-rules.md` (MCP Tool Patterns).
+
 ### URL-Mode Elicitation (CC 2.1.281, extended 2.1.287)
 
 On connections using the 2026-07-28 MCP protocol, a server can use URL-mode elicitation to ask Claude Code to open a browser-based flow, for example to sign in. When the server has no way to confirm the flow completed, Claude Code does not leave a waiting dialog on screen.

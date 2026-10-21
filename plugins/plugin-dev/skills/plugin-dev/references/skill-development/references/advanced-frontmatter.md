@@ -312,7 +312,9 @@ All 33 hook events register in frontmatter scope; the loader applies no allowlis
 | `PostToolUse` | Run checks after successful tool execution       |
 | `Stop`        | Verify completion criteria before skill finishes |
 
-Session-lifecycle events (`SessionStart`, `UserPromptSubmit`, `Notification`) register without error but usually have no chance to fire, because the session event happens before the skill is dispatched or after it unloads. Declare those in `hooks/hooks.json` instead.
+Session-lifecycle events (`SessionStart`, `Notification`) register without error but usually have no chance to fire, because the session event happens before the skill is dispatched or after it unloads. Declare those in `hooks/hooks.json` instead.
+
+`UserPromptSubmit` in a skill's own frontmatter has defined timing since CC 2.1.299: it first runs on the prompt after the one that invokes the skill, and never sees the invoking prompt. It fires on later prompts only while the skill stays active. To gate or annotate the prompt that invokes the skill, declare the hook in `hooks/hooks.json`; UserPromptSubmit runs there before the skill expands (CC 2.1.299), so a block also stops the skill's inline shell commands.
 
 ### Comparison with hooks.json
 
