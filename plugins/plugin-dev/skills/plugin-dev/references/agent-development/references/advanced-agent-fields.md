@@ -272,7 +272,8 @@ Team leads coordinate work across multiple teammates. Key design considerations:
 
 - **Restrict the lead's tools** with `tools` so it holds only coordination tools (spawn, message, shut down teammates, manage tasks) and cannot implement tasks directly. There is no dedicated permission mode for this.
 - **System prompt focus**: Task decomposition, work assignment, progress monitoring, quality review
-- **Tools**: Team leads automatically get access to `TaskCreate`, `TaskUpdate`, `TaskList`, `SendMessage`, and `Task` (for spawning). `TeamCreate` and `TeamDelete` are not offered (see [Removed Team Tools](#removed-team-tools-cc-21178)).
+- **Tools**: Team leads get `SendMessage` and `Task` (for spawning). They get `TaskCreate`, `TaskUpdate`, and `TaskList` only in a session that has the Task tools, which the model gates (next paragraph); team leads are not exempt. Without them, the team coordinates through messages instead of a shared task list. `TeamCreate` and `TeamDelete` are not offered (see [Removed Team Tools](#removed-team-tools-cc-21178)).
+- **Shutting down teammates (CC 2.1.304)**: before CC 2.1.304, approving a teammate's shutdown request from the main session exited the whole CLI. Since CC 2.1.304 it no longer does.
 
 **Task-tracking tools are model-gated (CC 2.1.268).** `TaskCreate`, `TaskGet`, `TaskUpdate`, `TaskList`, and `TodoWrite` are offered only on Claude 3.x, Opus 4.0–4.7, Sonnet 4.0–4.6, and Haiku 4.5. On newer models, including Opus 5 and Opus 5.5 (the default Opus model since CC 2.1.280), they are absent unless `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` is set. An agent whose `tools` list names them, or whose system prompt instructs it to track work with them, silently loses that capability on a default-model session. Claude Haiku 5.5 is not on the list either: the CC 2.1.296 binary's gating set ends at `claude-haiku-4-5`. Since CC 2.1.293, `haiku` resolves to Haiku 5.5 on the Anthropic API, so a `model: haiku` agent there no longer gets these tools, though it did on Haiku 4.5. Design agents to report progress in their output rather than depending on task-tracking tools being present.
 
@@ -642,6 +643,8 @@ Building on the Execution Modes section above, these behaviors apply specificall
 The Agent tool now defaults to `run_in_background: true`. Claude keeps working while subagents run in the background. To run an agent in foreground (blocking) mode, explicitly set `run_in_background: false` in the Agent tool call.
 
 **Per-surface defaults (CC 2.1.302).** The background default covers the main conversation's subagents, which the desktop app and VS Code now always run in the background, as the terminal does. Nested calls differ: a subagent's own Agent calls in `claude -p`, the Agent SDK, the desktop app, and VS Code run in the foreground by default. An agent that spawns helpers should not assume they run concurrently with it on those surfaces.
+
+**Headless limits hold (CC 2.1.304).** In a headless run, `--max-turns`, Stop, and ended input also end the run when a plugin spawns new subagents or re-runs a finished one. Before CC 2.1.304 that kept the run going past those limits. Do not design a plugin's agents to extend a headless run this way; see `../../plugin-structure/references/headless-ci-mode.md` (`--max-turns`).
 
 ### Extended Thinking Inheritance (CC 2.1.198)
 

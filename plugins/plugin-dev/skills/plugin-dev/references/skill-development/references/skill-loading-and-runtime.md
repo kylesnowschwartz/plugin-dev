@@ -311,7 +311,7 @@ Changes to skill content, frontmatter, and references are picked up. No need to 
 
 **Performance optimization (CC 2.1.174):** Skill hot-reload now only re-sends changed skills instead of the entire skill listing. When you modify a single skill, only that skill is re-announced to Claude, reducing token overhead during rapid iteration. This makes the edit-reload-test cycle faster for developers working on individual skills.
 
-**Getting skills back after compaction (CC 2.1.299, 2.1.301):** Since CC 2.1.299, `/reload-skills` says it re-sends the full skill list, which is the way to get skills listed to Claude again after compaction. Since CC 2.1.301, skills are also listed to the model again after `/rewind`. When Claude adds an `anthropic-skills:` prefix to a skill name, the Skill tool's "Unknown skill" error now suggests the listed name (CC 2.1.299).
+**Skill listing after compaction (CC 2.1.299-2.1.304):** Since CC 2.1.304, compaction sends Claude the skill list again by itself, and `/reload-skills` sends only skills that are new or changed. Running `/reload-skills` after compaction is no longer needed. On CC 2.1.299-2.1.303, `/reload-skills` re-sent the full skill list and was the way to get skills listed to Claude again after compaction. Since CC 2.1.301, skills are also listed to the model again after `/rewind`. CC 2.1.304 also stopped resumed and cloud sessions from sending the whole skill list again each time plugins reloaded at startup. When Claude adds an `anthropic-skills:` prefix to a skill name, the Skill tool's "Unknown skill" error now suggests the listed name (CC 2.1.299).
 
 ## /skills Menu Display (CC 2.1.86)
 

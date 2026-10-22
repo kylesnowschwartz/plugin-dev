@@ -155,7 +155,7 @@ Before Claude sees the command, Claude Code executes each `[BANG]`command`` bloc
 
 Use bash execution to include dynamic context (git status, environment variables), gather project/repository state, and build context-aware workflows.
 
-**Why skill examples omit `[BANG]`:** when skill content loads into Claude's context, `[BANG]` followed by a command name would actually execute. Skill and reference examples therefore show the conceptual pattern with plain backticks (`` `git diff --name-only` ``); add the `[BANG]` prefix when writing real command files.
+**Why examples show `[BANG]`:** when skill content loads into Claude's context, an exclamation mark followed by a backtick-quoted command would actually execute. Skill and reference examples therefore write the placeholder `[BANG]` where the exclamation mark goes. When writing real command files, replace each `[BANG]` with an actual exclamation mark.
 
 ### Load-Time Injection vs Runtime Execution
 

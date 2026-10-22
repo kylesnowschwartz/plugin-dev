@@ -91,6 +91,8 @@ Note: `permission_mode` is not present on SessionStart.
 
 **First render on resume (CC 2.1.268):** On `--continue` and `--resume`, the conversation renders immediately instead of waiting for SessionStart hooks to finish. The hooks still run — they just no longer gate the first paint. A SessionStart hook that injects `additionalContext` should not assume its output is in place before the user sees the restored transcript.
 
+**VS Code start-up budget (CC 2.1.304-2.1.305):** in VS Code, time a SessionStart command hook spends running no longer counts toward the 60-second subprocess start limit, up to 10 minutes in total (CC 2.1.304). Before CC 2.1.304 a slow SessionStart hook could make the session fail with "Subprocess initialization did not complete within 60000ms". While SessionStart or Setup hooks run, VS Code shows a "Running start-up hooks" spinner status with a screen reader announcement (CC 2.1.305). A plugin's SessionStart hooks should stay well under that 10-minute total.
+
 **Output:**
 
 ```json
@@ -910,7 +912,7 @@ Normal exit (code 0) with no blocking output allows the teammate to go idle.
 **Output:** Two feedback mechanisms (same as TeammateIdle):
 
 1. **Exit code 2:** Task NOT marked complete. stderr fed back as feedback; agent continues working
-2. **JSON `{"continue": false, "stopReason": "..."}`:** Teammate stops entirely
+2. **JSON `{"continue": false, "stopReason": "..."}`:** Teammate stops entirely. TaskCompleted ignores it when the `TaskUpdate` tool triggered the event
 
 Normal exit allows the task completion to proceed.
 

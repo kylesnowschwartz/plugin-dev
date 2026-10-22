@@ -109,6 +109,13 @@ The `plugin-authoring` skill describes only the build it ships with. This histor
   - Managed permission rules, managed hooks, and organization MCP tool names are enforced more reliably against user-installed mods, and a user mod's `$.env.set` no longer changes the environment of managed command hooks.
   - Plugin hooks with very deeply nested input passed through `next()` are no longer skipped.
   - `plugin_loaded` telemetry reports `has_hooks` correctly for hooks modules.
+- **CC 2.1.304:**
+  - A mod's `tool.check` answer can set `decider: "person"`: only the permission dialog or a host's callback can approve the ask, and where nobody can be asked the call is refused with the mod's reason.
+  - The `tool.check` event carries `e.isReadOnly`, set when the tool call is read-only.
+  - `settings.read` hooks receive each settings layer and can rewrite the merged settings, so a managed mod can make an organization's setting a ceiling, including the `cleanupPeriodDays` the retention sweep uses.
+  - A transcript line names the event and the plugin when a plugin that runs first skips one of a mod's hooks.
+  - `claude plugin validate` no longer prints notes predicting where a mod's hooks will run.
+  - A failed mod reload no longer removes the tools and commands of the version that stays loaded, and its messages say correctly whether the previous version is still loaded.
 
 ## Keybindings Plugin Context
 
@@ -463,6 +470,10 @@ Managed settings can also restrict hook and permission rule sources:
 
 **Plugins keep pre-approval only from official or vouched sources (CC 2.1.284).** Under the same setting, plugins from marketplaces, claude.ai, and npm no longer pre-approve their own tools through `allowed-tools`. Only plugins from an official Anthropic source, or from a source that managed settings vouch for, keep that pre-approval. Deny and ask rules still apply to every plugin. Under this policy, a plugin's README should list the permission rules an administrator needs to add.
 
+**Claude Desktop path-mounted plugins (CC 2.1.305).** Plugins that Claude Desktop mounts by path (host-delivered `--plugin-dir` plugins) no longer keep their `allowed-tools` when the organization's own managed settings set `allowManagedPermissionRulesOnly`.
+
+**Plugins-only hooks policy (CC 2.1.304).** Under a policy that allows hooks from plugins only, a skill used in the main conversation whose hooks are kept out no longer gets its `allowed-tools`. A skill that pairs guard hooks with pre-approved tools loses both under such a policy.
+
 **Plugin developer implications:**
 
 - Test plugins with these settings enabled to verify graceful degradation
@@ -805,7 +816,7 @@ The `autoMode.classifyAllShell` setting controls how shell commands are classifi
 
 **Which classifier runs (CC 2.1.273).** On Bedrock, Vertex and Foundry, auto mode now uses the **local** classifier by default. Set `CLAUDE_CODE_AUTO_MODE_SERVER=1` to use the platform's server-side classifier instead. This changes *which* classifier renders the verdict, not *which* commands get classified — the `classifyAllShell` and inline `[BANG]` rules above are unaffected.
 
-**Auto mode is the default starting mode (CC 2.1.283-2.1.285).** CC 2.1.283 made interactive sessions on third-party providers, or with telemetry off, start in auto mode when no permission mode is configured; the classifier choice above now governs interactive Bedrock, Vertex and Foundry sessions that leave the mode unset. CC 2.1.284 extended the default to interactive terminal and VS Code sessions on every plan and provider, and CC 2.1.285 to `claude -p` and Python Agent SDK sessions on third-party providers or with telemetry off. Before these releases, those sessions started in `default` (Manual) mode. A configured permission mode still takes precedence. Because auto mode is now the common case, a PreToolUse hook (or mod) that rewrites tool input can stop its own tool from running; see `../../hook-development/references/advanced.md`.
+**Auto mode is the default starting mode (CC 2.1.283-2.1.285).** CC 2.1.283 made interactive sessions on third-party providers, or with telemetry off, start in auto mode when no permission mode is configured; the classifier choice above now governs interactive Bedrock, Vertex and Foundry sessions that leave the mode unset. CC 2.1.284 extended the default to interactive terminal and VS Code sessions on every plan and provider, and CC 2.1.285 to `claude -p` and Python Agent SDK sessions on third-party providers or with telemetry off. Before these releases, those sessions started in `default` (Manual) mode. A configured permission mode still takes precedence. **Since CC 2.1.302, headless and SDK sessions start in `default` again:** `claude -p` and Agent SDK sessions with no permission mode start in `default` mode on third-party providers, with telemetry off, or on a fresh install; pass `--permission-mode auto` to keep auto (see `headless-ci-mode.md`). Interactive sessions keep the auto default. Because auto mode is the common case for interactive sessions, a PreToolUse hook (or mod) that rewrites tool input can stop its own tool from running; see `../../hook-development/references/advanced.md`.
 
 **Use cases:**
 

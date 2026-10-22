@@ -262,7 +262,7 @@ Paths to directories containing skill definitions.
 
 **Behavior**: Loads alongside the default `skills/` directory, which is always scanned. `skills` is the one component path field that adds rather than replaces. The exception: for a marketplace entry whose `source` resolves to the marketplace root, declaring specific subdirectories replaces the `skills/` scan.
 
-**Root-Level Skills (CC 2.1.221):** Plugins can now use `"skills": "."` to load a root-level `SKILL.md` directly from the plugin root. This enables simpler single-skill plugin structures:
+**Root-Level Skills (CC 2.1.221):** A plugin with `SKILL.md` at its root, no `skills/` directory, and no `skills` key loads as a single skill with no manifest field needed. `"skills": "."` is needed only when the plugin also has a `skills/` directory or sets `skills` to other paths; it adds the plugin root to the skill paths so the root-level `SKILL.md` loads alongside them:
 
 ```json
 {
@@ -271,7 +271,7 @@ Paths to directories containing skill definitions.
 }
 ```
 
-With this configuration, place `SKILL.md` at the plugin root instead of in a `skills/` subdirectory. Validation now suggests using the plugin root when a root-level `SKILL.md` is detected but the skills path doesn't include `"."`.
+Validation suggests adding `"."` when it detects a root-level `SKILL.md` that the plugin's skill paths would not load.
 
 **Use cases:**
 

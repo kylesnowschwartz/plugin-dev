@@ -78,6 +78,8 @@ claude -p "Run tests and fix failures" --allowedTools "Read,Edit,Bash" --max-tur
 
 Each tool call counts as one turn. Without this limit, Claude may iterate indefinitely on complex tasks.
 
+**Subagents do not extend a run (CC 2.1.304).** `--max-turns`, Stop, and ended input also end a run whose plugin spawns new subagents or re-runs a finished one. Before CC 2.1.304, a plugin could keep a headless run going past those limits that way. A plugin that relied on it to finish work in headless mode now stops at the limit; split the work into separate runs or raise `--max-turns`.
+
 ## Structured Output
 
 ### JSON Output

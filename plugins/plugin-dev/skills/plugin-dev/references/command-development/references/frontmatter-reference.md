@@ -113,7 +113,9 @@ These patterns pre-approve matching commands; they do not block other commands, 
 allowed-tools: "*"
 ```
 
-**Managed `allowManagedPermissionRulesOnly` (CC 2.1.282):** under this managed setting, repository, user, and `--add-dir` commands (and skills, and skills-directory plugin manifests) no longer pre-approve their own tools through `allowed-tools`; their calls follow the managed permission rules. Since CC 2.1.284, plugins from marketplaces, claude.ai, and npm lose that pre-approval too; only plugins from an official Anthropic source, or a source that managed settings vouch for, keep it. Deny and ask rules still apply to all of them.
+**Managed `allowManagedPermissionRulesOnly` (CC 2.1.282):** under this managed setting, repository, user, and `--add-dir` commands (and skills, and skills-directory plugin manifests) no longer pre-approve their own tools through `allowed-tools`; their calls follow the managed permission rules. Since CC 2.1.284, plugins from marketplaces, claude.ai, and npm lose that pre-approval too; only plugins from an official Anthropic source, or a source that managed settings vouch for, keep it. Since CC 2.1.305, plugins that Claude Desktop mounts by path (host-delivered `--plugin-dir` plugins) lose it as well when the organization's managed settings set this. Deny and ask rules still apply to all of them.
+
+**Plugins-only hooks policy (CC 2.1.304):** under a policy that allows hooks from plugins only, a skill used in the main conversation whose hooks are kept out also loses its `allowed-tools` pre-approval.
 
 **Scoped to the invoking turn (CC 2.1.292):** a command's `allowed-tools` grant lasts for the turn that ran the command. Before CC 2.1.292, leaving auto mode or plan mode partway through that turn made the rule come back in a later turn.
 

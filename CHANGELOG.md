@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.53.0] - 2026-10-22
+
+Sync with Claude Code 2.1.304-2.1.308. 2.1.308 is bug fixes only. This release covers fourteen Must Update items (one promoted by Stage 2) and nine Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. All four May Update items were skipped. `scripts/check-doc-drift.sh` was clean before and after, and the `docs/claude-code-facts.json` diff changed only `claude_code_version`.
+
+### Added
+
+- **hook-development / skill-development**: the skills of one source (a repository, the user's skills folder, or one plugin) can register at most 1,024 hooks and 16,384 matcher characters per session (CC 2.1.304)
+- **skill-development / command-development / plugin-structure**: under a plugins-only hooks policy, a main-conversation skill whose hooks are kept out loses its `allowed-tools` (CC 2.1.304). Plugins that Claude Desktop mounts by path lose `allowed-tools` under `allowManagedPermissionRulesOnly` (CC 2.1.305)
+- **mcp-integration**: tool search is on by default behind a custom `ANTHROPIC_BASE_URL`, and a gateway or provider that rejects it is retried without it (CC 2.1.304-2.1.305)
+- **mcp-integration**: `allowedMcpServers` filters `managed-mcp.json` entries only for `${VAR}` in command, args, URL, or headers, not `env`; use `deniedMcpServers` for a server that now loads (CC 2.1.305)
+- **mcp-integration**: cloud sessions do not wait on the first turn for claude.ai-synced plugin stdio servers unless they set `alwaysLoad: true` (CC 2.1.304)
+- **mcp-integration**: HTTP MCP calls interrupted by a dropped connection are retried only for read-only or idempotent tools (CC 2.1.307). The link to MCP tool annotations is marked as an inference
+- **hook-development**: a PreToolUse deny reason is kept when an Agent SDK callback hook on the same call times out (CC 2.1.304)
+- **hook-development**: in VS Code, SessionStart command hook time no longer counts toward the 60-second start limit, up to 10 minutes total (CC 2.1.304), and a "Running start-up hooks" spinner shows while SessionStart or Setup hooks run (CC 2.1.305)
+- **plugin-structure / agent-development**: `--max-turns`, Stop, and ended input end a headless run even when a plugin spawns or re-runs subagents (CC 2.1.304)
+- **plugin-structure / hook-development**: 2.1.304 mod version history: `decider: "person"`, `e.isReadOnly`, per-layer `settings.read`, the skipped-hook transcript line, `claude plugin validate` placement notes removed, and the failed-reload fix
+
+### Changed
+
+- **skill-development**: compaction re-sends the skill list by itself, and `/reload-skills` sends only new or changed skills (CC 2.1.304). The docs had presented `/reload-skills` as the way to recover the list after compaction
+- **hook-development / skill-development**: a skill's `once` hook no longer removes another skill's identical hook (CC 2.1.304)
+- **agent-development**: approving a teammate shutdown request from the main session no longer exits the CLI (CC 2.1.304)
+
+### Fixed
+
+- **hook-development**: `advanced.md` showed PostToolUse `updatedToolOutput`/`updatedMCPToolOutput` and PostToolUseFailure `additionalContext` at the top level. They belong inside `hookSpecificOutput`, as `event-schemas.md` and the official hooks docs show
+- **hook-development**: `advanced.md` said TeammateIdle and TaskCompleted use exit codes only. JSON `{"continue": false, "stopReason": "..."}` also stops the teammate, and TaskCompleted ignores it when `TaskUpdate` triggered the event
+- **hook-development**: the hook tool-input table listed the spawn tool as `Task`. Hooks see it as `Agent`; `Task` is a permission-rule alias only
+- **hook-development**: `advanced.md` and `overview.md` grouped skill-frontmatter `UserPromptSubmit` with events that usually never fire. Since CC 2.1.299 it fires on later prompts while the skill stays active
+- **agent-development / plugin-structure**: `permission-modes-rules.md` and `advanced-topics.md` described the CC 2.1.285 auto-mode default for `claude -p` and the Agent SDK as current. They now note the CC 2.1.302 reversion to `default`
+- **agent-development**: team leads were said to always get `TaskCreate`, `TaskUpdate`, and `TaskList`. Those tools are model-gated for team leads too
+- **plugin-structure**: `manifest-reference.md` implied a root-level `SKILL.md` needs `"skills": "."`. A plugin with a root `SKILL.md`, no `skills/`, and no `skills` key loads it as a single skill
+- **command-development**: the note said examples use plain backticks, while the examples use the `[BANG]` placeholder. It now explains that `[BANG]` stands for the exclamation mark
+
 ## [0.52.0] - 2026-10-19
 
 Sync with Claude Code 2.1.297-2.1.303. The changelog has entries only for 2.1.299-2.1.303, and 2.1.303 is bug fixes only. This release covers twenty-three Must Update items (one promoted by Stage 2), three May Update items, and four Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. `scripts/check-doc-drift.sh` was clean before and after, and the `docs/claude-code-facts.json` diff changed only `claude_code_version`.
