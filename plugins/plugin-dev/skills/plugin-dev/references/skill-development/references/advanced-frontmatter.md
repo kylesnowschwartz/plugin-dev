@@ -69,7 +69,9 @@ When specified, the listed tools run without a permission prompt. Unlisted tools
 
 **Dropped in `-p` runs before CC 2.1.295:** when the Skill tool finished before the response stream ended, the skill's `allowed-tools` and `effort` were dropped, which denied the skill's Bash commands in `-p` runs. A headless pipeline on an older version that sees a skill's pre-approved Bash calls denied is likely hitting this.
 
-**Managed `allowManagedPermissionRulesOnly` (CC 2.1.282):** when an organization enables this managed setting, repository, user, and `--add-dir` skills and commands, and skills-directory plugin manifests, no longer pre-approve their own tools through `allowed-tools`. Their tool calls follow the managed permission rules instead. Since CC 2.1.284 the same applies to plugins from marketplaces, claude.ai, and npm: only plugins from an official Anthropic source, or a source that managed settings vouch for, keep `allowed-tools` pre-approval. Deny and ask rules still apply to all of them. Do not rely on `allowed-tools` alone for a skill that must run unattended in such an organization. See `../../plugin-structure/references/advanced-topics.md` (Enterprise Hook and Permission Control).
+**Managed `allowManagedPermissionRulesOnly` (CC 2.1.282):** when an organization enables this managed setting, repository, user, and `--add-dir` skills and commands, and skills-directory plugin manifests, no longer pre-approve their own tools through `allowed-tools`. Their tool calls follow the managed permission rules instead. Since CC 2.1.284 the same applies to plugins from marketplaces, claude.ai, and npm: only plugins from an official Anthropic source, or a source that managed settings vouch for, keep `allowed-tools` pre-approval. Deny and ask rules still apply to all of them. Since CC 2.1.305, plugins that Claude Desktop mounts by path (host-delivered `--plugin-dir` plugins) also lose `allowed-tools` when the organization's managed settings set `allowManagedPermissionRulesOnly`. Do not rely on `allowed-tools` alone for a skill that must run unattended in such an organization. See `../../plugin-structure/references/advanced-topics.md` (Enterprise Hook and Permission Control).
+
+**Plugins-only hooks policy (CC 2.1.304):** under a policy that allows hooks from plugins only, a skill used in the main conversation whose hooks are kept out no longer gets its `allowed-tools` either. This is a second way, besides `allowManagedPermissionRulesOnly`, for the pre-approval to stop working. See `../../plugin-structure/references/advanced-topics.md` (Enterprise Hook and Permission Control).
 
 ## context
 
@@ -313,6 +315,10 @@ All 33 hook events register in frontmatter scope; the loader applies no allowlis
 | `Stop`        | Verify completion criteria before skill finishes |
 
 Session-lifecycle events (`SessionStart`, `Notification`) register without error but usually have no chance to fire, because the session event happens before the skill is dispatched or after it unloads. Declare those in `hooks/hooks.json` instead.
+
+**Per-source cap (CC 2.1.304):** the skills of one source (a repository, the user's own skills folder, or one plugin) can register at most 1,024 hooks and 16,384 matcher characters per session. A matcher with several hooks counts once per hook. A plugin with many skills that each declare frontmatter hooks shares one budget across all of them, so keep each skill's frontmatter hooks and matchers lean.
+
+**`once` hooks are per skill (CC 2.1.304):** before CC 2.1.304, a skill's `once` hook also removed another skill's identical hook after it ran, so the second skill's hook never fired.
 
 `UserPromptSubmit` in a skill's own frontmatter has defined timing since CC 2.1.299: it first runs on the prompt after the one that invokes the skill, and never sees the invoking prompt. It fires on later prompts only while the skill stays active. To gate or annotate the prompt that invokes the skill, declare the hook in `hooks/hooks.json`; UserPromptSubmit runs there before the skill expands (CC 2.1.299), so a block also stops the skill's inline shell commands.
 

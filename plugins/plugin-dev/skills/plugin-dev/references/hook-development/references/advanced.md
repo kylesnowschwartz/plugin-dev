@@ -729,9 +729,11 @@ In practice three events do the work:
 | `PostToolUse` | Run checks after tool execution during skill use                                                   |
 | `Stop`        | Verify completion criteria before skill/agent finishes (auto-converted to SubagentStop for agents) |
 
-Session-lifecycle events (`SessionStart`, `SessionEnd`, `UserPromptSubmit`, `Notification`) register without error but usually have no chance to fire, because the session event happens before the skill is dispatched or after the agent has exited. The exception is an agent run as the main session agent via `--agent`, whose lifetime *is* the session's — agent frontmatter hooks fire in that configuration as of CC 2.1.116, so session-level events can reach them there. Declare a session-level hook in `hooks/hooks.json` instead whenever it must fire for the whole session regardless of which component is running.
+Session-lifecycle events (`SessionStart`, `SessionEnd`, `Notification`) register without error but usually have no chance to fire, because the session event happens before the skill is dispatched or after the agent has exited. The exception is an agent run as the main session agent via `--agent`, whose lifetime *is* the session's — agent frontmatter hooks fire in that configuration as of CC 2.1.116, so session-level events can reach them there. Declare a session-level hook in `hooks/hooks.json` instead whenever it must fire for the whole session regardless of which component is running.
 
-A skill's own `UserPromptSubmit` hook has defined timing since CC 2.1.299: it first runs on the prompt after the one that invokes the skill, never on the invoking prompt itself.
+A skill's own `UserPromptSubmit` hook has defined timing since CC 2.1.299: it first runs on the prompt after the one that invokes the skill, never on the invoking prompt itself. It then fires on later prompts while the skill stays active, so it is a fourth event that does useful work in skill frontmatter.
+
+**Per-source cap on skill hooks (CC 2.1.304).** The skills of one source (a repository, the user's own skills folder, or one plugin) can register at most 1,024 hooks and 16,384 matcher characters per session. A matcher with several hooks counts once per hook. All of a plugin's skills share that budget, so a plugin with many skills that each declare frontmatter hooks needs to stay under it.
 
 ### Comparison with hooks.json
 
@@ -880,7 +882,7 @@ For the `if` field, see the [Declarative `if` Field](#declarative-if-field-cc-21
 }
 ```
 
-When `true`, the hook runs only once per session and is then auto-removed. Useful for one-time initialization hooks in scoped contexts (skills/agents).
+When `true`, the hook runs only once per session and is then auto-removed. Useful for one-time initialization hooks in scoped contexts (skills/agents). Before CC 2.1.304, a skill's `once` hook also removed another skill's identical hook after it ran; each skill's copy now runs on its own.
 
 ### statusMessage
 
@@ -952,6 +954,7 @@ Different hook events support different output formats for controlling Claude's 
 - Windows: a PreToolUse or PermissionRequest command hook that sets no `shell` fails closed when Git for Windows is not installed (CC 2.1.299): a guard that fails blocks the call. Before CC 2.1.299 such a hook failed open and the call ran
 - `additionalContext`: Injected into Claude's context. `<system-reminder>` tags in it, as in any hook output, are escaped before they reach Claude (CC 2.1.292)
 - A failure to match the hook against a call, or tool input that cannot be serialized to JSON, blocks the call (CC 2.1.288). Before CC 2.1.288 the hook was skipped and the call ran. PermissionRequest behaves the same way
+- A `deny` and its `permissionDecisionReason` survive an Agent SDK callback hook on the same call timing out (CC 2.1.304). Before CC 2.1.304, Claude saw the timeout error instead of the plugin hook's deny reason
 
 **`updatedInput` under auto mode (CC 2.1.287).** Auto mode is the default starting mode, when no permission mode is configured, since CC 2.1.284 for interactive terminal and VS Code sessions. From CC 2.1.285 it was also the default for `claude -p` and Python Agent SDK sessions on third-party providers or with telemetry off, but since CC 2.1.302 those headless and SDK sessions, and fresh installs, start in `default` mode unless `--permission-mode auto` is passed. Its classifier reviews the tool input the model wrote. When a PreToolUse hook (or a mod's `tool.call` hook) changes that input, the review covers different input from what would run, so the classifier gives no verdict. Claude retries the call once. If it is denied again, Claude stops trying and tells the user that a hook rewrites the call, that auto mode could not evaluate the rewritten call, and that they can turn the hook off or leave auto mode. In practice, an `updatedInput` hook can block its own tool in a default session. Prefer `deny` with a `permissionDecisionReason` that tells Claude how to fix the call, and keep `updatedInput` for sessions that run in another permission mode or for cases where blocking is acceptable.
 
@@ -998,12 +1001,15 @@ These events share a simpler top-level schema:
 - `decision`: Set to `"block"` to prevent the action (stopping, prompt processing, etc.)
 - `reason`: Required when blocking; fed back to Claude or shown to user
 
-PostToolUse specifically supports additional fields for replacing tool output:
+PostToolUse specifically supports additional fields for replacing tool output. They go inside `hookSpecificOutput`, not at the top level:
 
 ```json
 {
-  "updatedToolOutput": "Replacement output for the tool response",
-  "updatedMCPToolOutput": "Replacement output for MCP tool response"
+  "hookSpecificOutput": {
+    "hookEventName": "PostToolUse",
+    "updatedToolOutput": "Replacement output for the tool response",
+    "updatedMCPToolOutput": "Replacement output for MCP tool response"
+  }
 }
 ```
 
@@ -1011,20 +1017,26 @@ This allows hooks to replace what Claude sees as the tool response before proces
 
 ### PostToolUseFailure Decision Control
 
-PostToolUseFailure supports providing additional context to help Claude handle the failure:
+PostToolUseFailure supports providing additional context to help Claude handle the failure. Like other event-specific fields, `additionalContext` goes inside `hookSpecificOutput`:
 
 ```json
 {
-  "additionalContext": "Extra context to help Claude handle the failure"
+  "hookSpecificOutput": {
+    "hookEventName": "PostToolUseFailure",
+    "additionalContext": "Extra context to help Claude handle the failure"
+  }
 }
 ```
 
 ### TeammateIdle and TaskCompleted
 
-These events use **exit codes only** for decision control (no JSON output):
+These events have two decision mechanisms, an exit code or JSON `continue: false`:
 
 - Exit code `0`: Allow (teammate goes idle / task marked complete)
-- Exit code `2`: Block — stderr is fed back to the teammate/model as feedback
+- Exit code `2`: Block — stderr is fed back to the teammate/model as feedback, and the teammate keeps working
+- JSON `{"continue": false, "stopReason": "..."}`: stops the teammate entirely, matching Stop hook behavior. TaskCompleted ignores it when the `TaskUpdate` tool triggered the event
+
+See `event-schemas.md` (TeammateIdle, TaskCompleted) for the full schemas.
 
 ### Common Output Fields (All Hooks)
 

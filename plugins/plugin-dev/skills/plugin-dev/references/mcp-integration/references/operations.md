@@ -118,6 +118,8 @@ This feature is automatic - just ask Claude about available tools or describe wh
 
 When MCP servers provide more tools than fit in context (default threshold: 10%), Claude Code activates tool search automatically. Control with `ENABLE_TOOL_SEARCH=auto:5` (custom percentage) or `ENABLE_TOOL_SEARCH=false` (disable).
 
+**Behind an LLM gateway (CC 2.1.304-2.1.305).** Since CC 2.1.304, tool search is on by default behind a custom `ANTHROPIC_BASE_URL`; before that it was off by default behind a gateway, so plugin MCP tools were loaded up front there. A 400 or 422 from the gateway is retried without tool search (CC 2.1.304). Since CC 2.1.305 the same retry covers Vertex, Bedrock, and other providers whose endpoint or gateway rejects tool search, and gateways where ToolSearch is disallowed or left out of `--tools`; on CC 2.1.304 those sessions had every request fail. Plugin MCP tools are therefore deferred behind tool search in gateway sessions too, so a tool that must be visible from the first turn needs `alwaysLoad` (see Always Load below).
+
 For plugins bundling many-tool MCP servers, document which tools are most commonly needed so users can pre-allow them.
 
 ## Managed MCP Controls
@@ -165,6 +167,8 @@ The `allowedMcpServers` setting now provides more flexible matching:
 - More granular control over which servers plugins can configure
 
 **Plugin author guidance:** When documenting enterprise deployment, specify exact server configurations that should be added to `allowedMcpServers` for your plugin's MCP servers.
+
+**`${VAR}` fields and `managed-mcp.json` (CC 2.1.305).** A `managed-mcp.json` entry is sent through the `allowedMcpServers` allowlist only when it uses `${VAR}` in its command, args, URL, or header values. Before CC 2.1.305, `${VAR}` in `env` also counted. A stdio server that the allowlist left out and that uses `${VAR}` only in `env` therefore loads after the upgrade. Use `deniedMcpServers` to keep such a server off.
 
 ### managedMcpServers Setting (CC 2.1.259)
 
@@ -263,6 +267,8 @@ Handle failed MCP operations:
 - Provide clear error messages
 - Check rate limiting and quotas
 
+**Retries after a dropped HTTP connection (CC 2.1.307).** When an HTTP MCP connection closes mid-call, Claude Code retries the call only for tools that are read-only or idempotent. Before CC 2.1.307, such a call could be sent twice. The changelog does not say how Claude Code decides a tool is read-only or idempotent; presumably it reads the MCP `readOnlyHint` and `idempotentHint` tool annotations. A plugin HTTP server should set those annotations accurately and should not mark a tool idempotent when a repeated call has side effects.
+
 **A tool schema the API rejects (CC 2.1.300).** When the API rejects a tool's input schema, Claude Code sends that tool without parameters for the rest of the conversation instead of failing every turn. If Claude calls a plugin tool with no arguments, check whether the API accepts that tool's input schema.
 
 ### Configuration Errors
@@ -309,7 +315,7 @@ Use `alwaysLoad: true` to bypass lazy loading and tool-search deferral:
 
 **Mid-conversation connection (CC 2.1.269, extended 2.1.271):** In first-party sessions with telemetry disabled, an `alwaysLoad` server that finishes connecting after the session has started is usable on the very next turn, without a tool-search round trip first. This narrows an earlier gap where a slow-starting server stayed effectively invisible until a tool search ran. **CC 2.1.271** extends the same behavior to Foundry and Claude Platform on AWS sessions.
 
-**`alwaysLoad: false` defers every tool (CC 2.1.287).** Setting the server's `alwaysLoad` to `false` puts all of that server's tools behind tool search. In cloud sessions, a new conversation's first turn no longer waits for a stdio server configured this way (CC 2.1.288).
+**`alwaysLoad: false` defers every tool (CC 2.1.287).** Setting the server's `alwaysLoad` to `false` puts all of that server's tools behind tool search. In cloud sessions, a new conversation's first turn no longer waits for a stdio server configured this way (CC 2.1.288). Since CC 2.1.304 the first turn also does not wait for the stdio servers of plugins synced from claude.ai, unless a server sets `alwaysLoad: true`. A synced plugin whose tools must be ready on the first turn of a cloud session should set `alwaysLoad: true` on that server.
 
 **Per-tool override (CC 2.1.285).** A tool can set its own `_meta['anthropic/alwaysLoad']` to `false` in its tool definition. That tool stays deferred even when its server (a `--mcp-config`, Agent SDK, or plugin server) is set to `alwaysLoad: true`. Use it to keep rarely used tools out of the initial tool list while the rest of the server loads up front:
 
