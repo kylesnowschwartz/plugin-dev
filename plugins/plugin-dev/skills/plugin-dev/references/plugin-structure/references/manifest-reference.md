@@ -571,6 +571,8 @@ Each entry requires `name`, `command`, and `description`. `when` is optional and
 
 **Behavior**: Replaces the default `monitors/monitors.json` auto-load — that file is read only when the field is omitted. If the default file exists but cannot be read, the plugin reports the failure instead of silently skipping it (CC 2.1.268).
 
+**Availability (CC 2.1.310)**: On Amazon Bedrock, Claude Platform on AWS, Google Vertex AI, or Microsoft Foundry, or with `DISABLE_TELEMETRY` or `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` set, plugin monitors and the Monitor tool run only on CC 2.1.310 or later. On older versions in those environments a plugin's monitors do not arm, so a plugin that depends on them should say so or degrade gracefully.
+
 **Host-armed monitors run for the session lifetime.** A manifest monitor's process is kept alive by the host for as long as the session lasts, and the entry takes no timeout field — the schema is exactly `name`, `command`, `description`, and `when`. Do not build re-arm logic into a monitor script on the assumption that the host will let it expire.
 
 This is the opposite of the model-armed **Monitor tool**, whose watches always carry a deadline (CC 2.1.271) and must be re-armed. That distinction matters when porting a watch between the two: see [Monitor tool deadlines](../../agent-development/references/advanced-agent-fields.md#tools-field-version-behaviors) for the tool-side rules.

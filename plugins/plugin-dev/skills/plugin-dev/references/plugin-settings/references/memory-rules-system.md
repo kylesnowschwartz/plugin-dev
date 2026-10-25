@@ -137,6 +137,7 @@ Rules load automatically based on file context:
 
 - Global rules (no `paths` frontmatter): Always loaded
 - Path-specific rules: Loaded when Claude accesses matching files. Since CC 2.1.288 that includes Write or Edit creating or changing a file in scope, not only Read; nested CLAUDE.md files load the same way
+- Size limit for on-demand files (CC 2.1.309): a nested CLAUDE.md or an on-demand rules file over the per-file size limit loads only its start. Content past the limit is never seen, so keep these files short and put the most important instructions first. Before CC 2.1.309, reading files under a very large nested CLAUDE.md could make a session compact over and over
 - Rules in subdirectories: Organized by topic, all discovered automatically
 
 ### User-Level Rules

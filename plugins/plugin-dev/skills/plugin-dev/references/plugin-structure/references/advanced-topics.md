@@ -116,6 +116,9 @@ The `plugin-authoring` skill describes only the build it ships with. This histor
   - A transcript line names the event and the plugin when a plugin that runs first skips one of a mod's hooks.
   - `claude plugin validate` no longer prints notes predicting where a mod's hooks will run.
   - A failed mod reload no longer removes the tools and commands of the version that stays loaded, and its messages say correctly whether the previous version is still loaded.
+- **CC 2.1.309:**
+  - A `turn.step` hook that sets the model by alias, such as `haiku`, works: the alias resolves to its model ID. Before CC 2.1.309 every request failed with a model error, so a mod that must run on older versions should pass a full model ID.
+  - A hooks module nested too deep to load is reported with the file's name instead of a bare stack-overflow message.
 
 ## Keybindings Plugin Context
 
@@ -613,10 +616,11 @@ Cached content refreshes when:
 
 When a plugin depends on another plugin with a version constraint (e.g., `>=1.0.0`), the dependent plugin now auto-updates to the highest satisfying git tag rather than being locked to the original installation version. This ensures plugins stay up-to-date within compatible version ranges.
 
-### claude.ai-Synced Plugins (CC 2.1.295-2.1.296)
+### claude.ai-Synced Plugins (CC 2.1.295-2.1.309)
 
 Fixes for plugins synced from claude.ai:
 
+- Synced plugins and skills are no longer removed, sometimes mid-session, after a disk read error (CC 2.1.309)
 - A synced plugin is no longer disabled when the marketplace dependency it declares was also synced from claude.ai (CC 2.1.296)
 - Synced plugin hooks no longer fail with "Plugin directory does not exist" in long-running sessions after another session synced a plugin update (CC 2.1.295)
 

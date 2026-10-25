@@ -258,6 +258,8 @@ On connections using the 2026-07-28 MCP protocol, a server can use URL-mode elic
 
 URL mode is still unavailable on protocol versions older than 2025-11-25, so a server that needs to support them should keep a fallback.
 
+**Unanswered elicitation in non-interactive sessions (CC 2.1.310).** In `claude -p` and SDK sessions there may be no one to answer an elicitation. When a tool call times out while its elicitation is unanswered, the error now tells Claude that no answer came and not to repeat the call. A plugin server that elicits input should still offer a non-interactive path, such as a config value or argument, for headless runs.
+
 ### Protocol Negotiation for stdio Servers (CC 2.1.292)
 
 Local (stdio) MCP server connections negotiate protocol version 2026-07-28 by default on every install, including Bedrock, Vertex, and Foundry. Setting `MCP_PROTOCOL_NEGOTIATION=legacy` opts out. A stdio server that ignores the newer protocol check is remembered after one slow connect, and for the next 7 days Claude Code connects to it the older way without the wait. Test a plugin's stdio server against 2026-07-28, and answer the version check promptly so users do not pay the slow first connect.
