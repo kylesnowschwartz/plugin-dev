@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.54.0] - 2026-10-25
+
+Sync with Claude Code 2.1.309-2.1.310. This release covers ten Must Update items (one promoted by Stage 2) and five Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. All eight May Update items were skipped. `scripts/check-doc-drift.sh` was clean before and after, and the `docs/claude-code-facts.json` diff changed only `claude_code_version`.
+
+### Added
+
+- **plugin-structure / agent-development**: the Monitor tool and plugin monitors need CC 2.1.310+ on Bedrock, Claude Platform on AWS, Vertex, and Foundry, or with `DISABLE_TELEMETRY` or `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` set; long foreground sleeps are blocked there too (CC 2.1.310)
+- **skill-development**: a skill in an `--add-dir` folder whose name clashes with another skill is offered as `/<folder>:<name>` instead of being unreachable (CC 2.1.309)
+- **agent-development**: split-pane teammates start with the tool deny rules and `--tools` list from the lead's command line (CC 2.1.309)
+- **agent-development**: more Bash permission-path gaps closed: `Edit(path)` deny against subshell redirects, variables set by commands whose redirect can fail, wrapped or prefixed `cd` before git, PowerShell `Set-Location`/`cd` with extra arguments, and the bypass-mode `rm`/`rmdir` prompt in Desktop and VS Code (CC 2.1.309)
+- **plugin-settings**: a nested CLAUDE.md or on-demand rules file over the per-file size limit loads only its start (CC 2.1.309)
+- **mcp-integration**: the `--mcp-config` file is write-protected from sandboxed commands and auto-accepted edits, and disabled servers stay disabled in `-p` and SDK sessions (CC 2.1.309); an elicitation left unanswered in a non-interactive session times out with an error telling Claude not to repeat the call (CC 2.1.310)
+- **plugin-structure**: 2.1.309 mod history: `turn.step` model aliases resolve, and a too-deeply-nested hooks module names its file
+- **plugin-structure**: claude.ai-synced plugins and skills are no longer removed after a disk read error (CC 2.1.309)
+
+### Changed
+
+- **hook-development**: Windows hooks also fail closed when Git Bash is missing for `"shell": "powershell"` hooks (CC 2.1.309) and for commands made only of quoted strings (CC 2.1.310), with the "Git Bash not found" (exit 127) blocking reason. Hooks run in PowerShell block on exit code 2 only since CC 2.1.309
+
+### Fixed
+
+- **skill-development**: the Security-Focused Skill template used `allowed-tools` as if it removed Write, Edit, and Bash. It now uses `disallowed-tools`, and notes that `allowed-tools` only pre-approves
+- **command-development**: the overview's frontmatter table described `allowed-tools` as the tools a command may use. It is pre-approval, not a boundary
+- **plugin-settings**: `read-settings-hook.sh` wrote its deny JSON to stderr and exited 2, so the JSON was never parsed. It now prints the decision (with `hookEventName` and `permissionDecisionReason`) to stdout and exits 0
+- **hook-development**: the Long-Running Hooks pitfall said a 120-second hook times out and blocks. The command-hook default is 600 s (30 s on UserPromptSubmit, 10 s on MessageDisplay), and a timeout fails open unless `onFailure: "block"` is set
+- **hook-development**: the Proper Error Handling example wrote its `systemMessage` JSON to stderr with exit 0, where it is never parsed. It now writes to stdout
+
 ## [0.53.0] - 2026-10-22
 
 Sync with Claude Code 2.1.304-2.1.308. 2.1.308 is bug fixes only. This release covers fourteen Must Update items (one promoted by Stage 2) and nine Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. All four May Update items were skipped. `scripts/check-doc-drift.sh` was clean before and after, and the `docs/claude-code-facts.json` diff changed only `claude_code_version`.

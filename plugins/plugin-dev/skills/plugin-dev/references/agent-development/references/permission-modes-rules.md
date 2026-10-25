@@ -88,6 +88,14 @@ Space before `*` means word boundary: `Bash(ls *)` matches `ls -la` but NOT `lso
 
 **Unanalyzable commands no longer skip the prompt under `blockReadsOutsideWorkingDirectories` (CC 2.1.273).** Two gaps in the Bash permission path were closed alongside the revert above. A command the checker cannot fully analyze no longer bypasses the prompt when `permissions.blockReadsOutsideWorkingDirectories` is set, and a subshell can no longer hide a dangerous `rm` in `bypassPermissions` mode.
 
+**More Bash permission-path gaps closed (CC 2.1.309).** On older versions, do not rely on these to hold:
+
+- An `Edit(path)` deny rule blocks a Bash redirect to that path in commands that also hold a subshell. Before CC 2.1.309 some such redirects got past the deny.
+- The Bash permission check no longer trusts a variable set by a command whose redirect can fail to open.
+- A compound command that changes directory before running git prompts when the `cd` is wrapped or prefixed, as it already did for a plain `cd`.
+- Windows: PowerShell `Set-Location` or `cd` commands that target the current directory and carry extra arguments prompt instead of being auto-approved.
+- In the Desktop app and VS Code, the dangerous `rm`/`rmdir` prompt in `bypassPermissions` mode now denies the command at once with a rewrite hint, so unattended sessions keep going.
+
 `permissions.blockReadsOutsideWorkingDirectories` is a boolean setting that makes the file tools refuse paths outside the working directories in **every** permission mode. It is an explicit exception to the mode table above: with it on, recognized file-reading Bash commands prompt even in `auto` and `bypassPermissions` mode. As of CC 2.1.273 it also excludes a memory directory chosen by a repository's settings from the prompt, recall, indexing, and memory extraction.
 
 ### Path Patterns for Edit/Read

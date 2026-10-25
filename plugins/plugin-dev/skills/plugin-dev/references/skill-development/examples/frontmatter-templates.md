@@ -81,19 +81,20 @@ references/
 
 ## Security-Focused Skill
 
-Restricted tools for sensitive operations:
+Removed tools for sensitive operations:
 
 ```yaml
 ---
 name: secrets-manager
 description: This skill should be used when the user asks to "manage secrets", "rotate credentials", "environment variables", "secure configuration", "vault integration", or needs guidance on secrets management patterns.
+disallowed-tools: Write, Edit, Bash
 allowed-tools: Read, Grep, AskUserQuestion
 ---
 ```
 
 **Security considerations:**
 
-- Exclude Write, Edit, Bash to prevent accidental exposure
+- `disallowed-tools` removes Write, Edit, and Bash to prevent accidental exposure. `allowed-tools` only pre-approves the listed tools; it is not a boundary, and unlisted tools stay callable
 - Include AskUserQuestion for confirmation flows
 - Document why restrictions exist in SKILL.md
 

@@ -32,23 +32,30 @@ fi
 input=$(cat)
 file_path=$(echo "$input" | jq -r '.tool_input.file_path // empty')
 
+# Deny the tool call. The decision JSON goes to stdout with exit 0:
+# Claude Code parses JSON only from stdout on exit 0. (Exit 2 would also
+# block, but then stderr reaches Claude as plain text and the JSON fields,
+# including systemMessage, are ignored.)
+deny() {
+  jq -n --arg reason "$1" \
+    '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": $reason}, "systemMessage": $reason}'
+  exit 0
+}
+
 # Apply configured validation
 if [[ "$STRICT_MODE" == "true" ]]; then
   # Strict mode: apply all checks
   if [[ "$file_path" == *".."* ]]; then
-    echo '{"hookSpecificOutput": {"permissionDecision": "deny"}, "systemMessage": "Path traversal blocked (strict mode)"}' >&2
-    exit 2
+    deny "Path traversal blocked (strict mode)"
   fi
 
   if [[ "$file_path" == *".env"* ]] || [[ "$file_path" == *"secret"* ]]; then
-    echo '{"hookSpecificOutput": {"permissionDecision": "deny"}, "systemMessage": "Sensitive file blocked (strict mode)"}' >&2
-    exit 2
+    deny "Sensitive file blocked (strict mode)"
   fi
 else
   # Standard mode: basic checks only
   if [[ "$file_path" == "/etc/"* ]] || [[ "$file_path" == "/sys/"* ]]; then
-    echo '{"hookSpecificOutput": {"permissionDecision": "deny"}, "systemMessage": "System path blocked"}' >&2
-    exit 2
+    deny "System path blocked"
   fi
 fi
 
@@ -58,9 +65,7 @@ if [[ -n "$MAX_SIZE" ]] && [[ "$MAX_SIZE" =~ ^[0-9]+$ ]]; then
   content_size=${#content}
 
   if [[ $content_size -gt $MAX_SIZE ]]; then
-    jq -n --arg size "$MAX_SIZE" \
-      '{"hookSpecificOutput": {"permissionDecision": "deny"}, "systemMessage": "File exceeds configured max size: \($size) bytes"}' >&2
-    exit 2
+    deny "File exceeds configured max size: ${MAX_SIZE} bytes"
   fi
 fi
 

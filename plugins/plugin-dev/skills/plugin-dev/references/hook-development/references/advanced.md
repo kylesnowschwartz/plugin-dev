@@ -641,8 +641,13 @@ rm -rf "$CLAUDE_PROJECT_DIR"
 ```bash
 # BAD: Hook takes 2 minutes to run
 sleep 120
-# This will timeout and block the workflow
+# Every matching call waits two minutes. On events with short default
+# timeouts (UserPromptSubmit 30s, MessageDisplay 10s) it times out, and a
+# timed-out hook is reported and the action goes ahead (fails open)
+# unless "onFailure": "block" is set.
 ```
+
+Keep hooks fast, or move slow work to an async hook. Do not rely on a timeout to block: by default a timeout fails open.
 
 ### ❌ Uncaught Exceptions
 
@@ -658,7 +663,8 @@ cat "$file_path"  # Fails if file doesn't exist
 # GOOD: Handles errors gracefully
 file_path=$(echo "$input" | jq -r '.tool_input.file_path')
 if [ ! -f "$file_path" ]; then
-  echo '{"continue": true, "systemMessage": "File not found, skipping check"}' >&2
+  # JSON goes to stdout: on exit 0 only stdout is parsed
+  echo '{"continue": true, "systemMessage": "File not found, skipping check"}'
   exit 0
 fi
 ```
@@ -951,7 +957,8 @@ Different hook events support different output formats for controlling Claude's 
 - `allow` does not skip every prompt. Since CC 2.1.292 (a security fix), a PreToolUse `allow`, like auto mode, no longer bypasses the permission prompt for file reads from network (UNC) paths
 - `allow` does not lift plan mode. Since CC 2.1.299, a write that a PreToolUse hook (or a mod's `tool.check` hook) allows, whether an MCP tool's, a file's, or a shell command's, still does not run in plan mode. Before CC 2.1.299 such a write ran despite plan mode's read-only restriction
 - `updatedInput`: Optionally modify tool parameters before execution. The rewritten input is checked against permission rules and safety checks; CC 2.1.290 fixed cases where some were not applied after a rewrite, so a rewrite cannot carry a call past a deny rule. Since CC 2.1.300 it is also validated against the tool's input schema, like Claude's own input: unknown keys are dropped silently, and input the tool rejects denies the call instead of passing through. The same applies to PermissionRequest `updatedInput`
-- Windows: a PreToolUse or PermissionRequest command hook that sets no `shell` fails closed when Git for Windows is not installed (CC 2.1.299): a guard that fails blocks the call. Before CC 2.1.299 such a hook failed open and the call ran
+- Windows: a PreToolUse or PermissionRequest command hook that sets no `shell` fails closed when Git for Windows is not installed (CC 2.1.299): a guard that fails blocks the call. Before CC 2.1.299 such a hook failed open and the call ran. Two more fail-open cases were closed later: a hook with `"shell": "powershell"` (CC 2.1.309), and a hook command made only of quoted strings, such as a quoted path, which PowerShell printed instead of running (CC 2.1.310). Claude is shown a "Git Bash not found" blocking reason (exit code 127) and must not edit the hook to get around it
+- PowerShell exit 2: a hook run in PowerShell (`"shell": "powershell"` or a Windows fallback) blocks on exit code 2 only since CC 2.1.309. Before that, exit 2 from PowerShell let the call through
 - `additionalContext`: Injected into Claude's context. `<system-reminder>` tags in it, as in any hook output, are escaped before they reach Claude (CC 2.1.292)
 - A failure to match the hook against a call, or tool input that cannot be serialized to JSON, blocks the call (CC 2.1.288). Before CC 2.1.288 the hook was skipped and the call ran. PermissionRequest behaves the same way
 - A `deny` and its `permissionDecisionReason` survive an Agent SDK callback hook on the same call timing out (CC 2.1.304). Before CC 2.1.304, Claude saw the timeout error instead of the plugin hook's deny reason

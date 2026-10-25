@@ -23,6 +23,8 @@ Use `/mcp` command to see all servers including plugin-provided ones.
 
 **Non-interactive startup wait (CC 2.1.274):** In non-interactive runs (`claude -p`, SDK), the first turn can wait for MCP servers that are still connecting. `CLAUDE_CODE_MCP_STARTUP_WAIT_MS` bounds that wait, and `0` means don't wait. A server that connects later becomes available on a later turn, so a slow-starting plugin server may miss the first turn of a headless run. In `--input-format stream-json` sessions, the first turn also no longer waits up to 2s for still-connecting servers whose tools tool search defers. Those tools arrive on a later turn.
 
+**`--mcp-config` and disabled servers (CC 2.1.309):** the MCP config file passed with `--mcp-config` is write-protected from sandboxed Bash commands and auto-accepted edits; before CC 2.1.309 either could modify it. In print (`-p`) and SDK sessions, a server that has been disabled stays disabled; before CC 2.1.309 a later permission prompt could reconnect it.
+
 ## MCP Server Session Variables
 
 **MCP server session variables (CC 2.1.154):** MCP servers automatically receive two environment variables:

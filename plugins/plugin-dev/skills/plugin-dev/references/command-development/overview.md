@@ -94,7 +94,7 @@ All fields are optional. Commands work without any frontmatter.
 | Field                      | Type         | Purpose                                                                                                   |
 | -------------------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
 | `description`              | String       | Shown in `/help`; required for Skill-tool visibility. Keep under ~60 chars. Defaults to first prompt line. |
-| `allowed-tools`            | String/Array | Tools the command may use (e.g. `Read, Bash(git *)`). Defaults to conversation permissions.               |
+| `allowed-tools`            | String/Array | Pre-approves tools; not a boundary (use `disallowed-tools` to remove). E.g. `Read, Bash(git *)`.          |
 | `disallowed-tools`         | String/Array | Tools to remove from the pool while the command runs (e.g. `AskUserQuestion, WebSearch`). (CC 2.1.152)    |
 | `model`                    | String       | `haiku`/`sonnet`/`opus` shorthand or full model ID (e.g. `claude-sonnet-4-5-20250929`). Defaults to conversation model. |
 | `argument-hint`            | String       | Documents expected args for autocomplete (e.g. `[pr-number] [priority]`).                                 |

@@ -68,6 +68,8 @@ Users can load multiple skills simultaneously using stacked slash-skill invocati
 
 Skills follow precedence: Enterprise > Personal (`~/.claude/skills/`) > Project (`.claude/skills/`) > Plugin skills. Higher-priority skills with the same name shadow lower-priority ones. Use distinctive, namespaced names for plugin skills to avoid collisions.
 
+**`--add-dir` skills are prefixed on a clash (CC 2.1.309).** A skill in a directory added with `--add-dir` whose name is already held by an enterprise, personal, or project skill, or by a skill in a directory added earlier, is offered as `/<folder>:<name>`, where `<folder>` is the added directory's folder name. Before CC 2.1.309 such a skill was unreachable.
+
 This ordering governs **name collisions only**. It is not the same as the Skill tool's budget admission order (project, then user, then plugin), which governs which descriptions fit inside the 8,000-character visibility budget. The two rank project and personal skills differently because they answer different questions — see the Visibility Budget section in `../overview.md`.
 
 **Qualified names in errors (CC 2.1.269):** When a bare skill name matches exactly one plugin skill, the Skill tool's "Unknown skill" error names the skill in its full `plugin-name:skill-name` form. A user who typed the bare name gets told what to type instead, which makes a shadowed plugin skill much easier to diagnose.
@@ -91,7 +93,7 @@ CC 2.1.282 reserved `claude-ai` the same way; CC 2.1.283 reverted that. Skills, 
 
 Skills can be organized in nested directories within `.claude/skills/`. When working on files in a nested directory, skills from that directory's `.claude/skills/` are loaded automatically.
 
-**Collision handling:** When the same skill name exists in multiple nested directories, the skill displays as `<dir>:<name>` format (e.g., `apps/web:deploy`). This prevents name collisions while maintaining clarity about which skill is which.
+**Collision handling:** When the same skill name exists in multiple nested directories, the skill displays as `<dir>:<name>` format (e.g., `apps/web:deploy`). This prevents name collisions while maintaining clarity about which skill is which. Skills from `--add-dir` directories get the same `<folder>:<name>` form when their name clashes (CC 2.1.309; see Skill Precedence above).
 
 **Example structure:**
 

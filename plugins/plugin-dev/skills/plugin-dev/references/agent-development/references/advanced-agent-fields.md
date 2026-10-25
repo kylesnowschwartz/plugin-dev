@@ -281,6 +281,8 @@ Team leads coordinate work across multiple teammates. Key design considerations:
 
 Teammates inherit the team lead's permission settings. If the lead runs with `--dangerously-skip-permissions`, all teammates inherit that too. Plan permission modes accordingly — a permissive lead creates permissive teammates.
 
+**Command-line restrictions reach split-pane teammates (CC 2.1.309).** A split-pane teammate (tmux or iTerm2 panes) starts with the tool deny rules and `--tools` list given on the lead's command line. Before CC 2.1.309 it did not, so a `--disallowedTools` or `--tools` restriction on the lead did not bind split-pane teammates. On older versions, put the restriction in settings or in the teammate agent's own `tools`/`disallowedTools`.
+
 ### SendMessageTool Attachments (CC 2.1.116)
 
 When team members send messages with attachments, the `attachments` field accepts two formats:
@@ -365,6 +367,8 @@ tools: Read, Grep, Agent(code-reviewer), Agent(test-runner)
 ```
 
 **Monitor tool (CC 2.1.98):** Add `Monitor` to `tools` for background monitoring — it streams stdout events from long-running scripts as chat notifications. **CC 2.1.195:** The Monitor tool now supports `ws` (WebSocket) as a source type in addition to `stdout`, enabling real-time data streaming from WebSocket connections.
+
+**Monitor availability (CC 2.1.310):** On Amazon Bedrock, Claude Platform on AWS, Google Vertex AI, or Microsoft Foundry, or with `DISABLE_TELEMETRY` or `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` set, the Monitor tool and plugin monitors need CC 2.1.310 or later; before that they were not offered there. Long foreground `sleep` commands are blocked in those environments too, so an agent that waits on something should arm a Monitor watch rather than sleep.
 
 **Monitor watches always have a deadline (CC 2.1.271):** Every model-armed Monitor watch is now time-bounded, and the no-timeout `persistent` option is gone. `timeout_ms` defaults to 300000 (5 minutes) and is capped at 1800000 (30 minutes), dropping to 600000 (10 minutes) in single-prompt `-p` runs. At expiry the agent gets one notice — `[Monitor timed out — re-arm if needed.]` — rather than the watch quietly living on for the session. Agents that watch something spanning a long task must re-arm, so design their instructions around bounded watches: check whether a watch is still live before arming a second one, and re-arm when the work it covers is still in flight.
 
