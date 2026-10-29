@@ -94,7 +94,6 @@ problems = []
 
 # Minified function declarations, the anchor for every identifier lookup below.
 DECL = re.compile(r"(?:async\s+)?function\s*\*?\s*([A-Za-z_$][\w$]*)\s*\(")
-NEXT_DECL = re.compile(r"function\s*\*?\s*[A-Za-z_$][\w$]*\s*\(")
 
 
 def array_literals(min_items, must_contain):
@@ -167,11 +166,59 @@ if not outside_repl:
     problems.append("hook_event_dispatch: outside-REPL executor not found")
 
 
+# How far past an opening bracket a balanced block may run. The block is
+# delimited by bracket matching rather than by this bound; the bound only stops
+# a runaway scan over the rest of the bundle.
+BLOCK_SCAN_LIMIT = 8000
+
+
+def balanced_block(start):
+    """The bracket-balanced text that opens at blob[start], or None.
+
+    None means the block does not close within the scan limit. Reading a fixed
+    slice instead would answer "absent" for anything past the slice's end, so
+    the absence of a name or key is only trusted once the whole block has been
+    delimited.
+    """
+    text = blob[start:start + BLOCK_SCAN_LIMIT]
+    depth = 0
+    quote = None
+    escaped = False
+    for offset, char in enumerate(text):
+        if quote is not None:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == quote:
+                quote = None
+            continue
+        if char in "\"'`":
+            quote = char
+        elif char in "{[(":
+            depth += 1
+        elif char in "}])":
+            depth -= 1
+            if depth == 0:
+                return text[:offset + 1]
+    return None
+
+
 def declaration_body(pos):
-    """Text from a declaration up to the next declaration keyword."""
-    body = blob[pos:pos + 700]
-    following = NEXT_DECL.search(body)
-    return body[:following.start()] if following else body
+    """The `{...}` body of the declaration whose parameter list opens at pos - 1.
+
+    Parameters may destructure objects, so the body is the first brace after the
+    balanced parameter list. An empty string means the body was not delimited.
+    """
+    parameters = balanced_block(pos - 1)
+    if parameters is None:
+        return ""
+    index = pos - 1 + len(parameters)
+    while index < len(blob) and blob[index].isspace():
+        index += 1
+    if blob[index:index + 1] != "{":
+        return ""
+    return balanced_block(index) or ""
 
 
 def alias_closure(root_name, root_pos):
@@ -218,48 +265,18 @@ if in_names or out_names:
     )
 
 
-# How far past a call's opening parenthesis its argument object may run. The
-# object is delimited by brace matching rather than by this bound; the bound
-# only stops a runaway scan over the rest of the bundle.
-ARGUMENT_SCAN_LIMIT = 8000
-
-
 def call_argument_object(open_paren_end):
     """The `{...}` object literal passed at a call site, or None.
 
     None means the argument is not an object literal or does not close within
-    the scan limit. Reading a fixed slice instead would answer "no
-    toolUseContext" for an object whose tail fell outside the slice, so the
-    absence of a key is only trusted once the whole object has been delimited.
+    the scan limit, so "no toolUseContext" is never read from a partial object.
     """
-    text = blob[open_paren_end:open_paren_end + ARGUMENT_SCAN_LIMIT]
-    index = 0
-    while index < len(text) and text[index].isspace():
+    index = open_paren_end
+    while index < len(blob) and blob[index].isspace():
         index += 1
-    if index >= len(text) or text[index] != "{":
+    if blob[index:index + 1] != "{":
         return None
-    depth = 0
-    quote = None
-    escaped = False
-    for offset in range(index, len(text)):
-        char = text[offset]
-        if quote is not None:
-            if escaped:
-                escaped = False
-            elif char == "\\":
-                escaped = True
-            elif char == quote:
-                quote = None
-            continue
-        if char in "\"'`":
-            quote = char
-        elif char in "{[(":
-            depth += 1
-        elif char in "}])":
-            depth -= 1
-            if depth == 0:
-                return text[index:offset + 1]
-    return None
+    return balanced_block(index)
 
 
 def dispatch_class(pos, depth=0):
