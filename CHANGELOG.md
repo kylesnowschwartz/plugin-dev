@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.54.1] - 2026-10-29
+
+Sync with Claude Code 2.1.311-2.1.312. This release covers ten Must Update items (one promoted by Stage 2). All eleven May Update items were skipped. The `doc-drift-auditor` sweep found no contradictions. `scripts/check-doc-drift.sh` was clean, and `docs/claude-code-facts.json` was unchanged (it already recorded 2.1.312).
+
+### Added
+
+- **hook-development / agent-development**: `SubagentStop` hooks run once, when the subagent finishes; before CC 2.1.311 they ran about twice a minute for each running subagent
+- **agent-development**: subagents can use tools from MCP servers that finish connecting after the subagent starts (CC 2.1.311)
+- **agent-development**: a subagent's isolated worktree is no longer removed while a background subagent it started is still working in it (CC 2.1.311)
+- **agent-development / plugin-structure**: Cowork cloud sessions ignore an `agent` named by a plugin's `settings.json` or the user's settings (CC 2.1.311)
+- **plugin-structure / mcp-integration**: a `--plugin-dir` folder of plugins with an empty `.mcp.json` at its top loads each plugin, not one combined plugin (CC 2.1.311)
+- **skill-development**: per-directory and `paths:` skills are found after a Bash `cd` deeper into a git repository (CC 2.1.312)
+- **command-development**: before CC 2.1.312, one command with an invalid name stopped all commands from loading and could leave `claude -p` with no output
+- **plugin-settings**: OpenTelemetry `mcp_server.name` reports the real name of fixed-URL remote MCP servers declared by official-marketplace plugins instead of `custom` (CC 2.1.312)
+
+### Changed
+
+- **hook-development**: prompt and agent hooks run at most 24 at a time per session, sub-agents included, plus at most 12 that have waited past their event's timeout, replacing the CC 2.1.302 cap of 12 per event; a `timeout` under 1 second counts as 1 second (CC 2.1.312)
+- **agent-development**: subagent `autoCompactWindow` also lowers a window set by `CLAUDE_CODE_AUTO_COMPACT_WINDOW`, where it had no effect before; it still never raises the window (CC 2.1.312)
+
 ## [0.54.0] - 2026-10-25
 
 Sync with Claude Code 2.1.309-2.1.310. This release covers ten Must Update items (one promoted by Stage 2) and five Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. All eight May Update items were skipped. `scripts/check-doc-drift.sh` was clean before and after, and the `docs/claude-code-facts.json` diff changed only `claude_code_version`.

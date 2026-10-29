@@ -105,6 +105,8 @@ mcpServers:
 
 **`"type": "sdk"` entries are skipped (CC 2.1.274):** An inline `mcpServers` entry with `"type": "sdk"` is skipped with a warning, as it is in `.mcp.json`, settings, and plugins. Only an SDK host application can register an in-process server. An agent file cannot declare one, so use a stdio, HTTP, SSE, or WebSocket server instead.
 
+**Late-connecting servers (CC 2.1.311):** A subagent can use tools from MCP servers that finish connecting after the subagent starts. Before CC 2.1.311 those tools never reached the subagent, so an agent that depends on a slow-starting server could find its tools missing on older versions.
+
 ## hooks
 
 Define lifecycle hooks scoped to the agent. These hooks activate when the agent starts and deactivate when it finishes.
@@ -131,7 +133,7 @@ hooks:
 
 All hook events are supported in agent frontmatter. Key behavior difference:
 
-- **`Stop`** hooks are automatically converted to **`SubagentStop`** at runtime, since agents are subprocesses
+- **`Stop`** hooks are automatically converted to **`SubagentStop`** at runtime, since agents are subprocesses. `SubagentStop` runs once, when the subagent finishes; before CC 2.1.311 it ran about twice a minute for each running subagent
 - Hooks only run while the agent is active and are cleaned up when the agent finishes
 
 **Main-thread agent hook firing (CC 2.1.116):** Agent frontmatter `hooks:` now fire when running as the main session agent via `--agent`. Previously, agent frontmatter hooks only fired when the agent ran as a subagent. This extends hook functionality to standalone agent sessions.
@@ -481,6 +483,7 @@ autoCompactWindow: 150000
 
 - The value is a token count. When the subagent's conversation reaches it, the subagent compacts its own conversation
 - It only **lowers** the window the subagent would otherwise inherit from the session. A value above the inherited window changes nothing
+- Since CC 2.1.312 it also lowers a window set by the `CLAUDE_CODE_AUTO_COMPACT_WINDOW` environment variable. Before CC 2.1.312 the field had no effect when that variable was set. It still never raises the window
 - Takes effect **only when the agent runs as a subagent**. It has no effect on a main session started with `--agent`
 - Also settable per-agent in the `--agents` JSON payload
 
@@ -753,6 +756,8 @@ isolation: "remote"
 | `worktree` | Local, git worktree | Background | Parallel git branches |
 | `remote` | Remote CCR sandbox | Background | Full isolation |
 
+**Worktree kept for background children (CC 2.1.311):** A subagent's isolated worktree is no longer removed while a background subagent it started is still working in it. Before CC 2.1.311 the worktree of an `isolation: "worktree"` agent could be removed under a still-running background child, so on older versions have the parent wait for its background subagents before it finishes.
+
 ### Worktree Base Reference (CC 2.1.133)
 
 The `worktree.baseRef` setting controls the base reference for new worktrees created via `--worktree`, `EnterWorktree`, or agent-isolation worktrees:
@@ -848,6 +853,8 @@ The `agent` field in `settings.json` is now honored when dispatching sessions vi
 ```
 
 Dispatched sessions inherit the `agent` setting from the dispatching context, allowing default agent configuration at the project or user level and consistent agent selection across interactive and dispatched sessions. Use cases: set a default agent for all dispatched work in a project, ensure dispatched sessions use the same specialized agent as interactive sessions, configure team-wide agent defaults via project settings.
+
+**Cowork cloud sessions ignore it (CC 2.1.311):** Cowork cloud sessions ignore an `agent` named by a plugin's `settings.json` or the user's settings. Before CC 2.1.311 such a setting made those sessions lose their connectors and most tools after a restart.
 
 ### Agent Autocomplete (CC 2.1.153)
 

@@ -699,6 +699,8 @@ This simplifies loading multiple plugins during development without specifying e
 
 **Folders that also hold a marketplace manifest (CC 2.1.281):** A folder of plugins that also has a `.claude-plugin/marketplace.json` now loads the plugins in it. Before CC 2.1.281 it loaded as one empty plugin instead. On older versions, point `--plugin-dir` at each plugin directory. Only direct child folders count, so a marketplace that keeps plugins under `plugins/<name>/` is loaded by pointing the flag at `plugins/`, not at the repository root.
 
+**Folders with an empty `.mcp.json` at the top (CC 2.1.311):** A folder of plugins with an empty `.mcp.json` at its top now loads each plugin in it. Before CC 2.1.311 the whole folder loaded as one plugin. On older versions, remove the empty file or point `--plugin-dir` at each plugin directory.
+
 **`claude plugin validate` on such a folder (CC 2.1.289):** When a directory holds both `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json`, `claude plugin validate` checks the marketplace and also the plugin's manifest and component files. Before CC 2.1.289 it skipped the plugin, so validate the plugin directory on its own when supporting older versions.
 
 **ZIP archive (CC 2.1.128):**
@@ -942,6 +944,8 @@ Claude Code includes comprehensive Cowork plugin component format references for
 - **Complex plugin** — Full-featured with agents, MCP servers, connectors
 
 **MCP server discovery:** Cowork plugins support automatic MCP server discovery, allowing plugins to expose tools dynamically.
+
+**The `agent` setting is ignored in Cowork cloud sessions (CC 2.1.311):** When a plugin's `settings.json` or the user's settings name an `agent`, Cowork cloud sessions ignore it. Before CC 2.1.311 such a setting made those sessions lose their connectors and most tools after a restart. A plugin that ships `settings.json` with `agent` does not get that agent as the main thread in a Cowork cloud session.
 
 For detailed Cowork authoring guidance, use the `claude-code-guide` agent to query "Cowork plugin authoring" or "Cowork plugin schemas".
 

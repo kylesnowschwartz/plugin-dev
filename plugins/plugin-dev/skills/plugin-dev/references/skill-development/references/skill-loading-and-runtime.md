@@ -95,6 +95,8 @@ Skills can be organized in nested directories within `.claude/skills/`. When wor
 
 **Collision handling:** When the same skill name exists in multiple nested directories, the skill displays as `<dir>:<name>` format (e.g., `apps/web:deploy`). This prevents name collisions while maintaining clarity about which skill is which. Skills from `--add-dir` directories get the same `<folder>:<name>` form when their name clashes (CC 2.1.309; see Skill Precedence above).
 
+**Discovery after `cd` (CC 2.1.312):** Per-directory skills and `paths:` skills are found after a Bash `cd` deeper into a git repository. Before CC 2.1.312 they could be missed in that case, so on older versions conditional activation was unreliable once Claude had changed into a subdirectory.
+
 **Example structure:**
 
 ```text

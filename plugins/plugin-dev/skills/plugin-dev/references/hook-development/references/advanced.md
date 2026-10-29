@@ -280,7 +280,7 @@ Since hooks run in parallel, design them to be independent:
 
 All three hooks run simultaneously, reducing total latency.
 
-**Prompt and agent hook concurrency cap (CC 2.1.302).** At most 12 prompt and agent hooks of one event run at a time; the rest queue until a slot frees. A plugin that registers many LLM-backed hooks on one event, or that combines with other plugins doing so, sees them run in waves rather than all at once. Consolidate checks into fewer prompt hooks where latency matters. The changelog names no cap for command or HTTP hooks.
+**Prompt and agent hook concurrency cap (CC 2.1.312).** At most 24 prompt and agent hooks run at a time across the whole session, sub-agents included, plus at most 12 more that have waited longer than their event's timeout; the rest queue until a slot frees. The pool is not per event: every plugin's LLM-backed hooks and every sub-agent's hooks draw from it. A plugin that registers many prompt or agent hooks, or that combines with other plugins doing so, sees them run in waves rather than all at once. From CC 2.1.302 to 2.1.311 the cap was 12 per event. Consolidate checks into fewer prompt hooks where latency matters. The changelog names no cap for command or HTTP hooks.
 
 ## Cross-Event Workflows
 
@@ -632,7 +632,7 @@ rm -rf "$CLAUDE_PROJECT_DIR"
 # BAD: Assumes hooks run in specific order
 # Hook 1 saves state, Hook 2 reads it
 # This can fail because hooks run in parallel!
-# (Since CC 2.1.302, prompt and agent hooks beyond 12 per event wait
+# (Since CC 2.1.312, prompt and agent hooks beyond 24 per session wait
 # their turn; that is a concurrency cap, not a documented run order.)
 ```
 
@@ -874,7 +874,7 @@ Each hook entry in a matcher group supports these fields:
 ```
 
 - `args`: Array of command arguments for exec-form spawning (CC 2.1.139). When provided, the command is executed directly without shell interpolation, which is safer for hooks that pass user-controlled data. Example: `"args": ["${CLAUDE_PLUGIN_ROOT}/scripts/check.sh", "--config", "${user_config.CONFIG_PATH}"]`. Each element is passed exactly as written, so a bare `$VAR` stays literal; only `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}`, `${CLAUDE_PROJECT_DIR}`, and non-sensitive `${user_config.KEY}` are substituted. Read tool input such as a file path from the hook's stdin JSON. The `command` field becomes the executable path when `args` is present.
-- `timeout`: Max execution time in seconds. Defaults vary by type — command/http/mcp_tool 600s, prompt 30s, agent 60s. UserPromptSubmit lowers the command/http/mcp_tool default to 30s; MessageDisplay lowers it to 10s.
+- `timeout`: Max execution time in seconds. Defaults vary by type — command/http/mcp_tool 600s, prompt 30s, agent 60s. UserPromptSubmit lowers the command/http/mcp_tool default to 30s; MessageDisplay lowers it to 10s. Since CC 2.1.312, a `timeout` under 1 second counts as 1 second.
 
 For the `if` field, see the [Declarative `if` Field](#declarative-if-field-cc-2185) section above. Beyond these, hook handlers support additional fields:
 

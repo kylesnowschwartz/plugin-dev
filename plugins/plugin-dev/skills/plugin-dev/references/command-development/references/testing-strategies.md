@@ -675,6 +675,8 @@ claude --debug
 
 **Unsafe characters in the name (CC 2.1.299).** A command or skill whose file or folder name contains hidden, direction-changing, or blank-like characters, `<`, or `>` is not offered until it is renamed. A `name:` frontmatter value with those characters is ignored. Rename the file to plain printable characters (lowercase letters, digits, and hyphens are safest).
 
+**One invalid name hid every command (before CC 2.1.312).** On older versions, a single command with an invalid name stopped all commands from loading, which could leave `claude -p` with no output. Since CC 2.1.312 only that command is affected. If every command in a plugin is missing on an older version, look for one badly named command file.
+
 #### Issue: Arguments not substituting
 
 ```bash

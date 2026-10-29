@@ -819,6 +819,8 @@ Same semantics as Stop: blocking causes the subagent to continue working with `r
 
 **Note:** Stop hooks defined in a subagent context automatically convert to SubagentStop events.
 
+**Runs once per subagent (CC 2.1.311):** A SubagentStop hook runs once, when the subagent finishes. Before CC 2.1.311 it ran about twice a minute for each running subagent. That was a bug, but keep handlers idempotent when supporting older versions.
+
 **Empty agent type (CC 2.1.275):** A SubagentStop hook with a specific `matcher` fires only for subagents whose `agent_type` matches it. Before CC 2.1.275, such a hook also fired for every stopping subagent whose agent type was empty. To handle those subagents, register the hook with no matcher (or `*`) and branch on `agent_type` in the script.
 
 **Matchers:** Agent type names (same as SubagentStart)
