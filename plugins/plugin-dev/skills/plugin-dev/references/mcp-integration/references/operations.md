@@ -291,6 +291,11 @@ Validate MCP configuration:
 - A server that connects after a compaction has its tools and instructions reach Claude right away (CC 2.1.300)
 - Cloud and Remote Control connectors negotiate protocol 2026-07-28 by default; `MCP_PROTOCOL_NEGOTIATION=legacy` opts out (CC 2.1.299)
 
+**Later fixes (CC 2.1.311):**
+
+- A `--plugin-dir` folder of plugins with an empty `.mcp.json` at its top loads each plugin, not the whole folder as one plugin
+- Subagents can use tools from servers that finish connecting after the subagent starts
+
 ## Performance Considerations
 
 ### Lazy Loading

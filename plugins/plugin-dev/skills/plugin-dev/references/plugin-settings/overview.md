@@ -435,6 +435,8 @@ Settings files should be:
 
 `OTEL_LOG_TOOL_DETAILS=1` is an opt-in that adds tool detail to OpenTelemetry output. As of **CC 2.1.273** it also includes real **agent, skill, plugin and MCP server names** on cost and token metrics.
 
+Since **CC 2.1.312**, `mcp_server.name` also reports the real name of a fixed-URL remote MCP server declared by a plugin from the official Anthropic marketplace, where it used to report `custom`.
+
 Plugin authors shipping into an enterprise should know that with this opt-in set, the plugin's name, its skills' names, and its MCP servers' names reach the telemetry backend. If any of those names are themselves sensitive — an internal project codename, a customer name — say so in the plugin's deployment documentation so operators can decide whether to enable the flag.
 
 ## Real-World Examples

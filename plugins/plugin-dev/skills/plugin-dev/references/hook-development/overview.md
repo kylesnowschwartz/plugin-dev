@@ -180,11 +180,11 @@ An `mcp_tool` hook is accepted on every event, but it only runs where an MCP cli
 | Managed policy settings       | Organization   | Yes (admin-managed)  |
 | Plugin `hooks/hooks.json`     | Plugin-scoped  | Yes (with plugin)    |
 
-Plugin hooks merge with user hooks and run in parallel (at most 12 prompt or agent hooks per event at once since CC 2.1.302; see Performance). Duplicates are deduplicated (command hooks by command string, HTTP hooks by URL). `disableAllHooks` cannot disable managed policy hooks.
+Plugin hooks merge with user hooks and run in parallel (at most 24 prompt or agent hooks per session at once since CC 2.1.312; see Performance). Duplicates are deduplicated (command hooks by command string, HTTP hooks by URL). `disableAllHooks` cannot disable managed policy hooks.
 
 ## Performance
 
-All matching hooks run **in parallel** — they don't see each other's output and ordering is non-deterministic, so design them to be independent. **Prompt and agent hooks are capped at 12 concurrent runs per event (CC 2.1.302):** when more of them match one event, the rest wait their turn, which adds latency. The changelog does not mention a cap for command or HTTP hooks. Use command hooks for quick checks, prompt hooks for complex reasoning, cache results in temp files, `async: true` for logging, and `once: true` for one-time setup. See `references/advanced.md` for caching, hook-chaining-via-state, and parallel-optimization patterns.
+All matching hooks run **in parallel** — they don't see each other's output and ordering is non-deterministic, so design them to be independent. **Prompt and agent hooks are capped at 24 concurrent runs per session, sub-agents included, plus at most 12 more that have waited past their event's timeout (CC 2.1.312):** the pool is shared with every other plugin and every sub-agent. When more match, the rest wait their turn, which adds latency. From CC 2.1.302 to 2.1.311 the cap was 12 per event. A `timeout` under 1 second counts as 1 second since CC 2.1.312. The changelog does not mention a cap for command or HTTP hooks. Use command hooks for quick checks, prompt hooks for complex reasoning, cache results in temp files, `async: true` for logging, and `once: true` for one-time setup. See `references/advanced.md` for caching, hook-chaining-via-state, and parallel-optimization patterns.
 
 ## Security
 
