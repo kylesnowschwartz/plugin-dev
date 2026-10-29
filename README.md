@@ -35,7 +35,7 @@ Topic-by-topic details live in [`plugins/plugin-dev/skills/plugin-dev/SKILL.md`]
 
 ## Attribution
 
-Originally developed by [Daisy Hollman](mailto:daisy@anthropic.com) at Anthropic ([upstream](https://github.com/anthropics/claude-code/tree/main/plugins/plugin-dev)). This fork adds upstream sync tooling, an expanded consolidated skill, validation agents, and CI workflows. See [CHANGELOG.md](CHANGELOG.md).
+Originally developed by [Daisy Hollman](mailto:daisy@anthropic.com) at Anthropic. Anthropic's version lives in [claude-plugins-official](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/plugin-dev). This plugin is maintained separately, and its docs are checked against each Claude Code release. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Docs
 
