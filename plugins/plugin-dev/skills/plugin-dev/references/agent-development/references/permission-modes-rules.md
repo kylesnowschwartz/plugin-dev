@@ -45,7 +45,7 @@ No permission dialogs are shown. Any action that would have prompted for permiss
 
 #### bypassPermissions
 
-Runs actions without asking for permission, which makes it the most permissive mode. It is not a bypass of every check, though. The security monitor still blocks the categories listed under [Blocked Categories](#blocked-categories), and `permissions.blockReadsOutsideWorkingDirectories` still makes recognized file-reading commands prompt (see Bash Patterns). As of CC 2.1.273, a subshell can no longer hide a dangerous `rm` in this mode.
+Runs actions without asking for permission, which makes it the most permissive mode. It is not a bypass of every check, though. The security monitor still blocks the categories listed under [Blocked Categories](#blocked-categories), and `permissions.blockReadsOutsideWorkingDirectories` still makes recognized file-reading commands prompt (see Bash Patterns). `permissions.blockWritesOutsideWorkingDirectories` (CC 2.1.314) still makes Write, Edit, and NotebookEdit refuse paths outside the working directories. As of CC 2.1.273, a subshell can no longer hide a dangerous `rm` in this mode.
 
 **When to use:** Only for fully trusted agents in controlled environments. Never for plugins distributed to unknown users.
 
@@ -97,6 +97,8 @@ Space before `*` means word boundary: `Bash(ls *)` matches `ls -la` but NOT `lso
 - In the Desktop app and VS Code, the dangerous `rm`/`rmdir` prompt in `bypassPermissions` mode now denies the command at once with a rewrite hint, so unattended sessions keep going.
 
 `permissions.blockReadsOutsideWorkingDirectories` is a boolean setting that makes the file tools refuse paths outside the working directories in **every** permission mode. It is an explicit exception to the mode table above: with it on, recognized file-reading Bash commands prompt even in `auto` and `bypassPermissions` mode. As of CC 2.1.273 it also excludes a memory directory chosen by a repository's settings from the prompt, recall, indexing, and memory extraction.
+
+`permissions.blockWritesOutsideWorkingDirectories` (CC 2.1.314) is the write-side counterpart: Write, Edit, and NotebookEdit refuse paths outside the working directories in **every** permission mode, `bypassPermissions` included. It covers the file tools only, not shell commands, so a Bash redirect or `cp` outside the working directories is governed by the usual Bash rules. An agent that writes outside the cwd, such as one that updates files under `~/.claude/` or a sibling repository, will be refused when a user turns it on; document that need, or write through a path the user adds as a working directory.
 
 ### Path Patterns for Edit/Read
 

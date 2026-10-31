@@ -28,19 +28,19 @@ PKCE provides additional security for public clients by preventing authorization
 ```json
 {
   "service": {
-    "type": "sse",
-    "url": "https://mcp.example.com/sse"
+    "type": "http",
+    "url": "https://mcp.example.com/mcp"
   }
 }
 ```
 
-No additional auth configuration needed! Claude Code handles everything.
+No additional auth configuration needed! Claude Code handles everything. The same flow runs for `"type": "sse"` servers, but SSE is deprecated upstream; use HTTP unless the server offers only an SSE endpoint (see `server-types.md`).
 
 ### Supported Services
 
 **Known OAuth-enabled MCP servers:**
 
-- Asana: `https://mcp.asana.com/sse`
+- Asana: `https://mcp.asana.com/sse` (an SSE endpoint; use the provider's HTTP endpoint when it publishes one)
 - GitHub (when available)
 - Google services (when available)
 - Custom OAuth servers
@@ -297,6 +297,8 @@ Claude Code injects these environment variables into `headersHelper` scripts:
 
 - `CLAUDE_CODE_MCP_SERVER_NAME` — the MCP server's configured name (e.g., `"github"`, `"slack"`)
 - `CLAUDE_CODE_MCP_SERVER_URL` — the MCP server's URL (for SSE/HTTP/WS servers)
+
+A plugin's `headersHelper` also sees `CLAUDE_PLUGIN_ROOT`. Before CC 2.1.316, a plugin headersHelper received a corrupted `CLAUDE_PLUGIN_ROOT` and server URL whenever any credential-named environment variable was set to a switch value such as `1`. A plugin whose helper relies on either value should state CC 2.1.316 as its minimum version.
 
 Use these for server self-identification in multi-server plugins or for dynamic header generation based on the target server:
 

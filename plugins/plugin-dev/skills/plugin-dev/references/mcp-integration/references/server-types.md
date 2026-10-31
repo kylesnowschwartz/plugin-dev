@@ -109,7 +109,7 @@ Execute local MCP servers as child processes with communication via stdin/stdout
 
 ### Overview
 
-Connect to hosted MCP servers via HTTP with server-sent events for streaming. Best for cloud services and OAuth authentication.
+Connect to hosted MCP servers via HTTP with server-sent events for streaming. The SSE transport is deprecated upstream: use it only for hosted servers that do not offer an HTTP endpoint yet, and use [HTTP](#http-rest-api) for new servers. OAuth is not a reason to pick SSE, since Claude Code runs the same OAuth flow for HTTP servers.
 
 ### Configuration
 
@@ -167,6 +167,8 @@ Claude Code handles OAuth flow:
 3. Tokens stored securely
 4. Automatic token refresh
 
+This flow is the same for HTTP servers (see [HTTP Authentication](#authentication-1)); it is shown here for servers that still publish only an SSE endpoint.
+
 **Custom Headers:**
 
 ```json
@@ -183,14 +185,11 @@ Claude Code handles OAuth flow:
 
 ### Use Cases
 
-**Official Services:**
-
-- Asana: `https://mcp.asana.com/sse`
-- GitHub: `https://mcp.github.com/sse`
-- Other hosted MCP servers
+- Hosted services that still publish only an SSE endpoint, such as an `/sse` URL. When the provider also offers an HTTP endpoint, configure that instead.
+- Existing configurations that have not migrated to HTTP yet.
 
 **Custom Hosted Servers:**
-Deploy your own MCP server and expose via HTTPS + SSE.
+Deploy new servers with an HTTP endpoint rather than SSE (see [Migration Between Types](#migration-between-types)).
 
 ### Best Practices
 
@@ -220,7 +219,7 @@ Deploy your own MCP server and expose via HTTPS + SSE.
 
 ### Overview
 
-Connect to RESTful MCP servers via standard HTTP requests. Best for token-based auth and stateless interactions.
+Connect to remote MCP servers via standard HTTP requests. This is the recommended transport for hosted and cloud services. Claude Code runs the OAuth 2.0 flow (with PKCE) automatically for HTTP servers that require it, or the server can take token-based headers instead.
 
 ### Configuration
 
@@ -259,6 +258,19 @@ Connect to RESTful MCP servers via standard HTTP requests. Best for token-based 
 4. **Stateless**: Each request independent
 
 ### Authentication
+
+**OAuth (Automatic):**
+
+```json
+{
+  "service": {
+    "type": "http",
+    "url": "https://mcp.example.com/mcp"
+  }
+}
+```
+
+No auth configuration is needed. Claude Code prompts the user to authenticate on first use, opens the browser for the OAuth flow, stores the tokens securely, and refreshes them automatically.
 
 **Token-Based:**
 
@@ -455,7 +467,7 @@ The SSE transport is deprecated upstream; prefer HTTP for new servers. OAuth is 
 
 ## Migration Between Types
 
-### From stdio to SSE
+### From stdio to HTTP
 
 **Before (stdio):**
 
@@ -468,16 +480,20 @@ The SSE transport is deprecated upstream; prefer HTTP for new servers. OAuth is 
 }
 ```
 
-**After (SSE - deploy server):**
+**After (HTTP - deploy server):**
 
 ```json
 {
   "hosted-server": {
-    "type": "sse",
-    "url": "https://mcp.example.com/sse"
+    "type": "http",
+    "url": "https://mcp.example.com/mcp"
   }
 }
 ```
+
+### From SSE to HTTP
+
+When a provider adds an HTTP endpoint, change `"type": "sse"` to `"type": "http"` and point `url` at the HTTP endpoint the provider documents. OAuth and `headers` carry over unchanged.
 
 ### From HTTP to WebSocket
 

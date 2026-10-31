@@ -80,6 +80,10 @@ An `if` condition names each tool by its own name, so `Write(tests/**)` matches 
 > **CC 2.1.178:** Added tool parameter matching syntax (e.g., `Agent(model:opus)`) for granular permission control based on tool input parameters using wildcards.
 >
 > **CC 2.1.218 (breaking change):** Single-segment `dir/**` hook `if:` conditions now match only `<cwd>/dir`; write `**/dir/**` for any-depth matching. Previously, `dir/**` would match at any depth, which could lead to unintended matches. Update existing hooks that rely on the old behavior.
+>
+> **CC 2.1.314:** An `if` condition such as `Monitor(tail *)` matches the shell commands the Monitor tool starts, in the same way `Bash(tail *)` matches Bash commands.
+
+**Monitor-started shell commands (CC 2.1.314).** Hooks that match `Bash` now also run on shell commands the Monitor tool starts. Before CC 2.1.314 a Bash guard never saw those commands, so a security hook written for Bash let them through on older versions. For a Monitor-started command the hook can block (exit 2 or `permissionDecision: "deny"`) or ask, but it cannot approve or rewrite: `permissionDecision: "allow"` and `updatedInput` have no effect there.
 
 ### Script-Level Conditionals
 
@@ -958,7 +962,8 @@ Different hook events support different output formats for controlling Claude's 
 - `allow` does not lift plan mode. Since CC 2.1.299, a write that a PreToolUse hook (or a mod's `tool.check` hook) allows, whether an MCP tool's, a file's, or a shell command's, still does not run in plan mode. Before CC 2.1.299 such a write ran despite plan mode's read-only restriction
 - `updatedInput`: Optionally modify tool parameters before execution. The rewritten input is checked against permission rules and safety checks; CC 2.1.290 fixed cases where some were not applied after a rewrite, so a rewrite cannot carry a call past a deny rule. Since CC 2.1.300 it is also validated against the tool's input schema, like Claude's own input: unknown keys are dropped silently, and input the tool rejects denies the call instead of passing through. The same applies to PermissionRequest `updatedInput`
 - Windows: a PreToolUse or PermissionRequest command hook that sets no `shell` fails closed when Git for Windows is not installed (CC 2.1.299): a guard that fails blocks the call. Before CC 2.1.299 such a hook failed open and the call ran. Two more fail-open cases were closed later: a hook with `"shell": "powershell"` (CC 2.1.309), and a hook command made only of quoted strings, such as a quoted path, which PowerShell printed instead of running (CC 2.1.310). Claude is shown a "Git Bash not found" blocking reason (exit code 127) and must not edit the hook to get around it
-- PowerShell exit 2: a hook run in PowerShell (`"shell": "powershell"` or a Windows fallback) blocks on exit code 2 only since CC 2.1.309. Before that, exit 2 from PowerShell let the call through
+- PowerShell exit 2: a hook run in PowerShell (`"shell": "powershell"` or a Windows fallback) blocks on exit code 2 only since CC 2.1.309. Before that, exit 2 from PowerShell let the call through. A command that begins with a type cast, `param`, `using`, or an attribute still let the call through on exit 2 until CC 2.1.316
+- Monitor-started shell commands: a PreToolUse hook matching `Bash` runs on them since CC 2.1.314, but only `deny` and `ask` take effect. `allow` and `updatedInput` are ignored for those commands
 - `additionalContext`: Injected into Claude's context. `<system-reminder>` tags in it, as in any hook output, are escaped before they reach Claude (CC 2.1.292)
 - A failure to match the hook against a call, or tool input that cannot be serialized to JSON, blocks the call (CC 2.1.288). Before CC 2.1.288 the hook was skipped and the call ran. PermissionRequest behaves the same way
 - A `deny` and its `permissionDecisionReason` survive an Agent SDK callback hook on the same call timing out (CC 2.1.304). Before CC 2.1.304, Claude saw the timeout error instead of the plugin hook's deny reason

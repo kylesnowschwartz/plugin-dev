@@ -696,6 +696,8 @@ fi
 
 **Use for:** Debugging context loss, monitoring compaction frequency, auditing what information survives.
 
+**Output cap (CC 2.1.314):** Claude Code cuts each PreCompact hook's output at 10,000 characters. A PreCompact hook that hands back context to preserve should keep it well under that size; before CC 2.1.314, very large output could make compaction fail or repeat.
+
 ## Pattern 18: Instruction Loading Audit (InstructionsLoaded)
 
 Track which instruction files Claude loads and when:

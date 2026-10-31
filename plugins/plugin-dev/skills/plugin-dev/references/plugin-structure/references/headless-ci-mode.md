@@ -26,7 +26,7 @@ claude -p "Analyze this codebase for security issues" --allowedTools "Read,Grep,
 
 ### Internal Errors Exit Non-Zero (CC 2.1.277)
 
-A `claude -p` or Agent SDK session that hits an internal error now reports the error and exits with code 1. Before CC 2.1.277 it could hang with no result. CI steps can rely on the exit code to fail the job, but a job timeout is still worth keeping for older pinned versions.
+A `claude -p` or Agent SDK session that hits an internal error now reports the error and exits with code 1. Before CC 2.1.277 it could hang with no result. Startup failures were a separate gap: before CC 2.1.314, `claude -p` exited 0 with no output when startup failed, so a CI job passed without running anything. Since CC 2.1.314 it prints the error and exits 1. CI steps can rely on the exit code to fail the job on CC 2.1.314+; on older pinned versions, keep a job timeout and also fail the step when the output is empty.
 
 ### Workaround for Skills
 

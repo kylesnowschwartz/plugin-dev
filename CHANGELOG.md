@@ -7,8 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.55.0] - 2026-10-31
+
+Sync with Claude Code 2.1.314-2.1.316 (upstream has no 2.1.313 or 2.1.315 changelog entries). This release covers ten Must Update items (two promoted by Stage 2) and two Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. All twelve May Update items were skipped. It also ships the mod-development topic that was pending under Unreleased. `scripts/check-doc-drift.sh` was clean, and the `docs/claude-code-facts.json` diff changed only `claude_code_version`.
+
 ### Added
 
+- **hook-development**: hooks matching `Bash` run on shell commands the Monitor tool starts, and can block or ask but not approve or rewrite them; an `if` condition such as `Monitor(tail *)` matches those commands as `Bash(tail *)` matches Bash's (CC 2.1.314)
+- **hook-development**: each PreCompact hook's output is cut at 10,000 characters; before CC 2.1.314 very large output could make compaction fail or repeat
+- **agent-development**: `permissions.blockWritesOutsideWorkingDirectories` makes Write, Edit, and NotebookEdit refuse paths outside the working directories in every permission mode; it does not cover shell commands (CC 2.1.314)
+- **agent-development**: `CLAUDE_CODE_SUBAGENT_EFFORT` sets the effort a subagent runs at when nothing else names one, instead of the session's (CC 2.1.316)
 - **mod-development**: a new topic for mods (TypeScript hooks modules), routed from the `plugin-dev` skill. `overview.md` covers when to choose a mod, the built-in `plugin-authoring` skill (still loaded before writing a mod, for the running build's types and hot reload), and an index of 20 pattern files under `patterns/`: a tool that draws its own result row, row data on disk, per-row state, pictures in the terminal including tmux, links and buttons, prompt jumps, copy buttons, band and pane patterns, and API gotchas. Each pattern lists the problem, API calls, a code sketch, the minimum Claude Code version, gotchas, and sources with a confidence label
 - **mod-development/vendor**: Claude Code 2.1.316's built-in `plugin-authoring` material, copied unchanged: `examples/`, `reference.md`, `types/claude-code.d.ts`, plus the skill's main text as the Skill tool prints it
 - `scripts/sync-mod-api.sh`: refreshes the vendored copy, including the skill's main text, by loading `plugin-authoring` in a one-turn headless session. The upstream sync runs it in Stage 0
@@ -17,6 +25,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **plugin-dev skill**: the description and topic index cover mods, and the mods paragraph routes to `references/mod-development/overview.md`
+- **hook-development**: PowerShell hooks whose command begins with a type cast, `param`, `using`, or an attribute block on exit code 2 only since CC 2.1.316
+- **agent-development**: a nested sub-agent that inherited its parent sub-agent's model keeps it when a background job or message wakes it; before CC 2.1.316 it moved to the main session's model
+- **mcp-integration**: plugin `headersHelper` scripts see `CLAUDE_PLUGIN_ROOT`; before CC 2.1.316 it and the server URL arrived corrupted when a credential-named environment variable was set to a switch value such as `1`
+- **plugin-structure**: `claude -p` exits 1 with an error when startup fails; before CC 2.1.314 it exited 0 with no output, so CI exit-code checks did not catch it
+- **skill-development**: `~/.claude/skills/.trash` and `~/.claude/plugins/.trash` keep about 1024 entries whatever `cleanupPeriodDays` says (CC 2.1.314), so withdrawn synced skills are recoverable only for a while
+
+### Fixed
+
+- **mcp-integration**: the SSE and HTTP sections of `server-types.md` contradicted the transport guide. SSE was introduced as best for OAuth and HTTP as token-only; SSE is now described as deprecated, HTTP as the recommended hosted transport with automatic OAuth, and the stdio migration example targets HTTP. The OAuth configuration example in `authentication.md` uses HTTP, and `server-discovery.md` notes that SSE-tagged servers should move to an HTTP endpoint when the provider offers one
+- **hook-development**: the `hooks` wrapper in `hooks/hooks.json` was called required for every plugin, but a mod's file holds only `{ "modules": [...] }`. The overview now scopes the rule, and `validate-hook-schema.sh` accepts the mod format instead of reporting "Unknown event type: modules"
 
 ## [0.54.1] - 2026-10-29
 

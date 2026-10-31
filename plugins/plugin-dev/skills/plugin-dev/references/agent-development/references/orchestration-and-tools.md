@@ -230,7 +230,7 @@ The Workflow tool's `agent()` spawns now accept an `effort` option that override
 
 **Behavior:**
 
-- **Omit** — Inherit the session's current effort level
+- **Omit** — Use the configured subagent default when one is set (`CLAUDE_CODE_SUBAGENT_EFFORT`, CC 2.1.316); otherwise inherit the session's current effort level
 - **`'low'`** — Use for cheap mechanical stages (formatting, simple transforms)
 - **Higher tiers** — Reserve for the hardest verify/judge stages that need maximum reasoning
 
@@ -245,7 +245,7 @@ workflow.agent({
 
 **Design guidance:**
 
-- Default to inheriting session effort (omit the option)
+- Default to the inherited effort (omit the option); a user who sets `CLAUDE_CODE_SUBAGENT_EFFORT` then controls it
 - Use `'low'` for stages that don't require deep reasoning
 - Reserve `'high'`/`'xhigh'`/`'max'` for critical validation steps
 
@@ -260,6 +260,8 @@ workflow.agent({
 The Agent tool now takes an `effort` parameter, so Claude runs a subagent at the effort level the caller asks for. It is the per-spawn counterpart of an agent definition's `effort` frontmatter field, in the same way the call-level `model` parameter pairs with the `model` field: the definition sets the agent's usual level, and the call can ask for a different one for a single run. The Workflow tool's `agent()` option above does the same inside workflows.
 
 **Design guidance:** Keep the agent's typical level in its frontmatter and leave the call-level `effort` for exceptions, such as a cheap triage pass or one hard verification run. An orchestrating agent's instructions can name the effort to request for each kind of delegation.
+
+**Default subagent effort (CC 2.1.316).** When neither the call nor the agent definition names an effort, a subagent runs at the level in the `CLAUDE_CODE_SUBAGENT_EFFORT` environment variable if the user set it, and inherits the session's effort otherwise. Before CC 2.1.316 it always inherited the session's. Like `CLAUDE_CODE_WORKFLOW_SUBAGENT_MODEL`, this is user-side, so an agent that needs a particular effort should set `effort` in its frontmatter rather than rely on the session's level.
 
 ## EndConversation Tool (CC 2.1.214)
 
