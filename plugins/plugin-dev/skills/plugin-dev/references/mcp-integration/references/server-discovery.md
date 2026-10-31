@@ -84,6 +84,8 @@ Extract from detail page:
 
 Curated recommendations for common use cases. Use live search for comprehensive results.
 
+The Type column records the transport each server was listed with. SSE is deprecated upstream and HTTP is the recommended transport for hosted servers, so for an entry marked SSE, check the provider's documentation for an HTTP endpoint and configure `"type": "http"` when one exists (see `server-types.md`).
+
 ### Databases
 
 | Server                | Provider | Type  | Best For                                                 |

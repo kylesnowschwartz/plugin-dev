@@ -655,7 +655,9 @@ The Agent tool now defaults to `run_in_background: true`. Claude keeps working w
 
 ### Extended Thinking Inheritance (CC 2.1.198)
 
-Subagents now inherit the session's extended thinking configuration. Agent type definitions supply model, reasoning effort, and tool access. At launch, the Agent tool's call-level `model` parameter overrides the model, and since CC 2.1.292 its `effort` parameter overrides the reasoning effort for that spawn (see `orchestration-and-tools.md`). This means subagents automatically benefit from extended thinking when enabled in the parent session.
+Subagents now inherit the session's extended thinking configuration. Agent type definitions supply model, reasoning effort, and tool access. At launch, the Agent tool's call-level `model` parameter overrides the model, and since CC 2.1.292 its `effort` parameter overrides the reasoning effort for that spawn (see `orchestration-and-tools.md`). When nothing names an effort, a subagent uses `CLAUDE_CODE_SUBAGENT_EFFORT` if it is set and the session's effort otherwise (CC 2.1.316). This means subagents automatically benefit from extended thinking when enabled in the parent session.
+
+**Nested `model: inherit` holds on wake (CC 2.1.316).** A sub-agent that inherited its model from a parent sub-agent keeps that model when a background job or a message wakes it. Before CC 2.1.316 it moved to the main session's model on wake, so a nested agent using `inherit` could change models mid-task on older versions; pin the model in its definition when that matters.
 
 ### Subagent Results Arrive Framed as Subagent Output (CC 2.1.277)
 

@@ -949,6 +949,7 @@ As of CC 2.1.105, PreCompact supports blocking compaction:
 - Exit code 2 or `{"decision": "block"}` blocks compaction
 - Use to preserve critical context when compaction would lose important state
 - `additionalContext` injects information to be considered during compaction
+- Each hook's output is cut at 10,000 characters (CC 2.1.314). Before CC 2.1.314, very large PreCompact output could make compaction fail or repeat. Keep preserved context well under the cap
 
 > **CC 2.1.88:** Added partial compaction capability. Claude Code can now compact only a portion of the conversation rather than the entire context, with a structured summary format and analysis process.
 

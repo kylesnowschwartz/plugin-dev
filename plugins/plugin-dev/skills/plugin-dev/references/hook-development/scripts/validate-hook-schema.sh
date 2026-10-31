@@ -1,8 +1,9 @@
 #!/bin/bash
 # Hook Schema Validator
 # Validates hooks.json structure and checks for common issues
-# Accepts both formats:
+# Accepts three formats:
 #   - Plugin format (hooks/hooks.json): {"description": "...", "hooks": {"PreToolUse": [...]}}
+#   - Mod format (hooks/hooks.json of a function-hook plugin): {"modules": ["./register.tsx"]}
 #   - Settings format (.claude/settings.json "hooks" value): {"PreToolUse": [...]}
 
 set -euo pipefail
@@ -46,6 +47,26 @@ echo "✅ Valid JSON"
 # before validating.
 echo ""
 echo "Checking format..."
+# A mod (function-hook plugin) declares TypeScript/JavaScript modules instead
+# of an event map: {"modules": ["./register.tsx"]}, with no "hooks" key. Its
+# hooks are registered in code, so there is nothing further to check here.
+if jq -e 'type == "object" and has("modules") and (has("hooks") | not)' "$HOOKS_FILE" >/dev/null 2>&1; then
+  if jq -e '(.modules | type) == "array" and (.modules | length > 0) and all(.modules[]; type == "string" and length > 0)' "$HOOKS_FILE" >/dev/null 2>&1; then
+    extra=$(jq -r '[keys[] | select(. != "modules" and . != "$schema" and . != "description")] | join(", ")' "$HOOKS_FILE")
+    echo "✅ Mod format (modules)"
+    if [ -n "$extra" ]; then
+      echo "⚠️  Unexpected key(s) beside 'modules': $extra"
+      echo ""
+      echo "⚠️  Validation passed with 1 warning(s)"
+    else
+      echo ""
+      echo "✅ All checks passed!"
+    fi
+    exit 0
+  fi
+  echo "❌ 'modules' must be a non-empty array of module path strings"
+  exit 1
+fi
 if jq -e '(.hooks | type) == "object" and ((keys - ["$schema", "description", "hooks"]) | length == 0)' "$HOOKS_FILE" >/dev/null 2>&1; then
   echo "✅ Plugin wrapper format (description + hooks)"
   UNWRAPPED=$(mktemp)
