@@ -87,6 +87,9 @@ Verify:
   shape is `DRIFT <check> <file>:<line> <message>` — is a FAIL; quote the line and
   name the fix in the review output. Lines that do not start with `DRIFT` are
   progress and summary text, not findings.
+- A `DRIFT O` line means the vendored mod reference under
+  `references/mod-development/vendor/` is older than the facts file. The fix is
+  `scripts/sync-mod-api.sh`, never a hand edit of the vendor folder.
 - `diff` reports no difference, so `docs/claude-code-facts.json` describes the
   installed binary. A difference is a FAIL: Stage 3 left the facts file stale. This
   gate includes `claude_code_version`, which the discovery stages ignore: the facts

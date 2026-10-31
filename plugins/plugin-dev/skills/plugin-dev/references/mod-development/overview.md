@@ -30,7 +30,7 @@ Cross-cutting risks of mods (managed machines that skip some events, fail-closed
 - `vendor/plugin-authoring-skill.md`: the skill's main text, as the Skill tool prints it.
 - `vendor/reference.md`: the long form: every event, `ui.render` in depth, `$.state` contracts, tests, sharing.
 - `vendor/examples/`: complete modules for a pane, a band, and a tool-call hook, with state contracts and a test.
-- `vendor/types/claude-code.d.ts`: the API, about 14,000 lines. Grep it for the name at hand (`'tool.call'`, `Pane: {`, `export type ImageProps`, `ToolResult: {`).
+- `vendor/types/claude-code.d.ts`: the full API. Grep it for the name at hand (`'tool.call'`, `Pane: {`, `export type ImageProps`, `ToolResult: {`).
 
 The copy can lag the running build. When a type or rule matters, check it in the running build's types (the paths above). Refresh the copy with `scripts/sync-mod-api.sh` at the repository root.
 

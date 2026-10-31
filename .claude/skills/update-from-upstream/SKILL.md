@@ -27,7 +27,7 @@ Before running this skill, ensure:
 ## Pipeline Overview
 
 ```
-Stage 0:  Ground truth    → extract-cc-facts.sh + check-doc-drift.sh (you, inline)
+Stage 0:  Ground truth    → extract-cc-facts.sh + sync-mod-api.sh + check-doc-drift.sh (you, inline)
 Stage 1:  Discover        → changelog-differ agent
 Stage 1b: Doc drift audit → doc-drift-auditor agent
 Stage 2:  Verify plan     → update-manifest-verifier agent
@@ -61,17 +61,23 @@ scripts/extract-cc-facts.sh --binary "$CLAUDE_CODE_EXECUTABLE" --out docs/claude
 git diff -I '"claude_code_version"' --stat docs/claude-code-facts.json
 git diff -I '"claude_code_version"' docs/claude-code-facts.json
 
+# Refresh the vendored built-in plugin-authoring skill from the same CLI. The
+# script starts a one-turn headless session that loads the skill.
+scripts/sync-mod-api.sh
+
 # Deterministic drift between the shipped docs and those facts
 mkdir -p .agent-history
 scripts/check-doc-drift.sh > .agent-history/drift-report.txt
 ```
 
-**Exit codes:** `extract-cc-facts.sh` exits 2 when a sanity check fails, and writes no output file — stop the pipeline and report. `check-doc-drift.sh` exits 0 when clean, 1 when drift is found (expected — continue), and 2 on a tooling error — stop and report.
+**Exit codes:** `extract-cc-facts.sh` exits 2 when a sanity check fails, and writes no output file — stop the pipeline and report. `sync-mod-api.sh` exits 1 when the skill did not load or its copy is incomplete, and 2 on a usage error or a missing tool — stop and report. `check-doc-drift.sh` exits 0 when clean, 1 when drift is found (expected — continue), and 2 on a tooling error — stop and report.
 
 **What the outputs mean:**
 
 - A non-empty `git diff -I '"claude_code_version"' docs/claude-code-facts.json` is an upstream change. Keep the full diff: Stage 1 records it in the manifest under "Ground truth changes", one item per changed fact, each mapped to the topic it affects.
 - Every line starting with `DRIFT` in `.agent-history/drift-report.txt` becomes a "Must Update" item in the manifest under "Deterministic drift". The lines have the shape `DRIFT <check> <file>:<line> <message>`. Ignore lines that do not start with `DRIFT` — the report can carry progress and summary text that names no finding. Stage 1 reads the file directly.
+
+- A diff under `plugins/plugin-dev/skills/plugin-dev/references/mod-development/vendor/` is not a signal. `sync-mod-api.sh` rewrites that folder from the installed CLI on every run, so it changes with every release. Do not edit or revert it; it rides along in the commit of the next sync that has real content. Check O in the drift report flags a vendored copy older than the facts file.
 
 **Why `claude_code_version` is held out of the signal:** the facts file records which binary it was read from, and CI installs the latest CLI on every run, so that key changes whenever a new release ships even when no documented fact moved. On its own a version-only change is not an upstream change and not a reason to open a pull request. It rides along in the commit of the next sync that has real content.
 
@@ -297,6 +303,7 @@ Any one non-empty signal continues the run. An empty changelog range on its own 
 | The only auditor findings are marked "unknown" and no other signal has content | Stop pipeline, report the unknown items without opening a PR |
 | `scripts/extract-cc-facts.sh` exits 2 (sanity check failed) | Stop pipeline, report the stderr message to user |
 | No `claude` binary available for Stage 0 | Stop pipeline, report to user |
+| `scripts/sync-mod-api.sh` exits non-zero (skill did not load, copy incomplete, or tool missing) | Stop pipeline, report the stderr message to user |
 | `scripts/check-doc-drift.sh` exits 2 (tooling error) | Stop pipeline, report to user |
 | `claude-code-guide` agent unavailable | Continue with two-source triangulation, note degraded confidence |
 | System-prompts repo not found | Continue with CC changelog only, note degraded confidence |

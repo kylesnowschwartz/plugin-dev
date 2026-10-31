@@ -117,5 +117,5 @@ orchestration file directly rather than invoking it as a plugin skill.
 The drift guard scripts live at the repo root and are maintainer tooling too:
 
 - **`scripts/extract-cc-facts.sh`**: Reads hook, userConfig, and permission facts out of the Claude Code binary into `docs/claude-code-facts.json` (Stage 0)
-- **`scripts/sync-mod-api.sh`**: Refreshes the vendored mod reference (`references/mod-development/vendor/`) from the newest extracted built-in `plugin-authoring` skill
+- **`scripts/sync-mod-api.sh`**: Refreshes the vendored mod reference (`references/mod-development/vendor/`) by loading the built-in `plugin-authoring` skill in a one-turn headless session (Stage 0)
 - **`scripts/check-doc-drift.sh`**: Compares the shipped docs against that facts file, one `DRIFT` line per finding (Stage 0, Stage 4, and `doc-drift.yml` on pull requests)

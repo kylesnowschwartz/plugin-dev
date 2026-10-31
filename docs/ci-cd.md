@@ -22,8 +22,9 @@ Documentation for GitHub Actions workflows, labels, and templates.
 The `upstream-sync.yml` job reads the newest version heading from the upstream
 Claude Code changelog and installs exactly that CLI release before the agent run,
 falling back to `latest` only when that build is not downloadable yet. It then
-extracts ground truth from the installed binary into `docs/claude-code-facts.json`
-and writes `.agent-history/drift-report.txt`. The agent reads both artifacts as
+extracts ground truth from the installed binary into `docs/claude-code-facts.json`,
+refreshes the vendored mod reference with `scripts/sync-mod-api.sh`, and writes
+`.agent-history/drift-report.txt`. The agent reads both artifacts as
 Stage 0 of the sync pipeline, and the changelog range it audits never extends past
 the version the facts file records, so `Last audited:` never names a release whose
 binary the run did not inspect. See [Documentation Drift Guard](#documentation-drift-guard).
@@ -70,11 +71,15 @@ still caught.
 | Script                        | Reads                   | Writes                        |
 | ----------------------------- | ----------------------- | ----------------------------- |
 | `scripts/extract-cc-facts.sh` | The Claude Code binary  | `docs/claude-code-facts.json` |
+| `scripts/sync-mod-api.sh`     | The built-in `plugin-authoring` skill, loaded in a one-turn headless session | `references/mod-development/vendor/` |
 | `scripts/check-doc-drift.sh`  | The facts file and docs | One `DRIFT` line per finding on stdout, a run summary on stderr |
 
 ```bash
 # Ground truth from the installed CLI
 scripts/extract-cc-facts.sh --out docs/claude-code-facts.json
+
+# Refresh the vendored mod reference from the same CLI (one model call)
+scripts/sync-mod-api.sh
 
 # Compare the shipped docs against it
 scripts/check-doc-drift.sh
@@ -88,6 +93,16 @@ run summary goes to stderr. Redirecting stdout to a file gives a report of findi
 and nothing else. Use `--skip-validate` only where no `claude` CLI is available —
 it drops the manifest checks, so the drift report is incomplete.
 
+`sync-mod-api.sh` loads the skill in an empty temp folder, so it needs a Claude
+Code login; `upstream-sync.yml` passes it `CLAUDE_CODE_OAUTH_TOKEN`. It copies the
+skill's examples, `reference.md`, and `types/claude-code.d.ts`, and reads the
+skill's main text from the session transcript, with placeholders for the text that
+differs per session. It exits 1 when the skill did not load or its copy is
+incomplete. The other drift checks skip the vendor folder, because it holds
+upstream's text. Check O of `check-doc-drift.sh` reports a vendored copy older than
+`claude_code_version` in the facts file. A newer copy passes, because
+`doc-drift.yml` installs the facts file's release.
+
 `extract-cc-facts.sh` exits 2 and writes nothing when a sanity check fails.
 `check-doc-drift.sh` exits 0 when clean, 1 when it finds drift, and 2 when a check
 could not run, printing an `ERROR` line on stderr for each one. Both workflows
@@ -100,14 +115,17 @@ When the ground-truth step in `upstream-sync.yml` fails, the next step opens one
 GitHub issue titled "Upstream sync: ground-truth step failing", or rewrites its
 body and adds a comment if it is already open. The issue names the tool that
 failed and its exit code, the CLI version, the run link, and the error lines from
-`.agent-history/extract-errors.txt` or `.agent-history/drift-errors.txt`. The next
+`.agent-history/extract-errors.txt`, `.agent-history/sync-mod-api-errors.txt`, or
+`.agent-history/drift-errors.txt`. The next
 run whose ground-truth step succeeds closes it. The reporting step never changes
 the job's result; if it cannot reach GitHub it posts a warning instead.
 
 Both feed the upstream sync pipeline in
 `.claude/skills/update-from-upstream/SKILL.md`:
 
-- **Stage 0 (ground truth)** runs both scripts. A diff in
+- **Stage 0 (ground truth)** runs all three scripts. A diff in the vendored mod
+  reference is not a signal: the folder changes with every release and rides along
+  with the next sync that has real content. A diff in
   `docs/claude-code-facts.json` outside the `claude_code_version` key is an upstream
   change signal on its own, and each `DRIFT` line becomes a manifest item. Every
   consumer reads `git diff -I '"claude_code_version"' docs/claude-code-facts.json`:

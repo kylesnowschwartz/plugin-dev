@@ -1,9 +1,10 @@
 <!--
 The main text of Claude Code's built-in plugin-authoring skill, as the Skill tool prints it.
 The bundled skill folder holds no SKILL.md, so this text exists only in that tool output.
-Placeholders stand for paths that differ per session:
-  <SKILL_DIR>     the skill's extracted folder, /private/tmp/claude-<uid>/bundled-skills/<version>/<hash>/plugin-authoring
+Placeholders stand for text that differs per session:
+  <SKILL_DIR>     the skill's extracted folder, <temp root>/claude-<uid>/bundled-skills/<version>/<hash>/plugin-authoring
   <SESSION_MODS>  the session's mods folder, ~/.claude/dev-mods/<session-id>
+  <THIS_SESSION>  a paragraph about the session that loaded the skill: its terminal, hot reload, and sharing
 -->
 
 WHERE TO WRITE IT. Write each mod in its own child folder, `<SESSION_MODS>/<mod-name>/`, three files written directly:
@@ -20,7 +21,7 @@ WHAT HAPPENS WHEN THE TURN ENDS. Loading this skill through the Skill tool or it
 
 A reload runs `register` and `session.start` again. `$.state` (the session's) and `$.store` (across sessions) stay; the module's own variables start over. New code meets old values: `shape`, in `reference.md`.
 
-THIS SESSION is drawn in a terminal. A pane the person opened seats at any width; one opened unasked seats from 144 columns, or 110 as `$.ui.open`'s doc says, and waits below that. Where hot reloading is off as nobody could be asked, `claude --plugin-dir <mod folder>` starts a session with the mod loaded. This session has the `PublishPlugin` tool, so the normal way to share a mod here is the person's organization's library on claude.ai: when they ask to share or publish one, publish it with that tool, which shows them every file and sends nothing before their yes. A GitHub repository, by Sharing a mod in reference.md, is the other road: for people outside the organization, or when the person asks for a repository. Once the mod has loaded and the person has seen it do what they asked, offer once, in one line, to publish the mod to the organization's library; until then, sharing goes unmentioned unless the person raises it. Wait for their answer; a GitHub repository is for when the person asks for one. Say "the mod", not "it". Where the person says no, that answer stands for the rest of this session.
+<THIS_SESSION>
 
 ## A mod in one paragraph
 

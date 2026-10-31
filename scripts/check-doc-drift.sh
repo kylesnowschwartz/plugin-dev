@@ -25,7 +25,7 @@ Usage: scripts/check-doc-drift.sh [options]
 
 Checks: A event-table, B event-sections, C event-counts, D script-allowlist,
 E ci-allowlist, F enums, G userconfig-validate, H manifest-examples-validate,
-I paths, J denylist, M userconfig-fields, N env-vars.
+I paths, J denylist, M userconfig-fields, N env-vars, O mod-vendor-version.
 
 Selecting only G and/or H together with --skip-validate leaves nothing to run
 and is rejected.
@@ -121,7 +121,7 @@ from pathlib import Path
 REPO = Path(os.environ["DRIFT_REPO_ROOT"])
 SKIP_VALIDATE = os.environ["DRIFT_SKIP_VALIDATE"] == "1"
 ONLY = {c.strip().upper() for c in os.environ["DRIFT_ONLY"].split(",") if c.strip()}
-ALL_CHECKS = list("ABCDEFGHIJMN")
+ALL_CHECKS = list("ABCDEFGHIJMNO")
 
 FACTS_PATH = os.environ["DRIFT_FACTS"]
 
@@ -409,8 +409,18 @@ def event_headings():
     return out
 
 
+# Upstream's own plugin-authoring text, copied by scripts/sync-mod-api.sh. The
+# checks judge plugin-dev's docs, not upstream's, and a finding there would ask
+# for an edit the next sync overwrites. Check O reads its version line.
+MOD_VENDOR = SKILL / "references/mod-development/vendor"
+
+
+def is_vendored(path):
+    return MOD_VENDOR in Path(path).parents
+
+
 def markdown_files(root):
-    return sorted(p for p in Path(root).rglob("*.md"))
+    return sorted(p for p in Path(root).rglob("*.md") if not is_vendored(p))
 
 
 # ---------------------------------------------------------------- A. event-table
@@ -1087,7 +1097,7 @@ def denylist_files():
         for path in sorted(root.rglob("*")):
             if not path.is_file() or path.is_symlink():
                 continue
-            if ".git" in path.parts:
+            if ".git" in path.parts or is_vendored(path):
                 continue
             try:
                 yield path, path.read_text(encoding="utf-8")
@@ -1287,6 +1297,43 @@ def check_env_vars():
         )
 
 
+# ----------------------------------------------------- O: vendored mod reference
+
+MOD_VENDOR_README = MOD_VENDOR / "README.md"
+VERSION_RE = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
+VENDOR_VERSION_LINE_RE = re.compile(r"^Claude Code version:\s*(\S+)\s*$")
+
+
+def version_key(version):
+    return tuple(int(part) for part in version.split("."))
+
+
+# The vendored copy of the built-in plugin-authoring skill describes one Claude
+# Code release. A copy older than the release the facts describe has missed a
+# sync. A newer copy is fine: the pull-request gate installs the facts file's
+# release, which can trail a copy a maintainer refreshed from a newer CLI.
+def check_mod_vendor_version():
+    facts_version = FACTS.get("claude_code_version")
+    if not isinstance(facts_version, str) or not VERSION_RE.fullmatch(facts_version):
+        raise ValueError(f"facts file has no X.Y.Z 'claude_code_version': {facts_version!r}")
+
+    for line_no, line in enumerate(read_lines(MOD_VENDOR_README), start=1):
+        match = VENDOR_VERSION_LINE_RE.match(line)
+        if not match:
+            continue
+        vendored = match.group(1)
+        if not VERSION_RE.fullmatch(vendored):
+            report("O", MOD_VENDOR_README, line_no, f"version '{vendored}' is not X.Y.Z")
+        elif version_key(vendored) < version_key(facts_version):
+            report(
+                "O", MOD_VENDOR_README, line_no,
+                f"vendored mod reference is from Claude Code {vendored}, older than "
+                f"{facts_version} in the facts file; refresh it with scripts/sync-mod-api.sh",
+            )
+        return
+    report("O", MOD_VENDOR_README, 1, "no 'Claude Code version: X.Y.Z' line")
+
+
 # ------------------------------------------------------------------------ driver
 
 CHECKS = {
@@ -1302,6 +1349,7 @@ CHECKS = {
     "J": ("denylist", check_denylist),
     "M": ("userconfig-fields", check_userconfig_fields),
     "N": ("env-vars", check_env_vars),
+    "O": ("mod-vendor-version", check_mod_vendor_version),
 }
 
 unknown = ONLY - set(ALL_CHECKS)

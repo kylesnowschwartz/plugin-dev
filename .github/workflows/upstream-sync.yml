@@ -106,6 +106,9 @@ jobs:
         id: ground-truth
         env:
           CLAUDE_CODE_EXECUTABLE: ${{ env.CLAUDE_CODE_EXECUTABLE }}
+          # sync-mod-api.sh starts a one-turn headless session to load the
+          # built-in plugin-authoring skill, so it needs the agent step's login.
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: |
           set -uo pipefail
           mkdir -p .agent-history
@@ -122,6 +125,21 @@ jobs:
           if [ "$extract_status" -ne 0 ]; then
             echo "extract-cc-facts.sh failed with exit $extract_status"
             printf 'failed_tool=extract-cc-facts.sh\nexit_code=%s\n' "$extract_status" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          # Refresh the vendored copy of the built-in plugin-authoring skill from
+          # the same CLI, before the drift check: check O compares its version
+          # with the facts file. Exit 1 means the skill did not load or its copy
+          # is incomplete; exit 2 means a usage error or a missing tool.
+          set +e
+          scripts/sync-mod-api.sh 2> .agent-history/sync-mod-api-errors.txt
+          sync_status=$?
+          set -e
+          cat .agent-history/sync-mod-api-errors.txt >&2
+          if [ "$sync_status" -ne 0 ]; then
+            echo "sync-mod-api.sh failed with exit $sync_status"
+            printf 'failed_tool=sync-mod-api.sh\nexit_code=%s\n' "$sync_status" >> "$GITHUB_OUTPUT"
             exit 1
           fi
 
@@ -144,6 +162,11 @@ jobs:
             echo "Changed facts, ignoring claude_code_version:"
             echo '```'
             git diff -I '"claude_code_version"' --stat docs/claude-code-facts.json
+            echo '```'
+            echo "### Vendored mod reference"
+            echo "Files sync-mod-api.sh changed or added:"
+            echo '```'
+            git status --short -- plugins/plugin-dev/skills/plugin-dev/references/mod-development/vendor
             echo '```'
             echo "### Drift report"
             echo "Each DRIFT line is one finding."
@@ -211,6 +234,9 @@ jobs:
             check-doc-drift.sh)
               errors=.agent-history/drift-errors.txt
               fix="Fix the tooling error the ERROR lines name for \`scripts/check-doc-drift.sh\`" ;;
+            sync-mod-api.sh)
+              errors=.agent-history/sync-mod-api-errors.txt
+              fix="Fix the failure the error lines name for \`scripts/sync-mod-api.sh\`" ;;
           esac
           version=$(claude --version 2>/dev/null || echo unknown)
           body="$RUNNER_TEMP/ground-truth-issue.md"
@@ -221,10 +247,10 @@ jobs:
             echo "- Run: $RUN_URL"
             echo
             echo '```'
-            grep -E '^(ERROR |extract-cc-facts: |check-doc-drift: )' "$errors" 2>/dev/null || echo "No error lines were captured; see the run log."
+            grep -E '^(ERROR |extract-cc-facts: |check-doc-drift: |sync-mod-api: )' "$errors" 2>/dev/null || echo "No error lines were captured; see the run log."
             echo '```'
             echo
-            echo "$fix, then run \`scripts/extract-cc-facts.sh --out docs/claude-code-facts.json\` and \`scripts/check-doc-drift.sh\` until both pass. The next successful run closes this issue."
+            echo "$fix, then run \`scripts/extract-cc-facts.sh --out docs/claude-code-facts.json\`, \`scripts/sync-mod-api.sh\`, and \`scripts/check-doc-drift.sh\` until all three pass. The next successful run closes this issue."
           } > "$body"
 
           if [ -n "$issue" ]; then
@@ -289,10 +315,18 @@ jobs:
             triangulation.
 
             **Stage 0 override**: A workflow step has already run
-            `scripts/extract-cc-facts.sh` against the installed CLI and written
-            `.agent-history/drift-report.txt`. Read those artifacts and
+            `scripts/extract-cc-facts.sh` and `scripts/sync-mod-api.sh` against the
+            installed CLI and written `.agent-history/drift-report.txt`. Read those
+            artifacts and
             `git diff -I '"claude_code_version"' docs/claude-code-facts.json` instead
             of re-running the scripts.
+
+            **Vendored mod reference**: `scripts/sync-mod-api.sh` rewrote
+            `plugins/plugin-dev/skills/plugin-dev/references/mod-development/vendor/`
+            from the installed CLI. Like `claude_code_version`, a diff there is not a
+            discovery signal and not a reason to open a PR on its own. Do not edit or
+            revert those files; they are committed alongside the next sync that has
+            real content.
 
             **Facts file version key**: `claude_code_version` records which binary the
             facts were read from, and this job installs the latest CLI every run, so
