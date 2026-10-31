@@ -27,3 +27,4 @@
 */skill-development/*.md references/migration.md  # fictional skill layout illustrating what belongs in references/
 */complete-skill.md references/authentication-guide.md  # fictional api-tester skill worked through end to end
 */complete-skill.md references/assertion-patterns.md  # fictional api-tester skill worked through end to end
+*/mod-development/* scripts/sync-mod-api.sh  # maintainer script at the repository root, named for maintainers; not part of the shipped plugin
