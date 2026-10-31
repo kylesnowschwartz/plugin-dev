@@ -154,7 +154,7 @@ Load other skills into the forked agent's context:
 name: comprehensive-review
 description: Full code review with testing...
 context: fork
-agent: general
+agent: general-purpose
 skills: testing-patterns, security-audit
 ---
 ```

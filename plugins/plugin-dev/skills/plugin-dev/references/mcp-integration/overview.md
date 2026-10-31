@@ -177,6 +177,8 @@ MCP servers configured directly in Claude Code **cannot** be attached to cloud r
 - **Claude.ai connectors** — Can be attached to cloud routines for scheduled automation
 - **Plugin-bundled servers** — Same limitation as local servers; work locally but not in cloud routines
 
+**Cloud scheduled tasks load claude.ai-enabled plugins (CC 2.1.314).** Runs in Anthropic's cloud now load the plugins enabled on the user's claude.ai account. The changelog does not say whether those plugins' MCP servers start in the run, so treat the server limitation above as still applying until it is confirmed, and test a plugin's servers in a cloud run before documenting them as available there.
+
 **Implications for plugin developers:**
 
 - If your plugin provides MCP servers for use in scheduled automation, document that cloud routines cannot use them

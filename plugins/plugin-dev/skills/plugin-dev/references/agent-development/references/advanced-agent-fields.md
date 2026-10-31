@@ -655,7 +655,7 @@ The Agent tool now defaults to `run_in_background: true`. Claude keeps working w
 
 ### Extended Thinking Inheritance (CC 2.1.198)
 
-Subagents now inherit the session's extended thinking configuration. Agent type definitions supply model, reasoning effort, and tool access. At launch, the Agent tool's call-level `model` parameter overrides the model, and since CC 2.1.292 its `effort` parameter overrides the reasoning effort for that spawn (see `orchestration-and-tools.md`). This means subagents automatically benefit from extended thinking when enabled in the parent session.
+Subagents now inherit the session's extended thinking configuration. Agent type definitions supply model, reasoning effort, and tool access. At launch, the Agent tool's call-level `model` parameter overrides the model, and since CC 2.1.292 its `effort` parameter overrides the reasoning effort for that spawn (see `orchestration-and-tools.md`). When neither the call nor the definition names an effort, `CLAUDE_CODE_SUBAGENT_EFFORT` sets it if the user has set the variable (CC 2.1.316); otherwise the subagent inherits the session's effort. This means subagents automatically benefit from extended thinking when enabled in the parent session.
 
 ### Subagent Results Arrive Framed as Subagent Output (CC 2.1.277)
 

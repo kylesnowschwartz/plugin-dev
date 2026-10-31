@@ -230,7 +230,7 @@ The Workflow tool's `agent()` spawns now accept an `effort` option that override
 
 **Behavior:**
 
-- **Omit** — Inherit the session's current effort level
+- **Omit** — Use the configured subagent default, `CLAUDE_CODE_SUBAGENT_EFFORT`, when the user has set it (CC 2.1.316); otherwise inherit the session's current effort level
 - **`'low'`** — Use for cheap mechanical stages (formatting, simple transforms)
 - **Higher tiers** — Reserve for the hardest verify/judge stages that need maximum reasoning
 
@@ -245,7 +245,7 @@ workflow.agent({
 
 **Design guidance:**
 
-- Default to inheriting session effort (omit the option)
+- Default to omitting the option, which falls back to the configured subagent default or the session's effort
 - Use `'low'` for stages that don't require deep reasoning
 - Reserve `'high'`/`'xhigh'`/`'max'` for critical validation steps
 
@@ -260,6 +260,8 @@ workflow.agent({
 The Agent tool now takes an `effort` parameter, so Claude runs a subagent at the effort level the caller asks for. It is the per-spawn counterpart of an agent definition's `effort` frontmatter field, in the same way the call-level `model` parameter pairs with the `model` field: the definition sets the agent's usual level, and the call can ask for a different one for a single run. The Workflow tool's `agent()` option above does the same inside workflows.
 
 **Design guidance:** Keep the agent's typical level in its frontmatter and leave the call-level `effort` for exceptions, such as a cheap triage pass or one hard verification run. An orchestrating agent's instructions can name the effort to request for each kind of delegation.
+
+**Fallback order (CC 2.1.316).** A subagent's effort comes from the first of these that names one: the call-level `effort` (Agent tool parameter or Workflow `agent()` option), the agent definition's `effort` frontmatter, the `CLAUDE_CODE_SUBAGENT_EFFORT` environment variable, and last the session's effort. Before CC 2.1.316 there was no environment variable step, so a subagent with nothing set inherited the session's effort. The variable is user-side, so a plugin agent that needs a particular level should set `effort` in its frontmatter rather than rely on the session.
 
 ## EndConversation Tool (CC 2.1.214)
 

@@ -326,8 +326,8 @@ my-plugin/
         "matcher": "*",
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "Verify tests were run if code was modified"
+            "type": "agent",
+            "prompt": "Read the transcript named by transcript_path in $ARGUMENTS. Answer not ok if code was modified and no tests were run afterwards; otherwise answer ok."
           }
         ]
       }
@@ -335,6 +335,8 @@ my-plugin/
   }
 }
 ```
+
+The Stop check is an `agent` hook: the Stop input carries no tool history, and a `prompt` hook cannot open `transcript_path`, so only an agent hook can tell whether tests ran.
 
 Plugin `hooks/hooks.json` files need the top-level `hooks` wrapper shown here; the event names go directly at the top level only in a settings file's `"hooks"` key.
 

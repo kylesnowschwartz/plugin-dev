@@ -949,6 +949,7 @@ As of CC 2.1.105, PreCompact supports blocking compaction:
 - Exit code 2 or `{"decision": "block"}` blocks compaction
 - Use to preserve critical context when compaction would lose important state
 - `additionalContext` injects information to be considered during compaction
+- Each hook's output is cut at 10,000 characters (CC 2.1.314), in line with the general 10,000-character cap on hook output. Before CC 2.1.314, very large PreCompact output could make compaction fail or repeat, so keep the output short on older versions
 
 > **CC 2.1.88:** Added partial compaction capability. Claude Code can now compact only a portion of the conversation rather than the entire context, with a structured summary format and analysis process.
 
@@ -1102,7 +1103,7 @@ Use to verify what survived compaction, log compaction results, or send alerts i
 
 **Output:** The hook must return the **absolute path** to the created worktree directory.
 
-- **Command hooks:** print the path on stdout. Exit code 0 succeeds using the printed path; non-zero exit code fails. This is the only command hook where stdout is a plain path string rather than JSON.
+- **Command hooks:** print the path on stdout. Exit code 0 succeeds using the printed path; non-zero exit code fails. This is the only command hook where stdout is a plain path string rather than JSON, so send the output of any tool the script runs (`git worktree add`, package installs) to stderr (`>&2`) or `/dev/null`.
 - **HTTP hooks:** return the path via `hookSpecificOutput.worktreePath`:
 
 ```json

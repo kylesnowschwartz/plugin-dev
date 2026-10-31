@@ -34,20 +34,20 @@ worktree_base="/tmp/claude-worktrees"
 mkdir -p "$worktree_base"
 worktree_dir="$worktree_base/$name"
 
-# Create the git worktree
-if ! git worktree add "$worktree_dir" -b "worktree/$name" HEAD 2>&1; then
+# Create the git worktree. Tool output goes to stderr: stdout must hold only the path.
+if ! git worktree add "$worktree_dir" -b "worktree/$name" HEAD >&2; then
   echo "Failed to create worktree: $worktree_dir" >&2
   exit 1
 fi
 
-# Install dependencies in the new worktree (best-effort, log failures)
+# Install dependencies in the new worktree (best-effort, log failures to stderr)
 cd "$worktree_dir"
 if [ -f "package.json" ]; then
-  npm ci --silent 2>&1 || npm install --silent 2>&1 || echo "Warning: npm install failed" >&2
+  npm ci --silent >&2 || npm install --silent >&2 || echo "Warning: npm install failed" >&2
 elif [ -f "Gemfile" ]; then
-  bundle install --quiet 2>&1 || echo "Warning: bundle install failed" >&2
+  bundle install --quiet >&2 || echo "Warning: bundle install failed" >&2
 elif [ -f "requirements.txt" ]; then
-  pip install -q -r requirements.txt 2>&1 || echo "Warning: pip install failed" >&2
+  pip install -q -r requirements.txt >&2 || echo "Warning: pip install failed" >&2
 fi
 
 # Print the absolute path -- this IS the return value

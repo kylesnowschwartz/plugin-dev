@@ -92,7 +92,7 @@ Only `name` and `description` are required. Every optional field below is docume
 | `user-invocable` | No | `false` hides from the `/` menu (still auto-discoverable + Skill-tool callable) |
 | `disable-model-invocation` | No | `true` blocks programmatic Skill-tool invocation (user-only) |
 | `model` | No | Override model: `sonnet`, `opus`, `haiku`, `inherit` (default), or full ID |
-| `hooks` | No | Scoped hooks, active only while loaded — all 33 events register, but a skill's lifetime means `PreToolUse`, `PostToolUse`, and `Stop` are the ones that fire |
+| `hooks` | No | Scoped hooks, active only while loaded — all 33 events register, but a skill's lifetime means `PreToolUse`, `PostToolUse`, and `Stop` are the ones that fire, plus the skill's own `UserPromptSubmit` on the prompts after the invoking one (CC 2.1.299) |
 | `paths` | No | Glob patterns; skill loads only when working on matching files |
 | `argument-hint` | No | Autocomplete hint text in the `/` menu (cosmetic) |
 

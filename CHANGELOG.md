@@ -7,8 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.55.0] - 2026-10-31
+
+Sync with Claude Code 2.1.313-2.1.316. The changelog has no 2.1.313 or 2.1.315 sections. This release covers nine Must Update items (four promoted by Stage 2) and eight Stage 2-confirmed contradictions from the `doc-drift-auditor` sweep. All six May Update items were skipped. It also ships the mod-development topic that was pending under Unreleased. `.agent-history/drift-report.txt` was empty, and the `docs/claude-code-facts.json` diff changed only `claude_code_version`.
+
 ### Added
 
+- **hook-development**: hooks matching `Bash` run on shell commands the Monitor tool starts, but for those they can only block or ask, not approve or rewrite; hook `if` conditions accept `Monitor(tail *)` (CC 2.1.314)
+- **hook-development**: hook output is capped at 10,000 characters, and each PreCompact hook's output is cut there since CC 2.1.314, where very large output could make compaction fail or repeat
+- **hook-development**: in Cowork cloud sessions in auto mode, a PreToolUse `allow` on an MCP tool call counts as no answer (CC 2.1.314)
+- **agent-development**: `CLAUDE_CODE_SUBAGENT_EFFORT` sets subagent effort when neither the call nor the agent definition names one, ahead of the session's effort (CC 2.1.316)
+- **agent-development**: `permissions.blockWritesOutsideWorkingDirectories` makes Write, Edit, and NotebookEdit refuse paths outside the working directories in every permission mode (CC 2.1.314)
+- **mcp-integration**: `CLAUDE_PLUGIN_ROOT` listed among the `headersHelper` environment variables, with the CC 2.1.316 fix for it and the server URL being corrupted by a credential-named variable set to a switch value such as `1`
+- **mcp-integration**: cloud scheduled tasks load the plugins enabled on the user's claude.ai account (CC 2.1.314); whether their MCP servers start is not stated
 - **mod-development**: a new topic for mods (TypeScript hooks modules), routed from the `plugin-dev` skill. `overview.md` covers when to choose a mod, the built-in `plugin-authoring` skill (still loaded before writing a mod, for the running build's types and hot reload), and an index of 20 pattern files under `patterns/`: a tool that draws its own result row, row data on disk, per-row state, pictures in the terminal including tmux, links and buttons, prompt jumps, copy buttons, band and pane patterns, and API gotchas. Each pattern lists the problem, API calls, a code sketch, the minimum Claude Code version, gotchas, and sources with a confidence label
 - **mod-development/vendor**: Claude Code 2.1.316's built-in `plugin-authoring` material, copied unchanged: `examples/`, `reference.md`, `types/claude-code.d.ts`, plus the skill's main text as the Skill tool prints it
 - `scripts/sync-mod-api.sh`: refreshes the vendored copy, including the skill's main text, by loading `plugin-authoring` in a one-turn headless session. The upstream sync runs it in Stage 0
@@ -17,6 +28,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **plugin-dev skill**: the description and topic index cover mods, and the mods paragraph routes to `references/mod-development/overview.md`
+- **hook-development**: PowerShell hooks whose command begins with a type cast, `param`, `using`, or an attribute block on exit code 2 only since CC 2.1.316
+
+### Fixed
+
+- **hook-development**: Patterns 2, 6, and 13, the Pattern Combinations Stop hook, and the migration example's Stop hook were `prompt` hooks that asked for the transcript, tool history, or a teammate's last message, none of which their input carries. They are now `agent` hooks
+- **hook-development**: the async hook constraints said `hookSpecificOutput` has no effect, against the CC 2.1.295 note that async JSON and SessionStart context are read. Only decision fields are now described as having no effect
+- **hook-development**: `examples/create-worktree.sh` and the Pattern 14 script sent `git worktree add` and install output to stdout, which is the WorktreeCreate return value. Tool output now goes to stderr, and `event-schemas.md` says so
+- **hook-development**: the hook state-sharing and cross-event examples keyed their files on `$$`, which differs per hook process. They now use `session_id`
+- **agent-development**: Rule Precedence said more specific rules beat general ones. Rules are checked deny, then ask, then allow, and specificity does not change that order
+- **agent-development**: `Bash(git*)` was described as a substring match. It is a prefix match
+- **skill-development**: the frontmatter table's `hooks` row omitted the skill's own `UserPromptSubmit` (CC 2.1.299)
+- **skill-development**: the `skills` field example used `agent: general`; it is `general-purpose`
 
 ## [0.54.1] - 2026-10-29
 

@@ -80,6 +80,8 @@ An `if` condition names each tool by its own name, so `Write(tests/**)` matches 
 > **CC 2.1.178:** Added tool parameter matching syntax (e.g., `Agent(model:opus)`) for granular permission control based on tool input parameters using wildcards.
 >
 > **CC 2.1.218 (breaking change):** Single-segment `dir/**` hook `if:` conditions now match only `<cwd>/dir`; write `**/dir/**` for any-depth matching. Previously, `dir/**` would match at any depth, which could lead to unintended matches. Update existing hooks that rely on the old behavior.
+>
+> **CC 2.1.314:** `if` conditions such as `Monitor(tail *)` match the Monitor tool's shell commands the way `Bash(tail *)` matches Bash's. A hook matching `Bash` also runs on Monitor-started commands since CC 2.1.314, but for those it can only block or ask (see PreToolUse Decision Control).
 
 ### Script-Level Conditionals
 
@@ -127,10 +129,11 @@ Share state between hooks using temporary files:
 #!/bin/bash
 input=$(cat)
 command=$(echo "$input" | jq -r '.tool_input.command')
+session_id=$(echo "$input" | jq -r '.session_id')
 
 # Analyze command
 risk_level=$(calculate_risk "$command")
-echo "$risk_level" > /tmp/hook-state-$$
+echo "$risk_level" > "/tmp/hook-state-$session_id"
 
 exit 0
 ```
@@ -138,13 +141,17 @@ exit 0
 ```bash
 # Hook 2: Use saved state
 #!/bin/bash
-risk_level=$(cat /tmp/hook-state-$$ 2>/dev/null || echo "unknown")
+input=$(cat)
+session_id=$(echo "$input" | jq -r '.session_id')
+risk_level=$(cat "/tmp/hook-state-$session_id" 2>/dev/null || echo "unknown")
 
 if [ "$risk_level" = "high" ]; then
   echo "High risk operation detected" >&2
   exit 2
 fi
 ```
+
+Key the state file on `session_id` from the hook input (or `$CLAUDE_CODE_SESSION_ID`), not on the shell PID `$$`. Each hook runs as its own process, so `$$` differs between the hook that writes the file and the hook that reads it.
 
 **Important:** This only works for sequential hook events (e.g., PreToolUse then PostToolUse), not parallel hooks.
 
@@ -290,9 +297,10 @@ Coordinate hooks across different events:
 
 ```bash
 #!/bin/bash
-# Initialize session tracking
-echo "0" > /tmp/test-count-$$
-echo "0" > /tmp/build-count-$$
+# Initialize session tracking, keyed on the session, not the hook's PID
+session_id=$(jq -r '.session_id')
+echo "0" > "/tmp/test-count-$session_id"
+echo "0" > "/tmp/build-count-$session_id"
 ```
 
 **PostToolUse - Track events:**
@@ -301,12 +309,13 @@ echo "0" > /tmp/build-count-$$
 #!/bin/bash
 input=$(cat)
 tool_name=$(echo "$input" | jq -r '.tool_name')
+session_id=$(echo "$input" | jq -r '.session_id')
 
 if [ "$tool_name" = "Bash" ]; then
   command=$(echo "$input" | jq -r '.tool_response')
   if [[ "$command" == *"test"* ]]; then
-    count=$(cat /tmp/test-count-$$ 2>/dev/null || echo "0")
-    echo $((count + 1)) > /tmp/test-count-$$
+    count=$(cat "/tmp/test-count-$session_id" 2>/dev/null || echo "0")
+    echo $((count + 1)) > "/tmp/test-count-$session_id"
   fi
 fi
 ```
@@ -315,7 +324,8 @@ fi
 
 ```bash
 #!/bin/bash
-test_count=$(cat /tmp/test-count-$$ 2>/dev/null || echo "0")
+session_id=$(jq -r '.session_id')
+test_count=$(cat "/tmp/test-count-$session_id" 2>/dev/null || echo "0")
 
 if [ "$test_count" -eq 0 ]; then
   echo '{"decision": "block", "reason": "No tests were run"}'
@@ -930,6 +940,7 @@ Matchers filter which registered hooks run for an occurrence of an event. Each e
 - **Alternate with a pipe, never a comma.** `"Bash|PowerShell"` matches either. `"Bash,PowerShell"` silently never fires (CC 2.1.191).
 - **Hyphenated matchers require an exact match (CC 2.1.195).** A matcher containing a hyphen no longer substring-matches, so `"mcp__brave-search"` matches only that exact value — write `"mcp__brave-search__.*"` for partial matches. This affects custom agent names, MCP server names, and any hyphenated identifier.
 - **`*` matches everything,** and so does omitting `matcher` altogether.
+- **`Bash` also matches Monitor shell commands (CC 2.1.314).** A tool-name matcher that matches `Bash` runs its hooks on the shell commands the Monitor tool starts too. Those hooks can block or ask but cannot approve or rewrite a Monitor command (see PreToolUse Decision Control). Before CC 2.1.314 they did not run on Monitor commands.
 - **Some events ignore `matcher` entirely.** Their Matchers line reads "Not supported"; an entry's matcher is silently discarded rather than rejected.
 
 ## Decision Control Output Schemas
@@ -956,9 +967,11 @@ Different hook events support different output formats for controlling Claude's 
 - `ask` depends on the session being interactive: an interactive session shows `Hook PreToolUse:<Tool> requires confirmation ... [plugin:<name>]`, while headless runs (`claude -p`) have no one to prompt and treat the same `ask` as a block, surfacing the reason to the model. The prompt names the hook's source, `[plugin:<name>]` for a plugin hook or `[skill]` for a skill-scoped hook; before CC 2.1.301 that label could be missing
 - `allow` does not skip every prompt. Since CC 2.1.292 (a security fix), a PreToolUse `allow`, like auto mode, no longer bypasses the permission prompt for file reads from network (UNC) paths
 - `allow` does not lift plan mode. Since CC 2.1.299, a write that a PreToolUse hook (or a mod's `tool.check` hook) allows, whether an MCP tool's, a file's, or a shell command's, still does not run in plan mode. Before CC 2.1.299 such a write ran despite plan mode's read-only restriction
+- `allow` on an MCP tool call is no answer in Cowork cloud sessions in auto mode (CC 2.1.314). The classifier or a permission prompt decides the call instead
+- Monitor shell commands: a hook matching `Bash` runs on shell commands the Monitor tool starts (CC 2.1.314), but only `deny` and `ask` take effect there. An `allow` does not approve a Monitor command and an `updatedInput` rewrite is not applied, so do not count on either for Monitor
 - `updatedInput`: Optionally modify tool parameters before execution. The rewritten input is checked against permission rules and safety checks; CC 2.1.290 fixed cases where some were not applied after a rewrite, so a rewrite cannot carry a call past a deny rule. Since CC 2.1.300 it is also validated against the tool's input schema, like Claude's own input: unknown keys are dropped silently, and input the tool rejects denies the call instead of passing through. The same applies to PermissionRequest `updatedInput`
 - Windows: a PreToolUse or PermissionRequest command hook that sets no `shell` fails closed when Git for Windows is not installed (CC 2.1.299): a guard that fails blocks the call. Before CC 2.1.299 such a hook failed open and the call ran. Two more fail-open cases were closed later: a hook with `"shell": "powershell"` (CC 2.1.309), and a hook command made only of quoted strings, such as a quoted path, which PowerShell printed instead of running (CC 2.1.310). Claude is shown a "Git Bash not found" blocking reason (exit code 127) and must not edit the hook to get around it
-- PowerShell exit 2: a hook run in PowerShell (`"shell": "powershell"` or a Windows fallback) blocks on exit code 2 only since CC 2.1.309. Before that, exit 2 from PowerShell let the call through
+- PowerShell exit 2: a hook run in PowerShell (`"shell": "powershell"` or a Windows fallback) blocks on exit code 2 only since CC 2.1.309. Before that, exit 2 from PowerShell let the call through. A command that begins with a type cast, `param`, `using`, or an attribute still let the call through on exit 2 until CC 2.1.316
 - `additionalContext`: Injected into Claude's context. `<system-reminder>` tags in it, as in any hook output, are escaped before they reach Claude (CC 2.1.292)
 - A failure to match the hook against a call, or tool input that cannot be serialized to JSON, blocks the call (CC 2.1.288). Before CC 2.1.288 the hook was skipped and the call ran. PermissionRequest behaves the same way
 - A `deny` and its `permissionDecisionReason` survive an Agent SDK callback hook on the same call timing out (CC 2.1.304). Before CC 2.1.304, Claude saw the timeout error instead of the plugin hook's deny reason
@@ -1150,7 +1163,7 @@ Command hooks can run asynchronously in the background without blocking the main
 
 - Only available on `type: "command"` hooks (not prompt or agent)
 - Cannot block or control behavior — the action proceeds immediately
-- Response fields (`decision`, `hookSpecificOutput`) have no effect
+- Decision fields have no effect: `decision` and permission decisions arrive after the action has gone ahead. Output that adds context, such as a SessionStart `additionalContext`, is still read (see the CC 2.1.295 note below)
 - Useful for logging, metrics collection, and fire-and-forget notifications
 - Uses the same `timeout` field (default: 600 seconds)
 - `onFailure` is ignored, so an async hook cannot fail closed

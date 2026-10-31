@@ -37,14 +37,16 @@ Ensure tests run before stopping:
       "matcher": "*",
       "hooks": [
         {
-          "type": "prompt",
-          "prompt": "Review transcript. If code was modified (Write/Edit tools used), verify tests were executed. If no tests were run, block with reason 'Tests must be run after code changes'."
+          "type": "agent",
+          "prompt": "The hook input is in $ARGUMENTS. Read the transcript file named by its transcript_path field. Answer not ok, with the reason 'Tests must be run after code changes', if code was modified (Write or Edit tools used) and no tests were run afterwards; otherwise answer ok."
         }
       ]
     }
   ]
 }
 ```
+
+This is an `agent` hook because the check needs the transcript. A `prompt` hook gets only the Stop input JSON, which carries `last_assistant_message` but no tool history, and it cannot open `transcript_path` (see `advanced.md`, Context-Aware Prompt Hooks).
 
 **Use for:** Enforcing quality standards and preventing incomplete work.
 
@@ -141,8 +143,8 @@ Ensure project builds after code changes:
       "matcher": "*",
       "hooks": [
         {
-          "type": "prompt",
-          "prompt": "Check if code was modified. If Write/Edit tools were used, verify the project was built (npm run build, cargo build, etc). If not built, block and request build."
+          "type": "agent",
+          "prompt": "The hook input is in $ARGUMENTS. Read the transcript file named by its transcript_path field. Answer not ok, asking for a build, if Write or Edit tools were used and the project was not built afterwards (npm run build, cargo build, etc.); otherwise answer ok."
         }
       ]
     }
@@ -255,8 +257,8 @@ Combine multiple patterns for comprehensive protection:
       "matcher": "*",
       "hooks": [
         {
-          "type": "prompt",
-          "prompt": "Verify tests run and build succeeded"
+          "type": "agent",
+          "prompt": "Read the transcript named by transcript_path in $ARGUMENTS; answer ok only if tests ran and the build succeeded"
         }
       ]
     }
@@ -461,14 +463,16 @@ Prevent teammates from going idle until their work meets standards:
     {
       "hooks": [
         {
-          "type": "prompt",
-          "prompt": "A teammate is about to go idle. Review their last message to verify work was completed to a high standard. If there are obvious gaps (missing tests, incomplete implementation, TODOs left), reject with specific feedback."
+          "type": "agent",
+          "prompt": "A teammate is about to go idle. The hook input is in $ARGUMENTS; it names the teammate (teammate_name) and team (team_name) but carries none of the teammate's messages. Inspect the working tree (git status, git diff) for obvious gaps: missing tests, incomplete implementation, TODOs left. Answer not ok with specific feedback if there are gaps; otherwise answer ok."
         }
       ]
     }
   ]
 }
 ```
+
+The TeammateIdle input holds only `teammate_name` and `team_name`, so a `prompt` hook has no work to judge. An `agent` hook can look at the files; `../examples/teammate-quality-gate.sh` does a similar check as a command hook.
 
 **Use for:** Quality assurance in multi-agent workflows, preventing premature completion.
 
@@ -510,14 +514,14 @@ set -euo pipefail
 input=$(cat)
 name=$(echo "$input" | jq -r '.name')
 
-# Create worktree in a custom location
+# Create worktree in a custom location (tool output to stderr: stdout is the return value)
 worktree_dir="/tmp/claude-worktrees/$name"
-git worktree add "$worktree_dir" -b "worktree/$name" HEAD
+git worktree add "$worktree_dir" -b "worktree/$name" HEAD >&2
 
 # Install dependencies in the new worktree
 cd "$worktree_dir"
 if [ -f "package.json" ]; then
-  npm ci --silent 2>/dev/null || true
+  npm ci --silent >&2 || true
 fi
 
 # Print the path -- this is the return value
@@ -693,6 +697,8 @@ elif [ "$phase" = "post" ]; then
   echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] COMPACT_END trigger=$trigger summary_chars=$summary_length" >> "$log_file"
 fi
 ```
+
+A PreCompact hook's output is cut at 10,000 characters per hook since CC 2.1.314. Before that, very large PreCompact output could make compaction fail or repeat. Log to a file, as this script does, rather than printing large output.
 
 **Use for:** Debugging context loss, monitoring compaction frequency, auditing what information survives.
 
