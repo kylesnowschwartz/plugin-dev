@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **mod-development**: a new topic for mods (TypeScript hooks modules), routed from the `plugin-dev` skill. `overview.md` covers when to choose a mod, the built-in `plugin-authoring` skill (still loaded before writing a mod, for the running build's types and hot reload), and an index of 20 pattern files under `patterns/`: a tool that draws its own result row, row data on disk, per-row state, pictures in the terminal including tmux, links and buttons, prompt jumps, copy buttons, band and pane patterns, and API gotchas. Each pattern lists the problem, API calls, a code sketch, the minimum Claude Code version, gotchas, and sources with a confidence label
+- **mod-development/vendor**: Claude Code 2.1.316's built-in `plugin-authoring` material, copied unchanged: `examples/`, `reference.md`, `types/claude-code.d.ts`, plus the skill's main text as the Skill tool prints it
+- `scripts/sync-mod-api.sh`: refreshes the vendored copy from the newest extracted `plugin-authoring` skill on the machine
+
+### Changed
+
+- **plugin-dev skill**: the description and topic index cover mods, and the mods paragraph routes to `references/mod-development/overview.md`
+
 ## [0.54.1] - 2026-10-29
 
 Sync with Claude Code 2.1.311-2.1.312. This release covers ten Must Update items (one promoted by Stage 2). All eleven May Update items were skipped. The `doc-drift-auditor` sweep found no contradictions. `scripts/check-doc-drift.sh` was clean, and `docs/claude-code-facts.json` was unchanged (it already recorded 2.1.312).

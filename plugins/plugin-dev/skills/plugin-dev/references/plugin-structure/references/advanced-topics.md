@@ -8,7 +8,7 @@ Function-hook plugins, which Claude Code calls **mods**, are plugins whose hooks
 
 ### Load the Built-in `plugin-authoring` Skill to Write or Debug a Mod
 
-Claude Code ships the authoritative mod guidance as the `plugin-authoring` skill in the built-in plugin `cc-plugin-plugin-authoring`. Load it (the Skill tool, or `/plugin-authoring`) before writing, changing, or debugging a hooks module. This reference does not repeat its content, because the skill is generated for the running build and this file is not:
+Claude Code ships the authoritative mod guidance as the `plugin-authoring` skill in the built-in plugin `cc-plugin-plugin-authoring`. Load it (the Skill tool, or `/plugin-authoring`) before writing, changing, or debugging a hooks module. `../../mod-development/overview.md` holds mod patterns, gotchas, and a vendored copy of the skill's material for one version; the skill itself is generated for the running build:
 
 - **Types for this build.** Loading the skill writes `types/claude-code.d.ts` into the skill's extracted directory: every event's input and result, every `$` method with its doc comment, and every element's props. Once a mod has loaded, `<mod folder>/.claude-plugin/types/` holds the same declarations plus a `tsconfig.json` for `tsc -p <mod folder>`.
 - **Hot reload.** Loading the skill is what starts Claude Code's watch on the session's mods folder. The first file written there asks the user whether to enable hot reloading for the session; only the user can answer. Without the skill loaded, Claude Code does not watch the folder, and a new mod loads only through `claude --plugin-dir <folder>`.

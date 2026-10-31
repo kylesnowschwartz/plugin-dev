@@ -4,7 +4,7 @@
 [![Version](https://img.shields.io/github/v/release/kylesnowschwartz/plugin-dev?label=version&color=blue)](https://github.com/kylesnowschwartz/plugin-dev/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-A Claude Code plugin that turns Claude into an expert on building Claude Code plugins: hooks, MCP servers, LSP integration, commands, agents, skills, and marketplaces.
+A Claude Code plugin that turns Claude into an expert on building Claude Code plugins: hooks, mods, MCP servers, LSP integration, commands, agents, skills, and marketplaces.
 
 Ask a question like "how do I write a PreToolUse hook?" or "add an MCP server to my plugin" and the consolidated `plugin-dev` skill loads the relevant reference automatically.
 
@@ -25,7 +25,7 @@ Requires [Claude Code CLI](https://code.claude.com/docs) and `git`. No other con
 
 ## What's inside
 
-- **`plugin-dev` skill** — single consolidated reference with a topic index covering plugin structure, commands, skills, agents, hooks, MCP, LSP, marketplaces, and settings. Auto-loads when you mention any of those topics.
+- **`plugin-dev` skill** — single consolidated reference with a topic index covering plugin structure, commands, skills, agents, hooks, mods, MCP, LSP, marketplaces, and settings. Auto-loads when you mention any of those topics.
 - **3 agents** — `plugin-validator`, `skill-reviewer`, and `agent-creator` for building plugins.
 - **1 hook** — a PreToolUse guard that fires once per session when Claude reads from `~/.claude/plugins`, reminding it to load the plugin-dev skill instead of interpreting plugin files from general knowledge.
 
