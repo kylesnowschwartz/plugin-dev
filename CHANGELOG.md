@@ -7,8 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.55.0] - 2026-11-01
+
+Sync with Claude Code 2.1.314-2.1.316 (upstream has no 2.1.313 or 2.1.315 changelog entries). This release covers thirteen Must Update items (one promoted by Stage 2) and fixes the seven contradictions the `doc-drift-auditor` sweep found, all confirmed by Stage 2. All six remaining May Update items were skipped. `scripts/check-doc-drift.sh` was clean. It also ships the mod-development topic and its sync tooling, previously listed as unreleased.
+
 ### Added
 
+- **hook-development / agent-development**: hooks matching `Bash` run on the Monitor tool's shell commands and can block or ask, but not approve or rewrite them; hook `if` conditions such as `Monitor(tail *)` match those commands (CC 2.1.314)
+- **hook-development**: each PreCompact hook's output is cut at 10,000 characters; before CC 2.1.314 very large output could make compaction fail or repeat
+- **hook-development / agent-development**: in Cowork cloud sessions under auto mode, a hook's `allow` of an MCP tool call counts as no answer (CC 2.1.314)
+- **agent-development**: `permissions.blockWritesOutsideWorkingDirectories` makes Write, Edit, and NotebookEdit refuse paths outside the working directories in every permission mode; shell commands are not covered (CC 2.1.314)
+- **agent-development**: `CLAUDE_CODE_SUBAGENT_EFFORT` sets the effort a subagent runs at when nothing else names one, instead of the session's effort (CC 2.1.316)
+- **agent-development**: new "Inherited Models Survive Wakeups" subsection; a sub-agent that inherited its parent sub-agent's model keeps it when a background job or message wakes it (CC 2.1.316)
+- **mcp-integration**: cloud scheduled tasks load the plugins enabled on the user's claude.ai account (CC 2.1.314)
+- **mcp-integration**: before CC 2.1.316, a plugin `headersHelper` could receive a corrupted `CLAUDE_PLUGIN_ROOT` and server URL when a credential-named environment variable held a switch value such as `1`
+- **plugin-settings / skill-development**: `~/.claude/skills/.trash` and `~/.claude/plugins/.trash` hold about 1024 entries whatever `cleanupPeriodDays` says, so the oldest stop being recoverable (CC 2.1.314)
+- **plugin-structure**: before CC 2.1.314, a broken or undownloadable `--plugin-dir`/`--plugin-url` plugin made model switching fail on machines with managed plugin settings
+- **plugin-structure**: `claude -p` prints the error and exits 1 when startup fails; before CC 2.1.314 it could exit 0 silently and pass a plugin CI job
 - **mod-development**: a new topic for mods (TypeScript hooks modules), routed from the `plugin-dev` skill. `overview.md` covers when to choose a mod, the built-in `plugin-authoring` skill (still loaded before writing a mod, for the running build's types and hot reload), and an index of 20 pattern files under `patterns/`: a tool that draws its own result row, row data on disk, per-row state, pictures in the terminal including tmux, links and buttons, prompt jumps, copy buttons, band and pane patterns, and API gotchas. Each pattern lists the problem, API calls, a code sketch, the minimum Claude Code version, gotchas, and sources with a confidence label
 - **mod-development/vendor**: Claude Code 2.1.316's built-in `plugin-authoring` material, copied unchanged: `examples/`, `reference.md`, `types/claude-code.d.ts`, plus the skill's main text as the Skill tool prints it
 - `scripts/sync-mod-api.sh`: refreshes the vendored copy, including the skill's main text, by loading `plugin-authoring` in a one-turn headless session. The upstream sync runs it in Stage 0
@@ -17,6 +32,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **plugin-dev skill**: the description and topic index cover mods, and the mods paragraph routes to `references/mod-development/overview.md`
+- **hook-development**: the PowerShell exit-2 note says a hook command beginning with a type cast, `param`, `using`, or an attribute still failed open until CC 2.1.316
+- **agent-development**: the Workflow `agent()` effort guidance uses `CLAUDE_CODE_SUBAGENT_EFFORT` before the session's effort (CC 2.1.316)
+
+### Fixed
+
+- **plugin-validator agent**: the manual checks accept all five hook types (`command`, `prompt`, `agent`, `http`, `mcp_tool`), treat `matcher` as optional, accept `fable` and full model IDs for agents, and accept command `allowed-tools` as a comma-separated string, matching the shipped validation scripts and references
+- **skill-development**: skill frontmatter hooks list `UserPromptSubmit` (CC 2.1.299) as a fourth event that fires, in `overview.md` and `advanced-frontmatter.md`, matching hook-development
+- **skill-development / marketplace-structure / agent-development**: topic overviews call themselves topic references, not skills
+- **command-development**: the `model` field accepts full model IDs with or without a date suffix (for example `claude-opus-5-5`)
 
 ## [0.54.1] - 2026-10-29
 

@@ -696,6 +696,8 @@ fi
 
 **Use for:** Debugging context loss, monitoring compaction frequency, auditing what information survives.
 
+**Output limit (CC 2.1.314):** Each PreCompact hook's output is cut at 10,000 characters. A hook that preserves state through its output should keep it under that limit and write anything larger to a file. Before CC 2.1.314, very large PreCompact output could make compaction fail or repeat.
+
 ## Pattern 18: Instruction Loading Audit (InstructionsLoaded)
 
 Track which instruction files Claude loads and when:

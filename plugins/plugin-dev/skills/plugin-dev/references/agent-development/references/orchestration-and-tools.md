@@ -230,7 +230,7 @@ The Workflow tool's `agent()` spawns now accept an `effort` option that override
 
 **Behavior:**
 
-- **Omit** — Inherit the session's current effort level
+- **Omit** — Use the configured subagent default, `CLAUDE_CODE_SUBAGENT_EFFORT` (CC 2.1.316), when the user sets it; otherwise inherit the session's current effort level
 - **`'low'`** — Use for cheap mechanical stages (formatting, simple transforms)
 - **Higher tiers** — Reserve for the hardest verify/judge stages that need maximum reasoning
 
@@ -245,7 +245,7 @@ workflow.agent({
 
 **Design guidance:**
 
-- Default to inheriting session effort (omit the option)
+- Default to omitting the option. Since CC 2.1.316 an omitted effort resolves to `CLAUDE_CODE_SUBAGENT_EFFORT` when the user sets it, not the session's effort, so name the level explicitly when a stage depends on it
 - Use `'low'` for stages that don't require deep reasoning
 - Reserve `'high'`/`'xhigh'`/`'max'` for critical validation steps
 

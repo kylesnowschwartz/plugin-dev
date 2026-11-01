@@ -165,7 +165,7 @@ cd /current/path && git status
 **Values:**
 
 - Shorthand: `sonnet`, `opus`, `haiku`
-- Full model ID: Format is `claude-<family>-<version>-<date>` (e.g., `claude-sonnet-4-5-20250929`)
+- Full model ID: `claude-<family>-<version>`, optionally with a date suffix (e.g., `claude-opus-5-5`, `claude-haiku-4-5`, or the dated `claude-sonnet-4-5-20250929`)
 
 Both formats are accepted. Shorthand names use the current default version of each model family.
 

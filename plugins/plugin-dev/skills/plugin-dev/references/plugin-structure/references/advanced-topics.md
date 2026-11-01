@@ -719,6 +719,8 @@ claude --plugin-url https://example.com/plugin-archive.tar.gz
 
 Fetches and loads plugins directly from URLs. Supports tar.gz and zip formats. Enables remote plugin distribution without requiring local installation or marketplace publishing.
 
+**Broken test plugins and model switching (CC 2.1.314):** On machines with managed plugin settings, a `--plugin-dir` or `--plugin-url` plugin with a broken manifest, or one that failed to download, made Claude Code refuse model switching before CC 2.1.314. On older versions, if `/model` is refused while testing a local plugin under managed settings, run `claude plugin validate` on the plugin and check that the URL downloads.
+
 ### Archive Plugin Sources (CC 2.1.224)
 
 Plugins can now be installed from HTTPS-hosted zip archives without requiring git or npm. This provides an alternative distribution mechanism for permanent installation (unlike `--plugin-url` which loads plugins temporarily at runtime).

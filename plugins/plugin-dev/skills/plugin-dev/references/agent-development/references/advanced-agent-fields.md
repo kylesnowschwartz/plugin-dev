@@ -372,6 +372,8 @@ tools: Read, Grep, Agent(code-reviewer), Agent(test-runner)
 
 **Monitor availability (CC 2.1.310):** On Amazon Bedrock, Claude Platform on AWS, Google Vertex AI, or Microsoft Foundry, or with `DISABLE_TELEMETRY` or `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` set, the Monitor tool and plugin monitors need CC 2.1.310 or later; before that they were not offered there. Long foreground `sleep` commands are blocked in those environments too, so an agent that waits on something should arm a Monitor watch rather than sleep.
 
+**Monitor commands meet Bash hooks (CC 2.1.314):** Hooks matching `Bash` run on the shell commands the Monitor tool starts, and hook `if` conditions such as `Monitor(tail *)` match them. Those hooks can block or ask, but cannot approve or rewrite the command. An agent's Monitor watch can therefore be refused by a user's or plugin's Bash guard, so its instructions should handle a blocked watch. See `../../hook-development/references/advanced.md` (Event-Specific Matchers).
+
 **Monitor watches always have a deadline (CC 2.1.271):** Every model-armed Monitor watch is now time-bounded, and the no-timeout `persistent` option is gone. `timeout_ms` defaults to 300000 (5 minutes) and is capped at 1800000 (30 minutes), dropping to 600000 (10 minutes) in single-prompt `-p` runs. At expiry the agent gets one notice — `[Monitor timed out — re-arm if needed.]` — rather than the watch quietly living on for the session. Agents that watch something spanning a long task must re-arm, so design their instructions around bounded watches: check whether a watch is still live before arming a second one, and re-arm when the work it covers is still in flight.
 
 This deadline applies only to watches the model arms through the Monitor **tool**. Host-armed `experimental.monitors` declared in `plugin.json` are a different mechanism — the host runs them for the session lifetime and their manifest entries take no timeout field. See [`experimental.monitors`](../../plugin-structure/references/manifest-reference.md#experimentalmonitors).
@@ -656,6 +658,12 @@ The Agent tool now defaults to `run_in_background: true`. Claude keeps working w
 ### Extended Thinking Inheritance (CC 2.1.198)
 
 Subagents now inherit the session's extended thinking configuration. Agent type definitions supply model, reasoning effort, and tool access. At launch, the Agent tool's call-level `model` parameter overrides the model, and since CC 2.1.292 its `effort` parameter overrides the reasoning effort for that spawn (see `orchestration-and-tools.md`). This means subagents automatically benefit from extended thinking when enabled in the parent session.
+
+**Default subagent effort (CC 2.1.316).** When neither the call-level `effort` parameter nor the agent's `effort` frontmatter names a level, a subagent runs at the level set by the user's `CLAUDE_CODE_SUBAGENT_EFFORT` environment variable. It inherits the session's effort only when that variable is unset. Before CC 2.1.316 such a subagent always inherited the session's effort. Because the variable is user-side, set `effort` in frontmatter when an agent depends on a particular level.
+
+### Inherited Models Survive Wakeups (CC 2.1.316)
+
+A sub-agent that inherited its parent sub-agent's model (for example with `model: inherit`) keeps that model when a background job or message wakes it. Before CC 2.1.316 it moved to the main session's model on wakeup. A plugin that relies on nested model inheritance should pin `model` in the nested agent's frontmatter when it must support older versions.
 
 ### Subagent Results Arrive Framed as Subagent Output (CC 2.1.277)
 

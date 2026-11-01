@@ -597,6 +597,7 @@ Skills synced from claude.ai have their **own** control, separate from `syncClau
 
 - Turns off syncing of the skills enabled on claude.ai
 - Previously synced skills are moved to `~/.claude/skills/.trash` at the next launch — recoverable, not deleted
+- The trash is bounded (CC 2.1.314): `~/.claude/skills/.trash` and `~/.claude/plugins/.trash` each hold about 1024 entries, whatever `cleanupPeriodDays` says, so the oldest entries are evicted past that and are no longer recoverable
 
 A `CLAUDE_CODE_SYNC_SKILLS` environment variable also exists.
 

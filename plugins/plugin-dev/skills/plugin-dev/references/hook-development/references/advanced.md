@@ -80,6 +80,8 @@ An `if` condition names each tool by its own name, so `Write(tests/**)` matches 
 > **CC 2.1.178:** Added tool parameter matching syntax (e.g., `Agent(model:opus)`) for granular permission control based on tool input parameters using wildcards.
 >
 > **CC 2.1.218 (breaking change):** Single-segment `dir/**` hook `if:` conditions now match only `<cwd>/dir`; write `**/dir/**` for any-depth matching. Previously, `dir/**` would match at any depth, which could lead to unintended matches. Update existing hooks that rely on the old behavior.
+>
+> **CC 2.1.314:** `Monitor(<pattern>)` conditions, such as `Monitor(tail *)`, match the shell commands the Monitor tool starts, the same way `Bash(tail *)` matches Bash commands. Use them with a `Bash` matcher (see [Event-Specific Matchers](#event-specific-matchers)), since a `Bash` hook now also runs on Monitor's commands.
 
 ### Script-Level Conditionals
 
@@ -931,6 +933,7 @@ Matchers filter which registered hooks run for an occurrence of an event. Each e
 - **Hyphenated matchers require an exact match (CC 2.1.195).** A matcher containing a hyphen no longer substring-matches, so `"mcp__brave-search"` matches only that exact value — write `"mcp__brave-search__.*"` for partial matches. This affects custom agent names, MCP server names, and any hyphenated identifier.
 - **`*` matches everything,** and so does omitting `matcher` altogether.
 - **Some events ignore `matcher` entirely.** Their Matchers line reads "Not supported"; an entry's matcher is silently discarded rather than rejected.
+- **A `Bash` matcher also covers the Monitor tool's shell commands (CC 2.1.314).** A PreToolUse guard on `Bash` now runs on commands the Monitor tool starts. For those commands the hook can block (`deny`) or `ask`, but it cannot approve (`allow`) or rewrite (`updatedInput`) them. Before CC 2.1.314, Bash hooks did not run on Monitor commands, so a Bash guard did not cover them on older versions. Narrow such a hook to Monitor's commands with an `if` condition like `Monitor(tail *)`.
 
 ## Decision Control Output Schemas
 
@@ -956,9 +959,10 @@ Different hook events support different output formats for controlling Claude's 
 - `ask` depends on the session being interactive: an interactive session shows `Hook PreToolUse:<Tool> requires confirmation ... [plugin:<name>]`, while headless runs (`claude -p`) have no one to prompt and treat the same `ask` as a block, surfacing the reason to the model. The prompt names the hook's source, `[plugin:<name>]` for a plugin hook or `[skill]` for a skill-scoped hook; before CC 2.1.301 that label could be missing
 - `allow` does not skip every prompt. Since CC 2.1.292 (a security fix), a PreToolUse `allow`, like auto mode, no longer bypasses the permission prompt for file reads from network (UNC) paths
 - `allow` does not lift plan mode. Since CC 2.1.299, a write that a PreToolUse hook (or a mod's `tool.check` hook) allows, whether an MCP tool's, a file's, or a shell command's, still does not run in plan mode. Before CC 2.1.299 such a write ran despite plan mode's read-only restriction
+- `allow` of an MCP tool call is not an answer in Cowork cloud sessions under auto mode (CC 2.1.314). There the hook's `allow` counts as no answer, and auto mode's classifier or a permission prompt decides. A plugin hook that pre-approves its own MCP tools cannot rely on that approval in that environment
 - `updatedInput`: Optionally modify tool parameters before execution. The rewritten input is checked against permission rules and safety checks; CC 2.1.290 fixed cases where some were not applied after a rewrite, so a rewrite cannot carry a call past a deny rule. Since CC 2.1.300 it is also validated against the tool's input schema, like Claude's own input: unknown keys are dropped silently, and input the tool rejects denies the call instead of passing through. The same applies to PermissionRequest `updatedInput`
 - Windows: a PreToolUse or PermissionRequest command hook that sets no `shell` fails closed when Git for Windows is not installed (CC 2.1.299): a guard that fails blocks the call. Before CC 2.1.299 such a hook failed open and the call ran. Two more fail-open cases were closed later: a hook with `"shell": "powershell"` (CC 2.1.309), and a hook command made only of quoted strings, such as a quoted path, which PowerShell printed instead of running (CC 2.1.310). Claude is shown a "Git Bash not found" blocking reason (exit code 127) and must not edit the hook to get around it
-- PowerShell exit 2: a hook run in PowerShell (`"shell": "powershell"` or a Windows fallback) blocks on exit code 2 only since CC 2.1.309. Before that, exit 2 from PowerShell let the call through
+- PowerShell exit 2: a hook run in PowerShell (`"shell": "powershell"` or a Windows fallback) blocks on exit code 2 only since CC 2.1.309. Before that, exit 2 from PowerShell let the call through. One case stayed open until CC 2.1.316: a hook command that begins with a type cast, `param`, `using`, or an attribute still let the call through on exit 2. A PowerShell guard of that shape needs CC 2.1.316 or later to fail closed
 - `additionalContext`: Injected into Claude's context. `<system-reminder>` tags in it, as in any hook output, are escaped before they reach Claude (CC 2.1.292)
 - A failure to match the hook against a call, or tool input that cannot be serialized to JSON, blocks the call (CC 2.1.288). Before CC 2.1.288 the hook was skipped and the call ran. PermissionRequest behaves the same way
 - A `deny` and its `permissionDecisionReason` survive an Agent SDK callback hook on the same call timing out (CC 2.1.304). Before CC 2.1.304, Claude saw the timeout error instead of the plugin hook's deny reason
