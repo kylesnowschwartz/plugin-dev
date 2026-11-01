@@ -100,7 +100,7 @@ First, determine what type of validation is needed:
      - Check YAML frontmatter present (starts with `---`)
      - Verify `description` field exists
      - Check `argument-hint` format if present
-     - Validate `allowed-tools` is array if present
+     - Validate `allowed-tools` if present: a comma-separated string (`Read, Write`) or an array of tool names
      - Ensure markdown content exists
    - Check for naming conflicts
 
@@ -112,7 +112,7 @@ First, determine what type of validation is needed:
        - Frontmatter with `name`, `description`, `model`, `color`
        - Name format (lowercase, hyphens, 3-50 chars; plugin-dev convention, while Claude Code rejects agent names over 256 chars)
        - Description includes `<example>` blocks
-       - Model is valid (inherit/sonnet/opus/haiku)
+       - Model is valid (inherit/sonnet/opus/haiku/fable, or a full model ID such as `claude-opus-5-5`)
        - Color is valid (blue/cyan/green/yellow/magenta/red)
        - System prompt exists and is substantial (>20 chars)
 
@@ -130,8 +130,8 @@ First, determine what type of validation is needed:
    - Or manually check:
      - Valid JSON syntax
      - Valid event names (PreToolUse, PostToolUse, Stop, etc.)
-     - Each hook has `matcher` and `hooks` array
-     - Hook type is `command` or `prompt`
+     - Each hook entry has a `hooks` array; `matcher` is optional (omitting it matches everything, and some events, such as UserPromptSubmit and Stop, ignore it)
+     - Hook type is `command`, `prompt`, `agent`, `http`, or `mcp_tool`
      - Commands reference existing scripts with ${CLAUDE_PLUGIN_ROOT}
      - Shell-form commands (no `args`) wrap `${CLAUDE_PLUGIN_ROOT}` in double quotes, e.g. `bash \"${CLAUDE_PLUGIN_ROOT}/scripts/x.sh\"` in JSON; an unquoted placeholder breaks on paths with spaces and `claude plugin validate` warns about it (CC 2.1.281)
 

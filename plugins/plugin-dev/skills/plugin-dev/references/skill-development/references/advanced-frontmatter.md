@@ -306,13 +306,14 @@ hooks:
 
 ### Supported Events
 
-All 33 hook events register in frontmatter scope; the loader applies no allowlist. What limits a skill's frontmatter hooks is **lifetime**, not the event list — a hook exists only while the skill is loaded. In practice three events do the work:
+All 33 hook events register in frontmatter scope; the loader applies no allowlist. What limits a skill's frontmatter hooks is **lifetime**, not the event list — a hook exists only while the skill is loaded. In practice four events do the work:
 
-| Event         | Purpose                                          |
-| ------------- | ------------------------------------------------ |
-| `PreToolUse`  | Validate or block tool calls before execution    |
-| `PostToolUse` | Run checks after successful tool execution       |
-| `Stop`        | Verify completion criteria before skill finishes |
+| Event              | Purpose                                                                                   |
+| ------------------ | ----------------------------------------------------------------------------------------- |
+| `PreToolUse`       | Validate or block tool calls before execution                                             |
+| `PostToolUse`      | Run checks after successful tool execution                                                |
+| `Stop`             | Verify completion criteria before skill finishes                                          |
+| `UserPromptSubmit` | Gate or annotate prompts after the invoking one while the skill stays active (CC 2.1.299) |
 
 Session-lifecycle events (`SessionStart`, `Notification`) register without error but usually have no chance to fire, because the session event happens before the skill is dispatched or after it unloads. Declare those in `hooks/hooks.json` instead.
 

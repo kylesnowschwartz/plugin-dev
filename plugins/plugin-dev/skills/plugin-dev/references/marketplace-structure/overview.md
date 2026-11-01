@@ -1,7 +1,7 @@
 
 # Marketplace Structure
 
-A plugin marketplace is a catalog of available plugins that enables centralized discovery, version management, and distribution. This skill covers creating and maintaining marketplaces for team or community plugin distribution.
+A plugin marketplace is a catalog of available plugins that enables centralized discovery, version management, and distribution. This topic reference covers creating and maintaining marketplaces for team or community plugin distribution.
 
 ## Overview
 

@@ -107,6 +107,8 @@ A hook that trusts or blocks an MCP tool should key the decision on `source`, ne
 | `trigger`             | string | `manual` or `auto`                         |
 | `custom_instructions` | string | User instructions (manual) or empty (auto) |
 
+Each PreCompact hook's output is cut at 10,000 characters (CC 2.1.314). Before CC 2.1.314, very large PreCompact output could make compaction fail or repeat.
+
 ### Notification
 
 | Field               | Type   | Description                                                                                                                                |

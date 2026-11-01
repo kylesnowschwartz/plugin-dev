@@ -28,6 +28,8 @@ claude -p "Analyze this codebase for security issues" --allowedTools "Read,Grep,
 
 A `claude -p` or Agent SDK session that hits an internal error now reports the error and exits with code 1. Before CC 2.1.277 it could hang with no result. CI steps can rely on the exit code to fail the job, but a job timeout is still worth keeping for older pinned versions.
 
+**Startup failures exit non-zero (CC 2.1.314).** When `claude -p` fails during startup, it now prints the error and exits with code 1. Before CC 2.1.314 it could exit 0 with no output, so a plugin CI job that failed to start, for example on a broken plugin load, passed silently. On older pinned versions, check the output for an expected result as well as the exit code.
+
 ### Workaround for Skills
 
 Instead of invoking `/review` in headless mode, describe the task:
