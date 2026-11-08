@@ -334,9 +334,11 @@ if len(hook_types) < 3:
 
 # The guard is a ternary whose condition names the excluded events; only the
 # condition counts, since the filter body also compares a hook type to "http".
+# The gap stops at a statement end, not at "?", because the log message
+# itself holds an inline ternary.
 http_filter = re.search(
     r'((?:[A-Za-z_$][\w$]*\s*===\s*"[A-Za-z]+"\s*\|\|\s*)*[A-Za-z_$][\w$]*\s*===\s*"[A-Za-z]+")\s*\?'
-    r"[^?]{0,400}HTTP hooks are not supported for",
+    r"[^;]{0,400}HTTP hooks are not supported for",
     blob,
 )
 http_hook_unsupported_events = []
