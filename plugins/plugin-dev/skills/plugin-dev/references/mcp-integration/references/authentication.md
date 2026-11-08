@@ -297,6 +297,11 @@ Claude Code injects these environment variables into `headersHelper` scripts:
 
 - `CLAUDE_CODE_MCP_SERVER_NAME` — the MCP server's configured name (e.g., `"github"`, `"slack"`)
 - `CLAUDE_CODE_MCP_SERVER_URL` — the MCP server's URL (for SSE/HTTP/WS servers)
+- `CLAUDE_PLUGIN_ROOT` — for a plugin's server, the plugin's own directory
+
+The helper gets no `userConfig` option values: there is no `CLAUDE_PLUGIN_OPTION_<KEY>` in its environment, and `${user_config.*}` is rejected in the `headersHelper` field. A helper that needs a configured value, such as a tenant or token path, has to obtain it on its own, for example from a file it reads.
+
+**Corrupted values fixed (CC 2.1.316).** Before CC 2.1.316, a plugin `headersHelper` received a corrupted `CLAUDE_PLUGIN_ROOT` and server URL when a credential-named environment variable was set to a switch value such as `1`. A plugin whose helper builds paths from `CLAUDE_PLUGIN_ROOT` or routes on the URL should state CC 2.1.316 as its minimum version.
 
 Use these for server self-identification in multi-server plugins or for dynamic header generation based on the target server:
 

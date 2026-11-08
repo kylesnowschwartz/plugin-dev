@@ -68,6 +68,12 @@ permissionMode: auto
 
 **`auto` is conditional (CC 2.1.292).** A subagent definition with `permissionMode: auto` no longer enters auto mode when auto mode is unavailable: when settings disable it, when its circuit breaker has tripped, or when the model does not support it. Before CC 2.1.292 such an agent entered auto mode anyway. Do not assume the classifier is always in front of an `auto` agent; pair it with allow and deny rules that keep it safe under the mode it falls back to.
 
+### Settings That Change Prompting
+
+**`permissions.denyInsteadOfPrompting` (CC 2.1.319).** A setting, not a mode, with an effect like `dontAsk`: a tool call that would wait on a permission prompt is denied and the turn continues. It applies in terminal sessions, subagents, and teammates. Per the system-prompts record, when set in trusted settings it also withholds questions to the user and plan-mode tools. An agent written to ask before risky actions gets a denial instead under this setting, so its instructions should say what to do when a call is denied, such as report the denial and continue with what it can do.
+
+**`permissions.blockWritesOutsideWorkingDirectories` (CC 2.1.314)** refuses file-tool writes outside the working directories in every mode; see Bash Patterns below, beside `blockReadsOutsideWorkingDirectories`.
+
 ## Permission Specifier Syntax
 
 Permission specifiers define exactly which tool invocations a rule matches. Each tool type has its own pattern syntax.
@@ -97,6 +103,8 @@ Space before `*` means word boundary: `Bash(ls *)` matches `ls -la` but NOT `lso
 - In the Desktop app and VS Code, the dangerous `rm`/`rmdir` prompt in `bypassPermissions` mode now denies the command at once with a rewrite hint, so unattended sessions keep going.
 
 `permissions.blockReadsOutsideWorkingDirectories` is a boolean setting that makes the file tools refuse paths outside the working directories in **every** permission mode. It is an explicit exception to the mode table above: with it on, recognized file-reading Bash commands prompt even in `auto` and `bypassPermissions` mode. As of CC 2.1.273 it also excludes a memory directory chosen by a repository's settings from the prompt, recall, indexing, and memory extraction.
+
+`permissions.blockWritesOutsideWorkingDirectories` (CC 2.1.314) is its counterpart for writes: Write, Edit, and NotebookEdit refuse paths outside the working directories in every permission mode, `bypassPermissions` included. It does not limit shell commands, MCP tools, or hook programs. An agent that writes outside the project with the file tools, for example to a shared cache or a sibling repository, is refused under this setting whatever its `permissionMode`; have it write inside a working directory, or document that users must add the target as a working directory (for example with `--add-dir`).
 
 ### Path Patterns for Edit/Read
 
@@ -229,6 +237,8 @@ Rules are specified in `settings.json` under `permissions`:
 - `mcp__*` — all MCP tools (use sparingly)
 
 Since CC 2.1.299 a server-level rule matches only the server with exactly that normalized name, for allow, deny, and ask alike. A server whose name contains `__` needs its whole normalized name: `mcp__<whole name>__*`.
+
+**claude.ai connector terminal names (CC 2.1.319).** Deny and ask rules, hook matchers, and agent `disallowedTools` entries written with a connector's terminal name, such as `mcp__claude_ai_Slack`, now apply in Claude Desktop; before CC 2.1.319 Desktop ignored them, and the fix takes effect once Claude Desktop ships that version. The alias never applies to allow rules, so pre-approve connector tools with their full `mcp__claude_ai_<server>__<tool>` names.
 
 ### Task (Agent) Patterns
 

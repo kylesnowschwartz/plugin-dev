@@ -119,6 +119,15 @@ The `plugin-authoring` skill describes only the build it ships with. This histor
 - **CC 2.1.309:**
   - A `turn.step` hook that sets the model by alias, such as `haiku`, works: the alias resolves to its model ID. Before CC 2.1.309 every request failed with a model error, so a mod that must run on older versions should pass a full model ID.
   - A hooks module nested too deep to load is reported with the file's name instead of a bare stack-overflow message.
+- **CC 2.1.317:** the built-in `plugin-authoring` skill offers once, after a mod the user built works, to help share it.
+- **CC 2.1.318:**
+  - `$.model.fork` takes an `effort` option, so a quick side job can run at `low` whatever effort the session uses; the result reports the effort sent.
+  - What a mod attaches at `prompt.submit` stays in the user's turn instead of going out as a system message.
+  - Claude Code records the user's answer when it asks to turn on the mods it writes in a session.
+  - A mod's `turn.step` hook no longer makes a stopped reply finish as a success in headless runs.
+- **CC 2.1.319:**
+  - Hot reload of a mod in `.claude/skills` no longer misses a file deleted just after it appeared, or that file's return.
+  - The system prompts add a "Mod plugin packaging on request" skill: when asked, Claude packages a mod as a scanned plugin with a save card, in the main session only.
 
 ## Keybindings Plugin Context
 
@@ -194,7 +203,20 @@ echo "[$model] \$${cost}"
 
 ### Per-Subagent Status Line
 
-A separate `subagentStatusLine` setting (same `{"type": "command", "command": "..."}` shape) draws a custom status line for each subagent row in the agent panel. The script receives that row's context as JSON on stdin. Since CC 2.1.293 the payload includes `agentType`, so a script can tell custom subagent types apart, for example to label rows for a plugin's own agents differently from built-in ones. As with `statusLine`, the user configures it; a plugin can ship the script and document the setting.
+A separate `subagentStatusLine` setting (same `{"type": "command", "command": "..."}` shape) draws a custom status line for each subagent row in the agent panel. The script receives that row's context as JSON on stdin. Since CC 2.1.293 the payload includes `agentType`, so a script can tell custom subagent types apart, for example to label rows for a plugin's own agents differently from built-in ones.
+
+Unlike `statusLine`, a plugin can set `subagentStatusLine` itself: a `settings.json` at the plugin root (or the manifest's `settings` key) applies `agent` and `subagentStatusLine` defaults while the plugin is enabled, and other keys there are dropped. Since CC 2.1.319, `${CLAUDE_PLUGIN_ROOT}` is substituted in a plugin-provided `subagentStatusLine` command, so it can point at the plugin's own script:
+
+```json
+{
+  "subagentStatusLine": {
+    "type": "command",
+    "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/subagent-status.sh\""
+  }
+}
+```
+
+Before CC 2.1.319 the placeholder was left unsubstituted, so a plugin that supports older versions should not rely on it there.
 
 ## Claude Code as MCP Server
 
@@ -407,6 +429,12 @@ claude plugin marketplace remove marketplace-name
 - On Windows machines with no GitHub SSH key, installing from a GitHub `owner/repo` source retries the clone over HTTPS (CC 2.1.296)
 - `/plugin`'s Errors tab asks before removing a marketplace that failed to load and uninstalling its plugins (CC 2.1.295)
 
+**Later CLI changes (CC 2.1.318-2.1.319):**
+
+- `claude plugin validate` no longer passes a custom-named marketplace file that `claude plugin marketplace add` rejects (CC 2.1.318)
+- A directory added with `--add-dir` registers its plugin marketplaces only once that directory's own trust dialog has been accepted (CC 2.1.319)
+- `claude plugin update` and `/plugin` "Update now" install dependencies the new plugin version adds (CC 2.1.319; see Dependency Auto-Install below)
+
 ### Plugin Developer Note
 
 Document the exact install command in your README:
@@ -611,6 +639,8 @@ Cached content refreshes when:
 ### Dependency Auto-Install (CC 2.1.116)
 
 `/reload-plugins` and background plugin auto-update now auto-install missing plugin dependencies from marketplaces you've already added. If a plugin declares dependencies on other plugins, they will be fetched automatically during refresh or auto-update cycles.
+
+**Dependencies added in a new version (CC 2.1.319).** `claude plugin update`, the `/plugin` "Update now" action, and background auto-update install a dependency that the new plugin version adds. Before CC 2.1.319 none of the three installed it. The official dependencies docs still describe a manual update as `claude plugin update` followed by `/reload-plugins`, so on older versions, and when in doubt, tell users to run `/reload-plugins` after updating a plugin whose new version adds a dependency.
 
 ### Version Constraint Auto-Update (CC 2.1.119)
 

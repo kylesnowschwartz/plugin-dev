@@ -145,6 +145,8 @@ Three matcher types: `serverName`, `serverCommand`, `serverUrl`.
 
 These settings are configured by administrators and cannot be overridden by users or plugins.
 
+**`deniedMcpServers` URL entries reach more servers (CC 2.1.318).** A `serverUrl` deny entry also blocks Anthropic-provided servers whose upstream URL matches, and connectors in cloud sessions and on self-hosted runners, where the session is given the connector's own URL. Elsewhere, deny a connector by name. A plugin whose documentation tells administrators how to block or allow a service should note that a URL deny written for a plugin-bundled server can now also block a matching Anthropic-provided server or connector.
+
 **Plugin and agent entries are covered (CC 2.1.290).** `allowedMcpServers` URL rules and `disableClaudeAiConnectors` apply to MCP entries declared in `.mcp.json`, in plugins, and in agent frontmatter `mcpServers`. Before CC 2.1.290 some of those entries escaped them. A plugin-bundled or agent-scoped HTTP/SSE server whose URL an organization's allowlist does not cover is refused like any other.
 
 Two related administrator keys:
@@ -423,6 +425,23 @@ Look for:
 ```
 
 Design plugin MCP tools to return concise results. Paginate or summarize large outputs.
+
+## MCP Tasks (Public Beta)
+
+An MCP server can answer a long-running `tools/call` with a task, as defined by the MCP tasks extension, instead of a result. Claude Code then moves the call to the background right away, keeps working, follows the task by checking its status with the server, and tells Claude the result when it finishes. Running tasks show in `/tasks`.
+
+**Versions.** MCP tasks were available from CC 2.1.304 where Anthropic's feature flag enabled them (the official MCP docs give 2.1.304 as the minimum). They were announced in the changelog, and enabled without feature-flag fetching, in CC 2.1.319: since then they work in the terminal on Bedrock, Vertex, Foundry, behind LLM gateways, and with `DISABLE_TELEMETRY`. At the time of the CC 2.1.319 sync, the official MCP docs still listed "the session fetches feature flags" as a requirement, which that change makes stale.
+
+**User controls:**
+
+| Variable | Effect |
+| --- | --- |
+| `CLAUDE_CODE_DISABLE_MCP_TASK_BACKGROUND=1` | Claude waits for an MCP task inside its tool call instead of moving it to the background right away (documented upstream from CC 2.1.304; first in the changelog at CC 2.1.319) |
+| `CLAUDE_CODE_DISABLE_MCP_TASKS=1` | Turns MCP tasks off (CC 2.1.319) |
+
+**Other conditions from the official docs:** the server must be connected on protocol revision 2026-07-28, the call must come from the main conversation rather than a subagent, and a one-shot `claude -p "<prompt>"` run does not get tasks (SDK and `--input-format stream-json` sessions can, with background tasks enabled). Any other call is a plain tool call.
+
+**For server authors.** Answer with a task only when the request carries Claude Code's tasks capability (`"io.modelcontextprotocol/tasks": {}` under `extensions` in `params._meta["io.modelcontextprotocol/clientCapabilities"]`); otherwise the call fails with `Unsupported result type 'task' for tools/call`. Before CC 2.1.317, a task answer that omitted `createdAt`, `lastUpdatedAt`, or `ttlMs`, or set `pollIntervalMs` to `null`, also failed with `Unsupported result type`. To support those versions, send all three fields and send `pollIntervalMs` as a number or not at all. A plugin whose server returns tasks should keep a plain-result path for sessions that do not advertise the capability.
 
 ## MCP Description Limits
 

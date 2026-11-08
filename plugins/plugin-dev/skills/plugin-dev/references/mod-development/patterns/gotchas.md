@@ -17,6 +17,8 @@ Small API rules that cost a turn each when missed.
 - **`$.fs.read(path, { as: 'bytes' })` resolves `{ base64 }`.** Some examples show `bytes.toBase64()`; the `FsReadCall` type has `{ base64 }`.
 - **A state contract exports types only.** A contract whose only export is `export {}` is refused.
 - **Hot reload needs the person's yes.** Loading the built-in `plugin-authoring` skill starts the watch; the first file written asks the person once.
+- **`$.model.fork` takes `effort` (CC 2.1.318; changelog, not Live).** Pass `effort: 'low'` for a quick side job so it does not run at the session's effort; the result reports the effort sent. Older versions do not have the option.
+- **`prompt.submit` attachments stay in the user's turn (CC 2.1.318; changelog, not Live).** Before CC 2.1.318, what a mod attached at `prompt.submit` went out as a system message, so text that must read as part of the user's prompt needs CC 2.1.318 or later.
 
 ## Code sketch
 
@@ -29,7 +31,7 @@ on('tool.call', { tool: /^mcp__my-mod__show$/ }, ($, e) => {
 
 ## Minimum Claude Code version
 
-2.1.316 is the oldest version these rules are known to hold on.
+2.1.316 is the oldest version these rules are known to hold on, except the two bullets marked CC 2.1.318, which need that version.
 
 ## Sources
 

@@ -573,7 +573,9 @@ Each entry requires `name`, `command`, and `description`. `when` is optional and
 
 **Availability (CC 2.1.310)**: On Amazon Bedrock, Claude Platform on AWS, Google Vertex AI, or Microsoft Foundry, or with `DISABLE_TELEMETRY` or `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` set, plugin monitors and the Monitor tool run only on CC 2.1.310 or later. On older versions in those environments a plugin's monitors do not arm, so a plugin that depends on them should say so or degrade gracefully.
 
-**Host-armed monitors run for the session lifetime.** A manifest monitor's process is kept alive by the host for as long as the session lasts, and the entry takes no timeout field — the schema is exactly `name`, `command`, `description`, and `when`. Do not build re-arm logic into a monitor script on the assumption that the host will let it expire.
+**Host-armed monitors run for the session lifetime.** A manifest monitor's process is kept alive by the host for as long as the session lasts, and the entry takes no timeout field — the schema is exactly `name`, `command`, `description`, and `when`. Do not build re-arm logic into a monitor script on the assumption that the host will let it expire. Since CC 2.1.317, exiting Claude Code skips the "Background work is running" prompt for plugin monitors, so a running monitor no longer makes the user confirm the exit; a monitor script should not count on that prompt to finish its work.
+
+**Environment:** monitor processes do not receive `CLAUDE_PLUGIN_OPTION_<KEY>` variables, and `${user_config.*}` is rejected in `command`. A monitor that needs a configured value must obtain it on its own (see userConfig, Accessing configured values).
 
 This is the opposite of the model-armed **Monitor tool**, whose watches always carry a deadline (CC 2.1.271) and must be re-armed. That distinction matters when porting a watch between the two: see [Monitor tool deadlines](../../agent-development/references/advanced-agent-fields.md#tools-field-version-behaviors) for the tool-side rules.
 
@@ -715,8 +717,9 @@ A stored value outside the list counts as **unset** rather than raising a valida
 
 **Accessing configured values:**
 
-- In MCP/LSP server configs, exec-form hook commands (`command` plus an `args` array), and skill/agent content: `${user_config.KEY}` (non-sensitive only). Shell-form hook commands (a plain `command` string without `args`), monitors, and MCP `headersHelper` commands reject `${user_config.*}` since CC 2.1.207 (shell-injection fix); in those, use exec form or read `$CLAUDE_PLUGIN_OPTION_<KEY>` inside the script
-- As environment variables in plugin subprocesses: `CLAUDE_PLUGIN_OPTION_<KEY>`
+- In MCP/LSP server configs, exec-form hook `args`, and skill/agent content: `${user_config.KEY}`. Sensitive values are substituted in MCP/LSP server configs and exec-form hook `args`; only in skill and agent content is substitution limited to non-sensitive values, and a sensitive value there becomes a placeholder
+- Shell-form hook commands (a plain `command` string without `args`), monitor commands, and MCP `headersHelper` commands reject `${user_config.*}` since CC 2.1.207 (shell-injection fix). For a shell-form hook, use exec form or read `$CLAUDE_PLUGIN_OPTION_<KEY>` inside the script. Monitors and `headersHelper` scripts receive no option values at all, so they must obtain the value on their own
+- As environment variables in hook processes: `CLAUDE_PLUGIN_OPTION_<KEY>`, exported for every option. Monitor processes and `headersHelper` scripts do not get them
 
 **Install-time behavior:** `claude plugin install` does not prompt for these values. Installation succeeds and prints `<N> userConfig option(s) not yet set — run /plugin configure <plugin> in Claude Code, or pass --config KEY=VALUE.` (with `(<M> required)` appended when some options are `required: true`). Until the options are set, the session has no `CLAUDE_PLUGIN_OPTION_*` variables at all — hooks and servers must handle their absence. For unattended installs, pass `--config KEY=VALUE` once per option:
 
@@ -746,7 +749,7 @@ claude plugin configure my-plugin@my-marketplace --values-stdin < values.json
 
 ### Plugin Environment Variables
 
-Claude Code sets these variables for plugin hooks. Of the variables in this table, plugin MCP/LSP server configuration expands `CLAUDE_PLUGIN_ROOT`, `CLAUDE_PLUGIN_DATA`, and `CLAUDE_PROJECT_DIR` in `command`, each `args` entry, and `env` values, plus `url` and `headers` values for remote MCP servers and `workspaceFolder` for LSP servers. The same fields also expand the user's own environment variables (`${MY_API_KEY}`, with `${VAR:-default}` fallbacks; only the braced form expands, a bare `$VAR` stays literal) and non-sensitive `${user_config.KEY}` values. See `../../mcp-integration/overview.md` (Environment Variable Expansion).
+Claude Code sets these variables for plugin hooks. Of the variables in this table, plugin MCP/LSP server configuration expands `CLAUDE_PLUGIN_ROOT`, `CLAUDE_PLUGIN_DATA`, and `CLAUDE_PROJECT_DIR` in `command`, each `args` entry, and `env` values, plus `url` and `headers` values for remote MCP servers and `workspaceFolder` for LSP servers. The same fields also expand the user's own environment variables (`${MY_API_KEY}`, with `${VAR:-default}` fallbacks; only the braced form expands, a bare `$VAR` stays literal) and `${user_config.KEY}` values, sensitive ones included. See `../../mcp-integration/overview.md` (Environment Variable Expansion). A plugin-provided `subagentStatusLine` command (set through the plugin's `settings.json`) also has `${CLAUDE_PLUGIN_ROOT}` substituted since CC 2.1.319; see `advanced-topics.md` (Per-Subagent Status Line).
 
 | Variable | Value |
 | --- | --- |
@@ -828,7 +831,7 @@ Claude Code validates the manifest on plugin load:
 - **Hook failures name the plugin (CC 2.1.281).** Not a validator check, but related: at run time, plugin hook-failure errors now name the offending plugin.
 - **README install line (CC 2.1.295).** When the plugin's README has no install line, the validator prints the line to paste. This is advice only: it never changes the exit code, even with `--strict`.
 
-Marketplace-level checks (plugin and marketplace names Claude Code cannot install, CC 2.1.283) are covered in `../../marketplace-structure/overview.md` (Validation).
+Marketplace-level checks (plugin and marketplace names Claude Code cannot install, CC 2.1.283; custom-named marketplace files, CC 2.1.318) are covered in `../../marketplace-structure/overview.md` (Validation).
 
 **Plugin and marketplace in one folder (CC 2.1.289).** When the directory passed to `claude plugin validate` holds both `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json`, Claude Code validates the marketplace and also the plugin's manifest and component files. Before CC 2.1.289 it skipped the plugin.
 

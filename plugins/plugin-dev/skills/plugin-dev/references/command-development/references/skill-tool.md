@@ -115,25 +115,27 @@ description: A command  # Obvious - provides no information
 
 ### Default Budget
 
-The Skill tool has a character budget limiting how many command/skill descriptions Claude receives. The default is **1% of the context window measured in characters** — `contextWindowTokens × 4 × 0.01`, which is **8,000 characters** for the default 200K-token window.
+The Skill tool has a character budget limiting how much command/skill description text Claude receives. The default **scales at 1% of the active model's context window**, so it differs by model; do not plan around a fixed figure.
 
 ### How Budget Works
 
-1. Items are sorted by budget admission order (project, then user, then plugin) — this is not the Enterprise > Personal > Project > Plugin name-shadowing precedence, which resolves name collisions instead
-2. Descriptions are added until budget exhausted
-3. Items exceeding budget are not visible to Claude
-4. More concise descriptions = more items visible
+1. The listing always contains every command and skill name
+2. When the descriptions overflow the budget, Claude Code drops descriptions, starting with the items the user invokes least, so the most-used items keep their full text. This is unrelated to the Enterprise > Personal > Project > Plugin name-shadowing precedence, which resolves name collisions instead
+3. An item whose description was dropped stays listed by name, but Claude no longer sees its trigger text
+4. Each entry's combined `description` and `when_to_use` text is capped at 1,536 characters regardless of budget (`skillListingMaxDescChars`)
+5. More concise descriptions = more items keep their descriptions
 
 ### Configuring Budget
 
-Set the `SLASH_COMMAND_TOOL_CHAR_BUDGET` environment variable to adjust:
+Users raise the budget with the `skillListingBudgetFraction` setting (for example `0.02` = 2% of the context window), or set a fixed character count with the `SLASH_COMMAND_TOOL_CHAR_BUDGET` environment variable. To free budget, set low-priority non-plugin skills to `"name-only"` in the `skillOverrides` setting so they list without a description. `skillOverrides` does not apply to plugin skills, which are managed through `/plugin`.
 
 ```bash
-# Increase budget to show more commands/skills
+# Fixed budget of 30,000 characters, whatever the model. Whether this
+# raises or lowers the budget depends on the model's context window.
 export SLASH_COMMAND_TOOL_CHAR_BUDGET=30000
 
-# Decrease budget for faster processing
-export SLASH_COMMAND_TOOL_CHAR_BUDGET=8000
+# Scale the budget instead: 2% of the context window (settings.json)
+# { "skillListingBudgetFraction": 0.02 }
 ```
 
 ### Budget Optimization
@@ -421,7 +423,7 @@ disable-model-invocation: true # Blocks programmatic invocation
 
 ### Too Many Items Visible
 
-**Reduce character budget:**
+**Reduce character budget** (a fixed count, so check it is below the model's 1% default):
 
 ```bash
 export SLASH_COMMAND_TOOL_CHAR_BUDGET=8000

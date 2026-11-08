@@ -119,9 +119,9 @@ For the generic (non-plugin) skill-creator methodology, including `init_skill.py
 
 ### Visibility Budget
 
-Skill descriptions share a budget of 1% of the context window measured in characters — 8,000 characters for the default 200K-token window — controlled by `SLASH_COMMAND_TOOL_CHAR_BUDGET`. If total skill descriptions exceed this budget, some skills may be excluded from auto-discovery (still invocable via `/skill-name`). Descriptions are added in **budget admission order** — project, then user, then plugin — until the budget is exhausted, so plugin skills are the ones excluded first. Keep descriptions concise but include trigger phrases: shorter descriptions leave room for more items overall. See `references/advanced-frontmatter.md` for optimization strategies.
+Skill descriptions share a character budget that scales at 1% of the active model's context window, so it differs by model; do not assume a fixed figure. The listing always contains every skill name, but when the descriptions overflow the budget Claude Code drops descriptions, **starting with the skills the user invokes least**, so a rarely used plugin skill can lose its description (and the trigger phrases in it) while staying invocable via `/skill-name`. Users can raise the budget with the `skillListingBudgetFraction` setting (for example `0.02` for 2%) or set a fixed character count with `SLASH_COMMAND_TOOL_CHAR_BUDGET`, and can free budget by setting other, non-plugin skills to `"name-only"` in `skillOverrides` so they list without a description (`skillOverrides` cannot be set on plugin skills; those are managed through `/plugin`). Each entry's combined `description` and `when_to_use` text is also capped at 1,536 characters (`skillListingMaxDescChars`). Keep descriptions concise, with the key trigger phrases first. See `references/advanced-frontmatter.md` for optimization strategies.
 
-> **Two different orderings, do not conflate them.** Budget admission order (above) decides *which descriptions fit* in the Skill tool's character budget. Name-shadowing precedence (below) decides *which skill wins* when two skills share a name. They rank project and personal skills differently because they answer different questions.
+> **Two different orderings, do not conflate them.** Overflow drops (above) decide *which descriptions stay listed* when the budget runs out, by how often each skill is invoked. Name-shadowing precedence (below) decides *which skill wins* when two skills share a name.
 
 ## Dynamic Content
 
@@ -129,7 +129,7 @@ Skills support `$ARGUMENTS`/`$1` variable substitution, `${CLAUDE_PLUGIN_ROOT}` 
 
 ## Loading, Precedence, and Runtime Behavior
 
-Skill discovery, name-shadowing precedence (Enterprise > Personal > Project > Plugin — distinct from the budget admission order above), nested and directory-scoped skills, the Invoke Skill tool, slash-skill stacking, the `skillOverrides` and `disableBundledSkills` settings, hot-reloading, `/skills` menu display, and behavior across compaction all live in `references/skill-loading-and-runtime.md`. Consult it when a skill won't trigger, when designing for shadowing/collisions, or when a user reports skills disabled by settings.
+Skill discovery, name-shadowing precedence (Enterprise > Personal > Project > Plugin — distinct from the overflow drop order above), nested and directory-scoped skills, the Invoke Skill tool, slash-skill stacking, the `skillOverrides` and `disableBundledSkills` settings, hot-reloading, `/skills` menu display, and behavior across compaction all live in `references/skill-loading-and-runtime.md`. Consult it when a skill won't trigger, when designing for shadowing/collisions, or when a user reports skills disabled by settings.
 
 ### Skill Location in Plugins
 

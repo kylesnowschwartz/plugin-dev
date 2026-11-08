@@ -7,8 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.55.0] - 2026-11-08
+
+Sync with Claude Code 2.1.313-2.1.319 (the upstream changelog has no 2.1.313 or 2.1.315 entries). This release covers 22 Must Update items (two promoted by Stage 2) and fixes all three Doc Drift Audit contradictions. One of 24 May Update items was applied. `scripts/check-doc-drift.sh` was clean, and `docs/claude-code-facts.json` changed only in `claude_code_version` (2.1.312 to 2.1.319). The release also ships the mod-development topic added since 0.54.1; its vendored `plugin-authoring` copy is now refreshed to Claude Code 2.1.319.
+
 ### Added
 
+- **mcp-integration**: an MCP Tasks (public beta) section in `operations.md`. Tasks were available from CC 2.1.304 where Anthropic's feature flag enabled them and were announced, and enabled without feature-flag fetching (Bedrock, Vertex, Foundry, gateways, `DISABLE_TELEMETRY`), in CC 2.1.319. Covers `CLAUDE_CODE_DISABLE_MCP_TASK_BACKGROUND`, `CLAUDE_CODE_DISABLE_MCP_TASKS` (CC 2.1.319), the conditions a call needs, and the server-author rules, including the `Unsupported result type` failure before CC 2.1.317
+- **agent-development**: an Effort When Nothing Names One section: `CLAUDE_CODE_SUBAGENT_EFFORT` (CC 2.1.316), and subagents or teammates on a different model using that model's saved effort or default (CC 2.1.317)
+- **agent-development**: `permissions.denyInsteadOfPrompting` (CC 2.1.319) in a new Settings That Change Prompting section, and `permissions.blockWritesOutsideWorkingDirectories` (CC 2.1.314) beside its read counterpart; hook-development notes that the latter does not limit hook programs
+- **hook-development**: PostToolUse hooks run, with up to 10 seconds, on tool calls that finish after an interrupt (CC 2.1.319), with the official docs' Ctrl+Enter, Enter, and Esc behavior
+- **hook-development**: PreToolUse and PermissionRequest hooks with a `Bash` matcher run on Monitor commands and can deny or ask but not approve or rewrite them, and `if` conditions such as `Monitor(tail *)` match Monitor commands (CC 2.1.314)
+- **hook-development**: PreCompact output is cut at 10,000 characters per hook (CC 2.1.314)
+- **hook-development**: `onFailure: "block"` for Agent SDK hook callbacks (CC 2.1.317; TypeScript SDK 0.3.317+, Python SDK 0.2.177+, `hook_on_failure_supported`)
+- **hook-development / agent-development / mcp-integration**: deny and ask rules, hook matchers, and `disallowedTools` entries written with a claude.ai connector's terminal name apply in Claude Desktop (CC 2.1.319), never extending allow rules
+- **hook-development**: in Cowork cloud sessions under auto mode, a hook's `allow` of an MCP call counts as no answer (CC 2.1.314); async hook success output is labeled with the hook's name (CC 2.1.318, system-prompts)
+- **plugin-structure**: exiting skips the "Background work is running" prompt for plugin monitors (CC 2.1.317); `claude plugin update`, "Update now", and auto-update install dependencies a new version adds (CC 2.1.319)
+- **marketplace-structure / plugin-structure**: `--add-dir` directories register marketplaces only after their own trust dialog (CC 2.1.319); `claude plugin validate` no longer passes a custom-named marketplace file that `marketplace add` rejects (CC 2.1.318)
+- **skill-development**: with the Bash sandbox on, nested `.claude/skills` below the starting folder load only after starting there or `/cd` there (CC 2.1.319)
+- **mcp-integration**: `deniedMcpServers` URL entries also block matching Anthropic-provided servers and connectors in cloud sessions and on self-hosted runners (CC 2.1.318); `headersHelper` receives `CLAUDE_PLUGIN_ROOT`, which CC 2.1.316 stopped corrupting
+- **mod-development / plugin-structure**: mod API notes for CC 2.1.317-2.1.319: `$.model.fork` `effort`, `prompt.submit` attachments in the user's turn, the share offer and packaging on request, and the hot-reload and headless `turn.step` fixes
+- **hook-development**: `claude -p --resume` exits 1 when a deferred call's MCP server is missing (CC 2.1.319)
 - **mod-development**: a new topic for mods (TypeScript hooks modules), routed from the `plugin-dev` skill. `overview.md` covers when to choose a mod, the built-in `plugin-authoring` skill (still loaded before writing a mod, for the running build's types and hot reload), and an index of 20 pattern files under `patterns/`: a tool that draws its own result row, row data on disk, per-row state, pictures in the terminal including tmux, links and buttons, prompt jumps, copy buttons, band and pane patterns, and API gotchas. Each pattern lists the problem, API calls, a code sketch, the minimum Claude Code version, gotchas, and sources with a confidence label
 - **mod-development/vendor**: Claude Code 2.1.316's built-in `plugin-authoring` material, copied unchanged: `examples/`, `reference.md`, `types/claude-code.d.ts`, plus the skill's main text as the Skill tool prints it
 - `scripts/sync-mod-api.sh`: refreshes the vendored copy, including the skill's main text, by loading `plugin-authoring` in a one-turn headless session. The upstream sync runs it in Stage 0
@@ -17,6 +36,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **plugin-dev skill**: the description and topic index cover mods, and the mods paragraph routes to `references/mod-development/overview.md`
+- **mod-development/vendor**: refreshed to Claude Code 2.1.319 by `scripts/sync-mod-api.sh`
+
+### Fixed
+
+- **skill-development / command-development**: the skill listing budget no longer claims 8,000 characters for a "default 200K-token window" (the default `opus` model has a 1M-token window) or a project, user, plugin admission order. It is 1% of the active model's context window, overflow drops the least-invoked skills' descriptions first, and `skillListingBudgetFraction`, `skillListingMaxDescChars`, and `skillOverrides` `"name-only"` (for non-plugin skills) are documented.
+- **skill-development**: the `skillOverrides` section in `references/skill-loading-and-runtime.md` showed a single global string with three values. It now shows the per-skill object form, the four values (`"on"`, `"name-only"`, `"user-invocable-only"`, `"off"`), and that plugin skills are not affected (they are managed through `/plugin`). The `SLASH_COMMAND_TOOL_CHAR_BUDGET` examples no longer label a fixed count as an increase or decrease
+- **plugin-structure / hook-development / mcp-integration**: sensitive `${user_config.KEY}` values are substituted in MCP/LSP server config and exec-form hook `args`; only skill and agent content is limited to non-sensitive values. The manifest reference had applied the restriction to every field, contradicting the validator advice to move MCP header credentials into `sensitive: true` options
+- **plugin-structure / hook-development / mcp-integration**: monitor processes and `headersHelper` scripts receive no `CLAUDE_PLUGIN_OPTION_<KEY>` variables, so the docs no longer tell authors to read them there
+- **plugin-structure**: a plugin can set `subagentStatusLine` through its `settings.json`; the docs had said only the user configures it. `${CLAUDE_PLUGIN_ROOT}` is substituted in it since CC 2.1.319
+- **hook-development**: PowerShell hooks whose command begins with a type cast, `param`, `using`, or an attribute block on exit 2 only since CC 2.1.316
 
 ## [0.54.1] - 2026-10-29
 
