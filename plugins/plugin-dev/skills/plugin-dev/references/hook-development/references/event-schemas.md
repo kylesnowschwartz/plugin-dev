@@ -371,7 +371,7 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 - **Plan mode (CC 2.1.299):** an `"allow"` no longer lets a write (an MCP tool's, a file's, or a shell command's) run in plan mode. Before CC 2.1.299 such a write ran.
 - `additionalContext`: Injected into Claude's context for this tool call. `<system-reminder>` tags in it are escaped (CC 2.1.292)
 
-**Defer pattern (CC 2.1.89):** Return `permissionDecision: "defer"` to pause tool execution in headless sessions. The session can be resumed later with `-p --resume`. Use `defer` when you need external approval or want to batch decisions for later processing.
+**Defer pattern (CC 2.1.89):** Return `permissionDecision: "defer"` to pause tool execution in headless sessions. The session can be resumed later with `-p --resume`. Use `defer` when you need external approval or want to batch decisions for later processing. If the deferred call's MCP server is missing when the session resumes, `claude -p --resume` exits 1 since CC 2.1.319; before that the deferred call was lost, so a CI flow that resumes deferred MCP calls should keep the server configured and check the exit code.
 
 **Deprecated fields:** Top-level `decision: "approve|block"` still works but `hookSpecificOutput.permissionDecision` takes precedence.
 
@@ -381,7 +381,11 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 
 **Managed deny ends the turn (CC 2.1.296).** A PreToolUse hook in managed settings that denies a call with `"continue": false`, or a managed `prompt` hook that blocks one, now ends the turn as well as refusing the call. Before CC 2.1.296 the call was refused but the turn went on.
 
-**Matchers:** Tool names. Supports regex: `"Write|Edit"`, `"mcp__.*__delete.*"`
+**Monitor commands (CC 2.1.314).** A PreToolUse or PermissionRequest hook with a `Bash` matcher (including `Bash|PowerShell`, `^Bash$`, or `Bash.*`) also runs on shell commands Claude starts with the Monitor tool. It can `deny` or `ask`, but its `allow` and `updatedInput` have no effect on those commands. Before CC 2.1.314 such a hook did not run for Monitor commands at all, so a Bash guard could be bypassed through Monitor. To allow or rewrite a Monitor command, use a matcher that includes Monitor (`Bash|Monitor`, `.*`, or none) and name Monitor in `if`, as in `Monitor(tail *)`. A `Bash` matcher does not run for a Monitor WebSocket watch, and a PostToolUse hook with a `Bash` matcher does not run for Monitor. See `advanced.md` (Declarative `if` Field).
+
+**Cowork cloud sessions under auto mode (CC 2.1.314).** There, a hook's `allow` of an MCP tool call counts as no answer: the auto-mode classifier or a permission prompt decides. A hook cannot pre-approve an MCP call in that environment.
+
+**Matchers:** Tool names. Supports regex: `"Write|Edit"`, `"mcp__.*__delete.*"`. A claude.ai connector's tools can also be matched by the connector's terminal name, such as `mcp__claude_ai_Slack`; Claude Desktop ignored such matchers before CC 2.1.319 (see `advanced.md`, Event-Specific Matchers)
 **Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
 ---
@@ -547,6 +551,14 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
   "continueOnBlock": true
 }
 ```
+
+**After an interrupt (CC 2.1.319).** PostToolUse hooks now run on a tool call that finishes after a new message interrupts the turn, with up to 10 seconds to finish. Per the official hooks docs, which key the user pressed decides what happens:
+
+- **`Ctrl+Enter`** ends the turn while the tool runs. When the tool finishes, PostToolUse hooks run on its result with a 10-second window; a command hook still running after 10 seconds is killed, whatever its `timeout`.
+- **`Enter`** queues the message without interrupting the turn, so the hooks keep their usual `timeout`.
+- **`Esc`** cancels the hooks at once.
+
+A PostToolUse hook that must finish longer work after an interrupt should run with `async: true`, which means it cannot block or rewrite the result. Before CC 2.1.319, PostToolUse did not run on calls that finished after an interrupt.
 
 **Matchers:** Tool names (same as PreToolUse)
 **Hook types:** Command, HTTP, MCP tool, Prompt, Agent
@@ -949,6 +961,8 @@ As of CC 2.1.105, PreCompact supports blocking compaction:
 - Exit code 2 or `{"decision": "block"}` blocks compaction
 - Use to preserve critical context when compaction would lose important state
 - `additionalContext` injects information to be considered during compaction
+
+**Output size (CC 2.1.314).** When a PreCompact hook exits 0 without blocking, its stdout becomes instructions for the compaction summary. Each hook's output is cut at 10,000 characters, with a marker appended. Before CC 2.1.314, very large output could make compaction fail or repeat. Keep a PreCompact hook's stdout under 10,000 characters. PreCompact ignores `systemMessage` and `continue`.
 
 > **CC 2.1.88:** Added partial compaction capability. Claude Code can now compact only a portion of the conversation rather than the entire context, with a structured summary format and analysis process.
 
@@ -1469,5 +1483,7 @@ The CLI supports all 33 events. Neither SDK types all of them, so an event that 
 **Python SDK** (`claude-agent-sdk`) types exactly 10, as the `HookEvent` union in `types.py`: PreToolUse, PostToolUse, PostToolUseFailure, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, SubagentStart, PermissionRequest. The other 23 events are untyped there.
 
 **TypeScript SDK** (`@anthropic-ai/claude-agent-sdk`) is closer to parity and additionally types TeammateIdle, TaskCompleted, ConfigChange, Elicitation, and ElicitationResult. Check the package's own type declarations for the current union rather than assuming an event is present.
+
+**`onFailure: "block"` for SDK hook callbacks (CC 2.1.317).** An Agent SDK hook callback that fails (throws, returns nothing, or returns output that fails validation) normally lets the action go ahead. Setting `onFailure: "block"` on the matcher (`on_failure="block"` in Python) makes the failure block the action instead. It needs TypeScript Agent SDK 0.3.317+ or Python Agent SDK 0.2.177+, and hosts can check the initialize response's `hook_on_failure_supported` field. Stop, SubagentStop, TaskCompleted, and TeammateIdle ignore it. `onFailure` on command and HTTP hooks dates from CC 2.1.295; see `advanced.md` (onFailure).
 
 Events known to be CLI-only, typed in neither SDK — a partial list, since the SDKs add events independently of the CLI: WorktreeCreate, WorktreeRemove, PostCompact, InstructionsLoaded, StopFailure, PermissionDenied (CC 2.1.88), MessageDisplay (CC 2.1.152), DirectoryAdded (CC 2.1.219), PreModelSwitch (CC 2.1.251), PostModelSwitch (CC 2.1.251), PostToolBatch (CC 2.1.263), Setup (CC 2.1.263), TaskCreated (CC 2.1.263), UserPromptExpansion (CC 2.1.263).

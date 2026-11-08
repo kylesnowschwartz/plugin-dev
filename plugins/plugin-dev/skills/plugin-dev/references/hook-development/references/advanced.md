@@ -80,6 +80,8 @@ An `if` condition names each tool by its own name, so `Write(tests/**)` matches 
 > **CC 2.1.178:** Added tool parameter matching syntax (e.g., `Agent(model:opus)`) for granular permission control based on tool input parameters using wildcards.
 >
 > **CC 2.1.218 (breaking change):** Single-segment `dir/**` hook `if:` conditions now match only `<cwd>/dir`; write `**/dir/**` for any-depth matching. Previously, `dir/**` would match at any depth, which could lead to unintended matches. Update existing hooks that rely on the old behavior.
+>
+> **CC 2.1.314 (Monitor commands):** An `if` condition such as `Monitor(tail *)` matches the Monitor tool's shell commands the way `Bash(tail *)` matches Bash's. The same release made PreToolUse and PermissionRequest hooks with a `Bash` matcher run on Monitor commands too; such a hook can deny or ask, but its `allow` and `updatedInput` have no effect there. To allow or rewrite a Monitor command, use a matcher that includes Monitor (`Bash|Monitor`, `.*`, or none) with an `if` that names Monitor. A hook whose `if` names Bash still gets the Monitor call's input but cannot approve or rewrite it, and a `Bash`-matcher hook whose `if` names Monitor does not run.
 
 ### Script-Level Conditionals
 
@@ -389,7 +391,7 @@ exit 0
    }
    ```
 
-   With no shell, each `args` element reaches the program exactly as written: a bare `$VAR`, `$`, and backticks pass through verbatim. Claude Code substitutes only `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}`, `${CLAUDE_PROJECT_DIR}`, and non-sensitive `${user_config.KEY}`. So `"$CLAUDE_PLUGIN_OPTION_API_TOKEN"` in `args` would pass that literal string, not the token. Read sensitive options and other secrets from `$CLAUDE_PLUGIN_OPTION_<KEY>` inside the script (option 2) rather than passing them in `args`.
+   With no shell, each `args` element reaches the program exactly as written: a bare `$VAR`, `$`, and backticks pass through verbatim. Claude Code substitutes only `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}`, `${CLAUDE_PROJECT_DIR}`, and `${user_config.KEY}` (sensitive values included; the non-sensitive restriction applies only to skill and agent content). So `"$CLAUDE_PLUGIN_OPTION_API_TOKEN"` in `args` would pass that literal string, not the token. A sensitive value substituted into `args` lands on the process's command line, where other local processes can read it, so read secrets from `$CLAUDE_PLUGIN_OPTION_<KEY>` inside the script (option 2) rather than passing them in `args`.
 
 2. **Use `$CLAUDE_PLUGIN_OPTION_<KEY>` environment variables** — read values inside the script:
 
@@ -402,7 +404,7 @@ API_TOKEN="$CLAUDE_PLUGIN_OPTION_API_TOKEN"
 
 **Migration:** Audit any hooks using `${user_config.KEY}` in shell-form commands. Replace with exec form or read the value via the corresponding environment variable inside your script.
 
-**Monitors and headersHelper:** The same restriction applies. Read configuration values inside the script (via config file path or `env` block) rather than using `${user_config.*}` interpolation.
+**Monitors and headersHelper:** The same restriction applies, but option 2 does not: monitor processes and MCP `headersHelper` scripts never receive `CLAUDE_PLUGIN_OPTION_<KEY>` variables. Such a script has to obtain the value on its own, for example from a config file it reads, rather than through `${user_config.*}` interpolation.
 
 ### Input Validation
 
@@ -443,6 +445,8 @@ fi
 ```
 
 See `../examples/validate-write.sh` and `../examples/validate-bash.sh` for complete examples.
+
+**`permissions.blockWritesOutsideWorkingDirectories` (CC 2.1.314)** makes Write, Edit, and NotebookEdit refuse paths outside the working directories in every permission mode. It does not limit shell commands, MCP tools, or hook programs, so a hook script that writes outside the project is not stopped by it, and a path guard for Bash or MCP calls still has to be a hook or a rule.
 
 ### Symlink Vulnerability Fix in File Tools (CC 2.1.251)
 
@@ -873,7 +877,7 @@ Each hook entry in a matcher group supports these fields:
 }
 ```
 
-- `args`: Array of command arguments for exec-form spawning (CC 2.1.139). When provided, the command is executed directly without shell interpolation, which is safer for hooks that pass user-controlled data. Example: `"args": ["${CLAUDE_PLUGIN_ROOT}/scripts/check.sh", "--config", "${user_config.CONFIG_PATH}"]`. Each element is passed exactly as written, so a bare `$VAR` stays literal; only `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}`, `${CLAUDE_PROJECT_DIR}`, and non-sensitive `${user_config.KEY}` are substituted. Read tool input such as a file path from the hook's stdin JSON. The `command` field becomes the executable path when `args` is present.
+- `args`: Array of command arguments for exec-form spawning (CC 2.1.139). When provided, the command is executed directly without shell interpolation, which is safer for hooks that pass user-controlled data. Example: `"args": ["${CLAUDE_PLUGIN_ROOT}/scripts/check.sh", "--config", "${user_config.CONFIG_PATH}"]`. Each element is passed exactly as written, so a bare `$VAR` stays literal; only `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}`, `${CLAUDE_PROJECT_DIR}`, and `${user_config.KEY}` (sensitive values included) are substituted. Read tool input such as a file path from the hook's stdin JSON. The `command` field becomes the executable path when `args` is present.
 - `timeout`: Max execution time in seconds. Defaults vary by type — command/http/mcp_tool 600s, prompt 30s, agent 60s. UserPromptSubmit lowers the command/http/mcp_tool default to 30s; MessageDisplay lowers it to 10s. Since CC 2.1.312, a `timeout` under 1 second counts as 1 second.
 
 For the `if` field, see the [Declarative `if` Field](#declarative-if-field-cc-2185) section above. Beyond these, hook handlers support additional fields:
@@ -920,6 +924,8 @@ Decides what a failure of the hook does (CC 2.1.295, command and HTTP hooks). A 
 
 Use `"block"` on security guards, such as a PreToolUse hook that vets Bash commands, where a broken or slow script should stop the call rather than wave it through. Keep the default for logging, formatting, and notification hooks, where a failure should not stop work. Older Claude Code versions do not have this field, so a guard that must fail closed there has to catch its own errors and exit 2.
 
+**Agent SDK hook callbacks (CC 2.1.317).** `onFailure: "block"` also works on Agent SDK callback hooks, set on the matcher (`on_failure="block"` in Python), so a callback that throws, returns nothing, or returns invalid output blocks the action instead of letting it run. It needs TypeScript Agent SDK 0.3.317+ or Python Agent SDK 0.2.177+; hosts can check the `hook_on_failure_supported` field of the SDK initialize response. As with command hooks, Stop, SubagentStop, TaskCompleted, and TeammateIdle ignore it.
+
 **Hand-off failures fail closed (CC 2.1.299).** Separately from `onFailure`, an action a plugin hook can block is refused, not let through, when the hook cannot be handed the action or cannot hand back its answer; a tool that already ran has its result withheld. Values a hook hands back that nest deeper than 28,000 levels are refused with an error naming the limit. The changelog words this for plugin hooks and workflow scripts and targets the hooks-module (mod) path; it does not say whether command hooks are covered.
 
 ## Event-Specific Matchers
@@ -929,6 +935,8 @@ Matchers filter which registered hooks run for an occurrence of an event. Each e
 - **Tool-name matching is a case-sensitive regular expression, not a glob.** `"Write"` matches exactly; `"mcp__.*__delete.*"` needs the `.*`, because `"mcp__*__delete*"` is not a pattern this accepts.
 - **Alternate with a pipe, never a comma.** `"Bash|PowerShell"` matches either. `"Bash,PowerShell"` silently never fires (CC 2.1.191).
 - **Hyphenated matchers require an exact match (CC 2.1.195).** A matcher containing a hyphen no longer substring-matches, so `"mcp__brave-search"` matches only that exact value — write `"mcp__brave-search__.*"` for partial matches. This affects custom agent names, MCP server names, and any hyphenated identifier.
+- **`Bash` matchers reach Monitor commands (CC 2.1.314).** A PreToolUse or PermissionRequest hook matching `Bash` also runs on shell commands started by the Monitor tool, and can deny or ask but not approve or rewrite them. See [Declarative `if` Field](#declarative-if-field-cc-2185).
+- **claude.ai connector terminal names (CC 2.1.319).** Hook matchers, deny and ask rules, and `disallowedTools` entries written with a connector's terminal name, such as `mcp__claude_ai_Slack`, now apply in Claude Desktop; before CC 2.1.319 Desktop ignored them (the fix takes effect once Claude Desktop ships that version). The alias never extends an allow rule.
 - **`*` matches everything,** and so does omitting `matcher` altogether.
 - **Some events ignore `matcher` entirely.** Their Matchers line reads "Not supported"; an entry's matcher is silently discarded rather than rejected.
 
@@ -958,7 +966,8 @@ Different hook events support different output formats for controlling Claude's 
 - `allow` does not lift plan mode. Since CC 2.1.299, a write that a PreToolUse hook (or a mod's `tool.check` hook) allows, whether an MCP tool's, a file's, or a shell command's, still does not run in plan mode. Before CC 2.1.299 such a write ran despite plan mode's read-only restriction
 - `updatedInput`: Optionally modify tool parameters before execution. The rewritten input is checked against permission rules and safety checks; CC 2.1.290 fixed cases where some were not applied after a rewrite, so a rewrite cannot carry a call past a deny rule. Since CC 2.1.300 it is also validated against the tool's input schema, like Claude's own input: unknown keys are dropped silently, and input the tool rejects denies the call instead of passing through. The same applies to PermissionRequest `updatedInput`
 - Windows: a PreToolUse or PermissionRequest command hook that sets no `shell` fails closed when Git for Windows is not installed (CC 2.1.299): a guard that fails blocks the call. Before CC 2.1.299 such a hook failed open and the call ran. Two more fail-open cases were closed later: a hook with `"shell": "powershell"` (CC 2.1.309), and a hook command made only of quoted strings, such as a quoted path, which PowerShell printed instead of running (CC 2.1.310). Claude is shown a "Git Bash not found" blocking reason (exit code 127) and must not edit the hook to get around it
-- PowerShell exit 2: a hook run in PowerShell (`"shell": "powershell"` or a Windows fallback) blocks on exit code 2 only since CC 2.1.309. Before that, exit 2 from PowerShell let the call through
+- PowerShell exit 2: a hook run in PowerShell (`"shell": "powershell"` or a Windows fallback) blocks on exit code 2 only since CC 2.1.309. Before that, exit 2 from PowerShell let the call through. A command that begins with a type cast, `param`, `using`, or an attribute still did not block on exit 2 until CC 2.1.316
+- Cowork cloud sessions under auto mode: since CC 2.1.314 a hook's `allow` of an MCP tool call counts as no answer, so the classifier or a permission prompt decides
 - `additionalContext`: Injected into Claude's context. `<system-reminder>` tags in it, as in any hook output, are escaped before they reach Claude (CC 2.1.292)
 - A failure to match the hook against a call, or tool input that cannot be serialized to JSON, blocks the call (CC 2.1.288). Before CC 2.1.288 the hook was skipped and the call ran. PermissionRequest behaves the same way
 - A `deny` and its `permissionDecisionReason` survive an Agent SDK callback hook on the same call timing out (CC 2.1.304). Before CC 2.1.304, Claude saw the timeout error instead of the plugin hook's deny reason
@@ -1156,6 +1165,8 @@ Command hooks can run asynchronously in the background without blocking the main
 - `onFailure` is ignored, so an async hook cannot fail closed
 
 **Async output fixes (CC 2.1.295):** an async hook's JSON output printed over several lines used to be ignored, and an async SessionStart hook's unchanged context was added to the conversation again on every resume. Both are fixed. On older versions, print an async hook's JSON on one line (`jq -c`).
+
+**Async success output is labeled (CC 2.1.318):** plain output from an async hook that succeeds reaches Claude labeled with the hook's name and success status, in the same format as synchronous hook-success output. This comes from the system-prompts record, not the changelog.
 
 ### asyncRewake
 

@@ -11,6 +11,8 @@ Before writing or debugging a hooks module, load Claude Code's built-in `plugin-
 
 Use this reference for what the built-in skill does not have: patterns that worked, gotchas, and when to choose a mod.
 
+Since CC 2.1.317 the skill offers once, after a mod the person built works, to help share it; since CC 2.1.319 Claude can package a mod as a plugin on request, in the main session only. Claude Code also records the person's answer when it asks to turn on the mods it writes (CC 2.1.318).
+
 ## When to Choose a Mod
 
 | Need | Choose |

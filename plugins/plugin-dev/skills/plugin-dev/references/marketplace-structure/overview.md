@@ -357,6 +357,8 @@ The Discover tab considers the current working directory when suggesting plugins
 - **Team settings** - Configure `extraKnownMarketplaces` in `.claude/settings.json`
 - **Local testing** - Add with `/plugin marketplace add ./path` during development
 
+**`--add-dir` directories need their own trust (CC 2.1.319):** a directory added with `--add-dir` registers its plugin marketplaces only once that directory's own trust dialog has been accepted. A team that relies on marketplace settings in such a directory should tell users to accept its trust dialog; before CC 2.1.319 the marketplaces registered without it.
+
 **Install with the marketplace source (CC 2.1.275):** `/plugin install <plugin> --marketplace <source>` offers to add the marketplace before installing the plugin. A README can give one command that works for users who have not added the marketplace yet, for example `/plugin install my-plugin --marketplace owner/repo`.
 
 **Same flag on the CLI (CC 2.1.292):** `claude plugin install <plugin> --marketplace <source>` adds the marketplace if needed, under the same policy checks as `claude plugin marketplace add` (an organization's `strictKnownMarketplaces` list, for example, can refuse it), then installs the plugin from it. A README install section can give the shell form, `claude plugin install my-plugin --marketplace owner/repo`, beside the slash-command form.
@@ -383,6 +385,8 @@ claude plugin validate .
 **Uninstallable names fail validation (CC 2.1.283).** `claude plugin validate` used to accept some plugin or marketplace names in `marketplace.json` that Claude Code could not actually install. Such names now fail validation. A marketplace that passed on an older version can fail on CC 2.1.283, so re-run validation after upgrading and rename any entry it reports. The reserved and imitation names above are a separate check, applied when the marketplace is added.
 
 **Uninstallable names are refused at add time (CC 2.1.295-2.1.296).** `claude plugin marketplace add` used to report success for a marketplace whose name no plugin can be installed under; since CC 2.1.295 it refuses the add. A marketplace named like a built-in JavaScript property, such as `constructor`, made `marketplace add`, `marketplace update`, and `plugin install` fail with an internal error before CC 2.1.296; `add` now refuses such names with a clear message. Name marketplaces after the organization or project, as above.
+
+**Custom-named marketplace files (CC 2.1.318).** `claude plugin validate` used to pass a marketplace file with a name other than `marketplace.json` that `claude plugin marketplace add` then rejected. Since CC 2.1.318 the validator fails such a file too. On older versions, a passing validation of a custom-named file does not prove it can be added; keep the file at `.claude-plugin/marketplace.json`, or test it with `claude plugin marketplace add`.
 
 **README install line (CC 2.1.295).** When a plugin's README has no install line, `claude plugin validate` prints advice with the line to paste. The advice never changes the exit code, even with `--strict`. Adding the line, for example `claude plugin install my-plugin@my-marketplace`, silences it.
 

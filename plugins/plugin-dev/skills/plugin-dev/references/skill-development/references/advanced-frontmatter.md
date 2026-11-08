@@ -371,9 +371,9 @@ Claude Code allocates a character budget for skill descriptions to manage contex
 ### How It Works
 
 1. All installed skills contribute their `description` text to a shared budget
-2. Default budget: 1% of the context window measured in characters — `contextWindowTokens × 4 × 0.01`, or 8,000 characters for the default 200K-token window (controlled by `SLASH_COMMAND_TOOL_CHAR_BUDGET`)
-3. When total descriptions exceed the budget, lower-priority skills may be excluded from auto-discovery
-4. Excluded skills are still available via explicit `/skill-name` invocation — they just won't auto-trigger
+2. Default budget: scales at 1% of the active model's context window, so it differs by model. Users can change it with the `skillListingBudgetFraction` setting (for example `0.02`) or fix it with `SLASH_COMMAND_TOOL_CHAR_BUDGET` (a character count)
+3. The listing always contains every skill name. When descriptions exceed the budget, Claude Code drops descriptions starting with the skills the user invokes least
+4. A skill whose description was dropped is still available via explicit `/skill-name` invocation, but Claude no longer sees its trigger phrases, so it is unlikely to auto-trigger
 
 ### What Counts Against the Budget
 
@@ -391,7 +391,8 @@ Claude Code allocates a character budget for skill descriptions to manage contex
 ### Checking Budget Usage
 
 - `/context` command shows context usage including excluded skills if over budget
-- Environment variable: `SLASH_COMMAND_TOOL_CHAR_BUDGET=20000` to increase budget
+- Setting `skillListingBudgetFraction` (for example `0.02`) scales the budget; the environment variable `SLASH_COMMAND_TOOL_CHAR_BUDGET=20000` sets a fixed 20,000-character budget instead, which can be smaller than the default on a large-window model
+- Setting a low-priority personal, project, or bundled skill to `"name-only"` in `skillOverrides` lists it without a description, freeing budget for others; `skillOverrides` cannot be set on plugin skills (manage those through `/plugin`)
 - Monitor with: `claude --debug` shows skill loading details
 
 ### Practical Impact

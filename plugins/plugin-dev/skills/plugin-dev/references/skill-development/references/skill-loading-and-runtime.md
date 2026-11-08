@@ -70,7 +70,7 @@ Skills follow precedence: Enterprise > Personal (`~/.claude/skills/`) > Project 
 
 **`--add-dir` skills are prefixed on a clash (CC 2.1.309).** A skill in a directory added with `--add-dir` whose name is already held by an enterprise, personal, or project skill, or by a skill in a directory added earlier, is offered as `/<folder>:<name>`, where `<folder>` is the added directory's folder name. Before CC 2.1.309 such a skill was unreachable.
 
-This ordering governs **name collisions only**. It is not the same as the Skill tool's budget admission order (project, then user, then plugin), which governs which descriptions fit inside the 8,000-character visibility budget. The two rank project and personal skills differently because they answer different questions — see the Visibility Budget section in `../overview.md`.
+This ordering governs **name collisions only**. It is not the same as the rule that decides which descriptions are dropped when the skill listing overflows its visibility budget (1% of the model's context window): there, descriptions of the skills invoked least are dropped first. See the Visibility Budget section in `../overview.md`.
 
 **Qualified names in errors (CC 2.1.269):** When a bare skill name matches exactly one plugin skill, the Skill tool's "Unknown skill" error names the skill in its full `plugin-name:skill-name` form. A user who typed the bare name gets told what to type instead, which makes a shadowed plugin skill much easier to diagnose.
 
@@ -92,6 +92,8 @@ CC 2.1.282 reserved `claude-ai` the same way; CC 2.1.283 reverted that. Skills, 
 ## Nested Skill Directories (CC 2.1.178)
 
 Skills can be organized in nested directories within `.claude/skills/`. When working on files in a nested directory, skills from that directory's `.claude/skills/` are loaded automatically.
+
+**With the Bash sandbox on (CC 2.1.319):** skills in `.claude/skills` folders below the starting folder load only if Claude Code starts in that folder or the user runs `/cd` there. Working on files there is not enough. A plugin or project that relies on nested skills should say so for users who run with the sandbox on.
 
 **Collision handling:** When the same skill name exists in multiple nested directories, the skill displays as `<dir>:<name>` format (e.g., `apps/web:deploy`). This prevents name collisions while maintaining clarity about which skill is which. Skills from `--add-dir` directories get the same `<folder>:<name>` form when their name clashes (CC 2.1.309; see Skill Precedence above).
 
@@ -171,26 +173,33 @@ If a verify skill already exists, new learnings are folded into it rather than d
 
 ## skillOverrides Setting (CC 2.1.129)
 
-Users can control skill behavior globally via the `skillOverrides` setting in their settings.json:
+Users can override the visibility of individual skills via the `skillOverrides` setting in their settings.json. Each key is a skill name and each value sets that skill's visibility:
 
 ```json
 {
-  "skillOverrides": "user-invocable-only"
+  "skillOverrides": {
+    "legacy-context": "name-only",
+    "deploy": "off"
+  }
 }
 ```
 
 **Values:**
 
-- `off` - Disable all skills entirely (skills won't load or trigger)
-- `user-invocable-only` - Only allow skills that users explicitly invoke via `/skillname`
-- `name-only` - Show skill names in menus but don't load full descriptions (reduces context usage)
+- `"on"` - Claude sees the skill's name and description (normal listing)
+- `"name-only"` - Claude sees the skill's name only, without its description (frees listing budget)
+- `"user-invocable-only"` - Hidden from Claude, but still available in the `/` menu for the user to invoke
+- `"off"` - Hidden everywhere
+
+A skill with no entry counts as `"on"`.
+
+**Plugin skills are not affected by `skillOverrides`.** Users manage plugin skills through `/plugin` instead.
 
 **Implications for plugin developers:**
 
-- Skills may not trigger automatically if users have restrictive `skillOverrides` settings
-- Design skills to work well when user-invoked (clear `/skillname` entry point)
-- Keep skill names descriptive since they may be the only visible identifier
-- Test skills with `skillOverrides: "user-invocable-only"` to ensure they work when explicitly invoked
+- `skillOverrides` applies to personal, project, and bundled skills, not to a plugin's own skills, so it cannot be used to trim or hide a plugin skill
+- Users who set other skills to `"name-only"` or `"off"` free listing budget, which can leave more room for plugin skill descriptions
+- Point users to `/plugin` (not `skillOverrides`) when they want to enable or disable a plugin's skills
 
 ## disableBundledSkills Setting (CC 2.1.169)
 

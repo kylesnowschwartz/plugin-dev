@@ -230,7 +230,7 @@ The Workflow tool's `agent()` spawns now accept an `effort` option that override
 
 **Behavior:**
 
-- **Omit** — Inherit the session's current effort level
+- **Omit** — Use the configured subagent default when one is set (`CLAUDE_CODE_SUBAGENT_EFFORT`, CC 2.1.316), otherwise inherit the session's current effort level (see Effort When Nothing Names One below)
 - **`'low'`** — Use for cheap mechanical stages (formatting, simple transforms)
 - **Higher tiers** — Reserve for the hardest verify/judge stages that need maximum reasoning
 
@@ -245,7 +245,7 @@ workflow.agent({
 
 **Design guidance:**
 
-- Default to inheriting session effort (omit the option)
+- Default to the inherited effort (omit the option)
 - Use `'low'` for stages that don't require deep reasoning
 - Reserve `'high'`/`'xhigh'`/`'max'` for critical validation steps
 
@@ -260,6 +260,16 @@ workflow.agent({
 The Agent tool now takes an `effort` parameter, so Claude runs a subagent at the effort level the caller asks for. It is the per-spawn counterpart of an agent definition's `effort` frontmatter field, in the same way the call-level `model` parameter pairs with the `model` field: the definition sets the agent's usual level, and the call can ask for a different one for a single run. The Workflow tool's `agent()` option above does the same inside workflows.
 
 **Design guidance:** Keep the agent's typical level in its frontmatter and leave the call-level `effort` for exceptions, such as a cheap triage pass or one hard verification run. An orchestrating agent's instructions can name the effort to request for each kind of delegation.
+
+## Effort When Nothing Names One (CC 2.1.316-2.1.317)
+
+When neither the call (`effort` on the Agent tool or a Workflow `agent()` spawn) nor the agent definition's `effort` field names an effort level, a subagent no longer simply inherits the session's:
+
+- **`CLAUDE_CODE_SUBAGENT_EFFORT` (CC 2.1.316)** sets the effort subagents run at when nothing else names one.
+- **Different model (CC 2.1.317).** A subagent or teammate on a different model from the main conversation uses that model's saved effort level, or that model's default, instead of the session's effort level.
+- Otherwise the subagent inherits the session's effort, as before.
+
+The changelog does not say which of the first two wins when both apply. Both are user-side, so a plugin agent whose quality depends on its effort level should set `effort` in its frontmatter rather than rely on inheritance.
 
 ## EndConversation Tool (CC 2.1.214)
 

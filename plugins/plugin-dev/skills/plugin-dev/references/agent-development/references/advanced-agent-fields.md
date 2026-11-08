@@ -156,6 +156,8 @@ All hook events are supported in agent frontmatter. Key behavior difference:
 
 Background agents that encounter an unapproved permission request will fail. Design tool restrictions (`tools`, `permissionMode`) accordingly when agents may run in background.
 
+**`permissions.denyInsteadOfPrompting` (CC 2.1.319).** With this user setting on, a tool call that would wait on a permission prompt is denied and the turn continues, in terminal sessions, subagents, and teammates. A foreground agent then gets a denial where it would have asked the user. See `permission-modes-rules.md` (Settings That Change Prompting). A `disallowedTools` entry written with a claude.ai connector's terminal name (`mcp__claude_ai_Slack`) applies in Claude Desktop since CC 2.1.319; see `permission-modes-rules.md` (MCP Tool Patterns).
+
 ### Naming Spawned Agents (CC 2.1.85)
 
 Pass a short `name` when spawning agents so users can identify them in the teams panel and steer them mid-run:
@@ -655,7 +657,7 @@ The Agent tool now defaults to `run_in_background: true`. Claude keeps working w
 
 ### Extended Thinking Inheritance (CC 2.1.198)
 
-Subagents now inherit the session's extended thinking configuration. Agent type definitions supply model, reasoning effort, and tool access. At launch, the Agent tool's call-level `model` parameter overrides the model, and since CC 2.1.292 its `effort` parameter overrides the reasoning effort for that spawn (see `orchestration-and-tools.md`). This means subagents automatically benefit from extended thinking when enabled in the parent session.
+Subagents now inherit the session's extended thinking configuration. Agent type definitions supply model, reasoning effort, and tool access. At launch, the Agent tool's call-level `model` parameter overrides the model, and since CC 2.1.292 its `effort` parameter overrides the reasoning effort for that spawn (see `orchestration-and-tools.md`). When neither names an effort, `CLAUDE_CODE_SUBAGENT_EFFORT` (CC 2.1.316) or, for a subagent on a different model from the main conversation, that model's saved effort or default (CC 2.1.317) applies before the session's effort; see `orchestration-and-tools.md` (Effort When Nothing Names One). This means subagents automatically benefit from extended thinking when enabled in the parent session.
 
 ### Subagent Results Arrive Framed as Subagent Output (CC 2.1.277)
 
