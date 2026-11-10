@@ -43,6 +43,8 @@ No permission dialogs are shown. Any action that would have prompted for permiss
 
 **When to use:** Automation and CI/CD agents whose full set of permitted actions is already enumerated by allow rules, so a denial never blocks required work.
 
+**Mods in `dontAsk` (CC 2.1.321):** mods Claude writes during the session do not load in this mode. Tool calls an installed mod makes itself (`$.tool.call`, `$.mcp.call`) are not turned into denials here, because they raise no prompt at all; only deny rules and organization policy stop them. In auto and `bypassPermissions` modes, mods Claude writes turn on without asking. See `../../plugin-structure/references/advanced-topics.md` (Function-Hook Plugins).
+
 #### bypassPermissions
 
 Runs actions without asking for permission, which makes it the most permissive mode. It is not a bypass of every check, though. The security monitor still blocks the categories listed under [Blocked Categories](#blocked-categories), and `permissions.blockReadsOutsideWorkingDirectories` still makes recognized file-reading commands prompt (see Bash Patterns). As of CC 2.1.273, a subshell can no longer hide a dangerous `rm` in this mode.
@@ -123,6 +125,8 @@ Path specifiers follow the gitignore specification:
 **Write path rules with `Edit(path)` or `Read(path)` only.** File permission checks match `Edit(path)` for every file-writing tool (Write, Edit, NotebookEdit) and `Read(path)` for reads. A `Write(path)`, `NotebookEdit(path)`, or `Glob(path)` path rule is never matched, so it silently allows or denies nothing. CC 2.1.275 fixed `/update-config`, which had been writing `Write(path)` rules. Settings a plugin's README tells users to add, or rules generated with an older `/update-config`, may contain such rules and should be rewritten as `Edit(path)`. Bare tool names (`Write`), `Tool(param:value)` rules, and hook `if` conditions still use each tool's own name.
 
 **Symlinked directories resolve to their real location (CC 2.1.268).** Deny and ask rules on directories that are symlinks — `/etc`, `/tmp`, `/var` on macOS, `/bin` on Linux — apply when a path is supplied by its real location, and Bash commands honor deny rules written using the symlinked spelling. A rule written either way covers both. This behavior was **not** affected by the CC 2.1.273 revert described under Bash Patterns.
+
+**`cp` and `mv` into a directory (CC 2.1.321).** Deny rules and protected-file prompts apply to the file that `cp` or `mv` writes into a destination directory, and `/bin/cp` and `/bin/mv` get the same checks. Before CC 2.1.321 a path deny rule could miss a file copied or moved into a directory.
 
 **False symlink rejections on macOS fixed (CC 2.1.273).** Read no longer refuses a dragged-in screenshot, or any file the system reports under a second path, with `Refusing to read <path>: its symlink resolution changed after permission was checked`. The error still fires on a genuine mid-check resolution change.
 

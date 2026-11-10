@@ -11,7 +11,7 @@ Function-hook plugins, which Claude Code calls **mods**, are plugins whose hooks
 Claude Code ships the authoritative mod guidance as the `plugin-authoring` skill in the built-in plugin `cc-plugin-plugin-authoring`. Load it (the Skill tool, or `/plugin-authoring`) before writing, changing, or debugging a hooks module. `../../mod-development/overview.md` holds mod patterns, gotchas, and a vendored copy of the skill's material for one version; the skill itself is generated for the running build:
 
 - **Types for this build.** Loading the skill writes `types/claude-code.d.ts` into the skill's extracted directory: every event's input and result, every `$` method with its doc comment, and every element's props. Once a mod has loaded, `<mod folder>/.claude-plugin/types/` holds the same declarations plus a `tsconfig.json` for `tsc -p <mod folder>`.
-- **Hot reload.** Loading the skill is what starts Claude Code's watch on the session's mods folder. The first file written there asks the user whether to enable hot reloading for the session; only the user can answer. Without the skill loaded, Claude Code does not watch the folder, and a new mod loads only through `claude --plugin-dir <folder>`.
+- **Hot reload.** Loading the skill is what starts Claude Code's watch on the session's mods folder. The first file written there asks the user whether to enable hot reloading for the session; only the user can answer. Since CC 2.1.321 that question is not asked in auto and `bypassPermissions` modes: mods Claude writes turn on without asking, even where managed settings set `allowUnsandboxedCommands: false` or `allowManagedDomainsOnly`. In `dontAsk` mode they do not load at all. Without the skill loaded, Claude Code does not watch the folder, and a new mod loads only through `claude --plugin-dir <folder>`. Headless sessions reload mods in `.claude/skills` when their files change (CC 2.1.321); set `CLAUDE_CODE_PLUGIN_DIR_WATCH=0` to turn this off.
 - **Working examples.** The skill's `examples/` folder holds complete modules for a pane, a band above the prompt, and a tool-call hook, each of which validates and type-checks on that build.
 - **The long form.** The skill's `reference.md` covers the full event list, `ui.render`, `$.state` contracts, `session.append`, the `.catch` pattern for guarding hooks, dispatch time budgets, `$.tool.register` and `$.agent.register`, `claude plugin test`, and sharing a mod through a marketplace.
 
@@ -44,6 +44,8 @@ Most plugins work well with declarative `hooks.json` configuration.
 **Plugin hooks fail closed on hand-off failures (CC 2.1.299).** An action a plugin hook can block is refused, not let through, when the hook cannot be handed the action or cannot hand back its answer; a tool that already ran has its result withheld. Values a plugin hook hands back that nest deeper than 28,000 levels are refused with an error naming the limit (workflow scripts allowed 100,000). A `tool.check` allow, like a PreToolUse `allow`, no longer lets a write run in plan mode (CC 2.1.299).
 
 **Managed rules still apply (CC 2.1.289).** On managed machines, a managed deny or ask rule on a nested compound shell command holds even when a user-installed mod's `tool.call` hook approves the call.
+
+**A mod's own tool calls do not prompt (CC 2.1.321).** Tool calls a mod makes itself through `$.tool.call` or `$.mcp.call` raise no permission prompt, even under the user's own ask rules or in `dontAsk` and `-p` runs. Only deny rules and organization policy gate them. Treat everything a mod calls as running without the user's review, and write deny rules, not ask rules, for anything a mod must never do.
 
 **Managed machines bypass some events for user mods (CC 2.1.296).** On a machine with managed settings, the built-in `cc-plugin-sec-default` plugin runs in front of user-installed mods and skips their hooks on `classic.*` events (`classic.SessionStart`, `classic.UserPromptSubmit`, `classic.Stop`, `classic.PermissionRequest`, `classic.PreCompact`, `classic.PostCompact`, `classic.SubagentStop`) and on `prompt.context` and `prompt.compose`. The hook does not run and no error shows; `claude --debug` logs `<plugin>: classic.Stop bypassed by cc-plugin-sec-default (tier user); beneath runs`. Command hooks in `hooks.json` are not affected. Use native events instead: `session.start` for session start, `tool.check` with an ask verdict for an approval wait, the `ToolUse` render's `isRunning` for an approval given, `session.compact` for compaction, and `turn.complete` with `agentId` for a subagent stop. A mod that adds system prompt or context text through `prompt.compose` or `prompt.context` has no effect on managed machines.
 
@@ -128,6 +130,10 @@ The `plugin-authoring` skill describes only the build it ships with. This histor
 - **CC 2.1.319:**
   - Hot reload of a mod in `.claude/skills` no longer misses a file deleted just after it appeared, or that file's return.
   - The system prompts add a "Mod plugin packaging on request" skill: when asked, Claude packages a mod as a scanned plugin with a save card, in the main session only.
+- **CC 2.1.321:**
+  - Mods Claude writes turn on without asking in auto and `bypassPermissions` modes, even with managed `allowUnsandboxedCommands: false` or `allowManagedDomainsOnly`, and do not load in `dontAsk` mode.
+  - A mod's own `$.tool.call` and `$.mcp.call` calls raise no permission prompt; deny rules and organization policy still apply (see Risks above).
+  - Headless sessions reload mods in `.claude/skills` when their files change; `CLAUDE_CODE_PLUGIN_DIR_WATCH=0` turns this off.
 
 ## Keybindings Plugin Context
 
@@ -274,6 +280,8 @@ For comprehensive coverage including configuration, behavior, supported events, 
 | ------------------------------- | -------------------------------------- |
 | `DISABLE_AUTOUPDATER=true`      | Disable all auto-updates               |
 | `FORCE_AUTOUPDATE_PLUGINS=true` | Force auto-update for all marketplaces |
+
+**One download per repository (CC 2.1.321).** Plugin auto-updates and `/plugin` marketplace updates used to download a plugin again for each worktree or folder of a repository. Since CC 2.1.321 they do not.
 
 ### Plugin Versioning Implications
 
@@ -576,6 +584,8 @@ project/
 - Skills are immediately available in the project
 - Simplifies plugin development iteration
 - Works alongside installed marketplace plugins
+
+**Not inside the plugin cache (CC 2.1.321):** nested `.claude/skills` folders inside `~/.claude/plugins` no longer load when Claude works on files there, so a plugin cannot ship skills that way. Use the plugin's `skills/` directory.
 
 **Precedence:** Local `.claude/skills/` are discovered at the Project level in the skill precedence hierarchy (Enterprise > Personal > Project > Plugin).
 

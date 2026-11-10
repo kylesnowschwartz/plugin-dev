@@ -52,7 +52,7 @@ The manifest defines plugin metadata and configuration, located at `.claude-plug
 }
 ```
 
-**Name requirements:** kebab-case (lowercase with hyphens), unique across installed plugins, no spaces or special characters. Examples: `code-review-assistant`, `test-runner`, `api-docs`.
+**Name requirements:** kebab-case (lowercase with hyphens), unique across installed plugins, no spaces or special characters. Examples: `code-review-assistant`, `test-runner`, `api-docs`. Keep names plain ASCII: since CC 2.1.321 the VS Code extension shows a plugin's permission request as coming from "a plugin" when its name holds hidden characters, so users cannot tell which plugin is asking (SDK `can_use_tool` requests also carry a plugin field naming the requester).
 
 ### Recommended Metadata
 
@@ -205,6 +205,8 @@ claude --plugin-dir /path/to/plugins-folder/
 ```
 
 The `--plugin-dir` flag supports both individual plugin directories and folders containing multiple plugins (CC 2.1.265). When pointing to a folder, each child folder holding a `.claude-plugin/plugin.json` is loaded. Since CC 2.1.281 this also works when the folder has its own `.claude-plugin/marketplace.json`; earlier versions loaded such a folder as one empty plugin. Only direct child folders are loaded, so for a marketplace repository that keeps plugins under `plugins/<name>/`, point the flag at `plugins/` or at each plugin.
+
+Before CC 2.1.321, `--plugin-dir .` and `--plugin-dir ./builtin` wrote generated type files for Claude Code's built-in plugins into a `builtin` folder. Check a plugin repository for a stray `builtin` folder left by an older version before committing.
 
 **Checking load failures headlessly (CC 2.1.283):** in `--output-format stream-json`, the `system/init` message's `plugin_errors` field lists plugins that failed to load or loaded only partially, and `--plugin-dir` failures carry a `path` naming the directory that did not load. Remote Control workers always omit the key, so its absence is not proof of a clean load. See `references/headless-ci-mode.md`.
 

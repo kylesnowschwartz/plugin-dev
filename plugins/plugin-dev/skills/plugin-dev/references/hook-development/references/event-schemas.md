@@ -262,6 +262,8 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 
 **Skill-scoped UserPromptSubmit (CC 2.1.299).** A `UserPromptSubmit` hook declared in a skill's own frontmatter first runs on the prompt after the one that invokes the skill; it never sees the invoking prompt.
 
+**Not run on replayed permission answers (CC 2.1.321).** When a remote session restarts and replays a permission answer, UserPromptSubmit hooks do not run on that replay. Before CC 2.1.321 a hook that blocked the replayed answer left the session giving no reply.
+
 **Matchers:** Not supported (matcher field is silently ignored).
 **Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
@@ -372,6 +374,8 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 - `additionalContext`: Injected into Claude's context for this tool call. `<system-reminder>` tags in it are escaped (CC 2.1.292)
 
 **Defer pattern (CC 2.1.89):** Return `permissionDecision: "defer"` to pause tool execution in headless sessions. The session can be resumed later with `-p --resume`. Use `defer` when you need external approval or want to batch decisions for later processing. If the deferred call's MCP server is missing when the session resumes, `claude -p --resume` exits 1 since CC 2.1.319; before that the deferred call was lost, so a CI flow that resumes deferred MCP calls should keep the server configured and check the exit code.
+
+**Several hooks asking or deferring (CC 2.1.321):** when one PreToolUse hook returns `ask` and another returns `defer` that finishes first but cannot be honored, the `ask` now stands; before CC 2.1.321 it was lost. When an app that embeds Claude Code has its own PreToolUse hook and another hook also asks, the app now receives its own hook's `ask` reason, not the other hook's.
 
 **Deprecated fields:** Top-level `decision: "approve|block"` still works but `hookSpecificOutput.permissionDecision` takes precedence.
 
@@ -539,7 +543,7 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 }
 ```
 
-- `updatedToolOutput`: Replace tool output for **any** tool (CC 2.1.121). Use this for general tool output modification.
+- `updatedToolOutput`: Replace tool output for **any** tool (CC 2.1.121). Use this for general tool output modification. Exception: since CC 2.1.321, in Cowork cloud sessions it cannot replace the answer in an AskUserQuestion result or the plan in an ExitPlanMode result; Claude reads the originals.
 - `updatedMCPToolOutput`: Replace tool output for **MCP tools only** (legacy, still works). Prefer `updatedToolOutput` for new hooks. Before CC 2.1.296, PostToolUse hooks in managed settings did not apply it in some sessions.
 
 **Continue on block (CC 2.1.139):** PostToolUse hooks support a `continueOnBlock` option on the hook entry. When set and the hook returns `decision: "block"`, the rejection reason is fed back to Claude as context instead of stopping execution entirely. This lets the hook provide corrective feedback while letting Claude continue working.
@@ -1085,7 +1089,7 @@ Use to verify what survived compaction, log compaction results, or send alerts i
 **Output:** Cannot block file changes. Special capabilities:
 
 - Supports `$CLAUDE_ENV_FILE` for persisting environment variable changes
-- Can return a `watchPaths` array to dynamically update monitored paths
+- Can return a `watchPaths` array to dynamically update monitored paths. On Windows, before CC 2.1.321, FileChanged hooks stopped firing for paths set through `watchPaths` after the first shell command when the session's working directory had a lowercase drive letter
 
 **File modification budget-exceeded reminder (CC 2.1.124):** When a user or linter changes a file but the diff is omitted because other modified files exceeded the snippet budget, Claude receives a system reminder directing it to read the file if current content is needed. Hooks processing FileChanged events should be aware that detailed diff content may not always be available in Claude's context.
 

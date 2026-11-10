@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.56.0] - 2026-11-10
+
+Sync with Claude Code 2.1.321-2.1.322 (the upstream changelog has no 2.1.320 entry, and 2.1.322 has no plugin-relevant changes). This release covers 15 Must Update items, all from CC 2.1.321, and two of four May Update items. The Doc Drift Audit found no contradictions, `scripts/check-doc-drift.sh` was clean, and `docs/claude-code-facts.json` changed only in `claude_code_version` (2.1.319 to 2.1.322).
+
+### Added
+
+- **mod-development / plugin-structure**: headless sessions reload mods in `.claude/skills` when their files change, and `CLAUDE_CODE_PLUGIN_DIR_WATCH=0` turns this off (CC 2.1.321); a CC 2.1.321 entry in the mod version history
+- **mod-development / plugin-structure / agent-development**: a mod's own `$.tool.call` and `$.mcp.call` calls raise no permission prompt, even under ask rules or in `dontAsk` and `-p` runs; only deny rules and organization policy gate them (CC 2.1.321)
+- **marketplace-structure**: managed `extraKnownMarketplaces` names are reserved for their declared source, other entries with that name are hidden and their plugins reinstalled from the declared marketplace, and take-overs set saved data aside for `cleanupPeriodDays` and options and secrets until `claude plugin restore-set-aside` (CC 2.1.321)
+- **agent-development**: `fable` resolves to Claude Fable 5.2 (`claude-fable-5-2`), the default Fable model, and saved Fable 5.1 picks move to `fable` (CC 2.1.321)
+- **hook-development**: PreToolUse multi-hook `ask`/`defer` fixes, the PreToolUse `mcp_tool` answer over 16 MiB refusing the call, and UserPromptSubmit hooks not running on a replayed permission answer after a remote session restart (CC 2.1.321)
+- **agent-development**: deny rules and protected-file prompts apply to the file `cp` or `mv` writes into a directory, `/bin/cp` and `/bin/mv` included; `claude agents` honors global flags typed before `agents` (CC 2.1.321)
+
+### Changed
+
+- **mod-development / plugin-structure / agent-development**: the hot-reload consent text no longer says only the person can turn on the session's mods. Since CC 2.1.321 mods Claude writes turn on without asking in auto and `bypassPermissions` modes, even with managed `allowUnsandboxedCommands: false` or `allowManagedDomainsOnly`, and do not load in `dontAsk` mode
+- **hook-development**: PostToolUse `updatedToolOutput` no longer applies to "any tool" without exception: in Cowork cloud sessions it cannot replace the AskUserQuestion answer or the ExitPlanMode plan (CC 2.1.321)
+- **skill-development / plugin-structure**: nested `.claude/skills` folders inside `~/.claude/plugins` no longer load when Claude works on files there (CC 2.1.321)
+- **skill-development / command-development**: skill and command names holding a Bamum letter are refused (CC 2.1.321)
+- **plugin-structure**: plugin names should stay plain ASCII, since a name with hidden characters shows as "a plugin" in VS Code permission requests (CC 2.1.321)
+- **mod-development/vendor**: refreshed to Claude Code 2.1.322 by `scripts/sync-mod-api.sh`
+
+### Fixed
+
+- **hook-development**: notes for the Windows FileChanged `watchPaths` fix with lowercase drive letters (CC 2.1.321)
+- **skill-development**: notes for project skills, commands, and agents staying missing after their folder was removed and restored, or after entering a worktree (CC 2.1.321)
+- **plugin-structure**: notes for `--plugin-dir .` writing built-in plugin type files into a `builtin` folder, and for auto-updates re-downloading a plugin per worktree (CC 2.1.321)
+
 ## [0.55.0] - 2026-11-08
 
 Sync with Claude Code 2.1.313-2.1.319 (the upstream changelog has no 2.1.313 or 2.1.315 entries). This release covers 22 Must Update items (two promoted by Stage 2) and fixes all three Doc Drift Audit contradictions. One of 24 May Update items was applied. `scripts/check-doc-drift.sh` was clean, and `docs/claude-code-facts.json` changed only in `claude_code_version` (2.1.312 to 2.1.319). The release also ships the mod-development topic added since 0.54.1; its vendored `plugin-authoring` copy is now refreshed to Claude Code 2.1.319.

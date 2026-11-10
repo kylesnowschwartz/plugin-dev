@@ -962,6 +962,7 @@ Different hook events support different output formats for controlling Claude's 
 - Managed-settings PreToolUse hooks that deny a call with `"continue": false`, and managed `prompt` hooks that block one, end the turn since CC 2.1.296. Before that the call was refused but the turn went on
 - `defer` is **not** a pass-through. The call does not run; it is recorded as deferred and the session can be resumed later with `-p --resume`. Deferral is unsupported for calls served to a cloud session, which fail with "deferred this call … so nothing ran". See [event-schemas.md](event-schemas.md) for the headless deferral flow
 - `ask` depends on the session being interactive: an interactive session shows `Hook PreToolUse:<Tool> requires confirmation ... [plugin:<name>]`, while headless runs (`claude -p`) have no one to prompt and treat the same `ask` as a block, surfacing the reason to the model. The prompt names the hook's source, `[plugin:<name>]` for a plugin hook or `[skill]` for a skill-scoped hook; before CC 2.1.301 that label could be missing
+- With several PreToolUse hooks on one call, an `ask` is no longer lost when another hook's `defer` finishes first and cannot be honored, and an app that embeds Claude Code gets its own hook's `ask` reason when more than one hook asks (both CC 2.1.321)
 - `allow` does not skip every prompt. Since CC 2.1.292 (a security fix), a PreToolUse `allow`, like auto mode, no longer bypasses the permission prompt for file reads from network (UNC) paths
 - `allow` does not lift plan mode. Since CC 2.1.299, a write that a PreToolUse hook (or a mod's `tool.check` hook) allows, whether an MCP tool's, a file's, or a shell command's, still does not run in plan mode. Before CC 2.1.299 such a write ran despite plan mode's read-only restriction
 - `updatedInput`: Optionally modify tool parameters before execution. The rewritten input is checked against permission rules and safety checks; CC 2.1.290 fixed cases where some were not applied after a rewrite, so a rewrite cannot carry a call past a deny rule. Since CC 2.1.300 it is also validated against the tool's input schema, like Claude's own input: unknown keys are dropped silently, and input the tool rejects denies the call instead of passing through. The same applies to PermissionRequest `updatedInput`
@@ -1029,7 +1030,7 @@ PostToolUse specifically supports additional fields for replacing tool output. T
 }
 ```
 
-This allows hooks to replace what Claude sees as the tool response before processing. `updatedToolOutput` (CC 2.1.121) works for any tool; the older `updatedMCPToolOutput` applies to MCP tools only. Before CC 2.1.296, PostToolUse hooks in managed settings did not apply `updatedMCPToolOutput` in some sessions. See `event-schemas.md` for the authoritative per-event schemas.
+This allows hooks to replace what Claude sees as the tool response before processing. `updatedToolOutput` (CC 2.1.121) works for any tool, except that in Cowork cloud sessions it cannot replace the AskUserQuestion answer or the ExitPlanMode plan (CC 2.1.321); the older `updatedMCPToolOutput` applies to MCP tools only. Before CC 2.1.296, PostToolUse hooks in managed settings did not apply `updatedMCPToolOutput` in some sessions. See `event-schemas.md` for the authoritative per-event schemas.
 
 ### PostToolUseFailure Decision Control
 

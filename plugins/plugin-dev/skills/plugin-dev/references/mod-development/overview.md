@@ -7,7 +7,7 @@ A **mod** is a Claude Code plugin whose hooks are TypeScript functions instead o
 Before writing or debugging a hooks module, load Claude Code's built-in `plugin-authoring` skill (the Skill tool, or `/plugin-authoring`). Loading it does two things that this reference cannot:
 
 - **It writes the API types for the running build** into the skill's extracted folder. Once a mod has loaded, `<mod folder>/.claude-plugin/types/` holds the same, with a `tsconfig.json` for `tsc -p <mod folder>`.
-- **It starts hot reload.** Claude Code watches the session's mods folder only after the skill loads. The first file written there asks the person once to turn on the session's mods; only the person can answer. Edits reload when the turn ends.
+- **It starts hot reload.** Claude Code watches the session's mods folder only after the skill loads. The first file written there asks the person once to turn on the session's mods; only the person can answer. Since CC 2.1.321, in auto and `bypassPermissions` modes the mods Claude writes turn on without asking (even with managed `allowUnsandboxedCommands: false` or `allowManagedDomainsOnly`), and in `dontAsk` mode they do not load. Edits reload when the turn ends. Headless sessions also reload mods in `.claude/skills` when their files change (CC 2.1.321); `CLAUDE_CODE_PLUGIN_DIR_WATCH=0` turns that off.
 
 Use this reference for what the built-in skill does not have: patterns that worked, gotchas, and when to choose a mod.
 
@@ -23,7 +23,9 @@ Since CC 2.1.317 the skill offers once, after a mod the person built works, to h
 | A tool or data source shared with other MCP clients | An MCP server (`../mcp-integration/overview.md`) |
 | Instructions or a workflow for the model | A skill (`../skill-development/overview.md`) |
 
-Cross-cutting risks of mods (managed machines that skip some events, fail-closed hand-offs, auto mode) and the version history of the mod API are in `../plugin-structure/references/advanced-topics.md`.
+A mod's own tool calls (`$.tool.call`, `$.mcp.call`) raise no permission prompt since CC 2.1.321, even under the person's ask rules or in `dontAsk` and `-p` runs; only deny rules and organization policy stop them.
+
+Cross-cutting risks of mods (managed machines that skip some events, fail-closed hand-offs, auto mode, unprompted mod tool calls) and the version history of the mod API are in `../plugin-structure/references/advanced-topics.md`.
 
 ## The Vendored Copy
 

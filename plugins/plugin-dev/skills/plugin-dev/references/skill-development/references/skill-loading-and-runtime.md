@@ -95,6 +95,8 @@ Skills can be organized in nested directories within `.claude/skills/`. When wor
 
 **With the Bash sandbox on (CC 2.1.319):** skills in `.claude/skills` folders below the starting folder load only if Claude Code starts in that folder or the user runs `/cd` there. Working on files there is not enough. A plugin or project that relies on nested skills should say so for users who run with the sandbox on.
 
+**Not inside the plugin cache (CC 2.1.321):** `.claude/skills` folders inside `~/.claude/plugins` no longer load when Claude works on files there. A `.claude/skills` folder shipped inside an installed plugin's directory is therefore never picked up as nested skills; ship plugin skills through the plugin's `skills/` directory instead.
+
 **Collision handling:** When the same skill name exists in multiple nested directories, the skill displays as `<dir>:<name>` format (e.g., `apps/web:deploy`). This prevents name collisions while maintaining clarity about which skill is which. Skills from `--add-dir` directories get the same `<folder>:<name>` form when their name clashes (CC 2.1.309; see Skill Precedence above).
 
 **Discovery after `cd` (CC 2.1.312):** Per-directory skills and `paths:` skills are found after a Bash `cd` deeper into a git repository. Before CC 2.1.312 they could be missed in that case, so on older versions conditional activation was unreliable once Claude had changed into a subdirectory.
@@ -323,6 +325,8 @@ Use the `/reload-skills` command to re-scan skill directories without restarting
 Changes to skill content, frontmatter, and references are picked up. No need to restart Claude Code.
 
 **Performance optimization (CC 2.1.174):** Skill hot-reload now only re-sends changed skills instead of the entire skill listing. When you modify a single skill, only that skill is re-announced to Claude, reducing token overhead during rapid iteration. This makes the edit-reload-test cycle faster for developers working on individual skills.
+
+**Removed and restored folders (CC 2.1.321):** project skills, commands, and agents whose folder was removed and came back mid-session, such as with `git stash`, used to stay missing, including after entering a worktree. In SDK and desktop sessions they also disappeared from the menu after Claude entered a worktree. Both are fixed in CC 2.1.321; on older versions, restart the session after such a change.
 
 **Skill listing after compaction (CC 2.1.299-2.1.304):** Since CC 2.1.304, compaction sends Claude the skill list again by itself, and `/reload-skills` sends only skills that are new or changed. Running `/reload-skills` after compaction is no longer needed. On CC 2.1.299-2.1.303, `/reload-skills` re-sent the full skill list and was the way to get skills listed to Claude again after compaction. Since CC 2.1.301, skills are also listed to the model again after `/rewind`. CC 2.1.304 also stopped resumed and cloud sessions from sending the whole skill list again each time plugins reloaded at startup. When Claude adds an `anthropic-skills:` prefix to a skill name, the Skill tool's "Unknown skill" error now suggests the listed name (CC 2.1.299).
 

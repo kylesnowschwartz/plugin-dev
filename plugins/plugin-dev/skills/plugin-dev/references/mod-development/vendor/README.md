@@ -1,6 +1,6 @@
 # Vendored plugin-authoring material
 
-Claude Code version: 2.1.319
+Claude Code version: 2.1.322
 
 These files are copied from Claude Code's built-in `plugin-authoring` skill (the `cc-plugin-plugin-authoring` built-in plugin):
 

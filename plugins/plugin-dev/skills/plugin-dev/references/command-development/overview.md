@@ -123,7 +123,7 @@ After review, assign to $3 for follow-up.
 
 **Argument-name cap (CC 2.1.301):** only the first 64 argument names, each up to 64 characters, are filled in; placeholders for extra or longer names are not substituted. Before CC 2.1.301, commands and skills with very many or very long argument names could stall for seconds when invoked.
 
-**File names (CC 2.1.299):** a command whose file or folder name contains hidden, direction-changing, or blank-like characters, `<`, or `>` is not offered until it is renamed, and a `name:` value with those characters is ignored. Use plain kebab-case file names.
+**File names (CC 2.1.299):** a command whose file or folder name contains hidden, direction-changing, or blank-like characters, `<`, or `>` is not offered until it is renamed, and a `name:` value with those characters is ignored. Since CC 2.1.321, names holding a Bamum letter, which some fonts draw as blank, are refused too. Use plain kebab-case file names.
 
 **UserPromptSubmit runs first (CC 2.1.299):** a UserPromptSubmit hook sees the command line as typed, before the command expands, so a hook that blocks the prompt also stops the command's `[BANG]` shell lines from running.
 

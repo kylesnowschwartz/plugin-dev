@@ -858,6 +858,8 @@ Dispatched sessions inherit the `agent` setting from the dispatching context, al
 
 **Cowork cloud sessions ignore it (CC 2.1.311):** Cowork cloud sessions ignore an `agent` named by a plugin's `settings.json` or the user's settings. Before CC 2.1.311 such a setting made those sessions lose their connectors and most tools after a restart.
 
+**Global flags before `agents` (CC 2.1.321):** `claude agents` honors `--permission-mode`, `--dangerously-skip-permissions`, `--model`, `--effort`, and `--agent` when they are typed before `agents` (for example `claude --agent my-custom-agent agents`). Earlier versions ignored flags in that position.
+
 ### Agent Autocomplete (CC 2.1.153)
 
 The `claude agents` dispatch input now suggests native slash commands and bundled skills in addition to project agents. When testing agent invocation, autocomplete helps discover available agent types and skills that can be dispatched to agents.

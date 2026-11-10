@@ -134,6 +134,8 @@ An `mcp_tool` hook is accepted on every event, but it only runs where an MCP cli
 
 **Blocking events wait for the server (CC 2.1.281).** On blocking events such as PreToolUse, an `mcp_tool` hook whose server is still connecting now waits for it, up to the MCP connect timeout. Before CC 2.1.281 the hook was skipped while the server connected, so an early tool call could pass a guard that never ran.
 
+**Oversized answers refuse the call (CC 2.1.321).** A PreToolUse `mcp_tool` hook on a stdio or HTTP MCP server whose answer is over 16 MiB now refuses the tool call. Before CC 2.1.321 such a hook was skipped and the call went ahead. Keep `mcp_tool` hook answers small.
+
 | Event               | Category     | Decision control                   | Types         |
 | ------------------- | ------------ | ---------------------------------- | ------------- |
 | SessionStart        | Lifecycle    | continue, env vars                 | Command, MCP tool |

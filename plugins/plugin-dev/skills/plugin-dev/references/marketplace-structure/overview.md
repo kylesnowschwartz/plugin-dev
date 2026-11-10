@@ -256,6 +256,8 @@ Organizations can restrict plugin sources via managed settings:
 - `strictKnownMarketplaces` — A **list** of approved marketplace entries; only plugins from entries on the list are allowed. Not a boolean
 - `extraKnownMarketplaces` — Add organization-approved marketplace URLs in managed settings
 
+**Managed names take over (CC 2.1.321).** A marketplace name declared in managed `extraKnownMarketplaces` cannot be added from another source. An entry with that name from elsewhere is hidden, and the plugins the declared marketplace lists are reinstalled from it. When the managed entry takes over from an undeclared source, saved data is set aside for `cleanupPeriodDays`, and options and secrets are set aside until `claude plugin restore-set-aside`. A team that publishes the same marketplace name from a fork or mirror should expect managed machines to replace it with the declared source.
+
 ### Organization Plugin Blocking (CC 2.1.85)
 
 Organizations can block specific plugins via `managed-settings.json`. Blocked plugins cannot be installed or enabled and are hidden from marketplace views. This is separate from marketplace restrictions — even plugins from approved marketplaces can be individually blocked.

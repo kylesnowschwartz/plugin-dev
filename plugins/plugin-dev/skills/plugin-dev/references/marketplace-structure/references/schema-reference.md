@@ -402,6 +402,8 @@ Organizations can control marketplace behavior through managed settings:
 
 `strictKnownMarketplaces` is a **list of entries, never a boolean**. Entries take the `owner/*` wildcard form or a source object, and may carry a `pathPattern` regex. Writing `true` does not enable strict mode. See [overview.md](../overview.md#owner-wildcard-entries-cc-21223) for wildcard syntax.
 
+A name declared in managed `extraKnownMarketplaces` is reserved for its declared source (CC 2.1.321): the name cannot be added from another source, an entry with that name from elsewhere is hidden, and the plugins the declared marketplace lists are reinstalled from it. When the managed entry takes over from an undeclared source, saved data is set aside for `cleanupPeriodDays`, and options and secrets are set aside until `claude plugin restore-set-aside`. See [overview.md](../overview.md#managed-marketplace-restrictions).
+
 ### Example Managed Settings
 
 ```json
