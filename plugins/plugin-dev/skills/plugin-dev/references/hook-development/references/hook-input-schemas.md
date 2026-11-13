@@ -87,6 +87,9 @@ A hook that trusts or blocks an MCP tool should key the decision on `source`, ne
 | `source`     | string | Matcher: `startup`, `resume`, `clear`, `compact`, `fork` |
 | `model`      | string | Model identifier                                         |
 | `agent_type` | string | If running as an agent (optional)                        |
+| `agent_id`   | string | After a subagent compacts (`compact` source, CC 2.1.323) |
+
+After a subagent's compaction, `agent_type` names that subagent's type.
 
 ### Setup
 
@@ -106,6 +109,10 @@ A hook that trusts or blocks an MCP tool should key the decision on `source`, ne
 | --------------------- | ------ | ------------------------------------------ |
 | `trigger`             | string | `manual` or `auto`                         |
 | `custom_instructions` | string | User instructions (manual) or empty (auto) |
+| `agent_id`            | string | Subagent compactions only (CC 2.1.323)     |
+| `agent_type`          | string | Subagent compactions only (CC 2.1.323)     |
+
+PostCompact carries the same `agent_id` and `agent_type` when a subagent compacts (CC 2.1.323). Before CC 2.1.323 neither event received them.
 
 ### Notification
 

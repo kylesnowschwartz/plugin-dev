@@ -256,6 +256,8 @@ Organizations can restrict plugin sources via managed settings:
 - `strictKnownMarketplaces` — A **list** of approved marketplace entries; only plugins from entries on the list are allowed. Not a boolean
 - `extraKnownMarketplaces` — Add organization-approved marketplace URLs in managed settings
 
+**Managed `extraKnownMarketplaces` take over their names (CC 2.1.321).** A marketplace name declared in managed `extraKnownMarketplaces` cannot be added from another source, an entry with that name from elsewhere is hidden, and the plugins the declared marketplace lists are reinstalled from it. When the take-over replaces a marketplace the user added from an undeclared source, its saved data is set aside for `cleanupPeriodDays`, and its plugin options and secrets are kept until the user runs `claude plugin restore-set-aside`. A plugin published under a marketplace name that an organization also declares therefore comes from the organization's source for its users, and options set against the old source do not carry over automatically.
+
 ### Organization Plugin Blocking (CC 2.1.85)
 
 Organizations can block specific plugins via `managed-settings.json`. Blocked plugins cannot be installed or enabled and are hidden from marketplace views. This is separate from marketplace restrictions — even plugins from approved marketplaces can be individually blocked.
@@ -309,7 +311,7 @@ Names the CC 2.1.280 binary treats as reserved or impersonating:
 
 - **Official names**, usable only by Anthropic's own repositories. Examples are `claude-plugins-official`, `claude-plugins-community`, `claude-community`, `anthropic-plugins`, `anthropic-marketplace`, `claude-code-plugins`, `claude-code-marketplace`, `agent-skills`, and `claude-plugin-directory`.
 - **Imitations**: names that pair `official` with `anthropic` or `claude` in either order, and names that start with `anthropic` or `claude` followed by `marketplace`, `plugins`, or `official`, whatever the separator. Names containing non-ASCII characters are also refused.
-- **Source names** Claude Code uses for its own plugin sources: `inline`, `builtin`, `skills-dir`, `synced`, `claude-plugin-test`, `npm`, `pip`, `uv`, `cargo`, `github`, and `gh`.
+- **Source names** Claude Code uses for its own plugin sources: `inline`, `builtin`, `skills-dir`, `synced`, and `claude-plugin-test`. Before CC 2.1.323, `npm`, `pip`, `uv`, `cargo`, `github`, and `gh` were also refused as reserved names; CC 2.1.323 accepts them as marketplace names. The official marketplace reference still lists those six as reserved, so a marketplace that must work on older versions should avoid them.
 
 Give a marketplace a name built on your organization or project, for example `acme-tools`.
 

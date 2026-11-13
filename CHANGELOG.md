@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.56.0] - 2026-11-13
+
+Sync with Claude Code 2.1.320-2.1.323 (the upstream changelog has no 2.1.320 entry; the plugin-relevant entries are in 2.1.321 and 2.1.323). This release covers 20 Must Update items, one of them a Stage 2-confirmed Doc Drift Audit contradiction. All 20 May Update items were skipped. `scripts/check-doc-drift.sh` was clean, and `docs/claude-code-facts.json` changed only in `claude_code_version` (2.1.319 to 2.1.323). The vendored mod reference is refreshed to Claude Code 2.1.323.
+
+### Added
+
+- **plugin-structure**: an `engines` section in `references/manifest-reference.md` and a bullet in the overview: `engines["claude-code"]` states a Claude Code version range, a plugin outside it is not installed, updated, or loaded, and install and update pick the newest version that fits (CC 2.1.323)
+- **plugin-structure**: install changes in `references/advanced-topics.md`: installs fail when a git submodule is not on its recorded commit, install commands that write to stderr show a warning, and `claude plugin install --json` reports `unsetOptionCount` (CC 2.1.323)
+- **plugin-structure / hook-development**: in untrusted workspaces (`--trust-workspace false`, untrusted VS Code folders), repository settings can no longer disable the user's hooks or turn plugins on or off (CC 2.1.323)
+- **plugin-structure / mod-development**: mod notes for CC 2.1.321-2.1.323: a mod's own `$.tool.call` and `$.mcp.call` raise no permission prompt, mods Claude writes turn on without asking in auto and bypass modes and do not load in `dontAsk`, headless sessions reload `.claude/skills` mods (`CLAUDE_CODE_PLUGIN_DIR_WATCH=0` turns it off), `isPromptCovered`, `tool.list` scope, `tool.check` attribution, no rewording of Claude Code's confirmations, `engine.create` by name only, and `claude plugin validate` type checks and `engine.create` form checks. mod-development gains a Changes in CC 2.1.321-2.1.323 subsection
+- **hook-development**: PreCompact, PostCompact, and post-compaction SessionStart inputs carry `agent_id` and `agent_type` when a subagent compacts (CC 2.1.323)
+- **hook-development**: a PreToolUse `allow` followed by a permission-check error is decided as if no hook answered, and a PermissionRequest rewrite that fails the check asks again or refuses (CC 2.1.323); a PreToolUse `ask` survives another hook's unhonorable `defer`, and embedding apps get the other hook's `ask` reason (CC 2.1.321)
+- **hook-development**: a PreToolUse `mcp_tool` hook answer over 16 MiB refuses the call (CC 2.1.321)
+- **hook-development**: PostToolUse hooks cannot replace the AskUserQuestion answer or the ExitPlanMode plan in Cowork cloud sessions (CC 2.1.321), or the ExitPlanMode plan from user settings in cloud scheduled tasks (CC 2.1.323)
+- **marketplace-structure**: managed `extraKnownMarketplaces` take over their declared names, and data from an undeclared source is set aside until `claude plugin restore-set-aside` (CC 2.1.321); the submodule commit check in troubleshooting (CC 2.1.323)
+- **skill-development**: `.claude/skills` folders inside `~/.claude/plugins` no longer load as nested skills (CC 2.1.321); inline git commands stop in bare-repository worktrees until allowed, outside auto and bypass (CC 2.1.323)
+- **skill-development / command-development**: names holding a Bamum letter are refused (CC 2.1.321)
+- **agent-development**: split-pane teammates check that requests come from their team lead (CC 2.1.323)
+- **lsp-integration**: a warning when a plugin's language server cannot start (CC 2.1.323)
+- **mcp-integration**: project `.mcp.json` approvals match the exact server name, and `MCP_SDK_GENERATION=v1` runs the v2 client in a compatibility mode (CC 2.1.323)
+
+### Changed
+
+- **plugin-structure**: the Per-Subagent Status Line section is now historical: CC 2.1.323 removed `subagentStatusLine`, and settings that still hold it load but have no effect. The plugin environment variable note in `manifest-reference.md` scopes the `${CLAUDE_PLUGIN_ROOT}` substitution to CC 2.1.319-2.1.322
+- **plugin-structure / agent-development**: a plugin's `agent` setting is marked deprecated; it still applies but warns at startup, in `claude plugin list`, and in `claude plugin validate` (CC 2.1.323)
+- **marketplace-structure**: `npm`, `pip`, `uv`, `cargo`, `github`, and `gh` are no longer listed as reserved source names from CC 2.1.323, with a note that older versions and the official reference still treat them as reserved
+- **mod-development/vendor**: refreshed to Claude Code 2.1.323 by `scripts/sync-mod-api.sh`
+
+### Fixed
+
+- **agent-development**: `examples/complete-agent-examples.md` pointed readers to `references/advanced-agent-fields.md` for `permissionMode`, `disallowedTools`, and `skills`, which that file does not cover. It now sends `disallowedTools` and `skills` to the topic overview and `permissionMode` to `references/permission-modes-rules.md`, and lists `autoCompactWindow` among the fields advanced-agent-fields.md documents
+
 ## [0.55.0] - 2026-11-08
 
 Sync with Claude Code 2.1.313-2.1.319 (the upstream changelog has no 2.1.313 or 2.1.315 entries). This release covers 22 Must Update items (two promoted by Stage 2) and fixes all three Doc Drift Audit contradictions. One of 24 May Update items was applied. `scripts/check-doc-drift.sh` was clean, and `docs/claude-code-facts.json` changed only in `claude_code_version` (2.1.312 to 2.1.319). The release also ships the mod-development topic added since 0.54.1; its vendored `plugin-authoring` copy is now refreshed to Claude Code 2.1.319.

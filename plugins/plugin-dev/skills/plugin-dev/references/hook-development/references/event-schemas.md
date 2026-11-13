@@ -85,7 +85,7 @@ All fields are optional. Omitted fields use defaults.
 }
 ```
 
-Note: `permission_mode` is not present on SessionStart.
+Note: `permission_mode` is not present on SessionStart. After a subagent compacts, the `source: "compact"` SessionStart input also carries the subagent's `agent_id` and `agent_type` (CC 2.1.323; see PreCompact).
 
 > **CC 2.1.214/2.1.218:** SessionStart hooks now report `source: "fork"` when the session begins as a fork (via `/fork` command or programmatic fork). Previously, forked sessions were reported as `"resume"`. This allows hooks to distinguish genuine session resumption from fork-initiated sessions.
 
@@ -385,6 +385,12 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 
 **Cowork cloud sessions under auto mode (CC 2.1.314).** There, a hook's `allow` of an MCP tool call counts as no answer: the auto-mode classifier or a permission prompt decides. A hook cannot pre-approve an MCP call in that environment.
 
+**`allow` followed by a permission-check error (CC 2.1.323).** When a hook returns `allow` and the tool's own permission check then fails with an error, Claude Code decides the call as if no hook had answered: rules, the mode, and a prompt settle it. An `allow` is therefore not a guarantee that the call runs unprompted.
+
+**`ask` alongside other hooks (CC 2.1.321).** A PreToolUse `ask` is no longer lost when another hook's `defer` finishes first and cannot be honored; the `ask` stands. Apps that embed Claude Code now receive the other hook's `ask` reason when both their own PreToolUse hook and another hook asked (the SDK initialize response reports this as `other_hook_ask_outranks_host`). Before CC 2.1.321 the host saw its own reason instead.
+
+**`mcp_tool` answers over 16 MiB (CC 2.1.321).** A PreToolUse `mcp_tool` hook on a stdio or HTTP MCP server whose answer is larger than 16 MiB now refuses the tool call. Before CC 2.1.321 such a hook was skipped and the call went on unguarded. Keep an `mcp_tool` hook's answer small; return a decision and a short reason, not the data the decision was based on.
+
 **Matchers:** Tool names. Supports regex: `"Write|Edit"`, `"mcp__.*__delete.*"`. A claude.ai connector's tools can also be matched by the connector's terminal name, such as `mcp__claude_ai_Slack`; Claude Desktop ignored such matchers before CC 2.1.319 (see `advanced.md`, Event-Specific Matchers)
 **Hook types:** Command, HTTP, MCP tool, Prompt, Agent
 
@@ -457,6 +463,8 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 **Agent hooks do not run here (CC 2.1.280).** An agent hook answers ok or not ok and cannot return the `allow`/`deny` decision above, so Claude Code refuses to run one on this event. It fails with `agent-type hooks are not supported for PermissionRequest events (an agent hook answers ok or not ok, and cannot return the allow / deny decision a permission request needs). Use a command- or http-type hook instead.` The changelog does not say whether prompt hooks are affected.
 
 **Fails closed on matching errors (CC 2.1.288).** As with PreToolUse, a call is blocked when matching a PermissionRequest hook fails or the tool's input cannot be serialized to JSON. Before CC 2.1.288 the hook was skipped.
+
+**Rewritten input that fails the permission check (CC 2.1.323).** When a PermissionRequest hook returns `updatedInput` and the tool's permission check then fails on the rewritten input, Claude Code asks again, or refuses the call where nobody can answer (for example in `-p` runs). The hook's `allow` does not carry over to input the check rejects.
 
 **Matchers:** Tool names (same as PreToolUse)
 **Hook types:** Command, HTTP, MCP tool, Prompt, Agent — an agent hook is accepted in config but fails at run time (CC 2.1.280, see above); use a command or HTTP hook for permission decisions.
@@ -541,6 +549,8 @@ Exit code 0 returns `additionalContext` to Claude. Exit code 2 shows stderr to t
 
 - `updatedToolOutput`: Replace tool output for **any** tool (CC 2.1.121). Use this for general tool output modification.
 - `updatedMCPToolOutput`: Replace tool output for **MCP tools only** (legacy, still works). Prefer `updatedToolOutput` for new hooks. Before CC 2.1.296, PostToolUse hooks in managed settings did not apply it in some sessions.
+
+**Results that cannot be replaced (CC 2.1.321-2.1.323).** In Cowork cloud sessions, a PostToolUse hook can no longer replace the answer to `AskUserQuestion` or the plan in `ExitPlanMode`'s result; Claude reads the originals (CC 2.1.321). In cloud scheduled tasks, a PostToolUse hook from the user's own settings can no longer replace the plan in `ExitPlanMode`'s result (CC 2.1.323). A hook that rewrites those results elsewhere should not assume the rewrite applies in these environments.
 
 **Continue on block (CC 2.1.139):** PostToolUse hooks support a `continueOnBlock` option on the hook entry. When set and the hook returns `decision: "block"`, the rejection reason is fed back to Claude as context instead of stopping execution entirely. This lets the hook provide corrective feedback while letting Claude continue working.
 
@@ -962,6 +972,8 @@ As of CC 2.1.105, PreCompact supports blocking compaction:
 - Use to preserve critical context when compaction would lose important state
 - `additionalContext` injects information to be considered during compaction
 
+**Subagent compaction (CC 2.1.323).** When a subagent's context compacts, the PreCompact input carries that subagent's `agent_id` and `agent_type` (see Base Input), and so do PostCompact and the SessionStart hook that runs after compaction (`source: "compact"`). Before CC 2.1.323 those fields were missing, so a compaction hook could not tell a subagent's compaction from the main session's. A hook that must work on older versions should treat a missing `agent_id` as "unknown", not as "main session".
+
 **Output size (CC 2.1.314).** When a PreCompact hook exits 0 without blocking, its stdout becomes instructions for the compaction summary. Each hook's output is cut at 10,000 characters, with a marker appended. Before CC 2.1.314, very large output could make compaction fail or repeat. Keep a PreCompact hook's stdout under 10,000 characters. PreCompact ignores `systemMessage` and `continue`.
 
 > **CC 2.1.88:** Added partial compaction capability. Claude Code can now compact only a portion of the conversation rather than the entire context, with a structured summary format and analysis process.
@@ -987,6 +999,8 @@ As of CC 2.1.105, PreCompact supports blocking compaction:
   "compact_summary": "string (the compaction result summary)"
 }
 ```
+
+When a subagent compacts, the input also carries its `agent_id` and `agent_type` (CC 2.1.323; see PreCompact).
 
 **Output:** Observability only. No decision control.
 

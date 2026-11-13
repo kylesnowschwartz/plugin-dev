@@ -365,6 +365,8 @@ Servers terminate when:
 - Required dependencies are available
 - `${CLAUDE_PLUGIN_ROOT}` is used for bundled servers
 
+**Start-failure warning (CC 2.1.323):** when a plugin's language server cannot start, Claude Code shows a warning naming the server and what to check. On older versions, look in the `/plugin` Errors tab and the debug log instead.
+
 ### No Code Intelligence
 
 **Check:**
