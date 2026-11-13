@@ -287,6 +287,8 @@ Teammates inherit the team lead's permission settings. If the lead runs with `--
 
 **Command-line restrictions reach split-pane teammates (CC 2.1.309).** A split-pane teammate (tmux or iTerm2 panes) starts with the tool deny rules and `--tools` list given on the lead's command line. Before CC 2.1.309 it did not, so a `--disallowedTools` or `--tools` restriction on the lead did not bind split-pane teammates. On older versions, put the restriction in settings or in the teammate agent's own `tools`/`disallowedTools`.
 
+**Split-pane teammates check their team lead (CC 2.1.323).** A split-pane teammate checks that each request comes from its own team lead. A teammate that outlives its lead has its permission asks refused, and plan approvals must be re-sent after `/clear` or `/resume`. Teammate prompts that wait on plan approval should expect to resubmit the plan in that case.
+
 ### SendMessageTool Attachments (CC 2.1.116)
 
 When team members send messages with attachments, the `attachments` field accepts two formats:
@@ -857,6 +859,8 @@ The `agent` field in `settings.json` is now honored when dispatching sessions vi
 Dispatched sessions inherit the `agent` setting from the dispatching context, allowing default agent configuration at the project or user level and consistent agent selection across interactive and dispatched sessions. Use cases: set a default agent for all dispatched work in a project, ensure dispatched sessions use the same specialized agent as interactive sessions, configure team-wide agent defaults via project settings.
 
 **Cowork cloud sessions ignore it (CC 2.1.311):** Cowork cloud sessions ignore an `agent` named by a plugin's `settings.json` or the user's settings. Before CC 2.1.311 such a setting made those sessions lose their connectors and most tools after a restart.
+
+**A plugin's `agent` setting is deprecated (CC 2.1.323):** an `agent` set by a plugin's `settings.json` still applies, but Claude Code warns about it at startup, in `claude plugin list`, and in `claude plugin validate`. Ship the agent and let users select it with `--agent` or their own `agent` setting rather than setting it from the plugin. The changelog scopes the deprecation to a plugin's `agent` setting; it says nothing about the `agent` key in user or project settings.
 
 ### Agent Autocomplete (CC 2.1.153)
 

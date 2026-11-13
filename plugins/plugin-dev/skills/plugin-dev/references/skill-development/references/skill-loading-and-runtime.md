@@ -95,6 +95,8 @@ Skills can be organized in nested directories within `.claude/skills/`. When wor
 
 **With the Bash sandbox on (CC 2.1.319):** skills in `.claude/skills` folders below the starting folder load only if Claude Code starts in that folder or the user runs `/cd` there. Working on files there is not enough. A plugin or project that relies on nested skills should say so for users who run with the sandbox on.
 
+**Not inside `~/.claude/plugins` (CC 2.1.321):** `.claude/skills` folders inside `~/.claude/plugins` no longer load when Claude works on files there. So when Claude reads or edits an installed plugin's files, a `.claude/skills` folder the plugin carries (for example, maintainer tooling committed beside the plugin) is not picked up as nested skills. Ship user-facing skills under the plugin's `skills/` directory, which loads through the plugin, not through nested discovery.
+
 **Collision handling:** When the same skill name exists in multiple nested directories, the skill displays as `<dir>:<name>` format (e.g., `apps/web:deploy`). This prevents name collisions while maintaining clarity about which skill is which. Skills from `--add-dir` directories get the same `<folder>:<name>` form when their name clashes (CC 2.1.309; see Skill Precedence above).
 
 **Discovery after `cd` (CC 2.1.312):** Per-directory skills and `paths:` skills are found after a Bash `cd` deeper into a git repository. Before CC 2.1.312 they could be missed in that case, so on older versions conditional activation was unreliable once Claude had changed into a subdirectory.
@@ -283,6 +285,8 @@ Recent commits:
 **Disable shell execution (CC 2.1.91):** Organizations can disable inline shell execution in skills, custom slash commands, and plugin commands via the `disableSkillShellExecution` setting. When enabled, `[BANG]`command`` blocks are not executed. Design skills to work gracefully when shell execution is unavailable.
 
 **Control characters are refused (CC 2.1.290):** a `[BANG]` shell command that contains raw control characters other than tab and newline is refused, with a message that shows where they are. The same release fixed multi-line `[BANG]` shell blocks failing on Windows when the skill file is saved with CRLF line endings.
+
+**Inline git commands in bare-repository worktrees (CC 2.1.323):** a skill's inline `[BANG]` git commands stop in worktrees of a bare repository, and in similar folders, until the user allows them. Auto mode and bypass mode are not affected. A skill that gathers context with `` [BANG]`git status` `` or `` [BANG]`git diff` `` should still read sensibly when that output is missing, and its README can name the allow rule users of bare-repository worktrees need.
 
 ## Auto-Discovery
 

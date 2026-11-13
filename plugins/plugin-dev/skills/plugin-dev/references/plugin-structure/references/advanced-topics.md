@@ -11,7 +11,7 @@ Function-hook plugins, which Claude Code calls **mods**, are plugins whose hooks
 Claude Code ships the authoritative mod guidance as the `plugin-authoring` skill in the built-in plugin `cc-plugin-plugin-authoring`. Load it (the Skill tool, or `/plugin-authoring`) before writing, changing, or debugging a hooks module. `../../mod-development/overview.md` holds mod patterns, gotchas, and a vendored copy of the skill's material for one version; the skill itself is generated for the running build:
 
 - **Types for this build.** Loading the skill writes `types/claude-code.d.ts` into the skill's extracted directory: every event's input and result, every `$` method with its doc comment, and every element's props. Once a mod has loaded, `<mod folder>/.claude-plugin/types/` holds the same declarations plus a `tsconfig.json` for `tsc -p <mod folder>`.
-- **Hot reload.** Loading the skill is what starts Claude Code's watch on the session's mods folder. The first file written there asks the user whether to enable hot reloading for the session; only the user can answer. Without the skill loaded, Claude Code does not watch the folder, and a new mod loads only through `claude --plugin-dir <folder>`.
+- **Hot reload.** Loading the skill is what starts Claude Code's watch on the session's mods folder. The first file written there asks the user whether to enable hot reloading for the session; only the user can answer. Without the skill loaded, Claude Code does not watch the folder, and a new mod loads only through `claude --plugin-dir <folder>`. Headless sessions are the exception since CC 2.1.321: they reload mods in `.claude/skills` when their files change, and `CLAUDE_CODE_PLUGIN_DIR_WATCH=0` turns that off. (The official env-vars page still describes `CLAUDE_CODE_PLUGIN_DIR_WATCH` as off by default in non-interactive sessions; the 2.1.321 changelog and the vendored `reference.md` describe the new default.)
 - **Working examples.** The skill's `examples/` folder holds complete modules for a pane, a band above the prompt, and a tool-call hook, each of which validates and type-checks on that build.
 - **The long form.** The skill's `reference.md` covers the full event list, `ui.render`, `$.state` contracts, `session.append`, the `.catch` pattern for guarding hooks, dispatch time budgets, `$.tool.register` and `$.agent.register`, `claude plugin test`, and sharing a mod through a marketplace.
 
@@ -44,6 +44,10 @@ Most plugins work well with declarative `hooks.json` configuration.
 **Plugin hooks fail closed on hand-off failures (CC 2.1.299).** An action a plugin hook can block is refused, not let through, when the hook cannot be handed the action or cannot hand back its answer; a tool that already ran has its result withheld. Values a plugin hook hands back that nest deeper than 28,000 levels are refused with an error naming the limit (workflow scripts allowed 100,000). A `tool.check` allow, like a PreToolUse `allow`, no longer lets a write run in plan mode (CC 2.1.299).
 
 **Managed rules still apply (CC 2.1.289).** On managed machines, a managed deny or ask rule on a nested compound shell command holds even when a user-installed mod's `tool.call` hook approves the call.
+
+**A mod's own tool calls do not prompt (CC 2.1.321).** Calls a mod makes itself through `$.tool.call` and `$.mcp.call` raise no permission prompt, even under the user's own ask rules or in `dontAsk` and `-p` runs. Deny rules and organization policy still apply. A mod that calls a write or network tool on its own therefore acts without the user confirming each call; document what it calls, and keep such calls behind the user's explicit action.
+
+**Mods Claude writes (CC 2.1.321).** A mod Claude writes in the session turns on without asking in auto and bypass modes, even with managed `allowUnsandboxedCommands: false` or `allowManagedDomainsOnly`, and does not load at all in `dontAsk` mode.
 
 **Managed machines bypass some events for user mods (CC 2.1.296).** On a machine with managed settings, the built-in `cc-plugin-sec-default` plugin runs in front of user-installed mods and skips their hooks on `classic.*` events (`classic.SessionStart`, `classic.UserPromptSubmit`, `classic.Stop`, `classic.PermissionRequest`, `classic.PreCompact`, `classic.PostCompact`, `classic.SubagentStop`) and on `prompt.context` and `prompt.compose`. The hook does not run and no error shows; `claude --debug` logs `<plugin>: classic.Stop bypassed by cc-plugin-sec-default (tier user); beneath runs`. Command hooks in `hooks.json` are not affected. Use native events instead: `session.start` for session start, `tool.check` with an ask verdict for an approval wait, the `ToolUse` render's `isRunning` for an approval given, `session.compact` for compaction, and `turn.complete` with `agentId` for a subagent stop. A mod that adds system prompt or context text through `prompt.compose` or `prompt.context` has no effect on managed machines.
 
@@ -128,6 +132,18 @@ The `plugin-authoring` skill describes only the build it ships with. This histor
 - **CC 2.1.319:**
   - Hot reload of a mod in `.claude/skills` no longer misses a file deleted just after it appeared, or that file's return.
   - The system prompts add a "Mod plugin packaging on request" skill: when asked, Claude packages a mod as a scanned plugin with a save card, in the main session only.
+- **CC 2.1.321:**
+  - A mod's own `$.tool.call` and `$.mcp.call` calls raise no permission prompt; deny rules and organization policy still apply (see Risks above).
+  - Mods Claude writes turn on without asking in auto and bypass modes and do not load in `dontAsk` mode (see Risks above).
+  - Headless sessions reload mods in `.claude/skills` when their files change; `CLAUDE_CODE_PLUGIN_DIR_WATCH=0` turns this off.
+- **CC 2.1.323:**
+  - A pane is drawn with an `isPromptCovered` prop, set when a dialog or a field above the prompt covers the prompt.
+  - Tools a `tool.list` hook adds or removes apply to the model and every agent, not only the main session.
+  - A permission prompt raised by a `tool.check` hook names the one plugin that asked, instead of every plugin hooked on the tool.
+  - Mods can no longer reword Claude Code's own confirmation questions.
+  - A `*`, namespace, or negated hook on `engine.create` only observes. To add or withhold a `$` noun, hook `engine.create` by name.
+  - `claude plugin validate` reports the `$` nouns a mod's `engine.create` hook adds, withholds, or replaces, and fails a mod whose `engine.create` hook is not written in the one accepted form. Installed mods that fail this check keep loading, so the failure shows up at validation, not for existing users.
+  - `claude plugin validate` type-checks a plugin's TypeScript hooks module. Each finding is a warning, and `--strict` fails on it. A mod that validated cleanly under `--strict` before CC 2.1.323 can fail now; run `tsc -p <mod folder>` against the build's `.claude-plugin/types/` to see the findings.
 
 ## Keybindings Plugin Context
 
@@ -201,11 +217,13 @@ echo "[$model] \$${cost}"
 
 **Note:** Users must manually configure their status line to use the plugin's script. There is no auto-configuration mechanism.
 
-### Per-Subagent Status Line
+### Per-Subagent Status Line (Removed in CC 2.1.323)
 
-A separate `subagentStatusLine` setting (same `{"type": "command", "command": "..."}` shape) draws a custom status line for each subagent row in the agent panel. The script receives that row's context as JSON on stdin. Since CC 2.1.293 the payload includes `agentType`, so a script can tell custom subagent types apart, for example to label rows for a plugin's own agents differently from built-in ones.
+**CC 2.1.323 removed the `subagentStatusLine` setting.** Subagent rows always use the default look. Settings files that still hold the key load as before, so nothing errors, but a `subagentStatusLine` from the user's settings or from a plugin's `settings.json` no longer does anything. Do not ship it in new plugin releases; a plugin that targets only CC 2.1.323 and later can drop the key and its script. The rest of this section describes CC 2.1.322 and earlier.
 
-Unlike `statusLine`, a plugin can set `subagentStatusLine` itself: a `settings.json` at the plugin root (or the manifest's `settings` key) applies `agent` and `subagentStatusLine` defaults while the plugin is enabled, and other keys there are dropped. Since CC 2.1.319, `${CLAUDE_PLUGIN_ROOT}` is substituted in a plugin-provided `subagentStatusLine` command, so it can point at the plugin's own script:
+The `subagentStatusLine` setting (same `{"type": "command", "command": "..."}` shape as `statusLine`) drew a custom status line for each subagent row in the agent panel. The script received that row's context as JSON on stdin. From CC 2.1.293 the payload included `agentType`, so a script could tell custom subagent types apart, for example to label rows for a plugin's own agents differently from built-in ones.
+
+A plugin's `settings.json` at the plugin root (or the manifest's `settings` key) applies `agent` and, before CC 2.1.323, `subagentStatusLine` defaults while the plugin is enabled; other keys there are dropped. **The plugin `agent` setting is deprecated (CC 2.1.323):** it still applies, but Claude Code now warns about it at startup, in `claude plugin list`, and in `claude plugin validate`. Plan to remove `agent` from a plugin's settings and let users choose the main-thread agent themselves (`--agent` or their own `agent` setting). On CC 2.1.319-2.1.322, `${CLAUDE_PLUGIN_ROOT}` was substituted in a plugin-provided `subagentStatusLine` command, so it could point at the plugin's own script:
 
 ```json
 {
@@ -216,7 +234,7 @@ Unlike `statusLine`, a plugin can set `subagentStatusLine` itself: a `settings.j
 }
 ```
 
-Before CC 2.1.319 the placeholder was left unsubstituted, so a plugin that supports older versions should not rely on it there.
+Before CC 2.1.319 the placeholder was left unsubstituted, and from CC 2.1.323 the setting is ignored altogether.
 
 ## Claude Code as MCP Server
 
@@ -435,6 +453,13 @@ claude plugin marketplace remove marketplace-name
 - A directory added with `--add-dir` registers its plugin marketplaces only once that directory's own trust dialog has been accepted (CC 2.1.319)
 - `claude plugin update` and `/plugin` "Update now" install dependencies the new plugin version adds (CC 2.1.319; see Dependency Auto-Install below)
 
+**Install changes (CC 2.1.323):**
+
+- Marketplace and plugin installs fail when a git submodule is not on the commit its repository records. Commit the submodule pointer after updating a submodule, or the install breaks for every user
+- `claude plugin install` and `/plugin` show a warning instead of success when a plugin's install command writes to stderr, and they now show what the command wrote to stderr even when it succeeded. Keep informational output from install commands on stdout, or users see a warning for a clean install
+- The `claude plugin install --json` result includes `unsetOptionCount`, the number of `userConfig` options not yet set (see `manifest-reference.md`, userConfig)
+- A plugin whose `engines["claude-code"]` range excludes the running Claude Code is not installed, updated, or loaded, and install and update pick the newest version that fits (see `manifest-reference.md`, engines)
+
 ### Plugin Developer Note
 
 Document the exact install command in your README:
@@ -475,6 +500,8 @@ For team plugins, install at `project` scope and commit `.claude/settings.json`:
 ```
 
 Team members get the plugin when they clone the repo.
+
+**Untrusted workspaces (CC 2.1.323):** on self-hosted runners started with `--trust-workspace false`, and in VS Code sessions in an untrusted folder, the repository's settings can no longer disable the user's hooks or turn plugins on or off. A project-scope `enabledPlugins` entry takes effect only once the workspace is trusted, so do not rely on it to enable a plugin on such runners.
 
 ### Enterprise Plugin Control
 
@@ -975,7 +1002,7 @@ Claude Code includes comprehensive Cowork plugin component format references for
 
 **MCP server discovery:** Cowork plugins support automatic MCP server discovery, allowing plugins to expose tools dynamically.
 
-**The `agent` setting is ignored in Cowork cloud sessions (CC 2.1.311):** When a plugin's `settings.json` or the user's settings name an `agent`, Cowork cloud sessions ignore it. Before CC 2.1.311 such a setting made those sessions lose their connectors and most tools after a restart. A plugin that ships `settings.json` with `agent` does not get that agent as the main thread in a Cowork cloud session.
+**The `agent` setting is ignored in Cowork cloud sessions (CC 2.1.311):** When a plugin's `settings.json` or the user's settings name an `agent`, Cowork cloud sessions ignore it. Before CC 2.1.311 such a setting made those sessions lose their connectors and most tools after a restart. A plugin that ships `settings.json` with `agent` does not get that agent as the main thread in a Cowork cloud session. Since CC 2.1.323 the plugin `agent` setting is deprecated everywhere (see Per-Subagent Status Line).
 
 For detailed Cowork authoring guidance, use the `claude-code-guide` agent to query "Cowork plugin authoring" or "Cowork plugin schemas".
 

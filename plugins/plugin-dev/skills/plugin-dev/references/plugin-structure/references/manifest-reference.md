@@ -619,6 +619,27 @@ Specifies whether the plugin is enabled by default after installation:
 - Optional extensions that users should explicitly opt into
 - Plugins with security-sensitive capabilities that users should consciously enable
 
+### engines (CC 2.1.323)
+
+**Type**: Object
+**Key**: `"claude-code"`, a Claude Code version range
+
+States which Claude Code versions the plugin supports:
+
+```json
+{
+  "name": "my-plugin",
+  "version": "2.0.0",
+  "engines": {
+    "claude-code": ">=2.1.323"
+  }
+}
+```
+
+Since CC 2.1.323, a plugin outside its stated range is not installed, updated, or loaded. When several versions of the plugin are available, install and update pick the newest version whose range fits the running Claude Code. Use it when a release depends on behavior a given Claude Code version introduced, for example a mod API or hook field; older plugin versions with a wider range stay installable on older Claude Code builds.
+
+Claude Code versions before 2.1.323 do not apply the range. The official manifest reference does not list `engines` yet, so the accepted range syntax is not documented upstream; the example uses a plain `>=` bound. Test the manifest with `claude plugin validate` on the Claude Code version you target.
+
 ### userConfig
 
 **Type**: Object
@@ -729,6 +750,8 @@ claude plugin install my-plugin@my-marketplace \
   --config MAX_RESULTS=50
 ```
 
+**`unsetOptionCount` (CC 2.1.323):** the `claude plugin install --json` result includes `unsetOptionCount`, the number of `userConfig` options not yet set, so an install script can tell whether a configure step is still needed without parsing the message text.
+
 **After install (CC 2.1.285):** `claude plugin configure <plugin>` shows a plugin's options and which of them are unset. With `--values-stdin` it saves new values read from stdin instead, which gives scripts a post-install path that does not need `/plugin configure`:
 
 ```bash
@@ -749,7 +772,7 @@ claude plugin configure my-plugin@my-marketplace --values-stdin < values.json
 
 ### Plugin Environment Variables
 
-Claude Code sets these variables for plugin hooks. Of the variables in this table, plugin MCP/LSP server configuration expands `CLAUDE_PLUGIN_ROOT`, `CLAUDE_PLUGIN_DATA`, and `CLAUDE_PROJECT_DIR` in `command`, each `args` entry, and `env` values, plus `url` and `headers` values for remote MCP servers and `workspaceFolder` for LSP servers. The same fields also expand the user's own environment variables (`${MY_API_KEY}`, with `${VAR:-default}` fallbacks; only the braced form expands, a bare `$VAR` stays literal) and `${user_config.KEY}` values, sensitive ones included. See `../../mcp-integration/overview.md` (Environment Variable Expansion). A plugin-provided `subagentStatusLine` command (set through the plugin's `settings.json`) also has `${CLAUDE_PLUGIN_ROOT}` substituted since CC 2.1.319; see `advanced-topics.md` (Per-Subagent Status Line).
+Claude Code sets these variables for plugin hooks. Of the variables in this table, plugin MCP/LSP server configuration expands `CLAUDE_PLUGIN_ROOT`, `CLAUDE_PLUGIN_DATA`, and `CLAUDE_PROJECT_DIR` in `command`, each `args` entry, and `env` values, plus `url` and `headers` values for remote MCP servers and `workspaceFolder` for LSP servers. The same fields also expand the user's own environment variables (`${MY_API_KEY}`, with `${VAR:-default}` fallbacks; only the braced form expands, a bare `$VAR` stays literal) and `${user_config.KEY}` values, sensitive ones included. See `../../mcp-integration/overview.md` (Environment Variable Expansion). On CC 2.1.319-2.1.322 a plugin-provided `subagentStatusLine` command (set through the plugin's `settings.json`) also had `${CLAUDE_PLUGIN_ROOT}` substituted; CC 2.1.323 removed the `subagentStatusLine` setting. See `advanced-topics.md` (Per-Subagent Status Line).
 
 | Variable | Value |
 | --- | --- |
@@ -830,6 +853,8 @@ Claude Code validates the manifest on plugin load:
 - **Listing metadata keys (CC 2.1.281).** The keys under "Listing metadata fields" above are accepted rather than reported as unknown.
 - **Hook failures name the plugin (CC 2.1.281).** Not a validator check, but related: at run time, plugin hook-failure errors now name the offending plugin.
 - **README install line (CC 2.1.295).** When the plugin's README has no install line, the validator prints the line to paste. This is advice only: it never changes the exit code, even with `--strict`.
+- **TypeScript hooks modules are type-checked (CC 2.1.323).** For a mod, the validator type-checks the hooks module. Each type finding is a warning, so plain validation still passes, but `--strict` fails on it. See `advanced-topics.md` (Function-Hook Plugins) for the other mod checks.
+- **Deprecated `agent` setting (CC 2.1.323).** A plugin whose `settings.json` sets `agent` gets a deprecation warning here, at startup, and in `claude plugin list`. The setting still applies. See `advanced-topics.md` (Per-Subagent Status Line).
 
 Marketplace-level checks (plugin and marketplace names Claude Code cannot install, CC 2.1.283; custom-named marketplace files, CC 2.1.318) are covered in `../../marketplace-structure/overview.md` (Validation).
 

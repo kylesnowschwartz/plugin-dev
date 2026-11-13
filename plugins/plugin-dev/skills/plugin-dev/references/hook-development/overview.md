@@ -134,6 +134,8 @@ An `mcp_tool` hook is accepted on every event, but it only runs where an MCP cli
 
 **Blocking events wait for the server (CC 2.1.281).** On blocking events such as PreToolUse, an `mcp_tool` hook whose server is still connecting now waits for it, up to the MCP connect timeout. Before CC 2.1.281 the hook was skipped while the server connected, so an early tool call could pass a guard that never ran.
 
+**Oversized answers refuse the call (CC 2.1.321).** A PreToolUse `mcp_tool` hook on a stdio or HTTP MCP server whose answer is over 16 MiB now refuses the tool call. Before CC 2.1.321 the hook was skipped and the call went ahead.
+
 | Event               | Category     | Decision control                   | Types         |
 | ------------------- | ------------ | ---------------------------------- | ------------- |
 | SessionStart        | Lifecycle    | continue, env vars                 | Command, MCP tool |
@@ -180,7 +182,7 @@ An `mcp_tool` hook is accepted on every event, but it only runs where an MCP cli
 | Managed policy settings       | Organization   | Yes (admin-managed)  |
 | Plugin `hooks/hooks.json`     | Plugin-scoped  | Yes (with plugin)    |
 
-Plugin hooks merge with user hooks and run in parallel (at most 24 prompt or agent hooks per session at once since CC 2.1.312; see Performance). Duplicates are deduplicated (command hooks by command string, HTTP hooks by URL). `disableAllHooks` cannot disable managed policy hooks.
+Plugin hooks merge with user hooks and run in parallel (at most 24 prompt or agent hooks per session at once since CC 2.1.312; see Performance). Duplicates are deduplicated (command hooks by command string, HTTP hooks by URL). `disableAllHooks` cannot disable managed policy hooks. In an untrusted workspace (self-hosted runners under `--trust-workspace false`, VS Code in an untrusted folder), the repository's settings can no longer disable the user's hooks or turn plugins on or off (CC 2.1.323).
 
 ## Performance
 

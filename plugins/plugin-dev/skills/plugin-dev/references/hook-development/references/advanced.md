@@ -968,6 +968,9 @@ Different hook events support different output formats for controlling Claude's 
 - Windows: a PreToolUse or PermissionRequest command hook that sets no `shell` fails closed when Git for Windows is not installed (CC 2.1.299): a guard that fails blocks the call. Before CC 2.1.299 such a hook failed open and the call ran. Two more fail-open cases were closed later: a hook with `"shell": "powershell"` (CC 2.1.309), and a hook command made only of quoted strings, such as a quoted path, which PowerShell printed instead of running (CC 2.1.310). Claude is shown a "Git Bash not found" blocking reason (exit code 127) and must not edit the hook to get around it
 - PowerShell exit 2: a hook run in PowerShell (`"shell": "powershell"` or a Windows fallback) blocks on exit code 2 only since CC 2.1.309. Before that, exit 2 from PowerShell let the call through. A command that begins with a type cast, `param`, `using`, or an attribute still did not block on exit 2 until CC 2.1.316
 - Cowork cloud sessions under auto mode: since CC 2.1.314 a hook's `allow` of an MCP tool call counts as no answer, so the classifier or a permission prompt decides
+- `allow` followed by a permission-check error: since CC 2.1.323, when the tool's own permission check fails with an error after a hook returned `allow`, Claude Code decides the call as if no hook had answered
+- `ask` with other hooks: since CC 2.1.321 a PreToolUse `ask` is no longer lost when another hook's `defer` finishes first and cannot be honored, and an app embedding Claude Code receives the other hook's `ask` reason, not its own, when both asked
+- `mcp_tool` hooks: since CC 2.1.321 an answer over 16 MiB from a stdio or HTTP MCP server refuses the tool call; before that the hook was skipped and the call ran
 - `additionalContext`: Injected into Claude's context. `<system-reminder>` tags in it, as in any hook output, are escaped before they reach Claude (CC 2.1.292)
 - A failure to match the hook against a call, or tool input that cannot be serialized to JSON, blocks the call (CC 2.1.288). Before CC 2.1.288 the hook was skipped and the call ran. PermissionRequest behaves the same way
 - A `deny` and its `permissionDecisionReason` survive an Agent SDK callback hook on the same call timing out (CC 2.1.304). Before CC 2.1.304, Claude saw the timeout error instead of the plugin hook's deny reason
@@ -998,7 +1001,7 @@ Different hook events support different output formats for controlling Claude's 
 ```
 
 - `behavior`: `allow` or `deny`
-- `updatedInput`: Modified tool parameters (only with `allow`). Validated against the tool's input schema since CC 2.1.300: unknown keys are dropped, and input the tool rejects denies the call
+- `updatedInput`: Modified tool parameters (only with `allow`). Validated against the tool's input schema since CC 2.1.300: unknown keys are dropped, and input the tool rejects denies the call. Since CC 2.1.323, when the tool's permission check fails on the rewritten input, Claude Code asks again, or refuses the call where nobody can answer
 - `updatedPermissions`: Permission changes (only with `allow`)
 - `message`: Shown to user (only with `deny`)
 - `interrupt`: If true with `deny`, stops the current operation
@@ -1029,7 +1032,7 @@ PostToolUse specifically supports additional fields for replacing tool output. T
 }
 ```
 
-This allows hooks to replace what Claude sees as the tool response before processing. `updatedToolOutput` (CC 2.1.121) works for any tool; the older `updatedMCPToolOutput` applies to MCP tools only. Before CC 2.1.296, PostToolUse hooks in managed settings did not apply `updatedMCPToolOutput` in some sessions. See `event-schemas.md` for the authoritative per-event schemas.
+This allows hooks to replace what Claude sees as the tool response before processing. `updatedToolOutput` (CC 2.1.121) works for any tool; the older `updatedMCPToolOutput` applies to MCP tools only. Before CC 2.1.296, PostToolUse hooks in managed settings did not apply `updatedMCPToolOutput` in some sessions. A PostToolUse hook cannot replace the `AskUserQuestion` answer or the `ExitPlanMode` plan in Cowork cloud sessions (CC 2.1.321), nor, from the user's own settings, the `ExitPlanMode` plan in cloud scheduled tasks (CC 2.1.323). See `event-schemas.md` for the authoritative per-event schemas.
 
 ### PostToolUseFailure Decision Control
 

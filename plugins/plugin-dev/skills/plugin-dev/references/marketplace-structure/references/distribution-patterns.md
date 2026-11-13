@@ -86,6 +86,8 @@ Configure team marketplaces in `.claude/settings.json` (project or organization 
 
 When team members trust the repository folder, Claude Code automatically installs these marketplaces.
 
+When managed settings declare the same marketplace name in `extraKnownMarketplaces`, the managed source wins (CC 2.1.321): the name cannot be added from another source, and an undeclared source's saved options and secrets are set aside until `claude plugin restore-set-aside`. See `../overview.md` (Managed Marketplace Restrictions).
+
 ### Pattern 2: Enabled Plugins List
 
 Pre-configure required plugins for a project:
@@ -345,7 +347,7 @@ claude plugin install plugin-name --marketplace owner/repo
 2. Check `.claude-plugin/marketplace.json` exists at correct path
 3. Validate JSON syntax
 4. Confirm access permissions (for private repos)
-5. If the repository has large git submodules, upgrade to CC 2.1.295 or later. Earlier versions failed to add or refresh such a marketplace; now only the submodules that hold plugin files are fetched
+5. If the repository has large git submodules, upgrade to CC 2.1.295 or later. Earlier versions failed to add or refresh such a marketplace; now only the submodules that hold plugin files are fetched. Since CC 2.1.323, marketplace and plugin installs fail when a submodule is not on the commit its repository records, so commit the updated submodule pointer after moving a submodule
 6. If the CLI warns that the settings file it writes to does not load (CC 2.1.295), fix that settings file first, because the marketplace or plugin change is recorded there
 
 ### Plugin Installation Fails

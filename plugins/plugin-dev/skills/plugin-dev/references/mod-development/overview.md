@@ -7,11 +7,21 @@ A **mod** is a Claude Code plugin whose hooks are TypeScript functions instead o
 Before writing or debugging a hooks module, load Claude Code's built-in `plugin-authoring` skill (the Skill tool, or `/plugin-authoring`). Loading it does two things that this reference cannot:
 
 - **It writes the API types for the running build** into the skill's extracted folder. Once a mod has loaded, `<mod folder>/.claude-plugin/types/` holds the same, with a `tsconfig.json` for `tsc -p <mod folder>`.
-- **It starts hot reload.** Claude Code watches the session's mods folder only after the skill loads. The first file written there asks the person once to turn on the session's mods; only the person can answer. Edits reload when the turn ends.
+- **It starts hot reload.** Claude Code watches the session's mods folder only after the skill loads. The first file written there asks the person once to turn on the session's mods; only the person can answer. Edits reload when the turn ends. Since CC 2.1.321, headless sessions also reload mods in `.claude/skills` when their files change; `CLAUDE_CODE_PLUGIN_DIR_WATCH=0` turns that off.
 
 Use this reference for what the built-in skill does not have: patterns that worked, gotchas, and when to choose a mod.
 
 Since CC 2.1.317 the skill offers once, after a mod the person built works, to help share it; since CC 2.1.319 Claude can package a mod as a plugin on request, in the main session only. Claude Code also records the person's answer when it asks to turn on the mods it writes (CC 2.1.318).
+
+### Changes in CC 2.1.321-2.1.323
+
+- **Permissions (CC 2.1.321).** A mod's own `$.tool.call` and `$.mcp.call` calls raise no permission prompt, even under ask rules or in `dontAsk` and `-p` runs; deny rules and organization policy still apply. Mods Claude writes turn on without asking in auto and bypass modes and do not load in `dontAsk` mode.
+- **Panes (CC 2.1.323).** A pane is drawn with `isPromptCovered`, set when a dialog or a field above the prompt covers the prompt. A pane that draws near the prompt can use it to step aside.
+- **Tools and prompts (CC 2.1.323).** Tools a `tool.list` hook adds or removes apply to the model and every agent. A `tool.check` prompt names the one plugin that asked. Mods can no longer reword Claude Code's own confirmation questions.
+- **`engine.create` (CC 2.1.323).** Only a hook on `engine.create` by name can add or withhold a `$` noun; a `*`, namespace, or negated hook only observes. `claude plugin validate` reports the nouns the hook adds, withholds, or replaces, and fails a hook not written in the one accepted form (installed mods keep loading). The accepted form is in `vendor/reference.md`.
+- **Type checks (CC 2.1.323).** `claude plugin validate` type-checks the hooks module; findings are warnings, and `--strict` fails on them.
+
+The full mod version history is in `../plugin-structure/references/advanced-topics.md`.
 
 ## When to Choose a Mod
 

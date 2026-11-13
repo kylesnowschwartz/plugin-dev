@@ -26,6 +26,8 @@ MCP server configurations follow scope precedence: Local > Project > User.
 
 Plugin-bundled MCP servers auto-start and interact with user/project MCP configs.
 
+**Project approvals match the exact name (CC 2.1.323).** Approvals for project (`.mcp.json`) servers match the server's exact name. An approval entry written in another spelling of the name now asks again. A project that documents pre-approval settings for its servers should spell each server name exactly as `.mcp.json` does.
+
 ### Reserved Server Names (CC 2.1.128)
 
 The server name `workspace` is reserved by Claude Code. Do not use `"workspace"` as an MCP server name in plugin configurations — it will conflict with Claude Code's internal workspace server.
@@ -269,6 +271,8 @@ URL mode is still unavailable on protocol versions older than 2025-11-25, so a s
 Local (stdio) MCP server connections negotiate protocol version 2026-07-28 by default on every install, including Bedrock, Vertex, and Foundry. Setting `MCP_PROTOCOL_NEGOTIATION=legacy` opts out. A stdio server that ignores the newer protocol check is remembered after one slow connect, and for the next 7 days Claude Code connects to it the older way without the wait. Test a plugin's stdio server against 2026-07-28, and answer the version check promptly so users do not pay the slow first connect.
 
 Since CC 2.1.295, claude.ai connectors also negotiate 2026-07-28 by default on installs that fetch no flags, and `MCP_PROTOCOL_NEGOTIATION=legacy` opts out there too.
+
+**The v1 MCP client is removed (CC 2.1.323).** `MCP_SDK_GENERATION=v1` now runs the v2 MCP client in a compatibility mode, with the earlier handshake and relaxed OAuth sign-in checks, instead of the v1 client. A plugin server that only worked with `MCP_SDK_GENERATION=v1` should be tested on CC 2.1.323 with and without the variable, and fixed to work with the v2 client.
 
 ### Bundled `.mcpb` Servers (CC 2.1.285)
 

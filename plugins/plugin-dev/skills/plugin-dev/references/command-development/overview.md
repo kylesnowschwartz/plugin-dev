@@ -123,7 +123,7 @@ After review, assign to $3 for follow-up.
 
 **Argument-name cap (CC 2.1.301):** only the first 64 argument names, each up to 64 characters, are filled in; placeholders for extra or longer names are not substituted. Before CC 2.1.301, commands and skills with very many or very long argument names could stall for seconds when invoked.
 
-**File names (CC 2.1.299):** a command whose file or folder name contains hidden, direction-changing, or blank-like characters, `<`, or `>` is not offered until it is renamed, and a `name:` value with those characters is ignored. Use plain kebab-case file names.
+**File names (CC 2.1.299):** a command whose file or folder name contains hidden, direction-changing, or blank-like characters, `<`, or `>` is not offered until it is renamed, and a `name:` value with those characters is ignored. Since CC 2.1.321, names holding a Bamum letter (a script some fonts draw as blank) are refused too. Use plain kebab-case file names.
 
 **UserPromptSubmit runs first (CC 2.1.299):** a UserPromptSubmit hook sees the command line as typed, before the command expands, so a hook that blocks the prompt also stops the command's `[BANG]` shell lines from running.
 
@@ -166,6 +166,8 @@ The `[BANG]` syntax performs **load-time context injection**: commands execute w
 **Disable shell execution (CC 2.1.91):** Organizations can disable inline shell execution in skills, custom slash commands, and plugin commands via the `disableSkillShellExecution` setting. When enabled, `[BANG]`command`` blocks are not executed. Design commands to work gracefully when shell execution is unavailable.
 
 **Control characters are refused (CC 2.1.290):** skills and custom commands refuse a `[BANG]` shell command that contains raw control characters other than tab and newline, with a message that shows where they are. Keep inline commands to printable text; generate any escape sequences inside a script instead. The same release fixed multi-line `[BANG]` shell blocks failing on Windows when the file is saved with CRLF line endings.
+
+**Inline git commands in bare-repository worktrees (CC 2.1.323):** skills' inline `[BANG]` git commands stop in worktrees of a bare repository, and similar folders, until the user allows them, outside auto mode and bypass. The changelog names skills; write a command's `` [BANG]`git ...` `` context so the command still works when that output is missing.
 
 For advanced bash patterns, environment-specific configs, and `${CLAUDE_PLUGIN_ROOT}` script execution, see `references/plugin-features-reference.md`.
 
